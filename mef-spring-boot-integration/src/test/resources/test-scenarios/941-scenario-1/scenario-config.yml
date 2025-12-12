@@ -1,0 +1,157 @@
+# Form 941 Test Scenario 1 Configuration
+# Source: 941-test-scenario-1-ty2026.pdf
+# ATS Scenario 1 - Orchid Incorporated Q1 2026
+
+scenario:
+  name: "Form 941 Scenario 1 - Orchid Incorporated Q1 2026"
+  description: "Basic quarterly tax return with 3 employees, simple payroll taxes"
+  form: "941"
+  taxYear: 2026
+  quarter: 1
+  quarterEndingDate: "2026-03"
+  returnVersion: "2026Q1v4.0"
+  atsScenario: true
+  responsiblePartyCurrentIndicator: true
+
+filer:
+  ein: "003000004"
+  businessName: "Orchid Incorporated"
+  businessNameControl: "ORCH"
+  address:
+    line1: "1st Test Street"
+    city: "Willow Grove"
+    state: "PA"
+    zipCode: "19090"
+
+# Form 941 Data from PDF
+form941:
+  # Part 1: Answer these questions for this quarter
+  part1:
+    line1:
+      employeeCount: 3
+      description: "Number of employees who received wages"
+
+    line2:
+      wages: 1000.00
+      description: "Wages, tips, and other compensation"
+
+    line3:
+      federalIncomeTaxWithheld: 100.00
+      description: "Federal income tax withheld from wages"
+
+    line5a:
+      taxableSocialSecurityWages: 1000.00
+      socialSecurityTax: 124.00
+      description: "Taxable social security wages (× 0.124)"
+
+    line5b:
+      taxableSocialSecurityTips: 0.00
+      socialSecurityTax: 0.00
+      description: "Taxable social security tips (× 0.124)"
+
+    line5c:
+      taxableMedicareWages: 1000.00
+      medicareTax: 29.00
+      description: "Taxable Medicare wages & tips (× 0.029)"
+
+    line5d:
+      additionalMedicareWages: 0.00
+      additionalMedicareTax: 0.00
+      description: "Additional Medicare Tax withholding (× 0.009)"
+
+    line5e:
+      totalSSMedicareTax: 153.00
+      description: "Total social security and Medicare taxes"
+
+    line5f:
+      section3121qTax: 0.00
+      description: "Section 3121(q) Notice and Demand"
+
+    line6:
+      totalTaxBeforeAdjustment: 253.00
+      description: "Total taxes before adjustments (3 + 5e + 5f)"
+
+    line7:
+      fractionsOfCentsAdjustment: 0.00
+      description: "Current quarter's adjustment for fractions of cents"
+
+    line8:
+      sickPayAdjustment: 0.00
+      description: "Current quarter's adjustment for sick pay"
+
+    line9:
+      tipsGroupTermLifeAdjustment: 0.00
+      description: "Current quarter's adjustments for tips and group-term life insurance"
+
+    line10:
+      totalTaxAfterAdjustment: 253.00
+      description: "Total taxes after adjustments"
+
+    line11:
+      qualifiedSmallBusinessCredit: 0.00
+      description: "Qualified small business payroll tax credit"
+
+    line12:
+      totalTax: 253.00
+      description: "Total taxes after adjustments and nonrefundable credits"
+
+    line13:
+      totalDeposits: 253.00
+      description: "Total deposits for this quarter"
+
+    line14:
+      balanceDue: 0.00
+      description: "Balance due (if line 12 > line 13)"
+
+    line15a:
+      overpayment: 0.00
+      description: "Overpayment (if line 13 > line 12)"
+
+  # Part 2: Deposit schedule and tax liability
+  part2:
+    line16:
+      totalTaxLessThanLimit: true
+      description: "Line 12 is less than $2,500"
+      monthlyScheduleDepositor: false
+      semiweeklyScheduleDepositor: false
+
+  # Part 3: Business information
+  part3:
+    line17:
+      businessClosed: false
+      finalDate: null
+      description: "Business closed or stopped paying wages"
+
+    line18:
+      seasonalEmployer: false
+      description: "Seasonal employer"
+
+  # Part 4: Third-party designee
+  part4:
+    thirdPartyDesignee: false
+    description: "Allow third party to discuss this return with IRS"
+
+  # Part 5: Signature
+  part5:
+    signatureMethod: "OnlineFilerPIN"
+    description: "Use the signature method applicable to you"
+
+# Expected Validation Results
+expectedResults:
+  xsdValidation: "PASS"
+  submissionStatus: "Accepted"
+  acknowledgmentStatus: "Accepted"
+  balanceDue: 0.00
+  overpayment: 0.00
+
+# Test Metadata
+testMetadata:
+  createdDate: "2025-12-03"
+  sourceDocument: "941-test-scenario-1-ty2026.pdf"
+  testPurpose: "ATS acceptance testing for basic Form 941 quarterly return"
+  author: "System Generated"
+  notes:
+    - "This is a simple test scenario with minimal data"
+    - "All employees under social security wage base"
+    - "No adjustments or special circumstances"
+    - "Deposits exactly match tax liability"

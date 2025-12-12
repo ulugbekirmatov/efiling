@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                             -->
+<!-- REVISION HISTORY:           -->
+<!-- Initial Version  09/08/2009 -->
+<!-- Prasad Erabelli -->
+<!-- Updated from ETECTransmitterService.xsd -->
+<!-- Made the MTOM attachments part of the SOAP Body message itself -->
+<!--                             -->
+<!-- 10/19/2009 Todd Welden -->
+<!-- Removed count from SubmissionIdListType to make the same as MIME and DIME -->
+<!--                                                                      -->
+<!-- 05/01/2012 -->
+<!-- Removed MeFException, It is now defined in MeFHeader.xsd to create a consistent namespace -->
+<!-- for all MeF exceptions returned as SOAP Faults from the portal and the TPI backend -->
+<!--                                                     -->
+<!-- 04/01/2013        -->
+<!-- For UWR# 79178 Removed the MoreAvailable element in the Get2290Schedule1sByMsgID Response message -->
+<!--                                                     -->
+<!-- 05/07/2013        -->
+<!-- For UWR# 79178 changes Restored the MoreAvailable element in the Get2290Schedule1sByMsgID Response message -->
+<!--  For WR#_111440_WSDL_Changes_Detailed_Analysis_03_27_2014
+	ListOfSubmissionErrorType to ETECSubmissionErrorListType
+MeFErrorType to ErrorClassificationDetailType
+ErrorClassificationType to ErrorClassificationCdType
+ListOfSubmissionError to ETECSubmissionErrorList
+MessageID to MessageId
+Count to Cnt
+MoreAvailable to MoreAvailableInd
+Error to ErrorClassificationDetail
+ErrorMessage to ErrorMessageTxt
+ErrorClassification to ErrorClassificationCd
+ErrorCode to ErrorMessageCd
+MaxResults to MaxResultCnt -->
+<!-- 05/05/2022 -->
+<!-- Updated to use the xsd:base64Binary for attachments from xmime:base64Binary -->
+<!--                               -->
+<xsd:schema xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns="http://www.irs.gov/a2a/mef/ETECTransmitterServiceMTOM.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/a2a/mef/ETECTransmitterServiceMTOM.xsd" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>ETEC Trading Partner Transmitter Web Services' MTOM Element Definitions</xsd:documentation>
+	</xsd:annotation>
+	<!-- Import the xmlmime definition of base64Binary for MTOM -->
+	<xsd:import namespace="http://www.w3.org/2005/05/xmlmime" schemaLocation="xmime.xsd"/>
+	<xsd:element name="GetNew2290Schedule1sRequest" type="GetNew2290Schedule1sRequestType"/>
+	<xsd:element name="GetNew2290Schedule1sResponse" type="GetNew2290Schedule1sResponseType"/>
+	<xsd:element name="Get2290Schedule1sRequest" type="Get2290Schedule1sRequestType"/>
+	<xsd:element name="Get2290Schedule1sResponse" type="Get2290Schedule1sResponseType"/>
+	<xsd:element name="Get2290Schedule1Request" type="Get2290Schedule1RequestType"/>
+	<xsd:element name="Get2290Schedule1Response" type="Get2290Schedule1ResponseType"/>
+	<xsd:element name="Get2290Schedule1sByMsgIDRequest" type="Get2290Schedule1sByMsgIDRequestType"/>
+	<xsd:element name="Get2290Schedule1sByMsgIDResponse" type="Get2290Schedule1sByMsgIDResponseType"/>
+	<!-- The miximum number of 2290 Schedule 1s to be returned in the response -->
+	<xsd:complexType name="GetNew2290Schedule1sRequestType">
+		<xsd:sequence>
+			<xsd:element name="MaxResultCnt" type="xsd:positiveInteger"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The number of 2290 Schedule 1s in the response and whether more 2290 Schedule 1s are available -->
+	<xsd:complexType name="GetNew2290Schedule1sResponseType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger"/>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+			<xsd:element name="Schedule1AttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The submission ID(s) of the 2290 submission(s) for which the Schedule 1 is requested -->
+	<xsd:complexType name="Get2290Schedule1sRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionIdList" type="SubmissionIdListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The number of 2290 Schedule 1s in the response -->
+	<xsd:complexType name="Get2290Schedule1sResponseType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger"/>
+			<xsd:element name="ETECSubmissionErrorList" type="ETECSubmissionErrorListType"/>
+			<xsd:element name="Schedule1AttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The submission ID of the 2290 submission for which the Schedule 1 is requested -->
+	<xsd:complexType name="Get2290Schedule1RequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The number of 2290 Schedule 1s in the response -->
+	<xsd:complexType name="Get2290Schedule1ResponseType">
+		<xsd:sequence>
+			<xsd:element name="Schedule1AttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The message ID of the prior Get New 2290 Schedule 1s request -->
+	<xsd:complexType name="Get2290Schedule1sByMsgIDRequestType">
+		<xsd:sequence>
+			<xsd:element name="MessageId" type="MessageIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The number of 2290 Schedule 1s in the response -->
+	<xsd:complexType name="Get2290Schedule1sByMsgIDResponseType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger"/>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+			<xsd:element name="Schedule1AttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ErrorClassificationCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="SYSTEM_ERROR"/>
+			<xsd:enumeration value="RESOURCE_UNAVAILABLE"/>
+			<xsd:enumeration value="MESSAGE_FORMAT_ERROR"/>
+			<xsd:enumeration value="SECURITY_ERROR"/>
+			<xsd:enumeration value="REQUEST_ERROR"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="SubmissionIdListType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Submission ID Type - 20 digits (EFIN + ccyyddd + 7-character alphanumeric) -->
+	<xsd:simpleType name="SubmissionIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{13}[a-z0-9]{7}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Message ID Type - 20 digits (ETIN + ccyyddd + 8-character alphanumeric) -->
+	<xsd:simpleType name="MessageIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{12}[a-z0-9]{8}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="ETECSubmissionErrorListType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionError" type="SubmissionErrorType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionErrorType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+			<xsd:element name="ErrorClassificationDetail" type="ErrorClassificationDetailType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ErrorClassificationDetailType">
+		<xsd:sequence>
+			<xsd:element name="ErrorMessageTxt" type="xsd:string"/>
+			<xsd:element name="ErrorClassificationCd" type="ErrorClassificationCdType"/>
+			<xsd:element name="ErrorMessageCd" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,34 @@
+                *                                                      *
+                *   What's New for MeF Client SDK Release 2013v4.0?    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+Error handling is improved in the processing of certificate access and SOAP signing.
+
+
+General Changes for .NET SDK
+____________________________
+
+Improved error logging. Stack traces are now logged for better debugging.
+
+
+Changes for both Java and .NET SDK
+__________________________________
+Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 9 WSDL
+specification.
+
+GetSubmissionReconciliationList service supports all available options: NOTRETRIEVED, RECEIPTNOACK, and NORECEIPTNOACK.
+
+MessageID and RelatesTo ID fields are now accessible. The User Guide has code samples.
+
+The API now has the option to process all requests in memory, as well as the current architecture of processing using the file system.
+
+Both the Get and Send Services can now accept memory objects as inputs instead of files on the hard disk. Please refer to User Guide
+for new APIs to support this and the code samples.
+
+
+
+

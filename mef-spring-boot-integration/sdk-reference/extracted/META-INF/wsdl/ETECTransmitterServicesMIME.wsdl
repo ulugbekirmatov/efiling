@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                             -->
+<!-- REVISION HISTORY:           -->
+<!-- Initial Version  11/10/2006 -->
+<!-- 12/20/2006                  -->
+<!-- Changed URLs and namespaces from a2a/etec/ to a2a/mef/ -->
+<!-- 04/03/2006                  -->
+<!-- Changed attachment type from application/zip to application/octet-stream -->
+<!-- to be consistant with the MeF services -->
+<!-- 05/01/2012  -->
+<!-- Changed file name to ETECTransmitterServicesMIME.wsdl -->
+<!-- Updated MeFException to use MeFException from the updated MeFHeader.xsd schema-->
+<!-- 03/31/2014  -->
+<!-- For WR# 111440 updated the element names to comply with XML standardization -->
+<!--                             -->
+<wsdl:definitions name="ETECTransmitterService" 
+	targetNamespace="http://www.irs.gov/a2a/mef/ETECTransmitterService" 
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:soapbind="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+	xmlns:mefhdr="http://www.irs.gov/a2a/mef/MeFHeader.xsd" 	
+	xmlns:ettx="http://www.irs.gov/a2a/mef/ETECTransmitterService.xsd"
+	xmlns:etec="http://www.irs.gov/a2a/mef/ETECTransmitterService">
+
+  <wsdl:types>
+    <xsd:schema elementFormDefault="qualified" 
+		targetNamespace="http://www.irs.gov/a2a/mef/ETECTransmitterService" 
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  		<xsd:import namespace="http://www.irs.gov/a2a/mef/ETECTransmitterService.xsd" schemaLocation="ETECTransmitterService.xsd"/>
+		<xsd:import namespace="http://www.irs.gov/a2a/mef/MeFHeader.xsd" schemaLocation="MeFHeader.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+
+  
+  <!-- Messages -->
+  <wsdl:message name="ErrorExceptionDetail">
+    <wsdl:part name="ErrorExceptionDetail"					element="mefhdr:ErrorExceptionDetail"/>  
+  </wsdl:message>
+
+  <wsdl:message name="GetNew2290Schedule1sRequest">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    	<wsdl:part name="GetNew2290Schedule1sRequest"		element="ettx:GetNew2290Schedule1sRequest"/>
+  </wsdl:message>
+  
+  <wsdl:message name="GetNew2290Schedule1sResponse">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="GetNew2290Schedule1sResponse"		element="ettx:GetNew2290Schedule1sResponse"/>
+    <wsdl:part name="Schedule1AttBin"				element="ettx:Schedule1AttBin"/> 
+  </wsdl:message>
+  
+  <wsdl:message name="Get2290Schedule1sRequest">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="Get2290Schedule1sRequest"			element="ettx:Get2290Schedule1sRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="Get2290Schedule1sResponse">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="Get2290Schedule1sResponse"			element="ettx:Get2290Schedule1sResponse"/>
+    <wsdl:part name="Schedule1AttBin"				element="ettx:Schedule1AttBin"/> 
+  </wsdl:message>
+
+  <wsdl:message name="Get2290Schedule1Request">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="Get2290Schedule1Request"			element="ettx:Get2290Schedule1Request"/>
+  </wsdl:message>
+
+  <wsdl:message name="Get2290Schedule1Response">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="Get2290Schedule1Response"			element="ettx:Get2290Schedule1Response"/>
+    <wsdl:part name="Schedule1AttBin"				element="ettx:Schedule1AttBin"/> 
+  </wsdl:message>
+
+  <wsdl:message name="Get2290Schedule1sByMsgIDRequest">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="Get2290Schedule1sByMsgIDRequest"		element="ettx:Get2290Schedule1sByMsgIDRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="Get2290Schedule1sByMsgIDResponse">
+	<wsdl:part name="MeFHeader"					element="mefhdr:MeFHeader"/>
+    <wsdl:part name="Get2290Schedule1sByMsgIDResponse"	element="ettx:Get2290Schedule1sByMsgIDResponse"/>
+    <wsdl:part name="Schedule1AttBin"				element="ettx:Schedule1AttBin"/> 
+  </wsdl:message>
+
+  <!-- Ports -->
+  <wsdl:portType name="GetNew2290Schedule1s">
+    <wsdl:operation name="GetNew2290Schedule1s" parameterOrder="MeFHeader GetNew2290Schedule1sRequest Schedule1AttBin">
+      <wsdl:input              message="etec:GetNew2290Schedule1sRequest"/>
+      <wsdl:output             message="etec:GetNew2290Schedule1sResponse"/>
+      <wsdl:fault name="fault" message="etec:ErrorExceptionDetail"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="Get2290Schedule1s">
+    <wsdl:operation name="Get2290Schedule1s" parameterOrder="MeFHeader Get2290Schedule1sRequest Schedule1AttBin">
+      <wsdl:input              message="etec:Get2290Schedule1sRequest"/>
+      <wsdl:output             message="etec:Get2290Schedule1sResponse"/>
+      <wsdl:fault name="fault" message="etec:ErrorExceptionDetail"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="Get2290Schedule1">
+    <wsdl:operation name="Get2290Schedule1" parameterOrder="MeFHeader Get2290Schedule1Request Schedule1AttBin">
+      <wsdl:input              message="etec:Get2290Schedule1Request"/>
+      <wsdl:output             message="etec:Get2290Schedule1Response"/>
+      <wsdl:fault name="fault" message="etec:ErrorExceptionDetail"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="Get2290Schedule1sByMsgID">
+    <wsdl:operation name="Get2290Schedule1sByMsgID" parameterOrder="MeFHeader Get2290Schedule1sByMsgIDRequest Schedule1AttBin">
+      <wsdl:input              message="etec:Get2290Schedule1sByMsgIDRequest"/>
+      <wsdl:output             message="etec:Get2290Schedule1sByMsgIDResponse"/>
+      <wsdl:fault name="fault" message="etec:ErrorExceptionDetail"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Bindings -->
+
+  <wsdl:binding name="GetNew2290Schedule1s" type="etec:GetNew2290Schedule1s">
+	<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<wsdl:operation name="GetNew2290Schedule1s">
+	<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetNew2290Schedule1s"/>
+	<wsdl:input>
+		<soapbind:body use="literal" parts="GetNew2290Schedule1sRequest"/>
+		<soapbind:header use="literal" part="MeFHeader" message="etec:GetNew2290Schedule1sRequest"/>
+	</wsdl:input>
+	<wsdl:output>
+		<mime:multipartRelated>
+ 	   		<mime:part>
+				<soapbind:body parts="GetNew2290Schedule1sResponse" use="literal"/>
+				<soapbind:header use="literal" part="MeFHeader" message="etec:GetNew2290Schedule1sResponse"/>
+			</mime:part>
+			<mime:part>
+				<mime:content part="Schedule1AttBin" type="application/octet-stream"/>
+			</mime:part>
+		</mime:multipartRelated>
+	</wsdl:output>
+	<wsdl:fault name="fault">
+		<soapbind:fault name="fault" use="literal"/>
+	</wsdl:fault>
+	</wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="Get2290Schedule1s" type="etec:Get2290Schedule1s">
+	<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<wsdl:operation name="Get2290Schedule1s">
+	<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/Get2290Schedule1s"/>
+	<wsdl:input>
+		<soapbind:body use="literal" parts="Get2290Schedule1sRequest"/>
+		<soapbind:header use="literal" part="MeFHeader" message="etec:Get2290Schedule1sRequest"/>
+	</wsdl:input>
+	<wsdl:output>
+		<mime:multipartRelated>
+ 	   		<mime:part>
+				<soapbind:body parts="Get2290Schedule1sResponse" use="literal"/>
+				<soapbind:header use="literal" part="MeFHeader" message="etec:Get2290Schedule1sResponse"/>
+ 			</mime:part>
+			<mime:part>
+				<mime:content part="Schedule1AttBin" type="application/octet-stream"/>
+			</mime:part>
+		</mime:multipartRelated>
+	</wsdl:output>
+	<wsdl:fault name="fault">
+		<soapbind:fault name="fault" use="literal"/>
+	</wsdl:fault>
+	</wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="Get2290Schedule1" type="etec:Get2290Schedule1">
+	<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<wsdl:operation name="Get2290Schedule1">
+	<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/Get2290Schedule1"/>
+	<wsdl:input>
+		<soapbind:body use="literal" parts="Get2290Schedule1Request"/>
+		<soapbind:header use="literal" part="MeFHeader" message="etec:Get2290Schedule1Request"/>
+	</wsdl:input>
+	<wsdl:output>
+		<mime:multipartRelated>
+ 	   		<mime:part>
+				<soapbind:body parts="Get2290Schedule1Response" use="literal"/>
+				<soapbind:header use="literal" part="MeFHeader" message="etec:Get2290Schedule1Response"/>
+			</mime:part>
+			<mime:part>
+				<mime:content part="Schedule1AttBin" type="application/octet-stream"/>
+			</mime:part>
+		</mime:multipartRelated>
+	</wsdl:output>
+	<wsdl:fault name="fault">
+		<soapbind:fault name="fault" use="literal"/>
+	</wsdl:fault>
+	</wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="Get2290Schedule1sByMsgID" type="etec:Get2290Schedule1sByMsgID">
+	<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<wsdl:operation name="Get2290Schedule1sByMsgID">
+	<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/Get2290Schedule1sByMsgID"/>
+	<wsdl:input>
+		<soapbind:body use="literal" parts="Get2290Schedule1sByMsgIDRequest"/>
+		<soapbind:header use="literal" part="MeFHeader" message="etec:Get2290Schedule1sByMsgIDRequest"/>
+	</wsdl:input>
+	<wsdl:output>
+		<mime:multipartRelated>
+ 	   		<mime:part>
+				<soapbind:body parts="Get2290Schedule1sByMsgIDResponse" use="literal"/>
+				<soapbind:header use="literal" part="MeFHeader" message="etec:Get2290Schedule1sByMsgIDResponse"/>
+			</mime:part>
+			<mime:part>
+				<mime:content part="Schedule1AttBin" type="application/octet-stream"/>
+			</mime:part>
+		</mime:multipartRelated>
+	</wsdl:output>
+	<wsdl:fault name="fault">
+		<soapbind:fault name="fault" use="literal"/>
+	</wsdl:fault>
+	</wsdl:operation>
+  </wsdl:binding>
+
+  <!-- The URLs below are placeholders.  The actual URLs will be determined later, for the publication of this WSDL. -->
+  
+  <wsdl:service name="GetNew2290Schedule1s">
+    <wsdl:port name="GetNew2290Schedule1s" binding="etec:GetNew2290Schedule1s">
+      <soapbind:address location="http://localhost:9080/a2a/mef/mime/GetNew2290Schedule1s"/>
+    </wsdl:port>
+  </wsdl:service>
+
+  <wsdl:service name="Get2290Schedule1s">
+    <wsdl:port name="Get2290Schedule1s" binding="etec:Get2290Schedule1s">
+      <soapbind:address location="http://localhost:9080/a2a/mef/mime/Get2290Schedule1s"/>
+    </wsdl:port>
+  </wsdl:service>
+
+  <wsdl:service name="Get2290Schedule1">
+    <wsdl:port name="Get2290Schedule1" binding="etec:Get2290Schedule1">
+      <soapbind:address location="http://localhost:9080/a2a/mef/mime/Get2290Schedule1"/>
+    </wsdl:port>
+  </wsdl:service>
+  
+  <wsdl:service name="Get2290Schedule1sByMsgID">
+    <wsdl:port name="Get2290Schedule1sByMsgID" binding="etec:Get2290Schedule1sByMsgID">
+      <soapbind:address location="http://localhost:9080/a2a/mef/mime/Get2290Schedule1sByMsgID"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

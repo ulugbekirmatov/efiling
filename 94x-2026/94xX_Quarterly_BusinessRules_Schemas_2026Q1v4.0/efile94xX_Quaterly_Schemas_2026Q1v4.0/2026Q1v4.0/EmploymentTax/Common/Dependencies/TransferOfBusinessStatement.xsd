@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema targetNamespace="http://www.irs.gov/efile" xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+
+
+	<xsd:annotation>
+
+		<xsd:documentation>
+
+			<Description>IRS e-file Schema - Transfer Of Business Statement</Description>
+
+			<Purpose>If you sold or transferred your business - include a statement with: <br/>The new owner's name (or the new name of the business).<br/>Whether the business is now a sole proprietorship, partnership, or corporation.<br/>The kind of change that occurred (a sale or transfer).<br/>The date of the change.<br/>The name of the person keeping the payroll records and the address where those records will be kept.</Purpose>
+
+			<TaxYear>2026</TaxYear>
+
+			<MaturityLevel>Final Schema Version RL109 Drop 5</MaturityLevel>
+
+			<ReleaseDate>Nov 6 2025</ReleaseDate>
+
+		</xsd:documentation>
+
+	</xsd:annotation>
+
+
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd" />
+
+
+
+	<!-- ======================================================================== -->
+
+	<!-- ==================== Transfer Of Business Statement ==================== -->
+
+	<!-- ======================================================================== -->
+
+
+
+	<xsd:element name="TransferOfBusinessStatement">
+
+		<xsd:annotation>
+
+			<xsd:documentation>Transfer Of Business Statement</xsd:documentation>
+
+		</xsd:annotation>
+
+		<xsd:complexType>
+
+			<xsd:complexContent>
+
+				<xsd:extension base="TransferOfBusinessStmtType">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+
+						<xsd:annotation>
+
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+
+						</xsd:annotation>
+
+					</xsd:attributeGroup>
+
+					<xsd:attribute name="documentName" type="StringType" fixed="TransferOfBusinessStatement">
+
+						<xsd:annotation>
+
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+
+						</xsd:annotation>
+
+					</xsd:attribute>
+
+				</xsd:extension>
+
+			</xsd:complexContent>
+
+		</xsd:complexType>
+
+	</xsd:element>
+
+
+
+	<xsd:complexType name="TransferOfBusinessStmtType">
+
+		<xsd:annotation>
+
+			<xsd:documentation>Content model for Transfer Of Business Statement</xsd:documentation>
+
+		</xsd:annotation>
+
+		<xsd:sequence>
+
+
+
+			<!-- Choice between Owner Name and Business Name -->
+
+			<xsd:choice minOccurs="0">
+
+				<!-- Owner Name -->
+
+				<xsd:element name="OwnerNm" type="PersonNameType">
+
+					<xsd:annotation>
+
+						<xsd:documentation>
+
+							<Description>New owner's name</Description>
+
+						</xsd:documentation>
+
+					</xsd:annotation>
+
+				</xsd:element>
+
+				<!-- Business Name -->
+
+				<xsd:element name="BusinessName" type="BusinessNameType">
+
+					<xsd:annotation>
+
+						<xsd:documentation>
+
+							<Description>New name of the business</Description>
+
+						</xsd:documentation>
+
+					</xsd:annotation>
+
+				</xsd:element>
+
+			</xsd:choice>
+
+
+
+			<!-- Business Type Code -->
+
+			<xsd:element name="BusinessTypeCd">
+
+				<xsd:annotation>
+
+					<xsd:documentation>
+
+						<Description>Business type code</Description>
+
+					</xsd:documentation>
+
+				</xsd:annotation>
+
+				<xsd:simpleType>
+
+					<xsd:restriction base="TextType">
+
+						<xsd:enumeration value="SOLE PROPRIETORSHIP"/>
+
+						<xsd:enumeration value="PARTNERSHIP"/>
+
+						<xsd:enumeration value="CORPORATION"/>
+
+					</xsd:restriction>
+
+				</xsd:simpleType>
+
+			</xsd:element>
+
+
+
+			<!-- Business Change Type Code -->
+
+			<xsd:element name="BusinessChangeTypeCd">
+
+				<xsd:annotation>
+
+					<xsd:documentation>
+
+						<Description>Business change type code</Description>
+
+					</xsd:documentation>
+
+				</xsd:annotation>
+
+				<xsd:simpleType>
+
+					<xsd:restriction base="TextType">
+
+						<xsd:enumeration value="SALE"/>
+
+						<xsd:enumeration value="TRANSFER"/>
+
+					</xsd:restriction>
+
+				</xsd:simpleType>
+
+			</xsd:element>
+
+
+
+			<!-- Change Date -->
+
+			<xsd:element name="ChangeDt" type="DateType">
+
+				<xsd:annotation>
+
+					<xsd:documentation>
+
+						<Description>Change date</Description>
+
+					</xsd:documentation>
+
+				</xsd:annotation>
+
+			</xsd:element>
+
+
+
+			<!-- Person Name -->
+
+			<xsd:element name="PersonNm" type="PersonNameType">
+
+				<xsd:annotation>
+
+					<xsd:documentation>
+
+						<Description>Name of the person keeping the records</Description>
+
+					</xsd:documentation>
+
+				</xsd:annotation>
+
+			</xsd:element>
+
+
+
+			<!-- Choice between US Address and Foreign Address -->
+
+			<xsd:choice>
+
+				<!-- US Address -->
+
+				<xsd:element name="USAddress" type="USAddressType">
+
+					<xsd:annotation>
+
+						<xsd:documentation>
+
+							<Description>Address where the records will be kept</Description>
+
+						</xsd:documentation>
+
+					</xsd:annotation>
+
+				</xsd:element>
+
+				<!-- Foreign Address -->
+
+				<xsd:element name="ForeignAddress" type="ForeignAddressType">
+
+					<xsd:annotation>
+
+						<xsd:documentation>
+
+							<Description>Address where the records will be kept</Description>
+
+						</xsd:documentation>
+
+					</xsd:annotation>
+
+				</xsd:element>
+
+			</xsd:choice>
+
+
+
+		</xsd:sequence>
+
+	</xsd:complexType>
+
+
+
+</xsd:schema>
+

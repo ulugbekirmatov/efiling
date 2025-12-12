@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.irs.gov/efile" xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - Return data schema for 941-X return</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Final Schema Version</MaturityLevel>
+			<ReleaseDate>July 3 2025</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../Common/efileTypes.xsd" />
+	<xsd:include schemaLocation="../../Common/BinaryAttachment.xsd" />
+
+	<xsd:include schemaLocation="IRS941X/IRS941X.xsd" />
+	<xsd:include schemaLocation="../Common/IRS941ScheduleB/IRS941ScheduleB.xsd" />
+	<xsd:include schemaLocation="../Common/IRS941ScheduleD/IRS941ScheduleD.xsd" />
+	<xsd:include schemaLocation="../Common/IRS941ScheduleR/IRS941ScheduleR.xsd" />
+
+	<!-- Common Dependencies (supporting info, schedules, computations, and such) -->	
+	<xsd:include schemaLocation="../Common/Dependencies/FinalPayrollInformationStatement.xsd" />
+	<xsd:include schemaLocation="../Common/IRS8974/IRS8974.xsd" />
+	<xsd:include schemaLocation="../../CorporateIncomeTax/Common/Dependencies/GeneralDependencySmall.xsd" />
+	<xsd:include schemaLocation="../../ETEC/Common/IRSPayment2.xsd" />
+	<xsd:include schemaLocation="../Common/Dependencies/TransferOfBusinessStatement.xsd" />
+
+	<!-- Return 941-X -->
+	<xsd:element name="ReturnData">
+		<xsd:annotation>
+			<xsd:documentation>941-X Return Contents</xsd:documentation>
+		</xsd:annotation>
+
+		<xsd:complexType>
+			<xsd:sequence>
+
+				<!-- Form 941-X -->
+				<xsd:element ref="IRS941X">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941-X - Adjusted Employer's QUARTERLY Federal Tax Return or Claim for Refund</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Form 941 Schedule B -->
+				<xsd:element ref="IRS941ScheduleB" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 Schedule B - Report of Tax Liability for Semiweekly Schedule Depositors</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Form 941 Schedule D -->
+				<xsd:element ref="IRS941ScheduleD" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 Schedule D - Report of Discrepancies Caused by Acquisitions, Statutory Mergers, or Consolidations</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Form 941 Schedule R -->
+				<xsd:element ref="IRS941ScheduleR" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 Schedule R - Allocation Schedule for Aggregate Form 941 Filers</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+			<!-- List of Dependencies by form -->
+
+				<!-- Form 941 statement (common) -->
+				<xsd:element ref="FinalPayrollInfoStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Final Payroll Information Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				
+				<!-- Form 8974 (common) -->
+				<xsd:element ref="IRS8974" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 8974 - Qualified Small Business Payroll Tax Credit for Increasing Research Activities</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Form 941 statement (common) -->
+				<xsd:element ref="TransferOfBusinessStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Transfer Of Business Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- IRS Payment Record -->
+				<xsd:element ref="IRSPayment2" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>IRS Payment Record</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- General Dependency Small for any Form/Schedule -->
+				<xsd:element ref="GeneralDependencySmall" minOccurs="0" maxOccurs="100">
+					<xsd:annotation>
+						<xsd:documentation>General Dependency Small (attachment not identified on the form or instructions)</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Binary Attachment -->
+				<xsd:element ref="BinaryAttachment" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>Binary Attachment</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+			</xsd:sequence>
+
+			<xsd:attributeGroup ref="ReturnDataAttributes">
+				<xsd:annotation>
+					<xsd:documentation>Common return data attributes</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attributeGroup>
+
+		</xsd:complexType>
+
+	</xsd:element>
+
+</xsd:schema>

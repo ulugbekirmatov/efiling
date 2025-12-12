@@ -1,0 +1,23 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2024v15.1    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+Java SDK is not included in the v2024v15.1 as the issue addressed is related to .NET SDK
+
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL and Toolkit (to 2024v15.1)
+
+
+General Changes for Transmitter and State Gateway applications
+____________________________
+
+INC02071521 - MeF - An external transmitter (using .NET Toolkit v2024v15.0) is reporting errors in getting receipts
+--> The fix as part of .NET SDK 2024v15.1 addresses the issue with respect to Send Submissions request's response having multiple mime binary body parts. The fix picks up the receipt zip file to be downloaded instead of always the first attachment.
+

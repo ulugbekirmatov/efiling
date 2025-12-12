@@ -1,0 +1,28 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2018v9.0     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Remove VINData Services
+
+
+General Changes for .NET SDK
+____________________________
+
+
+General Changes for both Java and .NET SDK
+__________________________________________
+- Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 10.2 WSDL specification.
+
+
+
+This release has fix for the following KISAMs
+_____________________________________________
+
+Java and .NET
+-------------
+

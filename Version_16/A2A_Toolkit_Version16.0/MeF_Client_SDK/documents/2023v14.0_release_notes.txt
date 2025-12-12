@@ -1,0 +1,29 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2023v14.0    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+
+
+General Changes for Transmitter and State Gateway applications
+____________________________
+
+Version number change
+
+
+
+The following Client App KISAMs are fixed in this release
+________________________________________________________
+
+

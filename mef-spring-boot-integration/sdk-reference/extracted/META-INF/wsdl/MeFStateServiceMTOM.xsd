@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                             -->
+<!-- REVISION HISTORY:           -->
+<!-- Initial Version  08/01/2009 -->
+<!-- Prasad Erabelli -->
+<!-- Updated from MeFStateService.xsd -->
+<!-- Made the MTOM attachments part of the SOAP Body message itself -->
+<!-- 11/19/09 -->
+<!-- For UWR-ETA092646OTH                                         -->
+<!-- Added a new enumeration value of No Access to the elements -->
+<!-- PrimarySSNValidationStatus and SecondarySSNValidationStatus  -->
+<!-- of the complex Type SSNValidationStatusType                  -->
+<!-- 09/01/2010 -->
+<!-- For MeF R6.2 (WR_ETA100670OTH_00) requirement V.2.b                      -->
+<!-- Made it an optional choice between FederalEINStatus and                  -->
+<!-- SSNValidationStatus elements in type IRSDataForStateSubmissionType       -->
+<!--                                                                          -->
+<!-- For MeF R6.2 (WR ETA101725OTH) Requirement VII.19                        -->
+<!-- Updated the GetSubmissionReconciliationListRequestType StartDate and     -->
+<!-- EndDate from xsd:date to xsd:dateTime                                    -->
+<!--                                                                          -->
+<!-- Removed Count from SubmissionIdListType                                  -->
+<!-- Removed MaxResults from GetNewSubmissionsRequestType                     -->
+<!--                                                                          -->
+<!-- 05/01/2012 -->
+<!-- Removed MeFException, It is now defined in MeFHeader.xsd to create a consistent namespace -->
+<!-- for all MeF exceptions returned as SOAP Faults from the portal and the TPI backend -->
+<!--                             -->
+<!-- 07/12/2012 -->
+<!-- For MeF R8 UWR 63415 Item #1-->
+<!-- Modified GetSubmissionReconciliationListRequest message to Change        -->
+<!-- the options for the SubmissionStatus element as follows:                 -->
+<!-- Added "NOTRETRIEVED" as a new option                                     -->
+<!-- Removed the "NORECEIPT", option it won't be supported by the MeF backend -->
+<!-- Changed "NOACK" to "RECEIPTNOACK"                                        -->
+<!-- Changed the "both" option to "NORECEIPTNOACK"                            -->
+<!-- For MeF R8 UWR 63415 Item #3-->
+<!-- Modified the SendAcks response message to remove the current     -->
+<!-- Count element and replace it with a ListOfSubmissionErrors for   -->
+<!-- those submissions that failed validation and have been rejected  -->
+<!--                             -->
+<!-- 04/01/2013        -->
+<!-- For UWR# 79178 Removed the MoreAvailable element in the GetSubmissionsByMsgID Response message -->
+<!-- For UWR# 84239 Item# 10, 11, 12 added the TotalNumber element to the -->
+<!-- Get Submission Reconciliation List response message -->
+<!-- For UWR# 76875 Item #3 Added ESTRST (for Estate & Trust) to the Category definition   -->
+<!-- for the GetNewSubmissionsRequest and GetSubmissionReconciliationListRequest message   -->
+<!-- Actually added it to CategoryType                                                     -->
+<!--                             -->
+<!-- 05/07/2013        -->
+<!-- For UWR# 79178 changes Restored the MoreAvailable element in the GetSubmissionsByMsgID Response message -->
+<!--                             -->
+<!-- 07/18/2013        -->
+<!-- For UWR# 79178 Added new TransmitterIPAddress and TransmitterTs elements to IRSDataForStateSubmissionType -->
+<!--                             -->
+<!-- 08/12/2013        -->
+<!-- For UWR 84239 Item #13(new #11) Added ListOfSubmissionErrors to SendSubmissionReceiptsResponse -->
+<!--                             -->
+<!-- 03/31/2014 -->
+<!-- For WR# 111440 updated the element names to comply with XML standardization -->
+<!--                             -->
+<!-- 04/09/2015 -->
+<!-- Removed (only for EO currently) from and updated the Source IRS Submission ID comment -->
+<!-- 05/05/2022 -->
+<!-- Updated to use the xsd:base64Binary for attachments from xmime:base64Binary -->
+<!--                             -->
+<xsd:schema xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.irs.gov/a2a/mef/MeFStateServiceMTOM.xsd" targetNamespace="http://www.irs.gov/a2a/mef/MeFStateServiceMTOM.xsd" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>MeF State Web Services' Element Definitions for MTOM</xsd:documentation>
+	</xsd:annotation>
+	<!-- Import the xmlmime definition of base64Binary for MTOM -->
+	<xsd:import namespace="http://www.w3.org/2005/05/xmlmime" schemaLocation="xmime.xsd"/>
+	<xsd:element name="GetNewSubmissionsRequest" type="GetNewSubmissionsRequestType"/>
+	<xsd:element name="GetNewSubmissionsResponse" type="GetNewSubmissionsResponseType"/>
+	<xsd:element name="GetSubmissionsRequest" type="GetSubmissionsRequestType"/>
+	<xsd:element name="GetSubmissionsResponse" type="GetSubmissionsResponseType"/>
+	<xsd:element name="GetSubmissionRequest" type="GetSubmissionRequestType"/>
+	<xsd:element name="GetSubmissionResponse" type="GetSubmissionResponseType"/>
+	<xsd:element name="SendSubmissionReceiptsRequest" type="SendSubmissionReceiptsRequestType"/>
+	<xsd:element name="SendSubmissionReceiptsResponse" type="SendSubmissionReceiptsResponseType"/>
+	<xsd:element name="SendAcksRequest" type="SendAcksRequestType"/>
+	<xsd:element name="SendAcksResponse" type="SendAcksResponseType"/>
+	<xsd:element name="GetNewAckNotificationsRequest" type="GetNewAckNotificationsRequestType"/>
+	<xsd:element name="GetNewAckNotificationsResponse" type="GetNewAckNotificationsResponseType"/>
+	<xsd:element name="GetAckNotificationsRequest" type="GetAckNotificationsRequestType"/>
+	<xsd:element name="GetAckNotificationsResponse" type="GetAckNotificationsResponseType"/>
+	<xsd:element name="GetAckNotificationRequest" type="GetAckNotificationRequestType"/>
+	<xsd:element name="GetAckNotificationResponse" type="GetAckNotificationResponseType"/>
+	<xsd:element name="GetSubmissionsByMsgIDRequest" type="GetSubmissionsByMsgIDRequestType"/>
+	<xsd:element name="GetSubmissionsByMsgIDResponse" type="GetSubmissionsByMsgIDResponseType"/>
+	<xsd:element name="GetSubmissionReconciliationListRequest" type="GetSubmissionReconciliationListRequestType"/>
+	<xsd:element name="GetSubmissionReconciliationListResponse" type="GetSubmissionReconciliationListResponseType"/>
+	<xsd:complexType name="GetNewSubmissionsRequestType">
+		<xsd:sequence>
+			<!-- REMOVED <xsd:element name="MaxResultCnt" type="xsd:positiveInteger"/> -->
+			<xsd:element name="SubsetStSubmissionCategoryCd" type="SubsetStSubmissionCategoryCdType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewSubmissionsResponseType">
+		<xsd:sequence>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+			<xsd:element name="IRSDataForStateSubmissionList" type="IRSDataForStateSubmissionListType"/>
+			<xsd:element name="SubmissionsAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionsRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionIdList" type="SubmissionIdListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionsResponseType">
+		<xsd:sequence>
+			<xsd:element name="IRSDataForStateSubmissionList" type="IRSDataForStateSubmissionListType"/>
+			<xsd:element name="SubmissionErrorList" type="SubmissionErrorListType"/>
+			<xsd:element name="SubmissionsAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionResponseType">
+		<xsd:sequence>
+			<xsd:element name="IRSDataForStateSubmission" type="IRSDataForStateSubmissionType" minOccurs="0"/>
+			<xsd:element name="SubmissionsAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SendSubmissionReceiptsRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionRcptListAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SendSubmissionReceiptsResponseType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger" minOccurs="0"/>
+			<xsd:element name="SubmissionErrorList" type="SubmissionErrorListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SendAcksRequestType">
+		<xsd:sequence>
+			<xsd:element name="AcknowledgementListAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SendAcksResponseType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionErrorList" type="SubmissionErrorListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewAckNotificationsRequestType">
+		<xsd:sequence>
+			<xsd:element name="MaxResultCnt" type="xsd:positiveInteger"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewAckNotificationsResponseType">
+		<xsd:sequence>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+			<xsd:element name="AckNotificationListAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAckNotificationsRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionIdList" type="SubmissionIdListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAckNotificationsResponseType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionErrorList" type="SubmissionErrorListType"/>
+			<xsd:element name="AckNotificationListAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAckNotificationRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAckNotificationResponseType">
+		<xsd:sequence>
+			<xsd:element name="AckNotificationAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionReconciliationListRequestType">
+		<xsd:sequence>
+			<xsd:element name="MaxResultCnt" type="xsd:positiveInteger"/>
+			<xsd:element name="SubsetStSubmissionCategoryCd" type="SubsetStSubmissionCategoryCdType" minOccurs="0"/>
+			<xsd:element name="StartDt" type="xsd:dateTime" minOccurs="0"/>
+			<xsd:element name="EndDt" type="xsd:dateTime" minOccurs="0"/>
+			<xsd:element name="MeFSubmissionStatusCd" type="MeFSubmissionStatusCdType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionReconciliationListResponseType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+			<xsd:element name="TotalCnt" type="xsd:nonNegativeInteger"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="IRSDataForStateSubmissionType">
+		<xsd:sequence>
+			<!-- Submission Id - The identifier of the submission -->
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+			<!-- ETIN - The identifier of the transmitter that sent this submission -->
+			<xsd:element name="ETIN" type="xsd:string"/>
+			<!-- Received Timestamp - the date and time the submission was received by the IRS -->
+			<xsd:element name="ReceivedAtIRSTs" type="xsd:dateTime"/>
+			<xsd:choice minOccurs="0">
+				<!-- Federal EIN Status - The results of federal EIN and name control lookup -->
+				<xsd:element name="FederalEINStatusCd">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="Found Match"/>
+							<xsd:enumeration value="Found No Match"/>
+							<xsd:enumeration value="Not Found"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<!-- Federal SSN Status - The results of federal SSN and name control lookup -->
+				<xsd:element name="SSNValidationStatus" type="SSNValidationStatusType"/>
+			</xsd:choice>
+			<!-- Electronic Postmark -->
+			<xsd:element name="ElectronicPostmarkTs" type="xsd:dateTime" minOccurs="0"/>
+			<!-- Source IRS Submission ID - The submission ID of an IRS submission from which the state copy was made or the submission ID of the linked IRS submission -->
+			<xsd:element name="SourceIRSSubmissionId" type="SubmissionIdType" minOccurs="0"/>
+			<!--  ITINMismatchCd - An indication if the linked federal Primary TIN is an ITIN Mismatch  -->
+			<xsd:element name="ITINMismatchCd" type="xsd:string" minOccurs="0"/>
+			<!--  ImperfectReturnInd - An indication if the linked federal Individual taxpayer return was accepted with an attribute of exception  -->
+			<xsd:element name="ImperfectReturnInd" type="xsd:string" minOccurs="0"/>
+			<!--  Transmitter IP Address - IP Address of the Transmitter -->
+			<xsd:element name="TransmitterIPAddressTxt" type="xsd:string" minOccurs="0"/>
+			<!--  Transmitter timestamp - when the message containing the submission was sent -->
+			<xsd:element name="TransmitterTs" type="xsd:dateTime" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SSNValidationStatusType">
+		<xsd:sequence>
+			<xsd:element name="PrimarySSNValidationStatusCd">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="Found Match"/>
+						<xsd:enumeration value="Found No Match"/>
+						<xsd:enumeration value="Not Found"/>
+						<xsd:enumeration value="No Access"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="SecondarySSNValidationStatusCd" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="Found Match"/>
+						<xsd:enumeration value="Found No Match"/>
+						<xsd:enumeration value="Not Found"/>
+						<xsd:enumeration value="No Access"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="IRSDataForStateSubmissionListType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger"/>
+			<xsd:element name="IRSDataForStateSubmission" type="IRSDataForStateSubmissionType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Submission ID Type - 20 digits (EFIN + ccyyddd + 7-character alphanumeric) -->
+	<xsd:simpleType name="SubmissionIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{13}[a-z0-9]{7}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Message ID Type - 20 digits (ETIN + ccyyddd + 8-character alphanumeric) -->
+	<xsd:simpleType name="MessageIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{12}[a-z0-9]{8}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- SubsetStSubmissionCategoryCd Type  -->
+	<xsd:simpleType name="SubsetStSubmissionCategoryCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="CORP"/>
+			<xsd:enumeration value="EO"/>
+			<xsd:enumeration value="PART"/>
+			<xsd:enumeration value="IND"/>
+			<xsd:enumeration value="ESTRST"/>
+			<xsd:enumeration value="all"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Submission Status Type  -->
+	<xsd:simpleType name="MeFSubmissionStatusCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="NOTRETRIEVED"/>
+			<xsd:enumeration value="RECEIPTNOACK"/>
+			<xsd:enumeration value="NORECEIPTNOACK"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ErrorClassificationCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="SYSTEM_ERROR"/>
+			<xsd:enumeration value="RESOURCE_UNAVAILABLE"/>
+			<xsd:enumeration value="MESSAGE_FORMAT_ERROR"/>
+			<xsd:enumeration value="SECURITY_ERROR"/>
+			<xsd:enumeration value="REQUEST_ERROR"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="ErrorClassificationDetailType">
+		<xsd:sequence>
+			<xsd:element name="ErrorMessageTxt" type="xsd:string"/>
+			<xsd:element name="ErrorClassificationCd" type="ErrorClassificationCdType"/>
+			<xsd:element name="ErrorMessageCd" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionIdListType">
+		<xsd:sequence>
+			<!-- REMOVED <xsd:element name="Cnt" type="xsd:positiveInteger"/> -->
+			<xsd:element name="SubmissionId" type="SubmissionIdType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionErrorType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+			<xsd:element name="ErrorClassificationDetail" type="ErrorClassificationDetailType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionErrorListType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger"/>
+			<xsd:element name="SubmissionError" type="SubmissionErrorType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionsByMsgIDRequestType">
+		<xsd:sequence>
+			<xsd:element name="MessageId" type="MessageIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionsByMsgIDResponseType">
+		<xsd:sequence>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+			<xsd:element name="IRSDataForStateSubmissionList" type="IRSDataForStateSubmissionListType"/>
+			<xsd:element name="SubmissionsAttMTOM" type="xsd:base64Binary"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

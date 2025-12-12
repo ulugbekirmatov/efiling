@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - IRS Form 941 Schedule R Allocation Schedule for Aggregate Form 941 Filers</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Final Schema Version RL109 Drop 5</MaturityLevel>
+			<ReleaseDate>Nov 6 2025</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ==================================================================== -->
+	<!-- ====================== IRS Form 941 Schedule R ===================== -->
+	<!-- ==================================================================== -->
+
+	<xsd:element name="IRS941ScheduleR">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 941 Schedule R</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS941ScheduleRType">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS941ScheduleR">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS941ScheduleRType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 941 Schedule R</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			
+			<!-- Type of filer -->
+			<xsd:choice minOccurs="0">
+				<xsd:element name="Section3504AgentInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Section 3504 Agent</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="CPEOInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Certified Professional Employer Organization (CPEO)</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="OtherThirdPartyInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Other Third Party</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>				
+			</xsd:choice>
+			<!-- Client Information Group -->
+			<xsd:element name="ClientInformationGrp" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Client Information Group</Description>
+						<LineNumber>Lines 1 and up, columns (a)-(y)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+					
+						<!-- Employer Identification Number -->
+						<xsd:element name="EIN" type="EINType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Employer Identification Number</Description>
+									<LineNumber>Line 1 and up, Column (a)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>			
+						<xsd:element name="WagesTypeCd" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>(CPEO Use Only) Type of wages, tips, and other compensation</Description>
+									<LineNumber>Line 1 and up, Column (b)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:enumeration value="A" />
+									<xsd:enumeration value="B" />
+									<xsd:enumeration value="C" />
+									<xsd:enumeration value="D" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<!-- Client Allocation Information Group -->
+						<xsd:element name="ClientAllocationInformationGrp" type="ScheduleRAllocationType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Client Allocation Information Group</Description>
+									<LineNumber>Line 1 and up, Columns (c) to (y)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+			<!-- Subtotal For Client Group -->
+			<xsd:element name="SubtotalForClientGrp" type="ScheduleRAllocationType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Subtotal For Client Information Group</Description>
+						<LineNumber>6</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Line 7 and Continuation Sheet are not used because of 'ClientInformationGrp'  -->
+			
+			<!-- Aggregate Employee Information Group -->
+			<xsd:element name="AggregateEmployeeInfoGrp" type="ScheduleRAllocationType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Aggregate Employee Information Group</Description>
+						<LineNumber>8</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Aggregate And Client Information Group -->
+			<xsd:element name="TotalAggregateAndClientInfoGrp" type="ScheduleRAllocationType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Aggregate And Client Information Group</Description>
+						<LineNumber>9</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type Used for Lines 1 and up, Columns c to y -->
+	<xsd:complexType name="ScheduleRAllocationType">
+		<xsd:sequence>	
+			<!-- Employee Count-->
+			<xsd:element name="EmployeeCnt" type="EmployeeCntType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Employee Count</Description>
+						<LineNumber>Lines 1 and up, Column (c)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>			
+			</xsd:element>			
+				
+			<!-- Wages Amount -->
+			<xsd:element name="WagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Wages Amount</Description>
+						<LineNumber>Line 1 and up, Column (d)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Federal Income Tax Withheld Amount-->
+			<xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Income Tax Withheld Amount</Description>
+						<LineNumber>Line 1 and up, Column (e)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Reserved Line 1 and up, Column (f)  -->
+			
+			<!-- Total Social Security (SS) Tax And Tax On Social Security (SS) Tips Amount -->
+			<xsd:element name="TotalSocialSecurityTaxTipAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Social Security (SS) Tax And Tax On Social Security (SS) Tips Amount</Description>
+						<LineNumber>Lines 1 and up, Column (g)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Tax On Medicare Tips And Wages Amount -->
+			<xsd:element name="TaxOnMedicareWagesTipsAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Tax On Medicare Tips And Wages Amount</Description>
+						<LineNumber>Lines 1 and up, Column (h)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Social Security Medicare Tax Amount -->
+			<xsd:element name="TotalSSMdcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Social Security Medicare Tax Amount</Description>
+						<LineNumber>Line 1 and up, Column (i)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Tax On Unreported Tips Section 3121(q) Amount-->
+			<xsd:element name="TaxOnUnreportedTips3121qAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Tax On Unreported Tips Section 3121(q)</Description>
+						<LineNumber>Line 1 and up, Column (j)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Qualified Small Business Payroll Tax Credit For Increasing Research Activities -->
+			<xsd:element name="PayrollTaxCreditAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Qualified Small Business Payroll Tax Credit For Increasing Research Activities</Description>
+						<LineNumber>Line 1 and up, Column (k)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Nonrefundable Portion Credit Qualify Sick Leave and Family Leave Wages Amount -->
+			<xsd:element name="TotalCrQlfySLFMLWagesAmt" type="USDecimalAmountType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Nonrefundable Portion Credit Qualify Sick Leave and Family Leave Wages Amount</Description>
+						<LineNumber>Lines 1 and up, Column (l)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Reserved Lines 1 and up, Column (m)-->
+			
+			<!-- Total Credit Qualified Sick Leave And Family Leave Wages After Specified Date Amount -->
+			<xsd:element name="TotalCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Credit Qualified Sick Leave And Family Leave Wages After Specified Date Amount</Description>
+						<LineNumber>Lines 1 and up, Column (n)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total COBRA Premium Subsidy/Premium Credit Assistance Amount -->
+			<xsd:element name="TotalCOBRAPremiumSubsidyAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total COBRA Premium Subsidy/Premium Credit Assistance Amount</Description>
+						<LineNumber>Lines 1 and up, Column (o)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Number Of Individuals Provided COBRA Premium Assistance-->
+			<xsd:element name="COBRAPremiumSubsidyRcpntCnt" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Number Of Individuals Provided COBRA Premium Assistance</Description>
+						<LineNumber>Line 1 and up, Column (p)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="IntegerNNType">
+						<xsd:totalDigits value="7" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			
+			<!-- Total Taxes After Adjustments And Credits -->
+			<xsd:element name="TotalTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Taxes After Adjustments And Credits</Description>
+						<LineNumber>Line 1 and up, Column (q)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Tax Deposit Amount -->
+			<xsd:element name="TotalTaxDepositAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Deposit Amount</Description>
+						<LineNumber>Line 1 and up, Column (r)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Reserved Line 1 and up, Column (s) -->
+			<!-- Reserved Line 1 and up, Column (t) -->
+				
+			<!-- Total Qualified Health Plan (QHP) Expenses Social Security (SS) Qualified Paid Sick Leave  And Family Leave Wages Amount -->
+			<xsd:element name="TotQHPExpnssSSQlfyPdSLFMLWgAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Qualified Health Plan (QHP) Expenses Social Security (SS) Qualified Paid Sick Leave  And Family Leave Wages Amount</Description>
+						<LineNumber>Lines 1 and up, Column (u)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Reserved Line 1 and up, Column (v) -->
+			
+			<!-- Total Certain Collectively Bargained Agreements Allocable To Qualified Sick Leave (SL) Wages And Qualified Sick Leave (SL) Wages Taken After The Specified Date Amount -->
+			<xsd:element name="TotBrgnAgrmtQlfySLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Certain Collectively Bargained Agreements Allocable To Qualified Sick Leave (SL) Wages And Qualified Sick Leave (SL) Wages Taken After The Specified Date Amount</Description>
+						<LineNumber>Lines 1 and up, Column (w)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Qualified Health Plan (QHP) Expenses And Qualified Sick Leave And Family Leave Wages Taken After Specified Date Amount -->
+			<xsd:element name="TotQHPExpnssQlfyLvWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Qualified Health Plan (QHP) Expenses And Qualified Sick Leave And Family Leave Wages Taken After Specified Date Amount</Description>
+						<LineNumber>Lines 1 and up, Column (x)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!--Total Certain Collectively Bargained Agreements Allocable To Qualified Family Leave (FML) Wages And Qualified Family Leave (FML) Wages Taken After The Specified Date Amount -->
+			<xsd:element name="TotBrgnAgrmtQlfyFMLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Certain Collectively Bargained Agreements Allocable To Qualified Family Leave (FML) Wages And Qualified Family Leave (FML) Wages Taken After The Specified Date Amount</Description>
+						<LineNumber>Lines 1 and up, Column (y)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+		</xsd:sequence>		
+	</xsd:complexType>
+	
+	<xsd:simpleType name="EmployeeCntType">
+		<xsd:restriction base="IntegerNNType">
+			<xsd:totalDigits value="7"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

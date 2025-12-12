@@ -1,0 +1,36 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2019v10.1     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+UWR 218063  (Framework upgrades)
+	Metro web services jars are upgraded from 1.5 to 2.3
+UWR 217656-Part2   (Zip Slip) 
+UWR 218172-Part2   (SHA-2) 
+UWR 219709 Version number change for WSDL and Toolkit 
+
+
+General Changes for .NET SDK
+____________________________
+
+UWR 218063  (framework upgrades)
+	Compiled the code with 4.7.2
+UWR 217656-Part2   (Zip Slip)
+UWR 218172-Part2   (SHA-2)
+UWR 219709 Version number change for WSDL and Toolkit 
+Adding Message IDs to all services 
+
+The following .NET KISAMs are fixed in this release
+________________________________________________________
+
+IM00595943 - IRS- MeF - A2A toolkit .NET issue reported
+	The way the code was logging soap fault had an issue and is fixed now
+
+IM00519911 - IRS-MeF A2A Toolkit .NET SDK issue
+	The way toolkit created Ack File had an issue and is fixed
+
+

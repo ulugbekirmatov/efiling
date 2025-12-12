@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.irs.gov/efile" xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - Return data schema for 941 return</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Final Schema Version RL109 Drop 5</MaturityLevel>
+			<ReleaseDate>Nov 6 2025</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="efileTypes.xsd" />
+	<!-- <xsd:include schemaLocation="BinaryAttachment.xsd" /> -->
+
+	<xsd:include schemaLocation="IRS941.xsd" />
+	<!-- Optional schedules - not used in basic test scenario -->
+	<!-- <xsd:include schemaLocation="IRS941ScheduleB.xsd" /> -->
+	<!-- <xsd:include schemaLocation="IRS941ScheduleD.xsd" /> -->
+	<!-- <xsd:include schemaLocation="IRS941ScheduleR.xsd" /> -->
+
+	<!-- Common Dependencies (supporting info, schedules, computations, and such) -->
+	<!-- Optional dependencies - not used in basic test scenario -->
+	<!-- <xsd:include schemaLocation="FinalPayrollInformationStatement.xsd" /> -->
+	<!-- <xsd:include schemaLocation="IRS8974.xsd" /> -->
+	<!-- <xsd:include schemaLocation="GeneralDependencySmall.xsd" /> -->
+	<!-- <xsd:include schemaLocation="IRSPayment.xsd" /> -->
+	<!-- <xsd:include schemaLocation="TransferOfBusinessStatement.xsd" /> -->
+
+	<!-- Return 941 -->
+	<xsd:element name="ReturnData">
+		<xsd:annotation>
+			<xsd:documentation>941 Return Contents</xsd:documentation>
+		</xsd:annotation>
+
+		<xsd:complexType>
+			<xsd:sequence>
+
+				<!-- Form 941 -->
+				<xsd:element ref="IRS941">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 - Employer's QUARTERLY Federal Tax Return</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Optional schedules and dependencies commented out for basic test scenario -->
+				<!-- Uncomment when full schema package is available -->
+				<!--
+				<xsd:element ref="IRS941ScheduleB" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 Schedule B - Report of Tax Liability for Semiweekly Schedule Depositors</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="IRS941ScheduleD" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 Schedule D - Report of Discrepancies Caused by Acquisitions, Statutory Mergers, or Consolidations</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="IRS941ScheduleR" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 941 Schedule R - Allocation Schedule for Aggregate Form 941 Filers</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="FinalPayrollInfoStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Final Payroll Information Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="IRS8974" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>IRS Form 8974 - Qualified Small Business Payroll Tax Credit for Increasing Research Activities</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="TransferOfBusinessStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Transfer Of Business Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="IRSPayment" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>IRS Payment</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="GeneralDependencySmall" minOccurs="0" maxOccurs="100">
+					<xsd:annotation>
+						<xsd:documentation>General Dependency Small (attachment not identified on the form or instructions)</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element ref="BinaryAttachment" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>Binary Attachment</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				-->
+
+			</xsd:sequence>
+
+			<xsd:attributeGroup ref="ReturnDataAttributes">
+				<xsd:annotation>
+					<xsd:documentation>Common return data attributes</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attributeGroup>
+
+		</xsd:complexType>
+
+	</xsd:element>
+
+</xsd:schema>

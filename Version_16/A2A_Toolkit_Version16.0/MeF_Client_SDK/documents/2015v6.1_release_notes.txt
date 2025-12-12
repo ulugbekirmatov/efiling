@@ -1,0 +1,49 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2015v6.1     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+
+General Changes for .NET SDK
+____________________________
+- Made code fixes to support multi-threaded request submission.
+
+- Add log entry to Audit log and Trace log to include information such as SDK version number when there is exception in login, such as related to in-correct Client Certificate ID
+
+
+General Changes for both Java and .NET SDK
+__________________________________________
+- Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 9.6 WSDL specification.
+
+
+
+This release has fix for the following KISAMs
+_____________________________________________
+
+Java
+----
+IM02087885 - IRS - Fix for audit.log location in config file for Client app and SDK of A2A toolkit
+MEFCL00000266 - IBM - Response Message Id in audit log, actually from request, not response.
+MEFCL00000269 - IBM - Error List not in audit log for SendSubmissionReceipts
+Defect fix for MTOM request attachments to be transmitted as XOP optimized attachments, instead of base-64 encoded inline.
+
+
+
+.NET
+----
+IM02200528 - IRS - In MeF SDK Toolkit 5.3 dotNET version, need to check NULL value in code.
+
+IM02200604 - IRS - MEF - A2A Toolkit .NET SDK not handling large files
+
+IM02084708 - IRS - Toolkit sdk incorrectly propagates fault exceptions.
+
+MEFCL00000376 - IBM - This is related to log trace in GetSubmissionStatus - In Memory
+
+
+Java and .NET
+-------------
+UWR154034 - IRS - This is to change A2A toolkit version number from 5.3 to 6.1 and WSDL version from 9.5 to 9.6.

@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                             -->
+<!-- REVISION HISTORY:           -->
+<!-- Initial Version  08/09/2005 -->
+<!-- 09/26/2005 -->
+<!-- Updated to remove the slash "/" from the end of soapbind:address in wsdl:service definitions -->
+<!-- and from the end of soapbind:operation in wsdl:binding definitions -->
+<!-- 09/27/2005 -->
+<!-- Removed wsdl:annotation because it was causing WSI validation problems -->
+<!-- 12/20/2005 -->
+<!-- Added GetAcksByMsgID service definition -->
+<!-- 02/10/2006 -->
+<!-- Added GetAcksByCategory service definition-->
+<!-- 04/04/2006 -->
+<!-- Deleted GetAcksByCategory service definition-->
+<!-- the GetNewAcks service now handles the functionality -->
+<!-- 05/01/2012  -->
+<!-- Changed file name to MeFTransmitterServicesMIME.wsdl -->
+<!-- Updated MeFException to use MeFException from the updated MeFHeader.xsd schema-->
+<!-- 03/31/2014  -->
+<!-- For WR# 111440 updated the element names to comply with XML standardization -->
+<!--                             -->
+<wsdl:definitions name="MeFTransmitterService" targetNamespace="http://www.irs.gov/a2a/mef/MeFTransmitterService" 
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:soapbind="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" 
+	xmlns:mefhdr="http://www.irs.gov/a2a/mef/MeFHeader.xsd" 
+	xmlns:mtx="http://www.irs.gov/a2a/mef/MeFTransmitterService.xsd" 
+	xmlns:mef="http://www.irs.gov/a2a/mef/MeFTransmitterService">
+	<wsdl:types>
+		<xsd:schema elementFormDefault="qualified" 
+			targetNamespace="http://www.irs.gov/a2a/mef/MeFTransmitterService" 
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<xsd:import namespace="http://www.irs.gov/a2a/mef/MeFTransmitterService.xsd" schemaLocation="MeFTransmitterService.xsd"/>
+			<xsd:import namespace="http://www.irs.gov/a2a/mef/MeFHeader.xsd" schemaLocation="MeFHeader.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="ErrorExceptionDetail">
+		<wsdl:part name="ErrorExceptionDetail" element="mefhdr:ErrorExceptionDetail"/>
+	</wsdl:message>
+	<wsdl:message name="SendSubmissionsRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="SendSubmissionsRequest" element="mtx:SendSubmissionsRequest"/>
+		<wsdl:part name="SubmissionsAttBin" element="mtx:SubmissionsAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="SendSubmissionsResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="SendSubmissionsResponse" element="mtx:SendSubmissionsResponse"/>
+		<wsdl:part name="SubmissionRcptListAttBin" element="mtx:SubmissionRcptListAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetNewAcksRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetNewAcksRequest" element="mtx:GetNewAcksRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetNewAcksResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetNewAcksResponse" element="mtx:GetNewAcksResponse"/>
+		<wsdl:part name="AcknowledgementListAttBin" element="mtx:AcknowledgementListAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetAcksRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetAcksRequest" element="mtx:GetAcksRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetAcksResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetAcksResponse" element="mtx:GetAcksResponse"/>
+		<wsdl:part name="AcknowledgementListAttBin" element="mtx:AcknowledgementListAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetAckRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetAckRequest" element="mtx:GetAckRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetAckResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetAckResponse" element="mtx:GetAckResponse"/>
+		<wsdl:part name="AcknowledgementAttBin" element="mtx:AcknowledgementAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetNewSubmissionsStatusRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetNewSubmissionsStatusRequest" element="mtx:GetNewSubmissionsStatusRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetNewSubmissionsStatusResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetNewSubmissionsStatusResponse" element="mtx:GetNewSubmissionsStatusResponse"/>
+		<wsdl:part name="StatusRecordListAttBin" element="mtx:StatusRecordListAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetSubmissionsStatusRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetSubmissionsStatusRequest" element="mtx:GetSubmissionsStatusRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetSubmissionsStatusResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetSubmissionsStatusResponse" element="mtx:GetSubmissionsStatusResponse"/>
+		<wsdl:part name="StatusRecordListAttBin" element="mtx:StatusRecordListAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetSubmissionStatusRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetSubmissionStatusRequest" element="mtx:GetSubmissionStatusRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetSubmissionStatusResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetSubmissionStatusResponse" element="mtx:GetSubmissionStatusResponse"/>
+		<wsdl:part name="StatusRecordListAttBin" element="mtx:StatusRecordListAttBin"/>
+	</wsdl:message>
+	<wsdl:message name="GetAcksByMsgIDRequest">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetAcksByMsgIDRequest" element="mtx:GetAcksByMsgIDRequest"/>
+	</wsdl:message>
+	<wsdl:message name="GetAcksByMsgIDResponse">
+		<wsdl:part name="MeFHeader" element="mefhdr:MeFHeader"/>
+		<wsdl:part name="GetAcksByMsgIDResponse" element="mtx:GetAcksByMsgIDResponse"/>
+		<wsdl:part name="AcknowledgementListAttBin" element="mtx:AcknowledgementListAttBin"/>
+	</wsdl:message>
+	<wsdl:portType name="SendSubmissions">
+		<wsdl:operation name="SendSubmissions" parameterOrder="MeFHeader SendSubmissionsRequest SubmissionsAttBin SubmissionRcptListAttBin">
+			<wsdl:input message="mef:SendSubmissionsRequest"/>
+			<wsdl:output message="mef:SendSubmissionsResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetNewAcks">
+		<wsdl:operation name="GetNewAcks" parameterOrder="MeFHeader GetNewAcksRequest AcknowledgementListAttBin">
+			<wsdl:input message="mef:GetNewAcksRequest"/>
+			<wsdl:output message="mef:GetNewAcksResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetAcks">
+		<wsdl:operation name="GetAcks" parameterOrder="MeFHeader GetAcksRequest AcknowledgementListAttBin">
+			<wsdl:input message="mef:GetAcksRequest"/>
+			<wsdl:output message="mef:GetAcksResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetAck">
+		<wsdl:operation name="GetAck" parameterOrder="MeFHeader GetAckRequest AcknowledgementAttBin">
+			<wsdl:input message="mef:GetAckRequest"/>
+			<wsdl:output message="mef:GetAckResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetNewSubmissionsStatus">
+		<wsdl:operation name="GetNewSubmissionsStatus" parameterOrder="MeFHeader GetNewSubmissionsStatusRequest StatusRecordListAttBin">
+			<wsdl:input message="mef:GetNewSubmissionsStatusRequest"/>
+			<wsdl:output message="mef:GetNewSubmissionsStatusResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetSubmissionsStatus">
+		<wsdl:operation name="GetSubmissionsStatus" parameterOrder="MeFHeader GetSubmissionsStatusRequest StatusRecordListAttBin">
+			<wsdl:input message="mef:GetSubmissionsStatusRequest"/>
+			<wsdl:output message="mef:GetSubmissionsStatusResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetSubmissionStatus">
+		<wsdl:operation name="GetSubmissionStatus" parameterOrder="MeFHeader GetSubmissionStatusRequest StatusRecordListAttBin">
+			<wsdl:input message="mef:GetSubmissionStatusRequest"/>
+			<wsdl:output message="mef:GetSubmissionStatusResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="GetAcksByMsgID">
+		<wsdl:operation name="GetAcksByMsgID" parameterOrder="MeFHeader GetAcksByMsgIDRequest AcknowledgementListAttBin">
+			<wsdl:input message="mef:GetAcksByMsgIDRequest"/>
+			<wsdl:output message="mef:GetAcksByMsgIDResponse"/>
+			<wsdl:fault name="fault" message="mef:ErrorExceptionDetail"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="SendSubmissions" type="mef:SendSubmissions">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="SendSubmissions">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/SendSubmissions"/>
+			<wsdl:input>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="SendSubmissionsRequest" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:SendSubmissionsRequest"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="SubmissionsAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="SendSubmissionsResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:SendSubmissionsResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="SubmissionRcptListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetNewAcks" type="mef:GetNewAcks">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetNewAcks">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetNewAcks"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetNewAcksRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetNewAcksRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetNewAcksResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetNewAcksResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="AcknowledgementListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetAcks" type="mef:GetAcks">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetAcks">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetAcks"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetAcksRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetAcksRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetAcksResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetAcksResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="AcknowledgementListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetAck" type="mef:GetAck">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetAck">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetAck"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetAckRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetAckRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetAckResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetAckResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="AcknowledgementAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetNewSubmissionsStatus" type="mef:GetNewSubmissionsStatus">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetNewSubmissionsStatus">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetNewSubmissionsStatus"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetNewSubmissionsStatusRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetNewSubmissionsStatusRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetNewSubmissionsStatusResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetNewSubmissionsStatusResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="StatusRecordListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetSubmissionsStatus" type="mef:GetSubmissionsStatus">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetSubmissionsStatus">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetSubmissionsStatus"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetSubmissionsStatusRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetSubmissionsStatusRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetSubmissionsStatusResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetSubmissionsStatusResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="StatusRecordListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetSubmissionStatus" type="mef:GetSubmissionStatus">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetSubmissionStatus">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetSubmissionStatus"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetSubmissionStatusRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetSubmissionStatusRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetSubmissionStatusResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetSubmissionStatusResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="StatusRecordListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="GetAcksByMsgID" type="mef:GetAcksByMsgID">
+		<soapbind:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="GetAcksByMsgID">
+			<soapbind:operation soapAction="http://www.irs.gov/a2a/mef/mime/GetAcksByMsgID"/>
+			<wsdl:input>
+				<soapbind:body use="literal" parts="GetAcksByMsgIDRequest"/>
+				<soapbind:header use="literal" part="MeFHeader" message="mef:GetAcksByMsgIDRequest"/>
+			</wsdl:input>
+			<wsdl:output>
+				<mime:multipartRelated>
+					<mime:part>
+						<soapbind:body parts="GetAcksByMsgIDResponse" use="literal"/>
+						<soapbind:header use="literal" part="MeFHeader" message="mef:GetAcksByMsgIDResponse"/>
+					</mime:part>
+					<mime:part>
+						<mime:content part="AcknowledgementListAttBin" type="application/octet-stream"/>
+					</mime:part>
+				</mime:multipartRelated>
+			</wsdl:output>
+			<wsdl:fault name="fault">
+				<soapbind:fault name="fault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<!-- The URLs below are placeholders.  The actual URLs will be determined later, for the publication of this WSDL. -->
+	<wsdl:service name="SendSubmissions">
+		<wsdl:port name="SendSubmissions" binding="mef:SendSubmissions">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/SendSubmissions"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetNewAcks">
+		<wsdl:port name="GetNewAcks" binding="mef:GetNewAcks">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetNewAcks"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetAcks">
+		<wsdl:port name="GetAcks" binding="mef:GetAcks">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetAcks"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetAck">
+		<wsdl:port name="GetAck" binding="mef:GetAck">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetAck"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetNewSubmissionsStatus">
+		<wsdl:port name="GetNewSubmissionsStatus" binding="mef:GetNewSubmissionsStatus">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetNewSubmissionsStatus"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetSubmissionsStatus">
+		<wsdl:port name="GetSubmissionsStatus" binding="mef:GetSubmissionsStatus">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetSubmissionsStatus"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetSubmissionStatus">
+		<wsdl:port name="GetSubmissionStatus" binding="mef:GetSubmissionStatus">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetSubmissionStatus"/>
+		</wsdl:port>
+	</wsdl:service>
+	<wsdl:service name="GetAcksByMsgID">
+		<wsdl:port name="GetAcksByMsgID" binding="mef:GetAcksByMsgID">
+			<soapbind:address location="http://localhost:9080/a2a/mef/mime/GetAcksByMsgID"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

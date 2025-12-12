@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - IRS Form 941 Schedule D Report of Discrepancies Caused by Acquisitions, Statutory Mergers, or Consolidations</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Final Schema Version RL109 Drop 5</MaturityLevel>
+			<ReleaseDate>Nov 6 2025</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ==================================================================== -->
+	<!-- ===================== IRS Form 941 Schedule D ====================== -->
+	<!-- ==================================================================== -->
+
+	<xsd:element name="IRS941ScheduleD">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 941 Schedule D</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS941ScheduleDType">
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS941ScheduleD">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS941ScheduleDType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 941 Schedule D</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+
+			<xsd:choice>
+				<!-- Phone Number -->
+				<xsd:element name="PhoneNum" type="PhoneNumberType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Phone Number</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- Foreign Phone Number -->
+				<xsd:element name="ForeignPhoneNum" type="ForeignPhoneNumberType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Foreign Phone Number</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+
+			<!-- Discrepancy Tax Year -->
+			<xsd:element name="DiscrepancyTaxYr" type="YearType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Discrepancy Tax Year</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- The choice between OriginalSubmissionTypeInd and CorrectedSubmissionTypeInd is not used by MeF 
+			<xsd:choice>
+				<xsd:element name="OriginalSubmissionTypeInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Original Submission Type Indicator</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="CorrectedSubmissionTypeInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Corrected Submission Type Indicator</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			-->
+
+			<!-- Part 1:  Answer these background questions -->
+
+			<xsd:choice>
+
+				<!-- After Merger Consolidation Group -->
+				<xsd:element name="AfterMergerConsolGrp" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+
+							<!-- After Merger Consolidation Indicator -->
+							<xsd:element name="AfterMergerConsolInd" type="CheckboxType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>After Merger Consolidation Indicator</Description>
+										<LineNumber>1</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>	
+
+			  				<xsd:choice>
+								<!-- Acquired Corporation Indicator -->
+								<xsd:element name="AcquiredCorpInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Acquired Corporation Indicator</Description>
+											<LineNumber>1</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+								<!-- Surviving Corporation Indicator -->
+								<xsd:element name="SurvivingCorpInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Surviving Corporation Indicator</Description>
+											<LineNumber>1</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+							</xsd:choice>						
+	
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+
+				<!-- Acquisition Alternate Procedure Group -->
+				<xsd:element name="AcquisitionAlternateProcGrp" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+
+							<!-- Acquisition Alternate Procedure Indicator -->
+							<xsd:element name="AcquisitionAlternateProcInd" type="CheckboxType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>Acquisition Alternate Procedure Indicator</Description>
+										<LineNumber>1</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>	
+
+			  				<xsd:choice>
+								<!-- Predecessor Employer Indicator -->
+								<xsd:element name="PredecessorEmployerInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Predecessor Employer Indicator</Description>
+											<LineNumber>1</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+								<!-- Successor Employer Indicator -->
+								<xsd:element name="SuccessorEmployerInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Successor Employer Indicator</Description>
+											<LineNumber>1</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+							</xsd:choice>						
+	
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:choice>
+
+			<!-- Consolidation Acquisition Date -->
+			<xsd:element name="ConsolidationAcquisitionDt" type="DateType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Consolidation Acquisition Date</Description>
+						<LineNumber>2</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Other Party Group -->
+			<xsd:element name="OtherPartyGrp">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- EIN -->
+						<xsd:element name="EIN" type="EINType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>EIN</Description>
+									<LineNumber>3</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>	
+
+						<!-- Business Name -->
+						<xsd:element name="BusinessName" type="BusinessNameType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Business Name</Description>
+									<LineNumber>3</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>	
+
+						<!-- Trade Name -->
+						<xsd:element name="TradeName" type="BusinessNameType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Trade Name</Description>
+									<LineNumber>3</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>	
+
+		  				<xsd:choice>
+							<!-- US Address -->
+							<xsd:element name="USAddress" type="USAddressType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>US Address</Description>
+										<LineNumber>3</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<!-- Foreign Address -->
+							<xsd:element name="ForeignAddress" type="ForeignAddressType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>Foreign Address</Description>
+										<LineNumber>3</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:choice>						
+
+						<xsd:choice>
+							<!-- Phone Number -->
+							<xsd:element name="PhoneNum" type="PhoneNumberType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>Phone Number</Description>
+										<LineNumber>3</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<!-- Foreign Phone Number -->
+							<xsd:element name="ForeignPhoneNum" type="ForeignPhoneNumberType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>Foreign Phone Number</Description>
+										<LineNumber>3</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:choice>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Part 2:  Tell us about the discrepancies with your returns -->
+
+			<!-- Discrepancy Amount Group -->
+			<xsd:element name="DiscrepancyAmtGrp" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Social Security Wages Group -->
+						<xsd:element name="SSWagesGrp"  type="SSWagesGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Social Security Wages Group</Description>
+									<LineNumber>4</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Medicare Wages Group -->
+						<xsd:element name="MdcrWagesGrp" type="MdcrWagesGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Medicare Wages Group</Description>
+									<LineNumber>5</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Social Security Tips Group -->
+						<xsd:element name="SSTipsGrp" type="SSTipsGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Social Security Tips Group</Description>
+									<LineNumber>6</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Federal Income Tax Withheld Group -->
+						<xsd:element name="FedIncmTaxWthldGrp" type="FedIncmTaxWthldGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Federal Income Tax Withheld Group</Description>
+									<LineNumber>7</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Advance EIC Payment Group -->
+						<xsd:element name="AdvanceEICPymtGrp" type="AdvanceEICPymtGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Advance EIC Payment Group</Description>
+									<LineNumber>8</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Part 3:  Fill this part out ONLY if you are filing more than one Schedule D (Form 941) for any calendar year -->
+
+			<!-- Transaction Discrepancy Amount Group -->
+			<xsd:element name="TrDiscrepancyAmtGrp" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Schedule D (Form 941) Number -->
+						<xsd:element name="SchedDF941Num">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Schedule D (Form 941) Number</Description>
+									<LineNumber>9</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="IntegerPosType">
+									<xsd:totalDigits value="9"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<!-- Schedule D (Form 941) Count -->
+						<xsd:element name="SchedDF941Cnt">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Schedule D (Form 941) Count</Description>
+									<LineNumber>9</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="IntegerPosType">
+									<xsd:totalDigits value="9"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<!-- Social Security Wages Group -->
+						<xsd:element name="SSWagesGrp"  type="SSWagesGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Social Security Wages Group</Description>
+									<LineNumber>10</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Medicare Wages Group -->
+						<xsd:element name="MdcrWagesGrp" type="MdcrWagesGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Medicare Wages Group</Description>
+									<LineNumber>11</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Social Security Tips Group -->
+						<xsd:element name="SSTipsGrp" type="SSTipsGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Social Security Tips Group</Description>
+									<LineNumber>12</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Federal Income Tax Withheld Group -->
+						<xsd:element name="FedIncmTaxWthldGrp" type="FedIncmTaxWthldGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Federal Income Tax Withheld Group</Description>
+									<LineNumber>13</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Advance EIC Payment Group -->
+						<xsd:element name="AdvanceEICPymtGrp" type="AdvanceEICPymtGrpType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Advance EIC Payment Group</Description>
+									<LineNumber>14</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- Type for Lines 4 and 10 -->
+	<xsd:complexType name="SSWagesGrpType">
+		<xsd:sequence>
+
+			<!-- Social Security Wages Reported to IRS Amount -->
+			<xsd:element name="SSWagesRptIRSAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Wages Reported to IRS Amount</Description>
+						<LineNumber>4 or 10, Column A</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Social Security Wages Reported to SSA Amount -->
+			<xsd:element name="SSWagesRptSSAAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Wages Reported to SSA Amount</Description>
+						<LineNumber>4 or 10, Column B</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Social Security Wages Difference Amount -->
+			<xsd:element name="SSWagesDiffAmt" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Wages Difference Amount</Description>
+						<LineNumber>4 or 10, Column C</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- Type for Lines 5 and 11 -->
+	<xsd:complexType name="MdcrWagesGrpType">
+		<xsd:sequence>
+
+			<!-- Medicare Wages Reported to IRS Amount -->
+			<xsd:element name="MdcrWagesRptIRSAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Medicare Wages Reported to IRS Amount</Description>
+						<LineNumber>5 or 11, Column A</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Medicare Wages Reported to SSA Amount -->
+			<xsd:element name="MdcrWagesRptSSAAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Medicare Wages Reported to SSA Amount</Description>
+						<LineNumber>5 or 11, Column B</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Medicare Wages Difference Amount -->
+			<xsd:element name="MdcrWagesDiffAmt" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Medicare Wages Difference Amount</Description>
+						<LineNumber>5 or 11, Column C</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- Type for Lines 6 and 12 -->
+	<xsd:complexType name="SSTipsGrpType">
+		<xsd:sequence>
+
+			<!-- Social Security Tips Reported to IRS Amount -->
+			<xsd:element name="SSTipsRptIRSAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Tips Reported to IRS Amount</Description>
+						<LineNumber>6 or 12, Column A</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Social Security Tips Reported to SSA Amount -->
+			<xsd:element name="SSTipsRptSSAAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Tips Reported to SSA Amount</Description>
+						<LineNumber>6 or 12, Column B</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Social Security Tips Difference Amount -->
+			<xsd:element name="SSTipsDiffAmt" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Tips Difference Amount</Description>
+						<LineNumber>6 or 12, Column C</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- Type for Lines 7 and 13 -->
+	<xsd:complexType name="FedIncmTaxWthldGrpType">
+		<xsd:sequence>
+
+			<!-- Federal Income Tax Withheld Reported to IRS Amount -->
+			<xsd:element name="FedIncmTaxWthldRptIRSAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Income Tax Withheld Reported to IRS Amount</Description>
+						<LineNumber>7 or 13, Column A</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Federal Income Tax Withheld Reported to SSA Amount -->
+			<xsd:element name="FedIncmTaxWthldRptSSAAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Income Tax Withheld Reported to SSA Amount</Description>
+						<LineNumber>7 or 13, Column B</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Federal Income Tax Withheld Difference Amount -->
+			<xsd:element name="FedIncmTaxWthldDiffAmt" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Income Tax Withheld Difference Amount</Description>
+						<LineNumber>7 or 13, Column C</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- Type for Lines 8 and 14 -->
+	<xsd:complexType name="AdvanceEICPymtGrpType">
+		<xsd:sequence>
+
+			<!-- Advance EIC Payment Reported to IRS Amount -->
+			<xsd:element name="AdvanceEICPymtRptIRSAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Advance EIC Payment Reported to IRS Amount</Description>
+						<LineNumber>8 or 14, Column A</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Advance EIC Payment Reported to SSA Amount -->
+			<xsd:element name="AdvanceEICPymtRptSSAAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Advance EIC Payment Reported to SSA Amount</Description>
+						<LineNumber>8 or 14, Column B</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Advance EIC Payment Difference Amount -->
+			<xsd:element name="AdvanceEICPymtDiffAmt" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Advance EIC Payment Difference Amount</Description>
+						<LineNumber>8 or 14, Column C</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

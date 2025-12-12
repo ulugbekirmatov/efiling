@@ -1,0 +1,28 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2016v7.0     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+
+General Changes for .NET SDK
+____________________________
+
+
+General Changes for both Java and .NET SDK
+__________________________________________
+- Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 10.0 WSDL specification.
+
+
+
+This release has fix for the following KISAMs
+_____________________________________________
+
+Java and .NET
+-------------
+UWR171822 - IRS - Remove userid and password authentication. Change A2A toolkit version number from 6.1 to 7.0 and WSDL version from 9.6 to 10.0.
+UWR182309 - IRS - Updates to eFileTypes and eFileAttachments
+

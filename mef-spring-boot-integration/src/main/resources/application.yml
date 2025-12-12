@@ -1,0 +1,137 @@
+spring:
+  application:
+    name: mef-spring-boot-integration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# MeF Client SDK Configuration
+mef:
+  sdk:
+    # A2A_TOOLKIT_HOME - Location of SDK configuration files
+    # This should point to the mef_config directory in resources
+    toolkit-home: ${A2A_TOOLKIT_HOME:classpath:mef_config}
+
+    # Environment: ATS (test) or PRD (production)
+    environment: ATS
+
+    # Connection and timeout settings
+    transport:
+      connect-timeout-seconds: 600
+      read-timeout-seconds: 600
+      http-chunking-enabled: true
+      http-chunk-size: 8192
+
+    # Audit logging configuration
+    audit:
+      log-file: logs/mef_audit_log.txt
+      max-file-size-mb: 10
+
+    # SSL/TLS Configuration for IRS endpoints
+    ssl:
+      # Trust store containing IRS signer certificates
+      trust-store-path: ${MEF_TRUSTSTORE_PATH:}
+      trust-store-password: ${MEF_TRUSTSTORE_PASSWORD:changeit}
+      trust-store-type: JKS
+
+    # Client certificate configuration for Strong Authentication
+    # Required for IRS A2A authentication
+    certificate:
+      # Keystore containing your IRS-approved CA-signed client certificate
+      keystore-path: ${MEF_KEYSTORE_PATH:}
+      keystore-password: ${MEF_KEYSTORE_PASSWORD:}
+      keystore-type: ${MEF_KEYSTORE_TYPE:PKCS12}
+
+      # Private key alias and password within the keystore
+      key-alias: ${MEF_KEY_ALIAS:}
+      key-password: ${MEF_KEY_PASSWORD:}
+
+      # Windows Personal Current User key store (Windows only, Java 6+)
+      use-windows-keystore: false
+
+    # Login credentials for MeF A2A services
+    authentication:
+      # ETIN (Electronic Transmitter Identification Number)
+      etin: ${MEF_ETIN:}
+
+      # EFIN (Electronic Filer Identification Number) - 6 digits
+      efin: ${MEF_EFIN:}
+
+      # Username for A2A login
+      username: ${MEF_USERNAME:}
+
+      # Password for A2A login
+      password: ${MEF_PASSWORD:}
+
+      # Application System ID (ASID) assigned during enrollment
+      asid: ${MEF_ASID:}
+
+    # Service endpoint configuration
+    endpoints:
+      # ATS (Acceptance Testing System) endpoints
+      ats:
+        base-url: https://la.alt.www4.irs.gov
+        login: /a2a/mef/Login
+        logout: /a2a/mef/Logout
+        send-submissions: /a2a/mef/mime/SendSubmissions
+        get-submission-status: /a2a/mef/mime/GetSubmissionStatus
+        get-new-submissions-status: /a2a/mef/mime/GetNewSubmissionsStatus
+        get-ack: /a2a/mef/mime/GetAck
+        get-new-acks: /a2a/mef/mime/GetNewAcks
+        get-acks: /a2a/mef/mime/GetAcks
+
+      # PRD (Production) endpoints
+      prd:
+        base-url: https://www.irs.gov
+        login: /a2a/mef/Login
+        logout: /a2a/mef/Logout
+        send-submissions: /a2a/mef/mime/SendSubmissions
+        get-submission-status: /a2a/mef/mime/GetSubmissionStatus
+        get-new-submissions-status: /a2a/mef/mime/GetNewSubmissionsStatus
+        get-ack: /a2a/mef/mime/GetAck
+        get-new-acks: /a2a/mef/mime/GetNewAcks
+        get-acks: /a2a/mef/mime/GetAcks
+
+    # WS-Security configuration
+    security:
+      # Signature algorithm: RSA-SHA256
+      signature-algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+
+      # Digest algorithm: SHA256
+      digest-algorithm: http://www.w3.org/2001/04/xmlenc#sha256
+
+      # Canonicalization algorithm
+      canonicalization-algorithm: http://www.w3.org/2001/10/xml-exc-c14n#
+
+      # X.509 token encoding
+      token-encoding-type: http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary
+
+      # X.509 token value type
+      token-value-type: http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.irs.mef: DEBUG
+    gov.irs.mef: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/mef-spring-boot.log
+    max-size: 10MB
+    max-history: 30
+
+# Actuator endpoints (for health checks and monitoring)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

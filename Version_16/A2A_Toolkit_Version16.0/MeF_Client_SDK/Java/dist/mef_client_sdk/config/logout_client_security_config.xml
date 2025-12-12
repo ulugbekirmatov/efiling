@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	For XWSS configuration schema document and semantics of security configuration file elements,
+	see the Java Web Services Tutorial v1.6, pp.139-171 at:
+	http://java.sun.com/webservices/docs/1.6/tutorial/doc/JavaWSTutorial.pdf
+ -->
+<!-- xwss:JAXRPCSecurity optimize="false" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xwss="http://java.sun.com/xml/ns/xwss/config" xsi:schemaLocation="http://java.sun.com/xml/ns/xwss/config xwss_config.xsd ">
+	<xwss:Service-->
+		<xwss:SecurityConfiguration xmlns:xwss="http://java.sun.com/xml/ns/xwss/config">
+			<xwss:Timestamp />
+			<xwss:SAMLAssertion type="SV" />
+			<xwss:UsernameToken useNonce="false" digestPassword="false" />			
+		</xwss:SecurityConfiguration>
+	<!-- /xwss:Service>
+	<xwss:SecurityEnvironmentHandler>
+		client.test.xmitter.SecurityEnvironmentHandler
+	</xwss:SecurityEnvironmentHandler>
+</xwss:JAXRPCSecurity-->
+

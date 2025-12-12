@@ -1,0 +1,46 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2015v5.0     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+
+
+General Changes for .NET SDK
+____________________________
+
+Code APIs, Dependency libraries, Security settings and Configuration has been migrated from WSE (Web Services Enhancements) 
+to WCF (Windows Communications Foundation) framework as per the new requirement.
+
+
+Changes for both Java and .NET SDK
+__________________________________
+Class and methods have been renamed due to the XML renaming in MeF Release 9.5 WSDLs & schemas, and in efileTypes.xsd.
+
+Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 9.5 WSDL
+specification.
+
+
+   	        *                                                      *
+                *   What's new for MeF Client SDK Release 2015v5.1     *
+                *                                                      *
+                ********************************************************
+
+.NET
+----
+Minor defect is fixed in Get submissions services when the service returns no attachments
+and using in-memory API. 
+
+
+   	        *                                                      *
+                *   What's new for MeF Client SDK Release 2015v5.2     *
+                *                                                      *
+                ********************************************************
+
+.NET
+----
+Since the security protocol is changed to TLS from SSL3, code change was needed in .NET
+to accommodate this.

@@ -1,0 +1,53 @@
+                *                                                      *
+                *   What's New for MeF Client SDK Release 2012v3.0?    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+To be able to fully utilize all features of the Java A2A Client SDK, a minimum version of Java 6 is required. 
+The recommended version is the latest release from Oracle at the time of this release which is Java 6 update 35.
+
+Submission archive creation API changes: In previous versions of the Java A2A Client SDK, when using the toolkit provided MeF submission
+archive creation API's the name of the submission data xml file that got included in the zip archive always used "submission.xml"
+as the file name regardless of what it originally was on the local file system. The name of the ZipEntry was not customizable. In this
+version of the toolkit, the filename of the submission data xml file on the local file system will be preserved when the file is
+included in the submission zip archive instead of being forced to "submission.xml."
+
+A new class, gov.irs.mef.services.util.KeyStoreUtil has been added to the Java A2A Client SDK to assist developers in some aspects of
+accessing private cryptographic keypairs used for logging in to A2A via the strong authentication method. It includes new methods for
+accessing the PrivateKey entries in both file based (JKS and PKCS12) keystore files as well as the Windows Personal keystore for the currently
+logged in Windows user account. Windows Personal KeyStore access requires a minimum of Java 6 runtime environment.
+See included javadocs for details.
+
+The gov.irs.mef.services.msi.LoginClient now supports strong authentication Login using both file based KeyStores (such as PKCS12 or JKS files)
+or the Windows Personal keystore for the currently logged in Windows user for users of the Microsoft Windows operating system.
+Previous versions of the toolkit supported only file based strong authentication login. A minimum level of Java 6 is required for
+Windows Personal keystore based strong authentication.
+
+Changes for both Java and .NET SDK
+__________________________________
+Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 8 WSDL
+specification. Extraneous generated service proxy code for A2A services and other artifacts not supported by the A2A toolkit have been removed.
+
+The Submission Status parameter values available for the Get Submission Reconciliation List service have changed in accordance with new
+functionality for this A2A service. Please see the official MeF R8 Release Notes for details.
+
+The Send Acknowledgements service response has been modified to include more detail about acknowledgements that are not accepted by MeF.
+Please see the official MeF R8 Release Notes for details.
+
+The possible values CORPEP, INDEP, and PARTEP for SubmissionCategory elements in MeF Acknowledgements have been added. Please note these
+are placeholders until such time that the corresponding supporting service functionality has been fully incorporated into MeF services.
+For states sending acknowldgements, using these values in acknowledgements prior to such time will likely result in MeF rejecting those
+acknowledgements due to unsupported Submission Category value.
+
+General Note:
+_____________
+The default ATS endpoint URLs in this version of the toolkit will expire in January 2013 and will need to be modified from
+https://la.alt.www4.irs.gov/a2a values to https://la.www4.irs.gov/a2a. For Java SDK users, this can be done by modifying the
+ats_endpoints.properties file located in your toolkit installations /config directory. For .NET users modify your applications
+app.config file accordingly. These values may also be changed dynamically at runtime to override the values in the config files 
+for users of both the Java and .NET toolkits. See section 7 of the MeF-Client-SDK_UserGuide.doc file included on the distribution
+media for examples of how to do this.

@@ -1,0 +1,41 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2015v6.0     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+Defect fix for MTOM request attachments to be transmitted as XOP optimized attachments, instead of base-64 encoded inline.
+
+
+General Changes for .NET SDK
+____________________________
+
+----
+Made code fixes to support multi-threaded request submission.
+
+
+----
+Add log entry to Audit log and Trace log to include information such as SDK version number when there is exception in login, such as related to in-correct Client Certificate ID
+
+
+----
+IM02200528 - IRS - In MeF SDK Toolkit 5.3 dotNET version, need to check NULL value in code.
+
+IM02200604 - IRS - This defect is about support large file submission
+
+UWR154034 - IRS - This is to change A2A toolkit version number from 5.3 to 6.0 and WSDL version from 9.5 to 9.6.
+
+MEFCL00000376 - IBM - This is related to log trace in GetSubmissionStatus - In Memory
+
+
+Changes for both Java and .NET SDK
+__________________________________
+Generated service proxy classes and corresponding toolkit ServiceClient classes have been refreshed with latest MeF Release 9.6 WSDL
+specification.
+
+
+
+
+

@@ -1,0 +1,26 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2020v11.0     *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+Govt Code POCT added
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+Govt Code POCT added
+ICSharpCode.SharpZipLib.dll upgraded deom 0.86 to 1.2
+
+
+The following Client App KISAMs are fixed in this release
+________________________________________________________
+
+IM00770305 - UI Issue
+IM00770257 - Issue with over 100 Acks
+

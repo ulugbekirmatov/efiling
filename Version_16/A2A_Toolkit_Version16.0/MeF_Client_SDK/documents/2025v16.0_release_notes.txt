@@ -1,0 +1,27 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2025v16.0    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Version number change for WSDL (ver. 10.9) and Toolkit (v16.0)
+WSDL updates add the GIFT category to ExtndAcknowledgementCategoryCdType
+ 
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL (ver. 10.9) and Toolkit (v16.0)
+Added enum category in ExtndAcknowledgementCategoryCdType.GIFT
+
+
+
+General Changes for Transmitter and State Gateway applications
+____________________________
+
+ 
+
+

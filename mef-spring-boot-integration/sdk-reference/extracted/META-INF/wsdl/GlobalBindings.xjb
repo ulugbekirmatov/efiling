@@ -1,0 +1,7 @@
+<jxb:bindings version="3.0" xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc">
+	<jxb:bindings>
+		<jxb:globalBindings fixedAttributeAsConstantProperty="true" typesafeEnumMaxMembers="2000">
+				<xjc:superClass name="gov.irs.mef.serpiisbu.SensitiveDenySerializeBase"/>
+		</jxb:globalBindings>
+	</jxb:bindings>
+</jxb:bindings>

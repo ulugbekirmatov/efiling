@@ -1,0 +1,32 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2022v13.0    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+
+
+General Changes for Transmitter and State Gateway applications
+____________________________
+
+Version number change
+Updated supplied Java Runtime to OpenJDK 18.0.2
+
+
+
+The following Client App KISAMs are fixed in this release
+________________________________________________________
+
+IM01925108 - IRS-MEF Transmitter app issues on the Submission Recovery tab
+
+

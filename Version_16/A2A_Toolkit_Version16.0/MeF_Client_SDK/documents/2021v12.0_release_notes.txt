@@ -1,0 +1,22 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2021v12.0     *
+                *                                                     *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+Resiliency related changes
+
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+.NET version upgraded to 4.8
+Resiliency related changes
+
+
+

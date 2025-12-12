@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                             -->
+<!-- REVISION HISTORY:           -->
+<!-- Initial Version  08/09/2005 -->
+<!-- 09/19/05 -->
+<!-- Added REQUEST_ERROR restriction to ExceptionCategoryType -->
+<!-- 09/23/2005 -->
+<!-- Updated MeFExceptionType and MeFErrorType to match the elements from the IBM backend -->
+<!-- Updated ExceptionCategoryType to be ErrorClassificationType to -->
+<!-- match the definition's name from the IBM backend -->
+<!-- 10/20/2005 -->
+<!-- Updated the comment for Submission ID Type to indicate -->
+<!-- 20 digits (EFIN + ccyyddd + 7-character alphanumeric) -->
+<!-- 12/20/2005 -->
+<!-- Added GetAcksByMsgID elements and message type definitions-->
+<!-- 01/03/2006 -->
+<!-- Added MessageIdType definition with pattern restriction -->
+<!-- Added pattern restriction to SubmissionIdType -->
+<!-- 02/10/2006 -->
+<!-- Added GetAcksByCategory elements and message type definitions-->
+<!-- Added CategoryType enumeration for GetAcksByCategory messages -->
+<!-- 03/21/2006 -->
+<!-- Corrected MessageIdType pattern restriction to be "[0-9]{12}[a-z0-9]{8}" -->
+<!-- Corrected SubmissionIdType pattern restriction to be "[0-9]{13}[a-z0-9]{7}" -->
+<!-- 04/04/2006 -->
+<!-- Deleted GetAcksByCategory elements and message type definitions-->
+<!-- Added optional Category element to GetNewAcksRequestType -->
+<!-- Added optional Agency element to GetNewAcksRequestType -->
+<!-- Added AgencyType enumeration for GetNewAcksRequestType messages -->
+<!-- 04/07/2006 -->
+<!-- Updated to remove "POL" and "PF" enumeration from CategoryType -->
+<!-- 06/30/2006 -->
+<!-- Corrected the type for Count to nonNegativeInteger to allow a zero Count -->
+<!-- for response messages elements in complex type ListOfSubmissionErrorType -->
+<!-- 07/25/06 -->
+<!-- Made ListOfSubmissionErrorType manditory in messages:       -->
+<!-- GetAcksResponseType and GetSubmissionsStatusResponseType    -->
+<!-- Made the array optional in ListOfSubmissionErrorType        -->
+<!-- 06/08/07 -->
+<!-- Added EXCISE to the GetNewAcksRequest message for ETEC CR009 -->
+<!-- Actually added it to CategoryType -->
+<!-- 11/24/08 -->
+<!-- Added IND to the GetNewAcksRequest message for MeF 6.0 RQMT IAECUST408 -->
+<!-- Actually added it to CategoryType -->
+<!-- 03/04/09 -->
+<!-- Updated for MTOM services.                         -->
+<!-- Added xmime namespace                              -->
+<!-- Added xmime:base64Binary MTOM attachment elements -->
+<!-- 09/01/2010 -->
+<!-- Removed xmime:base64Binary MTOM attachment elements                  -->
+<!-- For MeF R6.2 (WR_ETA100670OTH_00) requirement VII.1                  -->
+<!-- Added UNKN as an option to the GetNewAcksRequest message             -->
+<!-- Actually added it to CategoryType                                    -->
+<!--                                                                      -->
+<!-- For MeF R6.2 (WR_ETA100670OTH_00) requirement I.1                    -->
+<!-- Made ElectronicPostmark field optional in the SubmissionDataType     -->
+<!--                                                                      -->
+<!-- Removed "Count" from SubmissionDataListType and SubmissionIdListType -->
+<!--                                                                      -->
+<!-- 05/01/2012 -->
+<!-- Removed MeFException, It is now defined in MeFHeader.xsd to create a consistent namespace -->
+<!-- for all MeF exceptions returned as SOAP Faults from the portal and the TPI backend -->
+<!--                             -->
+<!-- 04/01/2013        -->
+<!-- For UWR# 79178 Removed the MoreAvailable element in the GetAcksByMsgID Response message -->
+<!-- For UWR# 76875 Item #3 Added ESTRST (for Estate & Trust) and EMPL (for Employee?) to    -->
+<!-- the Category definition for the GetNewAcksRequest message                               -->
+<!-- Actually added it to CategoryType                                                       -->
+<!--                             -->
+<!-- 05/07/2013        -->
+<!-- For UWR# 79178 changes Restored the MoreAvailable element in the GetAcksByMsgID Response message -->
+<!--                             -->
+<!-- 03/31/2014 -->
+<!-- For WR# 10440 updated all the element names for XML Standardization -->
+<!-- 05/17/2021 -->
+<!-- Added DepositIdType and DepositId of type DepositIdType to SendSubmissionsResponseType for -->
+<!-- Resiliency UWR -->
+<!--                             -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.irs.gov/a2a/mef/MeFTransmitterService.xsd" targetNamespace="http://www.irs.gov/a2a/mef/MeFTransmitterService.xsd" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>Trading Partner Transmitter Web Services' Element Definitions</xsd:documentation>
+	</xsd:annotation>
+	<!-- Zip containing IRS and/or State submissions -->
+	<xsd:element name="SubmissionsAttBin" type="xsd:hexBinary"/>
+	<!-- Zip containing a single SubmissionReceiptsList (see efileAttachments.xsd) -->
+	<xsd:element name="SubmissionRcptListAttBin" type="xsd:hexBinary"/>
+	<!-- Zip containing a single AcknowledgementList (see efileAttachments.xsd) -->
+	<xsd:element name="AcknowledgementListAttBin" type="xsd:hexBinary"/>
+	<!-- Zip containing an Acknowledgement -->
+	<xsd:element name="AcknowledgementAttBin" type="xsd:hexBinary"/>
+	<!-- Zip containing a StatusRecordList -->
+	<xsd:element name="StatusRecordListAttBin" type="xsd:hexBinary"/>
+	<xsd:element name="SendSubmissionsRequest" type="SendSubmissionsRequestType"/>
+	<xsd:element name="SendSubmissionsResponse" type="SendSubmissionsResponseType"/>
+	<xsd:element name="GetNewAcksRequest" type="GetNewAcksRequestType"/>
+	<xsd:element name="GetNewAcksResponse" type="GetNewAcksResponseType"/>
+	<xsd:element name="GetAcksRequest" type="GetAcksRequestType"/>
+	<xsd:element name="GetAcksResponse" type="GetAcksResponseType"/>
+	<xsd:element name="GetAckRequest" type="GetAckRequestType"/>
+	<xsd:element name="GetAckResponse" type="GetAckResponseType"/>
+	<xsd:element name="GetNewSubmissionsStatusRequest" type="GetNewSubmissionsStatusRequestType"/>
+	<xsd:element name="GetNewSubmissionsStatusResponse" type="GetNewSubmissionsStatusResponseType"/>
+	<xsd:element name="GetSubmissionsStatusRequest" type="GetSubmissionsStatusRequestType"/>
+	<xsd:element name="GetSubmissionsStatusResponse" type="GetSubmissionsStatusResponseType"/>
+	<xsd:element name="GetSubmissionStatusRequest" type="GetSubmissionStatusRequestType"/>
+	<xsd:element name="GetSubmissionStatusResponse" type="GetSubmissionStatusResponseType"/>
+	<xsd:element name="GetAcksByMsgIDRequest" type="GetAcksByMsgIDRequestType"/>
+	<xsd:element name="GetAcksByMsgIDResponse" type="GetAcksByMsgIDResponseType"/>
+	<xsd:complexType name="SendSubmissionsRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionDataList" type="SubmissionDataListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SendSubmissionsResponseType">
+		<xsd:sequence>
+			<xsd:element name="DepositId" type="DepositIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewAcksRequestType">
+		<xsd:sequence>
+			<xsd:element name="MaxResultCnt" type="xsd:positiveInteger"/>
+			<xsd:element name="ExtndAcknowledgementCategoryCd" type="ExtndAcknowledgementCategoryCdType" minOccurs="0"/>
+			<xsd:element name="GovernmentAgencyTypeCd" type="GovernmentAgencyTypeCdType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewAcksResponseType">
+		<xsd:sequence>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAcksRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionIdList" type="SubmissionIdListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAcksResponseType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionErrorList" type="SubmissionErrorListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAckRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAckResponseType">
+		<xsd:sequence/>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewSubmissionsStatusRequestType">
+		<xsd:sequence>
+			<xsd:element name="MaxResultCnt" type="xsd:positiveInteger"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetNewSubmissionsStatusResponseType">
+		<xsd:sequence>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionsStatusRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionIdList" type="SubmissionIdListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionsStatusResponseType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionErrorList" type="SubmissionErrorListType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionStatusRequestType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetSubmissionStatusResponseType">
+		<xsd:sequence/>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionDataType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+			<xsd:element name="ElectronicPostmarkTs" type="xsd:dateTime" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionDataListType">
+		<xsd:sequence>
+			<!-- REMOVED xsd:element name="Cnt" type="xsd:positiveInteger"/> -->
+			<xsd:element name="SubmissionData" type="SubmissionDataType" minOccurs="1" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ErrorClassificationCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="SYSTEM_ERROR"/>
+			<xsd:enumeration value="RESOURCE_UNAVAILABLE"/>
+			<xsd:enumeration value="MESSAGE_FORMAT_ERROR"/>
+			<xsd:enumeration value="SECURITY_ERROR"/>
+			<xsd:enumeration value="REQUEST_ERROR"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="ErrorClassificationDetailType">
+		<xsd:sequence>
+			<xsd:element name="ErrorMessageTxt" type="xsd:string"/>
+			<xsd:element name="ErrorClassificationCd" type="ErrorClassificationCdType"/>
+			<xsd:element name="ErrorMessageCd" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionIdListType">
+		<xsd:sequence>
+			<!-- REMOVED <xsd:element name="Cnt"			type="xsd:positiveInteger"/> -->
+			<xsd:element name="SubmissionId" type="SubmissionIdType" minOccurs="1" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionErrorType">
+		<xsd:sequence>
+			<xsd:element name="SubmissionId" type="SubmissionIdType"/>
+			<xsd:element name="ErrorClassificationDetail" type="ErrorClassificationDetailType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SubmissionErrorListType">
+		<xsd:sequence>
+			<xsd:element name="Cnt" type="xsd:nonNegativeInteger"/>
+			<xsd:element name="SubmissionError" type="SubmissionErrorType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Submission ID Type - 20 digits (EFIN + ccyyddd + 7-character alphanumeric) -->
+	<xsd:simpleType name="SubmissionIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{13}[a-z0-9]{7}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Deposit ID Type - maximum 80 character alphanumeric -->
+	<xsd:simpleType name="DepositIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[A-Za-z0-9]*" />
+			<xsd:maxLength value="80"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Message ID Type - 20 digits (ETIN + ccyyddd + 8-character alphanumeric) -->
+	<xsd:simpleType name="MessageIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{12}[a-z0-9]{8}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- ExtndAcknowledgementCategoryCdType Type  -->
+	<xsd:simpleType name="ExtndAcknowledgementCategoryCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="CORP"/>
+			<xsd:enumeration value="EO"/>
+			<xsd:enumeration value="PART"/>
+			<xsd:enumeration value="EXCISE"/>
+			<xsd:enumeration value="IND"/>
+			<xsd:enumeration value="UNKN"/>
+			<xsd:enumeration value="ESTRST"/>
+			<xsd:enumeration value="EMPL"/>
+			<xsd:enumeration value="GIFT"/>
+			<xsd:enumeration value="all"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- GovernmentAgencyTypeCdType Type  -->
+	<xsd:simpleType name="GovernmentAgencyTypeCdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Federal"/>
+			<xsd:enumeration value="State"/>
+			<xsd:enumeration value="both"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="GetAcksByMsgIDRequestType">
+		<xsd:sequence>
+			<xsd:element name="MessageId" type="MessageIdType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GetAcksByMsgIDResponseType">
+		<xsd:sequence>
+			<xsd:element name="MoreAvailableInd" type="xsd:boolean"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

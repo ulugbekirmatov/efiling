@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                             -->
+<!-- REVISION HISTORY:           -->
+<!-- Initial Version  08/09/2005 -->
+<!-- 09/19/2005 -->
+<!-- Added restricted simple type ExceptionCategoryType and -->
+<!-- used it in element ExceptionCategoryType of MeFMSIServicesExceptionType -->
+<!-- Added restricted simple type TestIndicatorType and -->
+<!-- used it in element EtinRetrievalRequestType/TestIndicator -->
+<!-- 09/23/2005 -->
+<!-- Updated MeFMSIServicesExceptionType to be MeFExceptionType to -->
+<!-- match the elements from the IBM backend -->
+<!-- Updated ExceptionCategoryType to be ErrorClassificationType to -->
+<!-- match the definition's name from the IBM backend -->
+<!-- 11/18/05 -->
+<!-- Added elementFormDefault="qualified" attributeFormDefault="unqualified" -->
+<!-- to fix a problem reported with the JAXB and Castor tools -->
+<!-- 10/30/08 -->
+<!-- Deleted InitialLoginRequest, InitialLoginResponse,  -->
+<!-- ChangePasswordRequest, and ChangePasswordResponse definitions -->
+<!-- 10/07/09 -->
+<!-- Restored InitialLoginRequest, InitialLoginResponse,  -->
+<!-- ChangePasswordRequest, and ChangePasswordResponse definitions -->
+<!-- at the direction of the IRS and project management -->
+<!-- 05/01/2012 -->
+<!-- Removed MeFException, It is now defined in MeFHeader.xsd to create a consistent namespace -->
+<!-- for all MeF exceptions returned as SOAP Faults from the portal and the TPI backend -->
+<!-- 03/13/2014 -->
+<!-- For WR# 10440 updated all the element names for XML Standardization -->
+<!-- 07/01/2016  -->
+<!-- For Release 10.0 SYS4530 Removed InitialLogin and ChangePassword messages -->
+<!--                             -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+xmlns:mef="http://www.irs.gov/a2a/mef/MeFMSIServices.xsd" 
+targetNamespace="http://www.irs.gov/a2a/mef/MeFMSIServices.xsd" 
+elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:element name="LoginRequest" type="mef:LoginRequestType"/>
+	<xs:element name="LoginResponse" type="mef:LoginResponseType"/>
+	<xs:element name="LogoutRequest" type="mef:LogoutRequestType"/>
+	<xs:element name="LogoutResponse" type="mef:LogoutResponseType"/>
+	<xs:element name="ETINRetrievalRequest" type="mef:ETINRetrievalRequestType"/>
+	<xs:element name="ETINRetrievalResponse" type="mef:ETINRetrievalResponseType"/>
+	<xs:element name="ETINStatusRequest" type="mef:ETINStatusRequestType"/>
+	<xs:element name="ETINStatusResponse" type="mef:ETINStatusResponseType"/>
+	<xs:element name="GetStateParticipantsListRequest" type="mef:GetStateParticipantsListRequestType"/>
+	<xs:element name="GetStateParticipantsListResponse" type="mef:GetStateParticipantsListResponseType"/>
+	<xs:complexType name="LoginRequestType">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="LoginResponseType">
+		<xs:sequence>
+			<xs:element name="StatusTxt" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LogoutRequestType">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="LogoutResponseType">
+		<xs:sequence>
+			<xs:element name="StatusTxt" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="TestCdType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="T"/>
+			<xs:enumeration value="P"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ETINRetrievalRequestType">
+		<xs:sequence>
+			<xs:element name="TestCd" type="mef:TestCdType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ETINRetrievalResponseType">
+		<xs:sequence>
+			<xs:element name="Cnt" type="xs:int" default="0"/>
+			<xs:element name="ETINStatusGrp" type="mef:ETINStatusGrpType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ETINStatusRequestType">
+		<xs:sequence>
+			<xs:element name="ETIN" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ETINStatusResponseType">
+		<xs:sequence>
+			<xs:element name="ETIN" type="xs:string"/>
+			<xs:element name="StatusTxt" type="xs:string"/>
+			<xs:element name="FormStatusGrp" type="mef:FormStatusGrpType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="GetStateParticipantsListRequestType">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="GetStateParticipantsListResponseType">
+		<xs:sequence>
+			<xs:element name="Cnt" type="xs:int" default="0"/>
+			<xs:element name="StateParticipantGrp" type="mef:StateParticipantGrpType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FormStatusGrpType">
+		<xs:sequence>
+			<xs:element name="FormNum" type="xs:string"/>
+			<xs:element name="FormStatusTxt" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ETINStatusGrpType">
+		<xs:sequence>
+			<xs:sequence>
+				<xs:element name="ETIN" type="xs:string"/>
+				<xs:element name="StatusTxt" type="xs:string"/>
+				<xs:element name="FormStatusGrp" type="mef:FormStatusGrpType" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="StateParticipantGrpType">
+		<xs:sequence>
+			<xs:element name="StateCd" type="xs:string"/>
+			<xs:element name="ParticipantProgramsTxt" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

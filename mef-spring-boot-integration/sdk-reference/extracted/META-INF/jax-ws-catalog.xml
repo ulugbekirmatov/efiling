@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+	<system systemId="http://gov.irs.efile/a2a/services/ETECStateService.wsdl" uri="wsdl/ETECStateService.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/ETECTransmitterServicesMIME.wsdl" uri="wsdl/ETECTransmitterServicesMIME.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/ETECTransmitterServicesMTOM.wsdl" uri="wsdl/ETECTransmitterServicesMTOM.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/MeFMSIServices.wsdl" uri="wsdl/MeFMSIServices.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/MeFStateServicesMIME.wsdl" uri="wsdl/MeFStateServicesMIME.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/MeFStateServicesMTOM.wsdl" uri="wsdl/MeFStateServicesMTOM.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/MeFTransmitterServicesMIME.wsdl" uri="wsdl/MeFTransmitterServicesMIME.wsdl" />
+	<system systemId="http://gov.irs.efile/a2a/services/MeFTransmitterServicesMTOM.wsdl" uri="wsdl/MeFTransmitterServicesMTOM.wsdl" />
+	
+	
+</catalog>

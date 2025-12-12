@@ -1,0 +1,120 @@
+                *                                                      *
+                *   What's New for MeF Client SDK Release 2011v2.0?    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for .NET SDK
+____________________________
+The toolkit now comes with a sample application configuration file named 
+mefclientsdk.config packaged with zipped distributable build. With previous 
+toolkit releases, developers had to copy and paste the content of this file 
+from the toolkit setup guide into their own application configuration file.  
+Now developers may simply either reference the included config file from their 
+applications or simply copy the included file and modify it to suit their own 
+requirements. 
+
+Also, now included with the .NET SDK is a detailed getting started guide with
+an accompanying console application which demonstrates and walks developers
+through many common toolkit functions.
+
+The connection timeout value is now configurable in the mefclientsdk.config 
+file. The timeout value in the configuration file is specified in seconds. To 
+set the timeout value look for <add key="timeout" value="" /> in the <appSettings> 
+section of the mefclientsdk.config file.
+
+Certificate loading has been changed such that the certificate subject name, 
+store location, store name, and X509 find type values have been externalized into 
+the application configuration file and more store location and store name values 
+are supported.
+
+It is now possible to set the endpoint URL values for services dynamically at runtime 
+in a more simplified fashion. See section 7 of the User Guide for examples.
+
+There were a number of instances in client proxy classes where a null reference in 
+exception handling code could occur causing the original exception to be masked by 
+the null reference exception. This has been remedied.
+
+
+Changes by Class for .NET SDK
+_____________________________
+LoginResult - Calling Status on a LoginResult object will now report the status message 
+returned by MeF for a successful authentication request.
+
+LogoutResult - The name of the status field has been changed to Status (lowercase to 
+uppercase) to be consistent with LoginResult.
+
+MeFClientBase - The following method has been removed:
+    public ServiceContext CreateServiceContext(String pathToConfigFile)
+    
+Use ServiceContext object constructors instead.
+
+ServiceContext - The following constructors have been removed:
+    public ServiceContext(string pathToConfigFile)
+    public ServiceContex(bool loadFromConfig)
+    
+as they are no longer applicable. The application configuration values will be loaded from 
+the config file automatically without need for explicitly doing so. These constructors were 
+determined to be unnecessary and redundant and so were removed to simplify the API.
+
+SessionInfo - The SessionInfo class will no longer be instantiable by client applications. 
+Instead it will be internally managed by the toolkit. The only publicly available property 
+getters on the SessionInfo class are now:
+
+SessionInfo.JSessionID
+SessionInfo.SamlToken
+
+These properties are publicly read only.
+
+ClientInfo - The ClientInfo class has had the number of publicly visible constructors reduced 
+to two. The remaining public constructors are:
+
+public ClientInfo(string etin, string appSysId)
+public ClientInfo(string etin, string appSysId, TestIndicatorType testIndicator)
+
+Any previous constructors that accepted arguments for the MeF Header SessionIndicatorType value 
+or certificate subject name have been removed. Accordingly, all get and set methods for the removed 
+parameters have been removed as well. The MeF Header session indicator will now be 
+internally managed by the toolkit and always set to a value of  "SessionIndicatorType.Y" for 
+all requests except for Logout requests when it will be set automatically by toolkit to 
+"SessionIndicatorType.N". The certificate loading subject name and other certificate 
+loading properties such as store name and store location are now read from the mefclientsdk.config 
+file. Additionally the ClientInfo class no longer specifies fixed values of "StoreLocation.LocalMachine" 
+and "StoreName.My" for store location and store name properties respectively. Instead developers 
+may specify their own values for these properties in the mefclientsdk.config application configuration 
+file so that alternative store locations and store names may be used. These values will always be 
+automatically loaded from the application configuration so accordingly the constructor:
+
+    public ClientInfo(bool loadFromConfig)
+
+has also been removed. With these changes it is our hope to simplify the API, limit 
+the opportunities to perform unsupported operations, and add greater flexibility to 
+the certificate loading mechanisms within toolkit.
+
+
+Changes for both Java and .NET SDK
+__________________________________
+
+Get Acknowledgement Service Exception reporting - MeF commonly returns a SOAP Fault 
+for Get Acknowledgement requests when there is no Acknowledgement found for a given 
+submission ID input. This can be due to either erroneous Submission ID input or due to 
+the Acknowledgement not being available yet. When this happens, a toolkit ServiceException 
+is propagated back to the calling client application wrapping the original MeFException 
+object. Since this particular exception is a fairly common occurrence, the nested 
+MeFException message detail will be propagated up to the message property of the top 
+level ServiceException to reduce the degree of exception object interrogation necessary 
+for the calling MeF client application to be able to see the exception message.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

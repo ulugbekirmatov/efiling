@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.irs.gov/efile" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+    <xsd:annotation>
+        <xsd:documentation>
+            <Description>IRS e-file Schema - Form 941-X - Adjusted Employer's QUARTERLY Federal Tax Return or Claim for Refund</Description>
+            <TaxYear>2026</TaxYear>
+            <MaturityLevel>Final Schema Version</MaturityLevel>
+            <ReleaseDate>July 3 2025</ReleaseDate>
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+    
+    <!-- ============================================== -->
+    <!-- =============== IRS Form 941-X =============== -->
+    <!-- ============================================== -->
+    
+    <xsd:element name="IRS941X">
+        <xsd:annotation>
+            <xsd:documentation>IRS Form 941-X - Adjusted Employer's QUARTERLY Federal Tax Return or Claim for Refund</xsd:documentation>
+        </xsd:annotation>
+        
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="IRS941XType">
+                    <xsd:attributeGroup ref="DocumentAttributes">
+                        <xsd:annotation>
+                            <xsd:documentation>Common return document attributes</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attributeGroup>
+                    
+                    <xsd:attribute name="documentName" type="TextType" fixed="IRS941X">
+                        <xsd:annotation>
+                            <xsd:documentation>IRS internal use only. To avoid errors within the return, do not include the attribute name or value.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    
+                    <xsd:attribute name="referenceDocumentId" type="IdListType">
+                        <xsd:annotation>
+                            <xsd:documentation>List of document IDs of forms, schedules, supporting info. etc. attached to this form.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    
+                    <xsd:attribute name="referenceDocumentName" type="TextType" fixed="BinaryAttachment FinalPayrollInformationStatement GeneralDependencySmall IRS941ScheduleB IRS941ScheduleD IRS941ScheduleR IRS8974 IRSPayment2 TransferOfBusinessStatement"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="IRS941XType">
+        <xsd:sequence>
+            <xsd:choice>
+                <!-- Form 941 Correction Indicator -->
+                <xsd:element name="Form941CorrectionInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Form 941 Correction Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+
+                <!-- Form 941-SS Correction Indicator -->
+                <xsd:element name="Form941SSCorrectionInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Form 941-SS Correction Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:choice>
+            
+            <xsd:choice>
+                <!-- Quarter 1 Correction Indicator -->
+                <xsd:element name="Qtr1CorrectionInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Quarter 1 Correction Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                
+                <!-- Quarter 2 Correction Indicator -->
+                <xsd:element name="Qtr2CorrectionInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Quarter 2 Correction Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                
+                <!-- Quarter 3 Correction Indicator -->
+                <xsd:element name="Qtr3CorrectionInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Quarter 3 Correction Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                
+                <!-- Quarter 4 Correction Indicator -->
+                <xsd:element name="Qtr4CorrectionInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Quarter 4 Correction Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:choice>
+            
+            <!-- Calendar Year Of the Quarter Being Corrected -->
+            <xsd:element name="CorrectingReturnCalendarYrCd">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Calendar Year Of the Quarter Being Corrected</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+                
+                <xsd:simpleType>
+                    <xsd:restriction base="YearType">
+                        <xsd:enumeration value="2024" />
+						<xsd:enumeration value="2025" />
+						<xsd:enumeration value="2026" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            
+            <!-- Date Errors Were Discovered -->
+            <xsd:element name="ErrorsDiscoveredDt" type="DateType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Date Errors Were Discovered</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+			<!-- Aggregate Return Indicator -->
+			<xsd:choice minOccurs="0">
+                <!-- Section 3504 Agent Indicator -->
+                <xsd:element name="Section3504AgentInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Section 3504 Agent Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                
+                <!-- Certified Professional Employer Organization (CPEO) Indicator -->
+                <xsd:element name="CPEOInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Certified Professional Employer Organization (CPEO) Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+				
+				 <!-- Other Third Party Indicator -->
+                <xsd:element name="OtherThirdPartyInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Other Third Party Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+				
+            </xsd:choice>
+			
+            <!-- =============== Part 1: Process Type =============== -->
+            <xsd:choice>
+                <!-- Adjusted Employment Tax Return Indicator -->
+                <xsd:element name="AdjustedEmploymentTaxRetInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Adjusted Employment Tax Return Indicator</Description>
+                            <LineNumber>Line 1</LineNumber>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+				
+                <!-- Claim Indicator -->
+                <xsd:element name="ClaimInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Claim Indicator</Description>
+                            <LineNumber>Line 2</LineNumber>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:choice>
+            
+            <!-- =============== Part 2: Certifications =============== -->
+            
+            <!-- Filed W-2/W-2c Indicator -->
+            <xsd:element name="FiledW2W2cCorrWageTaxCertInd" type="CheckboxType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Filed W-2/W-2c Indicator</Description>
+                        <LineNumber>Line 3</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Adjusted Return Repaid Employee Share Indicator -->
+            <xsd:element name="RpdOrReimbEmplShrTxsCYPYInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Adjusted Return Repaid Employee Share Indicator</Description>
+                        <LineNumber>Line 4a</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Adjusted Return Employer Share Indicator -->
+            <xsd:element name="AdjSSTMedcrTxEmplrShrInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Adjusted Return Employer Share Indicator</Description>
+                        <LineNumber>Line 4b</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Adjusted Return Not Withheld Indicator -->
+            <xsd:element name="AdjNotWthldFedSSMedcrTaxInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Adjusted Return Not Withheld Indicator</Description>
+                        <LineNumber>Line 4c</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Claim Repaid Employee Indicator -->
+            <xsd:element name="RpdReimbSSTMedcrTxPYNotClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Claim Repaid Employee Indicator</Description>
+                        <LineNumber>Line 5a</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Claim Written Consent Indicator -->
+            <xsd:element name="WrttnCnsntSSTMedcrEmpNotClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Claim Written Consent Indicator</Description>
+                        <LineNumber>Line 5b</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Claim Employer Share Indicator -->
+            <xsd:element name="SSTMedcrTxEmplrShrNotClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Claim Employer Share Indicator</Description>
+                        <LineNumber>Line 5c</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Claim Not Withheld Indicator -->
+            <xsd:element name="NotWthldFedSSMedcrTaxClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Claim Not Withheld Indicator</Description>
+                        <LineNumber>Line 5d</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- =============== Part 3: Corrections Column 1 =============== -->
+            
+            <!-- Check here if you're eligible for the employee retention credit in the third or fourth quarter of 2021 solely because your business is a recovery startup business -->
+            <xsd:element name="EligEmplRtntnCrRcvryStartUpInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Check here if you're eligible for the employee retention credit in the third or fourth quarter of 2021 solely because your business is a recovery startup business</Description>
+                        <LineNumber>Line 31b Column 1</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <xsd:element name="TotalCorrectedAmount941XGrp" type="TotCorrOrigRptCorr941XGrpType" minOccurs="0"/>
+            <!-- =============== Part 3: Corrections Column 2 =============== -->
+            
+            <xsd:element name="OriginallyRptOrPrevCorr941XGrp" type="TotCorrOrigRptCorr941XGrpType" minOccurs="0"/>
+            <!-- =============== Part 3: Corrections Column 3 =============== -->
+            
+            <xsd:element name="CorrRptDifference941XGrp" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <!-- Wages, tips, and other compensation -->
+                        <xsd:element name="WagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Wages, tips, and other compensation</Description>
+                                    <LineNumber>Line 6 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Federal income tax withheld from wages, tips, and other compensation -->
+                        <xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Federal income tax withheld from wages, tips, and other compensation</Description>
+                                    <LineNumber>Line 7 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Taxable social security wages -->
+                        <xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable social security wages</Description>
+                                    <LineNumber>Line 8 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 9 Column 3 Reserved - Not used -->
+                        
+                        <!-- Line 10 Column 3 Reserved - Not used -->
+                        
+                        <!-- Taxable social security tips -->
+                        <xsd:element name="TaxableSocSecTipsAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable social security tips</Description>
+                                    <LineNumber>Line 11 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Taxable Medicare wages & tips -->
+                        <xsd:element name="TaxableMedicareWagesTipsAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable Medicare wages &amp; tips</Description>
+                                    <LineNumber>Line 12 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Taxable wages & tips subject to Additional Medicare Tax withholding -->
+                        <xsd:element name="TxblWageTipsSubjAddnlMedcrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable wages &amp; tips subject to Additional Medicare Tax withholding</Description>
+                                    <LineNumber>Line 13 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Section 3121(q) Notice and Demand-Tax due on unreported tips -->
+                        <xsd:element name="TaxOnUnreportedTips3121qAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Section 3121(q) Notice and Demand-Tax due on unreported tips</Description>
+                                    <LineNumber>Line 14 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Tax adjustments -->
+                        <xsd:element name="TaxAdjustmentsAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Tax adjustments</Description>
+                                    <LineNumber>Line 15 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified small business payroll tax credit for increasing research activities -->
+                        <xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+									<LineNumber>Line 16 Column 3</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						
+							<xsd:complexType>
+								<xsd:simpleContent>
+									<xsd:extension base="USDecimalAmountType">
+										<xsd:attribute name="referenceDocumentId" type="IdListType"></xsd:attribute>
+										<xsd:attribute name="referenceDocumentName" type="TextType" fixed="IRS8974"></xsd:attribute>
+									</xsd:extension>
+								</xsd:simpleContent>
+							</xsd:complexType>
+						</xsd:element>
+                        
+                        <!-- Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 -->
+                        <xsd:element name="NrfdblCrQlfySLFMLWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021</Description>
+                                    <LineNumber>Line 17 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 18a Column 3 Reserved - Not used -->
+                        
+                        <!-- Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="NrfdblCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 18b Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Nonrefundable portion of COBRA premium assistance credit -->
+                        <xsd:element name="NrfdblCOBRAPremiumSubsidyAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Nonrefundable portion of COBRA premium assistance credit</Description>
+                                    <LineNumber>Line 18c Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Number of individuals provided COBRA premium assistance -->
+                        <xsd:element name="COBRAPremiumSubsidyRcpntCnt" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Number of individuals provided COBRA premium assistance</Description>
+                                    <LineNumber>Line 18d Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                            
+                            <xsd:simpleType>
+                                <xsd:restriction base="IntegerType">
+                                    <xsd:totalDigits value="7"/>
+                                </xsd:restriction>
+                            </xsd:simpleType>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for federal income tax -->
+                        <xsd:element name="SpclAddnWgsFedIncmTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for federal income tax</Description>
+                                    <LineNumber>Line 19 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for social security taxes -->
+                        <xsd:element name="SpclAddnWgsSSTAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for social security taxes</Description>
+                                    <LineNumber>Line 20 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Medicare taxes -->
+                        <xsd:element name="SpclAddnWgsMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Medicare taxes</Description>
+                                    <LineNumber>Line 21 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Additional Medicare Tax -->
+                        <xsd:element name="SpclAddnWgsAddnlMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Additional Medicare Tax</Description>
+                                    <LineNumber>Line 22 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 24 Column 3 Reserved - Not used -->
+                        
+                        <!-- Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 -->
+                        <xsd:element name="RfdblCrQlfySLFMLWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021</Description>
+                                    <LineNumber>Line 25 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 26a Column 3 Reserved - Not used -->
+                        
+                        <!-- Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="RfdblCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 26b Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Refundable portion of COBRA premium assistance credit -->
+                        <xsd:element name="RfdblCOBRAPremiumSubsidyAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Refundable portion of COBRA premium assistance credit</Description>
+                                    <LineNumber>Line 26c Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified health plan expenses allocable to qualified sick leave wages for leave taken before April 1, 2021 -->
+                        <xsd:element name="QHPExpnssSSQlfyPdSLWageAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Qualified health plan expenses allocable to qualified sick leave wages for leave taken before April 1, 2021</Description>
+                                    <LineNumber>Line 28 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified health plan expenses allocable to qualified family leave wages for leave taken before April 1, 2021 -->
+                        <xsd:element name="QHPExpnssSSQlfyPdFMLWageAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Qualified health plan expenses allocable to qualified family leave wages for leave taken before April 1, 2021</Description>
+                                    <LineNumber>Line 29 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 30 Column 3 Reserved - Not used -->
+                        
+                        <!-- Line 31a Column 3 Reserved - Not used -->
+                        
+                        <!-- Line 32 Column 3 Reserved - Not used -->
+                        
+                        <!-- Line 33a Column 3 Reserved - Not used -->
+                        
+                        <!-- Line 33b Column 3 Reserved - Not used -->
+                        
+                        <!-- Line 34 Column 3 Reserved - Not used -->
+                        
+                        <!-- Qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="QlfySLWgsAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 35 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified health plan expenses allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="QHPExpnssQlfySLWgsAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Qualified health plan expenses allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 36 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Amounts under certain collectively bargained agreements allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="CrtnBrgnAgrmtQlfySLWgsAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Amounts under certain collectively bargained agreements allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 37 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="QlfyFMLWgsAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 38 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified health plan expenses allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="QHPExpnssQlfyFMLWgsAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Qualified health plan expenses allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 39 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Amounts under certain collectively bargained agreements allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="CrtnBrgnAgrmtQlfyFMLWgsAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Amounts under certain collectively bargained agreements allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 40 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <!-- =============== Part 3: Corrections Column 4 =============== -->
+            
+            <xsd:element name="TaxCorrection941XGrp" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <!-- Line 7 Column 4 FederalIncomeTaxWithheldAmt - Not used -->
+                        
+                        <!-- Taxable social security wages -->
+                        <xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable social security wages</Description>
+                                    <LineNumber>Line 8 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 9 Column 4 Reserved - Not used -->
+                        
+                        <!-- Line 10 Column 4 Reserved - Not used -->
+                        
+                        <!-- Taxable social security tips -->
+                        <xsd:element name="TaxableSocSecTipsAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable social security tips</Description>
+                                    <LineNumber>Line 11 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Taxable Medicare wages & tips -->
+                        <xsd:element name="TaxableMedicareWagesTipsAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable Medicare wages &amp; tips</Description>
+                                    <LineNumber>Line 12 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Taxable wages & tips subject to Additional Medicare Tax withholding -->
+                        <xsd:element name="TxblWageTipsSubjAddnlMedcrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Taxable wages &amp; tips subject to Additional Medicare Tax withholding</Description>
+                                    <LineNumber>Line 13 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 14 Column 4 TaxOnUnreportedTips3121qAmt - Not used -->
+                        
+                        <!-- Line 15 Column 4 TaxAdjustmentsAmt - Not used -->
+                        
+                        <!-- Qualified small business payroll tax credit for increasing research activities -->
+                        <xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+									<LineNumber>Line 16 Column 4</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						
+							<xsd:complexType>
+								<xsd:simpleContent>
+									<xsd:extension base="USDecimalAmountType">
+										<xsd:attribute name="referenceDocumentId" type="IdListType"></xsd:attribute>
+										<xsd:attribute name="referenceDocumentName" type="TextType" fixed="IRS8974"></xsd:attribute>
+									</xsd:extension>
+								</xsd:simpleContent>
+							</xsd:complexType>
+						</xsd:element>
+                        
+                        <!-- Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 -->
+                        <xsd:element name="NrfdblCrQlfySLFMLWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021</Description>
+                                    <LineNumber>Line 17 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 18a Column 4 Reserved - Not used -->
+                        
+                        <!-- Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="NrfdblCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 18b Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Nonrefundable portion of COBRA premium assistance credit -->
+                        <xsd:element name="NrfdblCOBRAPremiumSubsidyAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Nonrefundable portion of COBRA premium assistance credit</Description>
+                                    <LineNumber>Line 18c Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for federal income tax -->
+                        <xsd:element name="SpclAddnWgsFedIncmTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for federal income tax</Description>
+                                    <LineNumber>Line 19 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for social security taxes -->
+                        <xsd:element name="SpclAddnWgsSSTAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for social security taxes</Description>
+                                    <LineNumber>Line 20 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Medicare taxes -->
+                        <xsd:element name="SpclAddnWgsMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Medicare taxes</Description>
+                                    <LineNumber>Line 21 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Additional Medicare Tax -->
+                        <xsd:element name="SpclAddnWgsAddnlMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Additional Medicare Tax</Description>
+                                    <LineNumber>Line 22 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Combine amounts -->
+                        <xsd:element name="CombinedTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Combine amounts</Description>
+                                    <LineNumber>Line 23 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 24 Column 4 Reserved - Not used -->
+                        
+                        <!-- Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 -->
+                        <xsd:element name="RfdblCrQlfySLFMLWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021</Description>
+                                    <LineNumber>Line 25 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Line 26a Column 4 Reserved - Not used -->
+                        
+                        <!-- Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+                        <xsd:element name="RfdblCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                                    <LineNumber>Line 26b Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Refundable portion of COBRA premium assistance credit -->
+                        <xsd:element name="RfdblCOBRAPremiumSubsidyAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Refundable portion of COBRA premium assistance credit</Description>
+                                    <LineNumber>Line 26c Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Total combined amounts -->
+                        <xsd:element name="TotalAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Total combined amounts</Description>
+                                    <LineNumber>Line 27 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <!-- =============== Part 4: Explanation =============== -->
+            
+            <!-- Underreported and Overreported indicator -->
+            <xsd:element name="CorrUndrptOverreportedAmtInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Underreported and Overreported indicator</Description>
+                        <LineNumber>Line 41</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Reclassified Workers Indicator -->
+            <xsd:element name="CorrReclassifiedWorkersInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Reclassified Workers Indicator</Description>
+                        <LineNumber>Line 42</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Explanation of Corrections Text -->
+            <xsd:element name="CorrectionsExplanationTxt" type="MediumExplanationType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Explanation of Corrections Text</Description>
+                        <LineNumber>Line 43</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="TotCorrOrigRptCorr941XGrpType">
+        <xsd:sequence>
+            <!-- Wages, tips, and other compensation -->
+            <xsd:element name="WagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Wages, tips, and other compensation</Description>
+                        <LineNumber>Line 6 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Federal income tax withheld from wages, tips, and other compensation -->
+            <xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Federal income tax withheld from wages, tips, and other compensation</Description>
+                        <LineNumber>Line 7 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Taxable social security wages -->
+            <xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Taxable social security wages</Description>
+                        <LineNumber>Line 8 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Line 9 Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Line 10 Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Taxable social security tips -->
+            <xsd:element name="TaxableSocSecTipsAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Taxable social security tips</Description>
+                        <LineNumber>Line 11 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Taxable Medicare wages & tips -->
+            <xsd:element name="TaxableMedicareWagesTipsAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Taxable Medicare wages &amp; tips</Description>
+                        <LineNumber>Line 12 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Taxable wages & tips subject to Additional Medicare Tax withholding -->
+            <xsd:element name="TxblWageTipsSubjAddnlMedcrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Taxable wages &amp; tips subject to Additional Medicare Tax withholding</Description>
+                        <LineNumber>Line 13 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Section 3121(q) Notice and Demand-Tax due on unreported tips -->
+            <xsd:element name="TaxOnUnreportedTips3121qAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Section 3121(q) Notice and Demand-Tax due on unreported tips</Description>
+                        <LineNumber>Line 14 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Tax adjustments -->
+            <xsd:element name="TaxAdjustmentsAmt" type="USDecimalAmountType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Tax adjustments</Description>
+                        <LineNumber>Line 15 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified small business payroll tax credit for increasing research activities -->
+			<xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+						<LineNumber>Line 16 Column 1 and Column 2</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="USDecimalAmountNNType">
+							<xsd:attribute name="referenceDocumentId" type="IdListType"></xsd:attribute>
+							<xsd:attribute name="referenceDocumentName" type="TextType" fixed="IRS8974"></xsd:attribute>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+            
+            <!-- Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 -->
+            <xsd:element name="NrfdblCrQlfySLFMLWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Nonrefundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021</Description>
+                        <LineNumber>Line 17 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Line 18a Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="NrfdblCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Nonrefundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 18b Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Nonrefundable portion of COBRA premium assistance credit -->
+            <xsd:element name="NrfdblCOBRAPremiumSubsidyAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Nonrefundable portion of COBRA premium assistance credit</Description>
+                        <LineNumber>Line 18c Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Number of individuals provided COBRA premium assistance -->
+            <xsd:element name="COBRAPremiumSubsidyRcpntCnt" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Number of individuals provided COBRA premium assistance</Description>
+                        <LineNumber>Line 18d Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+                
+                <xsd:simpleType>
+                    <xsd:restriction base="IntegerNNType">
+                        <xsd:totalDigits value="7"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            
+            <!-- Special addition to wages for federal income tax -->
+            <xsd:element name="SpclAddnWgsFedIncmTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for federal income tax</Description>
+                        <LineNumber>Line 19 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Special addition to wages for social security taxes -->
+            <xsd:element name="SpclAddnWgsSSTAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for social security taxes</Description>
+                        <LineNumber>Line 20 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Special addition to wages for Medicare taxes -->
+            <xsd:element name="SpclAddnWgsMedcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for Medicare taxes</Description>
+                        <LineNumber>Line 21 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Special addition to wages for Additional Medicare Tax -->
+            <xsd:element name="SpclAddnWgsAddnlMedcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for Additional Medicare Tax</Description>
+                        <LineNumber>Line 22 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Line 24 Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021 -->
+            <xsd:element name="RfdblCrQlfySLFMLWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Refundable portion of credit for qualified sick and family leave wages for leave taken before April 1, 2021</Description>
+                        <LineNumber>Line 25 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Line 26a Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="RfdblCrQlfySLFMLWagesAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Refundable portion of credit for qualified sick and family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 26b Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Refundable portion of COBRA premium assistance credit -->
+            <xsd:element name="RfdblCOBRAPremiumSubsidyAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Refundable portion of COBRA premium assistance credit</Description>
+                        <LineNumber>Line 26c Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified health plan expenses allocable to qualified sick leave wages for leave taken before April 1, 2021 -->
+            <xsd:element name="QHPExpnssSSQlfyPdSLWageAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Qualified health plan expenses allocable to qualified sick leave wages for leave taken before April 1, 2021</Description>
+                        <LineNumber>Line 28 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified health plan expenses allocable to qualified family leave wages for leave taken before April 1, 2021 -->
+            <xsd:element name="QHPExpnssSSQlfyPdFMLWageAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Qualified health plan expenses allocable to qualified family leave wages for leave taken before April 1, 2021</Description>
+                        <LineNumber>Line 29 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Line 30 Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Line 31a Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Line 32 Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Line 33a Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Line 33b Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Line 34 Column 1 and Column 2 Reserved - Not used -->
+            
+            <!-- Qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="QlfySLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 35 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified health plan expenses allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="QHPExpnssQlfySLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Qualified health plan expenses allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 36 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Amounts under certain collectively bargained agreements allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="CrtnBrgnAgrmtQlfySLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Amounts under certain collectively bargained agreements allocable to qualified sick leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 37 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="QlfyFMLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 38 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified health plan expenses allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="QHPExpnssQlfyFMLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Qualified health plan expenses allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 39 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Amounts under certain collectively bargained agreements allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021 -->
+            <xsd:element name="CrtnBrgnAgrmtQlfyFMLWgsAftrAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Amounts under certain collectively bargained agreements allocable to qualified family leave wages for leave taken after March 31, 2021, and before October 1, 2021</Description>
+                        <LineNumber>Line 40 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

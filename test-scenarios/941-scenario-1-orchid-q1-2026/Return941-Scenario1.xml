@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" returnVersion="2026Q1v4.0">
+
+  <ReturnHeader binaryAttachmentCnt="0">
+
+    <!-- Return Type and Timestamp -->
+    <ReturnTypeCd>941</ReturnTypeCd>
+    <ReturnTs>2025-12-03T19:00:00-05:00</ReturnTs>
+
+    <!-- Software Information -->
+    <SoftwareId>12345678</SoftwareId>
+    <MultSoftwarePackagesUsedInd>false</MultSoftwarePackagesUsedInd>
+
+    <!-- Filing Security Information -->
+    <FilingSecurityInformation>
+      <IPAddress>127.0.0.1</IPAddress>
+      <IPDt>2025-12-03</IPDt>
+      <IPTm>19:00:00</IPTm>
+      <IPTimezoneCd>Eastern</IPTimezoneCd>
+      <TotalPreparationSubmissionTs>3600</TotalPreparationSubmissionTs>
+      <TotActiveTimePrepSubmissionTs>3600</TotActiveTimePrepSubmissionTs>
+      <VendorControlNum>TEST001234567890</VendorControlNum>
+      <AtSubmissionCreationDeviceId>DEVICE001</AtSubmissionCreationDeviceId>
+      <AtSubmissionFilingDeviceId>DEVICE001</AtSubmissionFilingDeviceId>
+    </FilingSecurityInformation>
+
+    <!-- Tax Period - Q1 2026 ends March 31, 2026 -->
+    <QuarterEndingDt>2026-03</QuarterEndingDt>
+
+    <!-- Filer Information -->
+    <Filer>
+      <EIN>003000004</EIN>
+      <BusinessName>
+        <BusinessNameLine1Txt>Orchid Incorporated</BusinessNameLine1Txt>
+      </BusinessName>
+      <BusinessNameControlTxt>ORCH</BusinessNameControlTxt>
+      <USAddress>
+        <AddressLine1Txt>1st Test Street</AddressLine1Txt>
+        <CityNm>Willow Grove</CityNm>
+        <StateAbbreviationCd>PA</StateAbbreviationCd>
+        <ZIPCd>19090</ZIPCd>
+      </USAddress>
+    </Filer>
+
+    <!-- Originator Group -->
+    <OriginatorGrp>
+      <EFIN>238689</EFIN>
+      <OriginatorTypeCd>OnlineFiler</OriginatorTypeCd>
+    </OriginatorGrp>
+
+    <!-- Signature - Online Filer PIN -->
+    <OnlineFilerPINGrp>
+      <PersonNm>Test Administrator</PersonNm>
+      <PersonTitleTxt>Owner</PersonTitleTxt>
+      <DaytimePhoneNum>2155551234</DaytimePhoneNum>
+      <EmailAddressTxt>test@orchid.example.com</EmailAddressTxt>
+      <OnlineFilerPIN>1234567890</OnlineFilerPIN>
+      <SignatureDt>2026-04-15</SignatureDt>
+      <JuratDisclosureCd>ONLINE FILER PIN</JuratDisclosureCd>
+    </OnlineFilerPINGrp>
+
+    <!-- Responsible Party Information Current Indicator - Yes per PDF -->
+    <IRSResponsiblePrtyInfoCurrInd>true</IRSResponsiblePrtyInfoCurrInd>
+
+    <!-- Third Party Designee - No per PDF -->
+    <DiscussWithThirdPartyNoInd>X</DiscussWithThirdPartyNoInd>
+
+  </ReturnHeader>
+
+  <ReturnData documentCnt="1">
+
+    <IRS941 documentId="IRS941">
+
+      <!-- Part 1: Answer these questions for this quarter -->
+
+      <!-- Line 1: Number of employees who received wages -->
+      <EmployeeCnt>3</EmployeeCnt>
+
+      <!-- Line 2: Wages, tips, and other compensation -->
+      <WagesAmt>1000.00</WagesAmt>
+
+      <!-- Line 3: Federal income tax withheld from wages, tips, and other compensation -->
+      <FederalIncomeTaxWithheldAmt>100.00</FederalIncomeTaxWithheldAmt>
+
+      <!-- Line 5a: Taxable social security wages -->
+      <SocialSecurityWageAndTaxGrp>
+        <SocialSecurityTaxCashWagesAmt>1000.00</SocialSecurityTaxCashWagesAmt>
+        <SocialSecurityTaxAmt>124.00</SocialSecurityTaxAmt>
+      </SocialSecurityWageAndTaxGrp>
+
+      <!-- Line 5c: Taxable Medicare wages and tips -->
+      <MedicareWageTipsAndTaxGrp>
+        <TaxableMedicareWagesTipsAmt>1000.00</TaxableMedicareWagesTipsAmt>
+        <TaxOnMedicareWagesTipsAmt>29.00</TaxOnMedicareWagesTipsAmt>
+      </MedicareWageTipsAndTaxGrp>
+
+      <!-- Line 5e: Total social security and Medicare taxes (Column 2 sum from lines 5a-5d) -->
+      <TotalSSMdcrTaxAmt>153.00</TotalSSMdcrTaxAmt>
+
+      <!-- Line 6: Total taxes before adjustments (lines 3 + 5e + 5f) -->
+      <TotalTaxBeforeAdjustmentAmt>253.00</TotalTaxBeforeAdjustmentAmt>
+
+      <!-- Lines 7-9: Current quarter adjustments (not applicable for this scenario) -->
+
+      <!-- Line 10: Total taxes after adjustments (lines 6 through 9) -->
+      <TotalTaxAfterAdjustmentAmt>253.00</TotalTaxAfterAdjustmentAmt>
+
+      <!-- Line 11: Qualified small business payroll tax credit (not applicable) -->
+
+      <!-- Line 12: Total taxes after adjustments and nonrefundable credits -->
+      <TotalTaxAmt>253.00</TotalTaxAmt>
+
+      <!-- Line 13: Total deposits for this quarter -->
+      <TotalTaxDepositAmt>253.00</TotalTaxDepositAmt>
+
+      <!-- Line 14: Balance due (line 12 > line 13) -->
+      <BalanceDueAmt>0.00</BalanceDueAmt>
+
+      <!-- Part 2: Tell us about your deposit schedule and tax liability for this quarter -->
+
+      <!-- Line 16: First option checked - tax less than $2,500 -->
+      <TotalTaxLessThanLimitAmtInd>X</TotalTaxLessThanLimitAmtInd>
+
+    </IRS941>
+
+  </ReturnData>
+
+</Return>

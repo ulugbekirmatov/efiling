@@ -1,0 +1,29 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2024v15.0    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+UWR 994973 - Metro web services JARs are upgraded from 3.0.3 to 4.0.4
+           - Removal of additional javax.xml.* packages and switched to jakarta.xml.* as needed for use by Metro 4.0.4 libraries
+Version number change for WSDL and Toolkit 
+
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL and Toolkit 
+
+
+General Changes for Transmitter and State Gateway applications
+____________________________
+
+UWR 994973 - Derby database client for Transmitter and State Gateway applications is upgraded to version 10.17.1
+Version number change
+Updated supplied Java Runtime to OpenJDK 22.0.2 as mandated by the Derby database client update
+Various minor compilation warnings fixed
+
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	For XWSS configuration schema document and semantics of security configuration file elements,
+	see the Java Web Services Tutorial v1.6, pp.139-171 at:
+	http://java.sun.com/webservices/docs/1.6/tutorial/doc/JavaWSTutorial.pdf
+ -->
+		<xwss:SecurityConfiguration xmlns:xwss="http://java.sun.com/xml/ns/xwss/config">
+			<xwss:Sign id="s" includeTimestamp="false">
+				<xwss:X509Token id="X509Token"
+					encodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary"
+					valueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3"
+					keyReferenceType="Direct" />
+				<xwss:CanonicalizationMethod
+					algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
+				<xwss:SignatureMethod algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+				<xwss:SignatureTarget type="qname" value="{http://www.irs.gov/a2a/mef/MeFHeader.xsd}MeFHeader">
+					<xwss:DigestMethod algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+				        <xwss:Transform algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>				
+				</xwss:SignatureTarget>
+				<xwss:SignatureTarget type="qname" value="SOAP-BODY">
+				            <xwss:DigestMethod algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+				            <xwss:Transform algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+        			</xwss:SignatureTarget>
+			</xwss:Sign>
+			<xwss:RequireTimestamp />
+			<xwss:RequireUsernameToken nonceRequired="false" passwordDigestRequired="false" />
+			<xwss:RequireSAMLAssertion type="SV"/>
+		</xwss:SecurityConfiguration>

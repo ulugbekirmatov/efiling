@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - Qualified Small Business Payroll Tax Credit for Increasing Research Activities</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Final Schema Version</MaturityLevel>
+			<ReleaseDate>July 3 2025</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ====================================================================== -->
+	<!-- ======================= IRS Form 8974 ================================ -->
+	<!-- ====================================================================== -->
+
+	<xsd:element name="IRS8974">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 8974</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS8974Type">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS8974">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentId" type="IdListType">
+						<xsd:annotation>
+							<xsd:documentation>List of document ID's of forms, schedules, supporting info. etc. attached to this form</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentName" type="StringType" fixed="IRS8974"/>
+						
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS8974Type">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 8974</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<!-- EIN -->
+			<xsd:element name="EIN" type="EINType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>EIN</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Business Name -->
+			<xsd:element name="BusinessName" type="BusinessNameType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Business Name</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Part 1:  Tell us about your income tax return -->
+			<xsd:element name="EmployerPayrollTaxElectionGrp" maxOccurs="5">
+				<xsd:complexType>
+					<xsd:sequence>
+						<!-- Tax Year End Date -->
+						<xsd:element name="TaxYearEndDt" type="DateType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Tax Year End Date</Description>
+									<LineNumber>Lines 1 to 5, Column (a)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+			
+						<!-- Return Type Cd -->
+						<xsd:element name="ReturnTypeCd" >
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Return Type Cd</Description>
+									<LineNumber>Lines 1 to 5, Column (b)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="StringType">
+									<xsd:enumeration value="1040" />
+									<xsd:enumeration value="1065" />
+									<xsd:enumeration value="1120" />
+									<xsd:enumeration value="1120S" />
+									<xsd:enumeration value="1120F" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						
+						<!-- Return Filed Date -->
+						<xsd:element name="ReturnFiledDt" type="DateType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Return Filed Date</Description>
+									<LineNumber>Lines 1 to 5, Column (c)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<!-- Group Member EIN -->
+						<xsd:element name="GroupMemberEIN" minOccurs="0" type="EINType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Group Member EIN</Description>
+									<LineNumber>Lines 1 to 5, Column (d)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<!-- Payroll Tax Credit Allocated Amount-->
+						<xsd:element name="PayrollTaxCreditAllocatedAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Payroll Tax Credit Allocated Amount</Description>
+									<LineNumber>Lines 1 to 5, Column (e)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<!-- Prior Period Payroll Tax Credit Amount -->
+						<xsd:element name="PriorPeriodPayrollTaxCreditAmt" minOccurs="0" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Prior Period Payroll Tax Credit Amount</Description>
+									<LineNumber>Lines 1 to 5, Column (f)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+						<!-- Remaining Credit Amount-->
+						<xsd:element name="RemainingCreditAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Remaining Credit Amount</Description>
+									<LineNumber>Lines 1 to 5, Column (g)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<!-- Maximum Allowable Payroll Tax Credit Amount-->
+			<xsd:element name="MaxAllwblPayrollTaxCreditAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Maximum Allowable Payroll Tax Credit Amount</Description>
+						<LineNumber>Line 6g</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+
+			<!-- Part 2:  Determine the credit that you can use this period -->
+			<!-- Maximum Allowable Payroll Tax Credit Amount, line 7 (use value from line 6g) -->
+			
+			<!-- Social Security Tax Amount -->
+			<xsd:element name="SocialSecurityTaxAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Tax Amount</Description>
+						<LineNumber>8</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Tax On Social Security Tip Amount -->
+			<xsd:element name="TaxOnSocialSecurityTipsAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Tax on Social Security Tip Amount</Description>
+						<LineNumber>9</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Social Security Tax Tip Amount -->
+			<xsd:element name="TotalSocialSecurityTaxTipAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Social Security Tax Tip Amount</Description>
+						<LineNumber>10</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Adjust Social Security Tax Tip Amount -->
+			<xsd:element name="AdjSocialSecurityTaxTipAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Adjust Social Security Tax Tip Amount</Description>
+						<LineNumber>11</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<xsd:choice>
+				<!-- Third Party Sick Pay Indicator -->
+				<xsd:element name="ThirdPartySickPayInd" type="CheckboxType" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Third Party Sick Pay Indicator</Description>
+							<LineNumber>11</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				
+				<!-- Section 3121q Indicator -->
+				<xsd:element name="Section3121qInd" type="CheckboxType" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Section 3121q Indicator</Description>
+							<LineNumber>11</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			
+			<xsd:element name="CrAgnstEmplrShrSSTAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Credit against the employer share of social security tax.</Description>
+						<LineNumber>12</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<xsd:element name="CalcCrRdcngAgnstEmplrShrSSTAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Subtract line 12 from line 7.</Description>
+						<LineNumber>13</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<xsd:element name="TaxOnMedicareWagesTipsAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Enter the amount from Form 941, Form 943 or Form 944 specified lines</Description>
+						<LineNumber>14</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<xsd:element name="CalcEmplrShareMedcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Multiply line 14 by 50% (0.50).</Description>
+						<LineNumber>15</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<xsd:element name="CreditForEmployerSSMedcrTxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Credit against the employer share of Medicare tax.</Description>
+						<LineNumber>16</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Payroll Tax Credit Amount -->
+			<xsd:element name="PayrollTaxCreditAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Payroll Tax Credit Amount</Description>
+						<LineNumber>17</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

@@ -13,7 +13,7 @@ The PostToolUse hook `dmv/.claude/hooks/validate-nashorn-es5.sh` scans added lin
 | arrow function | `=>` | `arrow_function` |
 | template literal | backtick | `template_literal` |
 
-The hook does not scan `class`, destructuring, `Array.prototype.includes`, `Object.assign`, for-of, default params, or spread. The source repo still avoids those by convention. `Object.keys` is ES5.1 and is used.
+The hook does not scan `class`, destructuring, `Array.prototype.includes`, `Object.assign`, for-of, default params, or spread. The source repo still avoids those by convention. Test files self-report that hygiene. `Object.keys` is ES5.1 and is used.
 
 | Feature | ES5 replacement |
 | --- | --- |
@@ -35,20 +35,23 @@ Nashorn has no `require` and no module system. Shared logic is copy-pasted betwe
 `$.sqlQuery` cells are Java host objects. `typeof` of `java.lang.Boolean`, `java.lang.String`, and `java.math.BigDecimal` is `object`. `bool()` in the payroll engines normalizes through `String()`.
 
 ```js
-if (typeof s === "boolean") return s;
-if (typeof s === "number") return s !== 0;
-if (typeof s === "string") {
-  var t = s.toLowerCase().replace(/^\s+|\s+$/g, '');
-  return t === "true" || t === "t" || t === "1" || t === "yes";
+function bool(s) {
+  if (s === null || s === undefined) return false;
+  if (typeof s === "boolean") return s;
+  if (typeof s === "number") return s !== 0;
+  if (typeof s === "string") {
+    var t = s.toLowerCase().replace(/^\s+|\s+$/g, '');
+    return t === "true" || t === "t" || t === "1" || t === "yes";
+  }
+  var t2 = String(s).toLowerCase().replace(/^\s+|\s+$/g, '');
+  return t2 === "true" || t2 === "t" || t2 === "1" || t2 === "yes";
 }
-var t2 = String(s).toLowerCase().replace(/^\s+|\s+$/g, '');
-return t2 === "true" || t2 === "t" || t2 === "1" || t2 === "yes";
 ```
-Source: claude-projects/dmv/dmv_payroll.js:2415
+Source: claude-projects/dmv/dmv_payroll.js:2413
 
 A numeric SQL column can still arrive as a string. `state_territory` comes back as `"54"` for VA, not `"VA"`.
 
-An empty `$.sqlQuery` result is `[]`, which is truthy. A bare `if (rows)` does not catch "no rows". The intended throw is skipped and `rows[0]` raises a Nashorn TypeError.
+The source repo disagrees on what `$.sqlQuery` returns when no row matches. A dmv review states `null` (`dmv/reviews/payroll-timesheets-dmv-20260429T160453Z.md:48`). An adversary review traced a live bug to an empty array, which is truthy (`south_carolina/ADVERSARY-REVIEW-2026-08-25.md:188`). A bare `if (rows)` does not catch the empty array. The intended throw is skipped and `rows[0]` raises a Nashorn TypeError. Guard both with `!rows || !rows.length`.
 
 Wrong.
 
@@ -60,13 +63,17 @@ if (resOfInfoQuery) {
 Source: claude-projects/south_carolina/sc_payroll_timesheets.js:507
 
 ```js
-if (!biweeklyPeriodsResult || biweeklyPeriodsResult.length === 0) {
-    throw new Error("no rows");
+function scEmployeeExists(employeeId) {
+    var rows = $.sqlQuery(
+        "SELECT employee_id FROM hr_employee WHERE employee_id = ${req.employee_id} LIMIT 1",
+        { employee_id: employeeId }
+    );
+    return rows && rows.length > 0 && (rows[0].employee_id * 1) > 0;
 }
 ```
-Source: claude-projects/south_carolina/sc_payroll_timesheets.js:547
+Source: claude-projects/south_carolina/sc_payroll_timesheets.js:382
 
-A top-level object output from a `_did` script serializes as Java `Map.toString()`, for example `{data=[...], success=true}`, unless the backend assigns `JSON.stringify(...)`. The output variable is `result`. A caller that needs an object stringifies it on the backend and parses it on the page.
+A top-level object output from a `_did` script serializes as Java `Map.toString()`, for example `{data=[...], success=true}`, unless the backend assigns `JSON.stringify(...)`. Whether the name `result` is required by the platform is not fully confirmed in the source repo. Callers that need JSON run `JSON.stringify` on the backend and `JSON.parse` on the page.
 
 ```js
 var xjobValue = (typeof xjob !== 'undefined') ? xjob : null;
@@ -92,7 +99,7 @@ function scDbg(a, b) {
 ```
 Source: claude-projects/south_carolina/sc_payroll.js:160
 
-SQL date and timestamp placeholders are quoted. A separate Nashorn `Date` constructor gotcha is not observed in the source repo. JDBC date-like cells follow the same host-object `typeof` as the other JDBC types. Coerce with `String(...)` before `JSON.stringify`.
+JDBC date cells are Java host objects like the other JDBC types. Coerce with `String(...)` before `JSON.stringify`.
 
 `setSCDebugSink` is an optional function pointer. Unset, `scDbg` talks to `$.console`. Set, only in the Node harness, it routes to a stepping sink.
 
@@ -102,9 +109,9 @@ The platform owns the transaction for every script invocation. Backend JS does n
 
 Query IDs, function IDs, form IDs, paygroup IDs, and template IDs are assigned by the platform and are immutable. Code never guesses a number. Placeholders stay `null` or `TODO` until the platform owner issues the value. Primary keys use `NEXTVAL` on an existing sequence, not `MAX(id)+1`.
 
-Request fields arrive as strings. Callers coerce with `1 *` or `parseInt(..., 10)` before numeric use.
+Request fields have no fixed runtime type. Call sites see numbers and strings for the same field and compare with `=== 1 || === '1'`. Callers coerce with `1 *` or `parseInt(..., 10)` before numeric use.
 
-`${req.X}` and `${_scd.X}` in `$.sqlQuery` and `$.sqlExecute` are literal string substitution, not bound parameters. Quote string, date, and timestamp values. Leave numerics bare.
+`${req.X}` and `${_scd.X}` in `$.sqlQuery` and `$.sqlExecute` are literal string substitution, not bound parameters. String, date, and timestamp params are quoted. Numeric params are left unquoted.
 
 ```sql
 SELECT TO_CHAR('${req.xnext}'::date, 'MM/DD/YYYY') AS next_display
@@ -120,7 +127,7 @@ var noteSql = "'" + String(note).replace(/'/g, "''") + "'";
 ```
 Source: claude-projects/south_carolina/sc_payroll_timesheets.js:368
 
-`_scd` is the session object. Documented keys are `employee_id`, `roleId`, and `user`. Table names in SQL are unqualified. `hr_employee`, not `schema.hr_employee`. `hr_company` joins on `code`, not `adp_company_id`.
+`_scd` is the session object. Documented keys are `employee_id`, `roleId`, and `user`. Table names in SQL carry no `public.` prefix. Some old files qualify a table with a tenant schema (`south_carolina/sc_payroll_timesheets.js:394`). Do not copy that. `hr_company` joins on `code`, not `adp_company_id`.
 
 ## Logging and PII
 
@@ -140,17 +147,21 @@ Source: claude-projects/south_carolina/sc_payroll.js:1222
 
 Employee names and SSNs do not enter logs or Claude context. Spreadsheets are read through `south_carolina/tools/read_xlsx.js` or `analyze_sc_workbooks.js`, which hash PII into tokens such as `SSN:a1b2c3d4`. Scripts do not log `clientOpts`, `password`, `user`, or full `process.env`. Debug instrumentation logs write payloads and counts, not a full eval result object.
 
-`DEBUG_MODE` is per project. dmv defaults `DEBUG_MODE` to `true` and logs would-be writes. The ACA mobile backend keeps `DEBUG_MODE` false because its debug line logs the full eval result, which is PII.
+`DEBUG_MODE` is per project. dmv defaults `DMV_DEBUG_MODE` to `true` and `DMV_DRY_RUN` to `false`, so it logs and it writes. The ACA mobile backend keeps `DEBUG_MODE` false because its debug line logs the full eval result, which is PII.
 
 ```js
 var DEBUG_MODE = false;
+```
+Source: claude-projects/aca/onepay_aca_measurement_eval_mobile_backend.js:17
+
+```js
 var result = findCurrentStatusGeneratingEval(xemployee_id);
 if (DEBUG_MODE) {
     $.console(result, '[ACA Current Status Eval] result=');
 }
 result = JSON.stringify(result)
 ```
-Source: claude-projects/aca/onepay_aca_measurement_eval_mobile_backend.js:17
+Source: claude-projects/aca/onepay_aca_measurement_eval_mobile_backend.js:782
 
 ## Secrets
 
@@ -167,6 +178,7 @@ function buildClientOpts() {
     base.user = decodeURIComponent(u.username);
     base.password = decodeURIComponent(u.password);
     return base;
+    // the real function also sets port, database, ssl, and search_path
   }
   return base;
 }
@@ -230,7 +242,7 @@ function clearFakeDollar() {
 ```
 Source: claude-projects/dmv/tests/dmv_payroll_db_test.js:60
 
-Front-line syntax gate is `node --check` on the backend file. debug-trace instrumentation is one pass over the whole failing data path. Flags at the top of the file are `DEBUG_MODE`, `DRY_RUN`, and `DEBUG_EMPLOYEE_ID`. Every `$.postForm` and `$.sqlExecute` sits behind `if (DEBUG_MODE)`. Cleanup strips scaffold `$.console` calls, resets `DEBUG_EMPLOYEE_ID` to `null`, and leaves the `DEBUG_MODE` write gate in place.
+Front-line syntax gate is `node --check` on the backend file. debug-trace instrumentation is one pass over the whole failing data path. Flags at the top of the file are `DEBUG_MODE`, `DRY_RUN`, and `DEBUG_EMPLOYEE_ID`. The debug-trace scaffold puts each `$.postForm` and `$.sqlExecute` behind `if (DEBUG_MODE)` for the duration of the trace. Production files keep `DEBUG_MODE` for logs and `DRY_RUN` for writes. Cleanup strips scaffold `$.console` calls, resets `DEBUG_EMPLOYEE_ID` to `null`, and leaves the write gate in place.
 
 ## Run the checks
 
@@ -239,7 +251,7 @@ The ES5 hook has no `--file` flag. It reads PostToolUse JSON on stdin. `CLAUDE_P
 ```sh
 printf '%s\n' '{"tool_name":"Edit","tool_input":{"file_path":"dmv/dmv_payroll.js","new_string":"var x = 1;"}}' | CLAUDE_PROJECT_DIR=/Users/ulugbekirmatov/Documents/claude-projects bash /Users/ulugbekirmatov/Documents/claude-projects/dmv/.claude/hooks/validate-nashorn-es5.sh
 ```
-Source: claude-projects/dmv/.claude/hooks/validate-nashorn-es5.sh:7
+The hook reads stdin at claude-projects/dmv/.claude/hooks/validate-nashorn-es5.sh:7. The command above is an invocation example, not a line from the repo.
 
 The JSON keys the hook reads are `tool_name` (`Edit`, `Write`, or `MultiEdit`) and a path from `tool_input.file_path`, `tool_input.path`, `tool_input.target_file`, `tool_response.filePath`, or `tool_response.file_path`. Added text comes from `git diff` when the file is tracked, else from `tool_input.new_string`, `tool_input.edits[].new_string`, or `tool_input.content`.
 
@@ -248,4 +260,4 @@ This repo checks every fenced JavaScript block in `c2s/*.md`.
 ```sh
 bash c2s/tools/check-snippets.sh
 ```
-Source: MeF/c2s/tools/check-snippets.sh:1
+The script lives in this repo at `c2s/tools/check-snippets.sh`.

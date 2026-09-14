@@ -54,7 +54,7 @@ The page has these globals. None of them are imported.
 
 - `iwb` is the client API.
 - `_request` holds page URL parameters such as `_request.onepay_employee_payroll_id`.
-- `_scd` is the session (`employeeId`, `roleId`, `user`). Payroll pages gate actions on `_scd.employeeId`.
+- `_scd` is the session. Observed keys are `employeeId`, `employee_id`, `roleId`, `userId`, and `user`. Root `CLAUDE.md` documents only `employee_id`, `roleId`, and `user`. Payroll pages gate actions on `_scd.employeeId`.
 - `_` is `React.createElement`.
 - `toastr` shows success and error toasts.
 - `window.confirm` gates destructive bulk actions.
@@ -63,7 +63,7 @@ The page has these globals. None of them are imported.
 
 Use `iwb.request` with `url`, `params`, `successCallback`, and `errorCallback`. Set `url` to `ajaxExecDbFunc?_did=` plus the numeric DID. Pass the parameter names the function already reads. Some functions use an `x` prefix. DID 4185 uses `onepay_employee_payroll_id` with no prefix.
 
-The callback argument is a platform envelope, not the backend `result` value. Unwrap `resp.result.result`, then `resp.result`, then `resp`. Some functions put the payload on `resp.result.data`. Match the output variable of that DID.
+The callback argument is a platform envelope, not the backend `result` value. Unwrap `resp.result.result`, then `resp.result`, then `resp`. Some functions put the payload on `resp.result.data`. Read the DID's own source to see what it assigns to `result`. DID 4565 returns only `{ success, db_func_id }`.
 
 A backend `result` that is a bare object arrives as Java `toString`. Functions that return objects assign `result = JSON.stringify(...)`. If the unwrapped value is a string, parse it.
 
@@ -116,7 +116,7 @@ iwb.request({
 
 Use the same `iwb.request` shape. Set `url` to `ajaxQueryData?_qid=` plus the numeric QID. Put bind variables in `params`. Query 15417 binds `xonepay_payroll_id`.
 
-The query result is `resp.data`, an array of row objects whose keys are the SELECT column names. Map those rows into component state. After `setState`, build the gridjs table from `this.state.detailRows` in `_initDetailGrid`. That call is in `payroll_run_page/run_payroll.js` at line 2320.
+The query result is `resp.data`, an array of row objects whose keys are the SELECT column names. Map those rows into component state. To bind rows to a grid, build the gridjs table in a `setState` callback. `payroll_run_page/run_payroll.js:2320` does that with `_initDetailGrid` for the QID 15219 detail rows.
 
 ```js browser
 function loadEarnings() {
@@ -174,7 +174,11 @@ To open the platform form UI, call `iwb.openForm` with a `showForm` URL. `a=2` i
 function openEvalForm(minEvalDt) {
   iwb.openForm(
     'showForm?a=2&_fid=15927' + (minEvalDt ? '&xeval_dt=' + minEvalDt : ''),
-    { modal: true, modalSize: 'lg' }
+    {
+      modal: true, modalSize: 'lg', openEditable: true,
+      editBtnDisable: true, deleteBtnDisable: true, closeBtnDisable: true,
+      params: { xeval_ids: selectedEvalIds, xeval_dt: minEvalDt || null }
+    }
   );
 }
 ```
@@ -188,7 +192,7 @@ function updateAgenda(event) {
     url: 'ajaxPostForm?a=1&_fid=9494&tagenda_id=' + event.id,
     params: ui2Servercenverter(event),
     successCallback: function (res) {
-      if (!res.success) toastr.error('ajaxPostForm?a=1&_fid=9494&tagenda_id=');
+      res.success ? resolve(event) : reject('ajaxPostForm?a=1&_fid=9494&tagenda_id=');
     },
     errorCallback: function (err) { console.error(err); }
   });
@@ -228,7 +232,8 @@ function sendToBank(sendFuncId, payrollId) {
     successCallback: function (resp) {
       var data = (resp && resp.result && resp.result.result)
         ? resp.result.result : resp;
-      if (data && data.success) {
+      var ok = data && (data.success === true || data.status === 'OK');
+      if (ok) {
         toastr.success(data.message || 'Sent to bank.');
       } else {
         toastr.error((data && data.message) || 'Send to bank failed.');
@@ -245,7 +250,7 @@ Source: claude-projects/payroll_run_page/run_payroll.js:2526
 
 Set a loading flag true before the call. Clear it in both callbacks and in the `JSON.parse` catch. If parse fails, log `console.error('Parse X failed:', e)` and restore fallback state so the UI does not hang.
 
-The fields on the `errorCallback` argument are not observed in the source repo. Pages pass that argument to `console.error` and do not read named properties off it.
+Most pages pass the `errorCallback` argument to `console.error` and read nothing off it. One page reads `res.error` (`dmv/payroll_run_page/history_report_settings_grid.js:322`). No other field is observed.
 
 ## Fire work in parallel or in sequence
 

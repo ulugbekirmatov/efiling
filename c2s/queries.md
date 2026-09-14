@@ -32,7 +32,7 @@ iwb.request({
   }
 });
 ```
-Source: claude-projects/south_carolina/payroll_run.js:3523
+Source: claude-projects/south_carolina/payroll_run.js:3523 (the constant is declared at line 1036)
 
 `params` keys become `${req.<key>}` in the stored SQL. The page above passes `xpayroll_id`. The query uses `${req.xpayroll_id}`.
 
@@ -61,7 +61,7 @@ Paste SELECT-only SQL into the query editor. Writes do not go through a QID.
 
 Verify every column against `shared/ddl/*.sql` before you name it. Do not copy a column name from neighboring JS.
 
-Use lowercase aliases. Row objects keep those names with no camelCase rewrite. Dropdown queries return exactly two columns aliased `id` and `dsc`.
+Use lowercase aliases. Row objects keep those names with no camelCase rewrite. A dropdown widget reads the columns aliased `id` and `dsc`. Extra columns may be present. `bonus_app_c2s/pay_dates.sql` also selects `company_id` and `is_company_44`.
 
 Keep the `/*!*/` markers the editor template puts on `FROM`, `WHERE`, `GROUP BY`, and `ORDER BY`.
 
@@ -117,7 +117,7 @@ var sql = "WHERE x.hire_dt >= ${req.start_date}::date "
 ```
 The rule is stated at claude-projects/bonus_app_c2s/available_pay_dates_test.js:9.
 
-On a `$.sqlQuery` or `$.sqlExecute` line, placeholders must be `${req.field}` or `${_scd.field}`. Pass the values through the second argument so the keys match `req`.
+On a `$.sqlQuery` or `$.sqlExecute` line, placeholders must be `${req.field}` or `${_scd.field}`. The optional second argument supplies values for named keys. Keys you do not pass resolve from the request fields. `pa_new_hire_report.js:189` passes only `company_id` and leaves `start_date` and `end_date` to the request.
 
 ```js
 $.sqlExecute(
@@ -179,7 +179,7 @@ iwb.request({
 ```
 Source: claude-projects/south_carolina/payroll_run.js:1388
 
-On the backend, `$.sqlQuery` returns an array of row objects. When nothing matches it returns an empty array, which is truthy. A bare `if (rows)` check passed an empty result to `rows[0]` and threw a Nashorn TypeError in `sc_payroll.js` (claude-projects/south_carolina/ADVERSARY-REVIEW-2026-08-25.md:188). Guard on `rows && rows.length` before you index. Numeric columns arrive as strings. Coerce them with `num` or `parseFloat`.
+On the backend, `$.sqlQuery` it returns an array of row objects. The source repo disagrees on what comes back when no row matches. A dmv review states the platform returns `null` (claude-projects/dmv/reviews/payroll-timesheets-dmv-20260429T160453Z.md:48). An adversary review traced a live bug to an empty array, which is truthy (claude-projects/south_carolina/ADVERSARY-REVIEW-2026-08-25.md:188). Guard both with `!rows || !rows.length` before you index. Numeric columns arrive as strings. Coerce them with `num` or `parseFloat`.
 
 ```js
 function num(v) {
@@ -297,7 +297,7 @@ Key tables:
 - `hr_company` holds company config. `pay_type` `0` is weekly. `pay_type` `1` is biweekly. Join to payroll on `hr_company.code` = `onepay_payroll.company_code`.
 - `adp_employee` is the employee master. Child tables join on `employee_id`.
 - `hr_work_assignment` holds work assignments. Select the active row with `lkp_work_assignment_status = 1`. The table also has `default_flag`. Do not use `default_flag` for that filter.
-- `onepay_payroll` is one payroll run. `onepay_employee_payroll` is the per-employee summary, keyed by `payroll_id`.
+- `onepay_payroll` is one payroll run. `onepay_employee_payroll` is the per-employee summary. Its primary key is `employee_payroll_id`. `payroll_id` is the foreign key to the run.
 - `onepay_employee_earning`, `onepay_employee_tax_payment`, `onepay_employee_deduction_payment`, and `onepay_employee_pay_item_result` join the employee payroll row on `employee_payroll_id`.
 - `pyr_payroll_import_adp` is the ADP import staging table.
 
@@ -315,5 +315,5 @@ The three hooks in `dmv/.claude/hooks/` run on `Edit`, `Write`, and `MultiEdit` 
 - `validate-sql-conventions.sh` blocks `\bdefault_flag\b` when the same file also contains `hr_work_assignment`. Active work-assignment rows use `lkp_work_assignment_status=1`, not `default_flag`.
 - `validate-sql-conventions.sh` blocks a single line that calls `sqlQuery(` or `sqlExecute(` and contains `${...}` unless the placeholder starts with `${req.`, `${_scd.`, or `${process.env`. The hook reason is that SQL placeholders must be `${req.field}` or `${_scd.field}`. Multi-line queries are out of scope for that regex.
 - `validate-no-tx-control.sh` blocks a quoted string that starts with `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT`, `START TRANSACTION`, or `END TRANSACTION`. The platform owns the transaction. The hook reason says to raise all-or-nothing needs with the user rather than adding those keywords.
-- `validate-immutable-ids.sh` compares ID tokens on removed lines to ID tokens on added lines using regexes in `.claude/policy/immutable-id-patterns.txt`. Observed patterns include `$.postForm(<digits>`, `$.sqlQuery(<digits>`, `$.sqlExecute(<digits>`, and annotations of the form `QID 1234` or `Function ID = 1234`. A changed token set is blocked as an immutable ID edit.
+- `validate-immutable-ids.sh` compares ID tokens on removed lines to ID tokens on added lines using regexes in `.claude/policy/immutable-id-patterns.txt`. Observed patterns include `$.postForm(<digits>` and annotations of the form `QID 1234` or `Function ID = 1234`. A changed token set is blocked as an immutable ID edit.
 - `validate-immutable-ids.sh` also reads `.claude/policy/immutable-id-registry.txt`. Each line has the form `KEY=VALUE`. If a registered VALUE appears on a removed line and is absent from the file after the edit, the hook reports that a registered platform ID cannot be changed.

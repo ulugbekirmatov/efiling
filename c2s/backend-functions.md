@@ -22,7 +22,7 @@ Use banner comments for config constants, helpers, main work, and the result lin
 
 End the file with `var result = ...;` and nothing after it. Do not add a trailing bare `result;` expression. DID scripts in the source repo often assign to a platform-predeclared `result` without `var`. Use `var result = ...;` in files you write.
 
-The next example reads one request field, runs one query, and returns a JSON string.
+The next example reads one request field, runs one query, and returns a JSON string. It is a shortened rewrite of `did_3896.js`, which returns a nested `employeeInfo` and `payrollInfo` body.
 
 ```js
 var onepayEmployeePayrollId = _request.onepay_employee_payroll_id;
@@ -68,7 +68,7 @@ Source: claude-projects/dmv/payroll_run_page/did_3896.js:6
 
 Read caller inputs from `_request`. Field names match the platform form or function parameters. Some names carry an `x` prefix (`_request.xonepay_payroll_id`, `_request.xemployee_id`). Some do not (`_request.onepay_employee_payroll_id`, `_request.company_code`). Use the names the function definition already declares.
 
-Incoming values arrive as strings. Coerce before arithmetic or equality checks. `1 * _request._tb_pk` and `_scd.roleId * 1` are the common forms. Compare with `== 1`, not a bare `if (value)`.
+Do not assume the runtime type of an incoming value. Call sites treat the same field as a number or a string. Coerce before arithmetic with `1 * _request._tb_pk` or `_scd.roleId * 1`. Compare with `xjob === 1 || xjob === '1'`, not a bare `if (value)`.
 
 When the platform fires `dmv/dmv_payroll.js` as funcId 4452, it passes per-employee fields as bare globals (`xemployee_payroll_id`, `xemployee_id`, `xonepay_payroll_id`) instead of `_request`. Check `typeof xemployee_id !== 'undefined'` before you read them.
 
@@ -85,9 +85,9 @@ Source: claude-projects/dmv/payroll_run_page/did_3931.js:5
 
 ## Query with `$.sqlQuery`
 
-Call `$.sqlQuery(sqlString)`. It returns an array of row objects, or `null` or `[]` when there are no rows. Column keys are lowercase. Values arrive as strings or Java host objects. `typeof` reports `"object"` for boxed JDBC values. Coerce with `Number()`, `parseFloat()`, or `String()` before you compute or compare.
+Call `$.sqlQuery(sqlString)`. It returns an array of row objects. The source repo disagrees on what comes back when no row matches. A dmv review states the platform returns `null` (claude-projects/dmv/reviews/payroll-timesheets-dmv-20260429T160453Z.md:48). An adversary review traced a live bug to an empty array, which is truthy (claude-projects/south_carolina/ADVERSARY-REVIEW-2026-08-25.md:188). Guard both with `!rows || !rows.length` before you index. Column keys are lowercase. Values arrive as strings or Java host objects. `typeof` reports `"object"` for boxed JDBC values. Coerce with `Number()`, `parseFloat()`, or `String()` before you compute or compare.
 
-Check `null` and `.length`. An empty array is truthy, so a bare `if (rows)` still enters the branch and then throws when you read `rows[0]`.
+An empty array is truthy, so a bare `if (rows)` still enters the branch and then throws when you read `rows[0]`.
 
 This pattern is wrong.
 
@@ -105,7 +105,11 @@ Guard length instead.
 ```js
 var master = $.sqlQuery(masterSql);
 if (!master || master.length === 0) {
-  throw new Error("No payroll row found for ID " + onepayEmployeePayrollId);
+  result = JSON.stringify({
+    success: false,
+    message: "No payroll row found for ID " + onepayEmployeePayrollId
+  });
+  return;
 }
 master = master[0];
 ```
@@ -191,6 +195,11 @@ Recheck the dry-run flag immediately before every platform write.
 ```js
 var DMV_DEBUG_MODE = true;
 var DMV_DRY_RUN = false;
+```
+
+Source: claude-projects/dmv/dmv_payroll.js:99
+
+```js
 if (DMV_DRY_RUN) {
   dmvDbg("dmv_payroll: DRY RUN skip employee_payroll update sql=" + updateSQL, "dmv_dry_run");
   return;
@@ -205,7 +214,9 @@ Source: claude-projects/dmv/dmv_payroll.js:99
 ```js
 var DEBUG_MODE = true;
 var DRY_RUN = true;
-var SUPPRESS = DRY_RUN || DEBUG_MODE;
+var DEBUG_BONUS_ASSIGNMENT_ID = 108;
+var assignmentId = 1 * (_request._tb_pk == null || _request._tb_pk === '' ? DEBUG_BONUS_ASSIGNMENT_ID : _request._tb_pk);
+var SUPPRESS = DRY_RUN || DEBUG_MODE || (DEBUG_BONUS_ASSIGNMENT_ID !== null && assignmentId !== 1 * DEBUG_BONUS_ASSIGNMENT_ID);
 function write(tag, payload, fire) {
   $.console((SUPPRESS ? "suppressed " : "applied ") + payload, tag);
   if (!SUPPRESS) fire();
@@ -269,18 +280,20 @@ iwb.request({
   url: "ajaxExecDbFunc?_did=3896",
   params: { onepay_employee_payroll_id: onepayEmployeePayrollId },
   successCallback: function (resp) {
-    var raw = (resp && resp.result) ? resp.result.result : undefined;
-    var data = (typeof raw === "string") ? JSON.parse(raw) : raw;
-    if (!data || (data.success !== true && data.success !== "true")) {
+    var data = (resp && resp.result && resp.result.result) ? resp.result.result
+      : (resp && resp.result) ? resp.result
+      : resp;
+    var ok = data && (data.success === true || data.success === "true" || data.status === "OK");
+    if (!ok) {
       return;
     }
   }
 });
 ```
 
-Source: claude-projects/south_carolina/payroll_run.js:799
+Source: claude-projects/south_carolina/payroll_run.js:2868
 
-DID 4565's `ajaxExecDbFunc` response is `{ success, db_func_id }` with no function payload. If the page needs the object you assigned to `result`, confirm the function's output parameter is registered as `result`.
+For DID 4565 the `ajaxExecDbFunc` response is `{ success, db_func_id }` with no function payload. Where the platform decides whether a function's `result` reaches the page is not observed in the source repo.
 
 ## Test under Node with a fake `$`
 
@@ -337,4 +350,4 @@ node --check dmv/dmv_payroll.js
 node tests/dmv_payroll_test.js
 ```
 
-Source: claude-projects/dmv/tests/dmv_payroll_test.js:3
+The test command is at claude-projects/dmv/tests/dmv_payroll_test.js:3. The `node --check` habit is stated at claude-projects/south_carolina/CLAUDE.md:297.

@@ -6,7 +6,7 @@ C2S backend Nashorn has no working outbound HTTP client in the source repo. The 
 
 This section is explanation. Opinion stays here.
 
-`iwb.request` and `fetch` run in the browser. Every `iwb.request` site in the source repo targets a platform ajax endpoint. The URLs that appear are `ajaxQueryData?_qid=`, `ajaxExecDbFunc?_did=`, `ajaxPostForm?a=&_fid=`, and `ajaxAdvSaveDataSql`. No call passes an external `http://` or `https://` URL. Call sites pass `url`, `params`, `successCallback`, and `errorCallback`. No site sets `method`, `headers`, or `timeout`. Root `CLAUDE.md` labels `iwb.request` as a backend HTTP helper. That label does not match the call sites.
+`iwb.request` and `fetch` run in the browser. Every `iwb.request` site in the source repo targets a platform ajax endpoint. The URLs that appear are `ajaxQueryData?_qid=`, `ajaxExecDbFunc?_did=`, and `ajaxPostForm?a=&_fid=`. No call passes an external `http://` or `https://` URL. Call sites pass `url`, `params`, `successCallback`, `errorCallback`, and sometimes `requestWaitMsg: true` (`calendarjs/form.js:1567`). No site sets `method`, `headers`, or `timeout`. Root `CLAUDE.md` labels `iwb.request` as a backend HTTP helper. That label does not match the call sites.
 
 ```js browser
 iwb.request({
@@ -24,7 +24,7 @@ iwb.request({
 ```
 Source: claude-projects/south_carolina/payroll_run.js:140
 
-A few pages POST JSON with browser `fetch`. Those calls still hit a platform URL such as `showForm?a=2&_fid=9494`, with `credentials: "same-origin"`.
+A few pages POST JSON with browser `fetch`. Those calls hit a platform URL such as `showForm?a=2&_fid=9494`, with `credentials: "same-origin"`.
 
 ```js browser
 const doRequest = fetch(url, {
@@ -44,7 +44,7 @@ No backend Nashorn file makes an outbound HTTP call. Searches for `$.http`, `$.r
 
 Two routes could reach the MeF service. Neither is proven.
 
-**Browser page calls the MeF REST API.** The page would use `iwb.request` or `fetch` against the MeF host instead of a platform ajax URL. The one design note that proposes an external HTTP call is Phase 7 of `dmv/net-pay-dotnet-migration-plan.html`. That plan flips `did_3944.js` from `$.execFunc` to `iwb.request` in the button's own JS, not in Nashorn. The plan does not show a URL, headers, or auth. Same-origin credentials on the calendar `fetch` do not transfer to a different host. Cross-origin behavior of a C2S-rendered page calling Spring Boot is not observed in the source repo.
+**Browser page calls the MeF REST API.** The page would use `iwb.request` or `fetch` against the MeF host instead of a platform ajax URL. The one design note that proposes an external HTTP call is Phase 7 of `dmv/net-pay-dotnet-migration-plan.html`. That plan proposes replacing `$.execFunc(funcId, ...)` inside `did_3944.js` with an `iwb.request` call. `did_3944.js` is a Nashorn DID, so the plan assumes `iwb.request` exists in Nashorn. Nothing in the source repo shows that it does. The plan does not show a URL, headers, or auth. Same-origin credentials on the calendar `fetch` do not transfer to a different host. Cross-origin behavior of a C2S-rendered page calling Spring Boot is not observed in the source repo.
 
 **Nashorn uses `Java.type` for `java.net.HttpURLConnection`.** `Java.type` is available. The only use in the source repo is `Java.type("iwb.exception.IWBException")`. An HTTP client built that way would be new. Gotchas for sockets, TLS, redirects, and timeouts are not observed in the source repo.
 
@@ -99,7 +99,7 @@ $.sendFormSmsMail(876, {
     to: 'payroll@onewell.org' ,
     subject: 'Employees First Time In Payroll ! ',
     message: mes,
-    cc: 'someone@onewell.org' ,
+    cc: 'umit.bakir@onewell.org' ,
 });
 ```
 Source: claude-projects/south_carolina/fnc_generate_non_exempt_payroll_NJ_GD0_V2.js:6934
@@ -126,8 +126,11 @@ for (xi = 0; xi < existingRows.length; xi++) {
 Source: claude-projects/bonus_app_c2s/holiday_bonus_generate.js:410
 
 ```js
-var dedupKey = empId;
-if (existingSet[dedupKey]) { skipped++; }
+for (i = 0; i < employees.length; i++) {
+    var empId = employees[i].employee_id;
+    var dedupKey = empId;
+    if (existingSet[dedupKey]) { skipped++; continue; }
+}
 ```
 Source: claude-projects/bonus_app_c2s/holiday_bonus_generate.js:476
 
@@ -202,10 +205,12 @@ try {
 ```
 Source: claude-projects/south_carolina/fnc_payroll_dispatcher.js:93
 
-JDBC values come back as Java host objects. `typeof` of `java.lang.Boolean`, `java.lang.String`, and `java.math.BigDecimal` is `object`. Do not test `typeof x === 'number'` or `typeof x === 'string'` on a `$.sqlQuery` cell. Coerce with `String(x)` or `Number(x)` before `JSON.stringify`. A top-level object assigned to the function output serializes as Java `Map.toString()`, with `=` instead of `:`, unless the backend runs `JSON.stringify` first.
+JDBC values come back as Java host objects. `typeof` of `java.lang.Boolean`, `java.lang.String`, and `java.math.BigDecimal` is `object`. `typeof x === 'number'` and `typeof x === 'string'` are false for a `$.sqlQuery` cell. `String(x)` or `Number(x)` comes before `JSON.stringify`. A top-level object assigned to the function output serializes as Java `Map.toString()`, with `=` instead of `:`, unless the backend runs `JSON.stringify` first.
 
 ```js
-var t2 = String(s).toLowerCase().replace(/^\s+|\s+$/g, '');
-return t2 === "true" || t2 === "t" || t2 === "1" || t2 === "yes";
+function bool(s) {
+    var t2 = String(s).toLowerCase().replace(/^\s+|\s+$/g, '');
+    return t2 === "true" || t2 === "t" || t2 === "1" || t2 === "yes";
+}
 ```
-Source: claude-projects/dmv/dmv_payroll.js:2425
+Source: claude-projects/dmv/dmv_payroll.js:2413

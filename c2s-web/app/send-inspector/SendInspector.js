@@ -78,7 +78,7 @@ const styles = {
     minHeight: 420,
   },
   pane: { padding: 16, minWidth: 0, borderRight: "1px solid #eef1f5" },
-  paneTitle: { margin: "0 0 8px", fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase" },
+  paneTitle: { margin: "0 0 8px", fontSize: 13, fontWeight: 650, letterSpacing: "0.01em" },
   pre: {
     margin: 0,
     padding: 12,
@@ -89,8 +89,7 @@ const styles = {
     lineHeight: 1.45,
     overflow: "auto",
     maxHeight: 520,
-    whiteSpace: "pre-wrap",
-    wordBreak: "break-word",
+    whiteSpace: "pre",
   },
   mimeLine: {
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run the Reporting Agent 941 tests in IntelliJ — efiling PR #1</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+body { background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height:1.55; font-size:15px;
+  overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .callout, .summary, .step { overflow-wrap: break-word; word-break: break-word; }
+.step, .summary .cell, [class*="grid"] > * { min-width: 0; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+main { max-width: 900px; margin: 0 auto; padding: 48px 24px 96px; }
+
+.eyebrow { font-family: var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-bottom:12px; }
+.eyebrow.rule { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.eyebrow.rule::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 { font-family: var(--serif); font-weight:500; font-size: clamp(34px, 5vw, 52px); line-height:1.06; letter-spacing:-.018em; margin:0 0 14px; max-width: 20ch; }
+h1 em { font-style: italic; color: var(--clay); }
+h2 { font-family: var(--serif); font-weight:500; font-size:27px; line-height:1.2; letter-spacing:-.012em; margin: 56px 0 6px; }
+h3 { font-family: var(--serif); font-weight:500; font-size:19px; margin: 0 0 6px; }
+.intro { color: var(--g700); font-size:16px; max-width: 70ch; margin: 0 0 28px; }
+.part-sub { font-family: var(--mono); font-size:12px; color:var(--g500); margin: 0 0 18px; }
+
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius:12px; padding:22px 26px; margin: 0 0 28px; }
+.tldr-dark .label { font-family: var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--oat); margin-bottom:10px; }
+.tldr-dark p { margin:0; font-size:15.5px; line-height:1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top:10px; }
+.tldr-dark strong { color: var(--ivory); font-weight:600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,.5); }
+.tldr-dark code { font-family: var(--mono); font-size:13.5px; background: rgba(250,249,245,.12); color: var(--ivory); padding:1px 5px; border-radius:4px; }
+
+.summary { display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom: 8px; }
+.summary .cell { background: var(--paper); border:1.5px solid var(--g300); border-radius:12px; padding:16px 18px; }
+.summary .k { font-family: var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--g500); margin-bottom:6px; }
+.summary .v { font-size:15.5px; color: var(--slate); font-weight:600; line-height:1.3; }
+.summary .v.accent { color: var(--clay); }
+.summary .v.ok { color: var(--olive); }
+.summary .sub { font-size:12.5px; color: var(--g500); margin-top:4px; font-weight:400; }
+@media (max-width: 760px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 460px) { .summary { grid-template-columns: 1fr; } }
+
+.step { display:grid; grid-template-columns: 44px 1fr; gap:18px; padding: 22px 0; border-bottom: 1.5px solid var(--g200); }
+.step:last-of-type { border-bottom: none; }
+.step-badge { width:34px; height:34px; border-radius:50%; background: var(--oat); border:1.5px solid var(--g300); display:flex; align-items:center; justify-content:center; font-family: var(--mono); font-weight:600; color: var(--slate); font-size:14px; }
+.step.hot .step-badge { background: rgba(217,119,87,.14); border-color: var(--clay); color: var(--clay); }
+.step.done .step-badge { background: rgba(120,140,93,.16); border-color: var(--olive); color: var(--olive); }
+.step-loc { font-family: var(--mono); font-size:12.5px; color: var(--g500); margin-bottom: 4px; }
+.step p { margin: 6px 0 10px; color: var(--g700); }
+.step ol, .step ul { margin: 6px 0 10px; padding-left: 22px; color: var(--g700); }
+.step li { margin: 4px 0; }
+.ui { font-family: var(--sans); font-weight:600; color: var(--slate); }
+.ui .sep { color: var(--g500); font-weight:400; padding: 0 4px; }
+.check { display:flex; gap:10px; align-items:flex-start; border:1.5px solid var(--g300); border-left: 4px solid var(--olive); background: var(--paper); border-radius: 8px; padding: 10px 14px; font-size:13.5px; margin-top: 10px; }
+.check .k { font-family: var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color: var(--olive); white-space: nowrap; padding-top: 2px; }
+.check .body { color: var(--g700); }
+
+.callout { display:flex; gap:12px; border:1.5px solid var(--oat); background: rgba(227,218,204,.35); border-radius:10px; padding:14px 16px; font-size:14px; margin: 10px 0; }
+.callout .ico { color: var(--clay); font-weight:600; }
+.callout p { margin: 0; color: var(--g700); }
+.gotchas { border:1.5px solid var(--clay); border-radius:12px; background: rgba(217,119,87,.06); padding:18px 20px; margin-top: 24px; }
+.gotchas h3 { font-family: var(--sans); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color: var(--clay); margin: 0 0 10px; }
+.gotchas ul { list-style:none; margin:0; padding:0; }
+.gotchas li { position:relative; padding-left:16px; font-size:13.5px; margin-bottom:8px; color: var(--g700); }
+.gotchas li::before { content:""; position:absolute; left:0; top:8px; width:5px; height:5px; background: var(--clay); border-radius:2px; }
+
+.code { background: var(--slate); border-radius:12px; padding:16px 18px; overflow-x:auto; margin: 10px 0; }
+.code pre { font-family: var(--mono); font-size:12.5px; line-height:1.65; color:#E8E6DE; white-space:pre; margin:0; }
+.code .kw { color: var(--clay); } .code .str { color: var(--olive); } .code .cm { color: var(--g500); } .code .fn { color: #C9B98A; }
+:not(pre) > code { font-family: var(--mono); font-size:.92em; background: var(--g100); color: var(--slate); padding:1px 6px; border-radius:4px; overflow-wrap: break-word; }
+
+.pill { display:inline-flex; align-items:baseline; gap:6px; font-family: var(--sans); font-size:12px; font-weight:600; border-radius:999px; padding:5px 12px; line-height:1; vertical-align: middle; }
+.pill.sev { background: var(--clay); color:#fff; letter-spacing:.03em; }
+.pill.resolved { background: var(--olive); color:#fff; }
+.pill.neutral { background: var(--g100); color: var(--g700); border:1.5px solid var(--g300); }
+.badge { display:inline-flex; align-items:center; height:22px; padding:0 9px; font-size:12px; font-weight:500; border-radius:999px; }
+.badge-accent { background: rgba(217,119,87,.14); color: var(--clay); }
+.badge-success { background: rgba(120,140,93,.16); color: var(--olive); }
+.badge-neutral { background: var(--g100); color: var(--g700); }
+
+.table-wrap { overflow-x:auto; margin: 10px 0; }
+table.shipped { width:100%; min-width: 640px; table-layout:auto; border-collapse:separate; border-spacing:0; background: var(--paper); border:1.5px solid var(--g300); border-radius:12px; overflow:hidden; }
+table.shipped th, table.shipped td { word-break: normal; overflow-wrap: break-word; }
+table.shipped .nowrap { white-space: nowrap; }
+table.shipped thead th { text-align:left; font-family: var(--sans); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color: var(--g500); background: var(--g100); padding:11px 14px; border-bottom:1px solid var(--g300); }
+table.shipped tbody td { padding:10px 14px; border-bottom:1px solid var(--g100); font-size:13.5px; vertical-align:top; }
+table.shipped tbody tr:last-child td { border-bottom:none; }
+table.shipped td code { white-space: nowrap; }
+
+details { border:1.5px solid var(--g300); border-radius:10px; background: var(--paper); margin:12px 0; overflow:hidden; }
+details summary { list-style:none; cursor:pointer; padding:13px 16px; font-family: var(--serif); font-size:16px; color: var(--slate); display:flex; align-items:baseline; gap:10px; flex-wrap: wrap; }
+details summary::-webkit-details-marker { display:none; }
+details summary::before { content:"▸"; color: var(--clay); font-family: var(--sans); font-size:12px; transition: transform 120ms; }
+details[open] summary::before { transform: rotate(90deg); }
+details summary .where { font-family: var(--mono); font-size:11px; color: var(--g500); margin-left:auto; }
+details .body { padding: 0 16px 14px; font-size:14px; color: var(--g700); }
+details .body p { margin: 6px 0; }
+
+.flow { display:grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 12px 0 4px; }
+.flow .node { background: var(--paper); border:1.5px solid var(--g300); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; }
+.flow .node .n { font-family: var(--mono); font-size: 10.5px; color: var(--g500); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+.flow .node.live { border-color: var(--clay); }
+@media (max-width: 760px) { .flow { grid-template-columns: 1fr 1fr; } }
+
+@media print {
+  body { background: #fff; }
+  main { padding: 0; max-width: none; }
+  details { break-inside: avoid; } details:not([open]) .body { display:block; }
+  .tldr-dark, .code { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow rule">Runbook · efiling PR #1 · branch <code>cursor/reporting-agent-form-941-ats-test-ac2e</code></div>
+  <h1>Run the Reporting Agent 941 tests <em>in IntelliJ</em></h1>
+  <p class="intro">PR #1 adds two tests under <code>com.irs.mef.reportingagent</code>. One proves the composed Return is schema-valid and needs nothing but Java 17. The other logs in to IRS ATS and files a real Form 941 once. This page gets both green from IntelliJ IDEA, in that order.</p>
+
+  <div class="tldr-dark">
+    <div class="label">The two-sentence version</div>
+    <p><strong>Offline first:</strong> open <code>ReportingAgentReturnTest</code>, click the green gutter arrow, done. It uses no Spring, no network, and no credentials.</p>
+    <p><strong>Live second:</strong> <code>ReportingAgentForm941AtsTest</code> stays silently <em>disabled</em> until you add <code>-Dmef.integration.test.enabled=true</code> to the run configuration's <strong>VM options</strong> (not environment variables) and put Pyramos enrollment values in a <code>.env</code> file inside <code>mef-spring-boot-integration/</code>. When it runs, it files a return to IRS ATS.</p>
+  </div>
+
+  <div class="summary">
+    <div class="cell"><div class="k">Branch</div><div class="v ok">Checked out</div><div class="sub">via <code>gh pr checkout 1</code></div></div>
+    <div class="cell"><div class="k">JDK on this Mac</div><div class="v accent">None installed</div><div class="sub">Java 17 required; step 1</div></div>
+    <div class="cell"><div class="k">Offline test</div><div class="v">ReportingAgentReturnTest</div><div class="sub">no Spring, no network</div></div>
+    <div class="cell"><div class="k">Live test</div><div class="v accent">ReportingAgentForm941AtsTest</div><div class="sub">1 submission to IRS ATS</div></div>
+  </div>
+</header>
+
+<section id="part-a">
+  <h2>Part A · One-time machine and IDE setup</h2>
+  <p class="part-sub">4 steps · needed once · no IRS contact</p>
+
+  <article class="step hot">
+    <div class="step-badge">1</div>
+    <div>
+      <div class="step-loc">Terminal</div>
+      <h3>Install JDK 17 and Maven</h3>
+      <p>The project compiles for Java 17 and the Metro/JAX-WS stack in the IRS SDK breaks on 21 and newer. This machine has no JDK, no Maven and no <code>~/.m2</code> yet, so Homebrew does all three.</p>
+      <div class="code"><pre>brew install openjdk@17 maven
+<span class="cm"># let /usr/libexec/java_home (and IntelliJ's SDK detector) see the Homebrew JDK</span>
+sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk \
+  /Library/Java/JavaVirtualMachines/openjdk-17.jdk</pre></div>
+      <div class="check"><span class="k">Checkpoint</span><span class="body"><code>/usr/libexec/java_home -v 17</code> prints a path and <code>mvn -version</code> reports Java 17.</span></div>
+    </div>
+  </article>
+
+  <article class="step hot">
+    <div class="step-badge">2</div>
+    <div>
+      <div class="step-loc">Terminal · repo root</div>
+      <h3>Install the IRS SDK jar into the local Maven repository</h3>
+      <p>The pom depends on <code>gov.irs.mef:mef-client-sdk:16.0</code>, which no public repository serves. Without this step IntelliJ's Maven import shows the dependency in red and nothing compiles.</p>
+      <div class="code"><pre><span class="kw">cd</span> /Users/ulugbekirmatov/Documents/MeF
+unzip -o <span class="str">"Version_16/A2A_Toolkit_Version16.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip"</span> -d /tmp/mef_sdk
+mvn install:install-file \
+  -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/mef_client_sdk.jar \
+  -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=16.0 -Dpackaging=jar</pre></div>
+      <div class="check"><span class="k">Checkpoint</span><span class="body"><code>ls ~/.m2/repository/gov/irs/mef/mef-client-sdk/16.0/</code> lists the jar and a pom.</span></div>
+    </div>
+  </article>
+
+  <article class="step done">
+    <div class="step-badge">3</div>
+    <div>
+      <div class="step-loc">Terminal · repo root · already done in this session</div>
+      <h3>Be on the PR branch</h3>
+      <p>The repo is already switched to the PR branch. If you ever need to get back to it:</p>
+      <div class="code"><pre>gh pr checkout 1        <span class="cm"># or: git switch cursor/reporting-agent-form-941-ats-test-ac2e</span>
+git branch --show-current</pre></div>
+      <div class="check"><span class="k">Checkpoint</span><span class="body">The branch name printed ends in <code>ats-test-ac2e</code>, and <code>mef-spring-boot-integration/src/main/java/com/irs/mef/reportingagent/</code> exists.</span></div>
+    </div>
+  </article>
+
+  <article class="step">
+    <div class="step-badge">4</div>
+    <div>
+      <div class="step-loc">IntelliJ IDEA</div>
+      <h3>Open the Maven module and point it at JDK 17</h3>
+      <ol>
+        <li><span class="ui">File<span class="sep">→</span>Open…</span>, select <code>/Users/ulugbekirmatov/Documents/MeF/mef-spring-boot-integration/pom.xml</code>, choose <span class="ui">Open as Project</span>. Opening the pom (not the repo root) makes IntelliJ import it as a Maven project straight away.</li>
+        <li><span class="ui">File<span class="sep">→</span>Project Structure<span class="sep">→</span>Project</span>: set <span class="ui">SDK</span> to the 17 you installed (click <span class="ui">Add SDK<span class="sep">→</span>Detected SDKs</span> if it is not listed) and <span class="ui">Language level</span> to 17.</li>
+        <li><span class="ui">Settings<span class="sep">→</span>Build, Execution, Deployment<span class="sep">→</span>Build Tools<span class="sep">→</span>Maven<span class="sep">→</span>Importing</span>: <span class="ui">JDK for importer</span> = 17.</li>
+        <li><span class="ui">Settings<span class="sep">→</span>Build, Execution, Deployment<span class="sep">→</span>Compiler<span class="sep">→</span>Annotation Processors</span>: tick <span class="ui">Enable annotation processing</span>. The reporting-agent classes use Lombok's <code>@Data</code>; the Lombok plugin is bundled with IntelliJ, but processing must be on.</li>
+        <li>Open the <span class="ui">Maven</span> tool window (right edge) and click <span class="ui">Reload All Maven Projects</span>. Wait for indexing to finish.</li>
+      </ol>
+      <div class="check"><span class="k">Checkpoint</span><span class="body">In the Maven tool window, <span class="ui">Dependencies</span> shows <code>gov.irs.mef:mef-client-sdk:16.0</code> without red underline, and <span class="ui">Build<span class="sep">→</span>Build Project</span> finishes with no errors.</span></div>
+    </div>
+  </article>
+</section>
+
+<section id="part-b">
+  <h2>Part B · The offline test</h2>
+  <p class="part-sub">1 step · run this every time before touching the live test</p>
+
+  <article class="step">
+    <div class="step-badge">5</div>
+    <div>
+      <div class="step-loc">src/test/java/com/irs/mef/reportingagent/ReportingAgentReturnTest.java</div>
+      <h3>Run <code>ReportingAgentReturnTest</code> from the gutter</h3>
+      <p>This test composes a Reporting Agent Return from a schema-shaped stand-in originator (EFIN <code>000000</code>, which the live factory refuses on purpose) and the Orchid Q1 2026 client body, then validates it against <code>src/main/resources/schemas/94x/941/Return941.xsd</code>. It also asserts the header carries <code>OriginatorTypeCd=ReportingAgent</code>, a <code>ReportingAgentPINGrp</code>, no <code>OnlineFilerPINGrp</code>, and that the ASID never appears in the XML.</p>
+      <ol>
+        <li>Open the file in the editor.</li>
+        <li>Click the green ▶ in the gutter next to <code>class ReportingAgentReturnTest</code> and pick <span class="ui">Run 'ReportingAgentReturnTest'</span>.</li>
+        <li>IntelliJ creates a JUnit run configuration with working directory <code>$MODULE_WORKING_DIR$</code>. Leave it. The fixture path helper accepts either the module directory or the repo root and throws a clear <code>Fixture not found</code> otherwise.</li>
+      </ol>
+      <div class="check"><span class="k">Checkpoint</span><span class="body">Run tool window is green. If the XSD assertion fails, the message is the full validator report, so read it before touching anything.</span></div>
+      <div class="callout"><span class="ico">↳</span><p>Command-line equivalent, from <code>mef-spring-boot-integration/</code>: <code>mvn test -Dtest=ReportingAgentReturnTest</code>. This is the PR's own verification step. Never run a bare <code>mvn test</code> on this repo.</p></div>
+    </div>
+  </article>
+</section>
+
+<section id="part-c">
+  <h2>Part C · The gated live ATS test</h2>
+  <p class="part-sub">4 steps · files one Form 941 to IRS ATS · needs Pyramos enrollment values</p>
+
+  <div class="callout"><span class="ico">!</span><p><strong>Readiness check.</strong> The gate refuses to run without a Pyramos EFIN, ETIN, ASID <code>10219201</code>, a Reporting Agent PIN and the device certificate keystore. Per the onboarding status, the Pyramos e-file application (EFIN/ETIN) and Automated Enrollment are still pending. Set up the run configuration now; the test will fail closed at step 8 with the name of the first missing value until enrollment completes. That is the intended behavior, not a bug.</p></div>
+
+  <article class="step">
+    <div class="step-badge">6</div>
+    <div>
+      <div class="step-loc">mef-spring-boot-integration/.env &nbsp;(gitignored)</div>
+      <h3>Create the <code>.env</code> file in the module directory</h3>
+      <p>The Spring test boots the full application context. On boot, <code>DotenvEnvironmentPostProcessor</code> reads <code>.env</code> from <code>user.dir</code>, which for an IntelliJ JUnit run is the working directory of the run configuration. Since that defaults to the module directory, the file must live at <code>mef-spring-boot-integration/.env</code>, not at the repo root. Real environment variables still win over the file.</p>
+      <div class="code"><pre><span class="cm"># --- A2A session (MefSdkConfig) ---</span>
+<span class="fn">MEF_ETIN</span>=<span class="str">&lt;Pyramos ETIN&gt;</span>
+<span class="fn">MEF_EFIN</span>=<span class="str">&lt;Pyramos EFIN&gt;</span>              <span class="cm"># 6 digits; 238689 (OneWell) and 000000 are refused</span>
+<span class="fn">MEF_ASID</span>=<span class="str">10219201</span>                    <span class="cm"># the gate hardcodes this exact AppSysID</span>
+<span class="fn">MEF_KEYSTORE_PATH</span>=<span class="str">/absolute/path/to/pyramos.p12</span>
+<span class="fn">MEF_KEYSTORE_PASSWORD</span>=<span class="str">&lt;keystore password&gt;</span>
+<span class="fn">MEF_KEYSTORE_TYPE</span>=<span class="str">PKCS12</span>
+<span class="fn">MEF_KEY_ALIAS</span>=<span class="str">&lt;alias inside the p12&gt;</span>
+<span class="fn">MEF_KEY_PASSWORD</span>=<span class="str">&lt;key password&gt;</span>
+
+<span class="cm"># --- Reporting Agent originator (ReportingAgentProperties, mef.reporting-agent.*) ---</span>
+<span class="fn">MEF_RA_PIN</span>=<span class="str">&lt;5-digit Reporting Agent PIN&gt;</span>
+<span class="fn">MEF_SOFTWARE_ID</span>=<span class="str">&lt;8-char Software ID&gt;</span>
+<span class="fn">MEF_RA_EIN</span>=<span class="str">&lt;Pyramos EIN&gt;</span>                <span class="cm"># 003000004 (Orchid, the client) is refused</span>
+<span class="fn">MEF_RA_NAME</span>=<span class="str">PYRAMOS SOFTWARE LLC</span>
+<span class="fn">MEF_RA_NAME_CONTROL</span>=<span class="str">PYRA</span>
+<span class="fn">MEF_RA_ADDRESS_LINE1</span>=<span class="str">&lt;street&gt;</span>
+<span class="fn">MEF_RA_CITY</span>=<span class="str">&lt;city&gt;</span>
+<span class="fn">MEF_RA_STATE</span>=<span class="str">&lt;2-letter state&gt;</span>
+<span class="fn">MEF_RA_ZIP</span>=<span class="str">&lt;zip&gt;</span></pre></div>
+      <p>Not needed: <code>MEF_USERNAME</code>/<code>MEF_PASSWORD</code> (login is certificate-only), <code>A2A_TOOLKIT_HOME</code> (defaults to <code>classpath:mef_config</code>), and the environment switch (<code>application.yml</code> already sets <code>mef.sdk.environment: ATS</code>).</p>
+      <div class="check"><span class="k">Checkpoint</span><span class="body"><code>git status</code> does not list <code>.env</code>. The keystore path points at the Pyramos PKCS12 (subject <code>O=Pyramos Software LLC</code>), not the old OneWell one. Both share <code>CN=c2s.pahealthmanagement.org</code>, so check the <code>O=</code>.</span></div>
+    </div>
+  </article>
+
+  <article class="step hot">
+    <div class="step-badge">7</div>
+    <div>
+      <div class="step-loc">Run → Edit Configurations…</div>
+      <h3>Create the JUnit run configuration with the gate property in VM options</h3>
+      <p>The test class carries <code>@EnabledIfSystemProperty(named = "mef.integration.test.enabled", matches = "true")</code>. JUnit reads a <em>JVM system property</em>, so the switch goes in the VM options field. Putting it in the Environment variables field does nothing and the test reports as skipped.</p>
+      <ol>
+        <li><span class="ui">Run<span class="sep">→</span>Edit Configurations…<span class="sep">→</span>+<span class="sep">→</span>JUnit</span>. Name it <span class="ui">RA 941 ATS (LIVE)</span> so the name warns you.</li>
+        <li><span class="ui">Test kind</span>: Class. <span class="ui">Class</span>: <code>com.irs.mef.reportingagent.ReportingAgentForm941AtsTest</code>.</li>
+        <li><span class="ui">Use classpath of module</span>: <code>mef-spring-boot-integration</code>. <span class="ui">JRE</span>: 17.</li>
+        <li>Click <span class="ui">Modify options<span class="sep">→</span>Add VM options</span> and paste:</li>
+      </ol>
+      <div class="code"><pre>-Dmef.integration.test.enabled=<span class="str">true</span>
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-exports java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED
+--add-exports java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED
+--add-exports java.xml.crypto/org.jcp.xml.dsig.internal.dom=ALL-UNNAMED</pre></div>
+      <ol start="5">
+        <li><span class="ui">Working directory</span>: <code>$MODULE_WORKING_DIR$</code> (the default). This is what makes <code>.env</code>, the fixture paths, <code>a2a_sdk.log.*</code>, <code>logs/</code> and the NewSend journal <code>data/newsend-journal.jsonl</code> all resolve relative to <code>mef-spring-boot-integration/</code>.</li>
+        <li><span class="ui">Apply</span>. Do not add <code>Form941SubmissionTest</code> or <code>MefLoginIntegrationTest</code> to this configuration; they share the same gate and would also go live.</li>
+      </ol>
+      <div class="callout"><span class="ico">↳</span><p>The four <code>--add-opens</code>/<code>--add-exports</code> lines are copied from the pom's <code>spring-boot-maven-plugin</code> block. The pom passes them to <code>spring-boot:run</code> but not to Surefire, and the existing login test has run under Maven without them. They are harmless here and remove <code>InaccessibleObjectException</code> as a variable.</p></div>
+      <div class="check"><span class="k">Checkpoint</span><span class="body">Running the configuration with an <em>empty</em> <code>.env</code> fails immediately with <code>ReportingAgentValidationException: MEF_EFIN is required</code>. That proves the gate is armed and the property reached JUnit. A grey "ignored" result means the property did not.</span></div>
+    </div>
+  </article>
+
+  <article class="step hot">
+    <div class="step-badge">8</div>
+    <div>
+      <div class="step-loc">Run ▶ RA 941 ATS (LIVE)</div>
+      <h3>Run it and read the outcome</h3>
+      <p>The test does five things in order. Each one fails closed, so the first failure names the exact thing to fix.</p>
+      <div class="flow">
+        <div class="node"><div class="n">1 · env</div><code>originators.fromEnvironment()</code> reads MEF_* and refuses OneWell/stand-in/Orchid values</div>
+        <div class="node"><div class="n">2 · gate</div><code>ReportingAgentAtsGate.open</code>: env=ATS, ASID 10219201, ETIN set, keystore set, originator EFIN == MEF_EFIN</div>
+        <div class="node"><div class="n">3 · compose</div>Return built from Orchid client body + Pyramos originator, in America/New_York</div>
+        <div class="node live"><div class="n">4 · login</div>Certificate-only A2A login to ATS; SAML token kept in the singleton ServiceContext</div>
+        <div class="node live"><div class="n">5 · send</div><code>NewSendSubmissionService.submit</code> once; outcome Transmitted / Rejected / Indeterminate</div>
+      </div>
+      <div class="table-wrap">
+      <table class="shipped">
+        <colgroup><col style="width:22%"><col style="width:38%"><col style="width:40%"></colgroup>
+        <thead><tr><th>Result in IntelliJ</th><th>Meaning</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-success">Green</span></td><td>Outcome was <code>Transmitted</code>. IRS accepted the container; one 941 is now in the ATS queue.</td><td>Wait 2 to 5 minutes, then check status and acks through the existing endpoints. Note the submission id from the log.</td></tr>
+          <tr><td><span class="badge badge-accent">Fail: rejected</span></td><td>"ATS rejected the container (nothing filed)". The SOAP fault text follows.</td><td>Nothing was filed. Fix the cause and rerun. The real fault detail is in <code>a2a_sdk.log.*</code> in the working directory.</td></tr>
+          <tr><td><span class="badge badge-accent">Fail: indeterminate</span></td><td>Send may or may not have landed. The message includes the submission id.</td><td><strong>Do not rerun.</strong> Reconcile that submission id against ATS status first, or you risk a duplicate filing.</td></tr>
+          <tr><td><span class="badge badge-neutral">Fail: validation</span></td><td><code>ReportingAgentValidationException</code> before login. Names the field or env var.</td><td>Fix <code>.env</code>, rerun. No IRS contact happened.</td></tr>
+          <tr><td><span class="badge badge-neutral">Ignored / grey</span></td><td>JUnit skipped the class: the system property is missing.</td><td>Check step 7, VM options field.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="check"><span class="k">Logs</span><span class="body"><code>mef-spring-boot-integration/logs/mef-spring-boot.log</code> for the app, <code>mef-spring-boot-integration/a2a_sdk.log.*</code> for the raw SOAP faults, <code>data/newsend-journal.jsonl</code> for the write-ahead record of the send.</span></div>
+    </div>
+  </article>
+
+  <article class="step">
+    <div class="step-badge">9</div>
+    <div>
+      <div class="step-loc">Terminal · optional</div>
+      <h3>Same run from Maven</h3>
+      <p>When you want to prove it outside the IDE, the equivalent is one command from the module directory. The <code>-Dtest</code> filter is what keeps the other two gated live tests from running alongside it.</p>
+      <div class="code"><pre><span class="kw">cd</span> mef-spring-boot-integration
+<span class="kw">export</span> JAVA_HOME=$(/usr/libexec/java_home -v 17)
+mvn test -Dtest=ReportingAgentForm941AtsTest -Dmef.integration.test.enabled=<span class="str">true</span></pre></div>
+    </div>
+  </article>
+
+  <div class="gotchas">
+    <h3>Gotchas that cost time</h3>
+    <ul>
+      <li><strong>VM options, not environment variables.</strong> <code>@EnabledIfSystemProperty</code> reads <code>System.getProperty</code>. An env var named <code>mef.integration.test.enabled</code> is ignored and the test shows as skipped.</li>
+      <li><strong>Never run the test folder or a bare <code>mvn test</code> with the gate property set.</strong> <code>Form941SubmissionTest</code> (OnlineFiler, OneWell values) and <code>MefLoginIntegrationTest</code> use the same property and would also hit ATS.</li>
+      <li><strong><code>.env</code> location is the working directory.</strong> If you change the run configuration's working directory to the repo root, move the file too. The fixture helper tolerates either directory; the dotenv loader does not.</li>
+      <li><strong>ASID is fixed at <code>10219201</code>.</strong> The gate throws on anything else. It is compared against the session config only and must never appear in the Return XML; the offline test asserts that.</li>
+      <li><strong>EFIN must match in two places.</strong> The originator EFIN comes from <code>MEF_EFIN</code> and the gate re-checks it against the same value, because the submission id prefix, <code>OriginatorGrp</code>, and the manifest all share it. ETIN is a different number and only authenticates the session.</li>
+      <li><strong>Java 17 only.</strong> Java 8 is too old for Spring Boot 3; 21 and 25 break the Metro stack the SDK uses.</li>
+      <li><strong>Concurrent session errors after a failed run.</strong> Logout is local-only and never calls <code>LogoutClient</code>, so a killed run leaves an IRS session open. Wait a few minutes before retrying.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="troubleshooting">
+  <h2>Troubleshooting by error text</h2>
+  <p class="part-sub">Match the first line of the failure, not the stack trace</p>
+
+  <details>
+    <summary>Cannot resolve symbol / red <code>gov.irs.mef</code> imports<span class="where">IDE, before running</span></summary>
+    <div class="body"><p>The SDK jar is not in <code>~/.m2</code> (step 2) or Maven has not re-imported. Run the <code>install:install-file</code> command, then <span class="ui">Reload All Maven Projects</span>. If <code>@Data</code> getters are red, enable annotation processing (step 4).</p></div>
+  </details>
+  <details>
+    <summary><code>Tests ignored</code> / class shows grey with no assertions<span class="where">JUnit</span></summary>
+    <div class="body"><p>The gate property is missing. Open the run configuration, click <span class="ui">Modify options<span class="sep">→</span>Add VM options</span>, and confirm <code>-Dmef.integration.test.enabled=true</code> is in <em>that</em> field.</p></div>
+  </details>
+  <details>
+    <summary><code>ReportingAgentValidationException: MEF_RA_PIN is required</code> (or any <code>MEF_*</code>)<span class="where">step 1 of the flow</span></summary>
+    <div class="body"><p>Either the variable is missing from <code>.env</code> or the file is not in the working directory. Confirm the run configuration's working directory is <code>$MODULE_WORKING_DIR$</code> and the file sits at <code>mef-spring-boot-integration/.env</code>. The factory reads Reporting Agent fields through <code>mef.reporting-agent.*</code> in <code>application.yml</code>, which map one-to-one to the <code>MEF_RA_*</code> names in step 6.</p></div>
+  </details>
+  <details>
+    <summary><code>MEF_EFIN 238689 is the OneWell originator; refuse</code><span class="where">step 1 of the flow</span></summary>
+    <div class="body"><p>You reused OneWell-era values. The PR deliberately blocks EFIN <code>238689</code>, stand-in EFIN <code>000000</code>, and Orchid EIN <code>003000004</code> as the agent EIN. Replace with Pyramos values from the e-file application.</p></div>
+  </details>
+  <details>
+    <summary><code>MEF_ASID must be 10219201 (A2A AppSysID). Refusing to file under '…'</code><span class="where">step 2 of the flow</span></summary>
+    <div class="body"><p>Set <code>MEF_ASID=10219201</code>. The old OneWell ASID <code>23868900</code> is the usual culprit.</p></div>
+  </details>
+  <details>
+    <summary><code>MEF_KEYSTORE_* must be set</code> or login fails with a certificate error<span class="where">steps 2 and 4 of the flow</span></summary>
+    <div class="body"><p>Both <code>MEF_KEYSTORE_PATH</code> and <code>MEF_KEYSTORE_PASSWORD</code> must be non-empty; the path must be absolute. If login still fails, the certificate may not be registered against ASID 10219201 in Automated Enrollment yet. The raw IRS fault is in <code>a2a_sdk.log.*</code>, not in the JUnit output.</p></div>
+  </details>
+  <details>
+    <summary><code>IllegalStateException: Fixture not found: test-scenarios/941-reporting-agent-orchid-q1-2026/…</code><span class="where">offline or live</span></summary>
+    <div class="body"><p>The working directory is neither the module nor the repo root. Reset it to <code>$MODULE_WORKING_DIR$</code>.</p></div>
+  </details>
+  <details>
+    <summary><code>InaccessibleObjectException</code> / <code>module java.xml does not export …</code><span class="where">live test, during login</span></summary>
+    <div class="body"><p>The <code>--add-opens</code>/<code>--add-exports</code> lines from step 7 are missing from VM options, or the run is on a JDK newer than 17.</p></div>
+  </details>
+</section>
+</main>
+</body>
+</html>

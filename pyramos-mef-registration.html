@@ -1,0 +1,597 @@
+<title>Pyramos MeF Registration</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper: #F4F6F5;
+    --card: #FFFFFF;
+    --ink: #182226;
+    --muted: #56696C;
+    --line: #D7E0DD;
+    --accent: #0E6B5B;
+    --accent-soft: #E2EEEA;
+    --done: #1E7B4D;
+    --done-bg: #E4F1E8;
+    --warn: #8A5A00;
+    --warn-bg: #FAF1DD;
+    --danger: #A3372B;
+    --danger-bg: #F8E9E5;
+    --code-bg: #EAEFED;
+    --rail: #C3D2CE;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101A1C;
+      --card: #172326;
+      --ink: #E3ECEA;
+      --muted: #95A8A5;
+      --line: #2A3A3C;
+      --accent: #4FC3AA;
+      --accent-soft: #16332E;
+      --done: #62CD91;
+      --done-bg: #16321F;
+      --warn: #E3AC45;
+      --warn-bg: #2C2411;
+      --danger: #E58273;
+      --danger-bg: #38201B;
+      --code-bg: #1E2C2E;
+      --rail: #314547;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101A1C;
+    --card: #172326;
+    --ink: #E3ECEA;
+    --muted: #95A8A5;
+    --line: #2A3A3C;
+    --accent: #4FC3AA;
+    --accent-soft: #16332E;
+    --done: #62CD91;
+    --done-bg: #16321F;
+    --warn: #E3AC45;
+    --warn-bg: #2C2411;
+    --danger: #E58273;
+    --danger-bg: #38201B;
+    --code-bg: #1E2C2E;
+    --rail: #314547;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1, h2, h3, h4 {
+    font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: 0;
+  }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.86em;
+  }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  p { margin: 0.75em 0; }
+  ul, ol { margin: 0.6em 0; padding-left: 1.3em; }
+  li { margin: 0.35em 0; }
+  strong { font-weight: 600; }
+
+  /* ---------- header ---------- */
+  header { padding: 64px 0 36px; border-bottom: 3px solid var(--ink); }
+  .eyebrow {
+    font-family: "Libre Franklin", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  header h1 { font-size: clamp(34px, 6vw, 52px); font-weight: 800; letter-spacing: -0.015em; }
+  .standfirst { font-size: 19px; max-width: 62ch; color: var(--muted); margin-top: 16px; }
+  .statusline { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .chip {
+    font-family: "Libre Franklin", Arial, sans-serif;
+    font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--card); color: var(--muted);
+  }
+  .chip.done { background: var(--done-bg); color: var(--done); border-color: transparent; }
+  .chip.next { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .chip.warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 56px; }
+  section > h2 {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.01em;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line); margin-bottom: 18px;
+  }
+  .kicker {
+    font-family: "Libre Franklin", Arial, sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); display: block; margin-bottom: 6px;
+  }
+
+  /* ---------- callouts ---------- */
+  .callout {
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 6px; padding: 16px 20px; margin: 14px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout.danger { border-left-color: var(--danger); }
+  .callout.done { border-left-color: var(--done); }
+  .callout h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .callout p, .callout ul { font-size: 15.5px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--card); margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th {
+    font-family: "Libre Franklin", Arial, sans-serif; font-weight: 700; font-size: 12.5px;
+    text-transform: uppercase; letter-spacing: 0.06em; text-align: left;
+    color: var(--muted); background: var(--code-bg);
+    padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td .mono { font-variant-numeric: tabular-nums; }
+
+  /* ---------- phase timeline ---------- */
+  .phases { position: relative; margin-top: 8px; }
+  .phase { position: relative; padding: 0 0 36px 64px; }
+  .phase::before {
+    content: ""; position: absolute; left: 21px; top: 46px; bottom: -2px;
+    width: 2px; background: var(--rail);
+  }
+  .phase:last-child::before { display: none; }
+  .phase-node {
+    position: absolute; left: 0; top: 2px; width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Libre Franklin", Arial, sans-serif; font-weight: 800; font-size: 17px;
+    background: var(--card); border: 2px solid var(--rail); color: var(--muted);
+  }
+  .phase.is-done .phase-node { background: var(--done-bg); border-color: var(--done); color: var(--done); }
+  .phase.is-next .phase-node { background: var(--accent); border-color: var(--accent); color: var(--card); }
+  .phase-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+  .phase-head h3 { font-size: 21px; font-weight: 700; }
+  .phase-meta {
+    font-family: "Libre Franklin", Arial, sans-serif; font-size: 13px; color: var(--muted);
+    margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px 18px;
+  }
+  .phase-meta b { font-weight: 600; color: var(--ink); }
+  .phase-body { margin-top: 10px; }
+  .phase-body p, .phase-body li { font-size: 16px; }
+
+  .tag {
+    font-family: "Libre Franklin", Arial, sans-serif; font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag.done { background: var(--done-bg); color: var(--done); }
+  .tag.next { background: var(--accent-soft); color: var(--accent); }
+  .tag.gated { background: var(--code-bg); color: var(--muted); }
+  .tag.longpole { background: var(--warn-bg); color: var(--warn); }
+
+  .rule { color: var(--danger); font-weight: 600; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.55;
+    font-family: "IBM Plex Mono", ui-monospace, monospace; margin: 12px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  .sources { font-size: 14.5px; columns: 2; column-gap: 40px; }
+  .sources li { break-inside: avoid; }
+  @media (max-width: 720px) { .sources { columns: 1; } }
+
+  footer { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .phase-node { transition: transform 0.15s ease; }
+    .phase:hover .phase-node { transform: scale(1.06); }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Pyramos Software LLC · IRS Modernized e-File · Reporting Agent onboarding</div>
+    <h1>Registering the MeF application with the IRS</h1>
+    <p class="standfirst">
+      The exact path from where Pyramos stands today — certificate in hand, no EFIN — to transmitting
+      clients' Form&nbsp;941 returns over A2A as an IRS Reporting Agent. Researched 2026-08-28 against
+      current IRS publications (Pub&nbsp;3112 Rev.&nbsp;11-2025, Pub&nbsp;4163 Rev.&nbsp;12-2025,
+      Pub&nbsp;1474 Rev.&nbsp;4-2026, Pub&nbsp;5078 Rev.&nbsp;12-2025, IRM&nbsp;3.42).
+    </p>
+    <div class="statusline">
+      <span class="chip done">✓ IdenTrust IGC certificate issued</span>
+      <span class="chip done">✓ 2026 94x schemas &amp; ATS scenarios downloaded</span>
+      <span class="chip done">✓ A2A code proven on ATS (OneWell identifiers)</span>
+      <span class="chip next">→ Next: Form 8655s, then the e-file application</span>
+      <span class="chip warn">Long pole: 45-day suitability check</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Three findings that change the plan</h2>
+    <p>Before the step-by-step: three things the research surfaced that are easy to get wrong, each of
+       which would cost weeks or produce IRS rejects.</p>
+
+    <div class="callout danger">
+      <h4>1 · Reporting Agent alone is not enough — select all three provider options</h4>
+      <p>To transmit its own clients' returns over A2A, Pyramos must check <strong>Reporting Agent</strong>,
+         <strong>Transmitter</strong>, <em>and</em> <strong>Software Developer</strong> on one e-file application.
+         IRM&nbsp;3.42.4.10.3.1: a Reporting Agent only receives an ETIN if it indicates it will also be a
+         Transmitter. And without Software Developer there is no Software&nbsp;ID — rule
+         <span class="rule">R0000-904-03</span> rejects any return whose <code>SoftwareId</code> hasn't passed
+         testing for the form family and tax year — and no access to the Secure Object Repository, which since
+         Pub&nbsp;4163 Rev.&nbsp;12-2025 is the <em>only</em> distribution channel for schemas and business rules.</p>
+    </div>
+
+    <div class="callout danger">
+      <h4>2 · Form 8655s are a prerequisite, not a follow-up</h4>
+      <p>The e-file application <em>validates</em> that at least one Form&nbsp;8655 (Reporting Agent
+         Authorization) is already on file in the RAF for Pyramos's EIN when the Reporting Agent option is
+         added (Pub&nbsp;3112, p.&nbsp;17). Client authorizations gate the application, which gates everything
+         else — <strong>start collecting signed 8655s now</strong>.</p>
+    </div>
+
+    <div class="callout danger">
+      <h4>3 · The repo's EFIN/ETIN model is wrong and will reject</h4>
+      <p><code>EFIN_ETIN_USAGE.md</code> puts the ETIN in the manifest <code>&lt;EFIN&gt;</code> and the EFIN in
+         <code>OriginatorGrp</code>. Rule <span class="rule">R0000-054-01</span> (Reject and Stop) requires the
+         manifest EFIN to <em>match</em> the OriginatorGrp EFIN, and the schema defines the manifest field as the
+         <em>originator's</em> identifier. For Pyramos: <strong>one EFIN in both places</strong>; the ETIN is used
+         only for A2A login and the ASID binding. (The OneWell submissions passed on ATS, where EFIN/name-control
+         rules are relaxed — don't carry the pattern to production.)</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The seven identifiers you'll collect</h2>
+    <p>MeF onboarding is mostly the act of collecting identifiers, each issued by a different step.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Identifier</th><th>What it is</th><th>Issued by</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">EIN</td><td>Pyramos's own tax ID; the application is filed under it</td><td>Already held</td><td><span class="tag done">have</span></td></tr>
+          <tr><td class="mono">EFIN</td><td>Identifies the <em>originator</em>. Goes in the manifest <code>EFIN</code>, the return header <code>OriginatorGrp</code>, and the first 6 digits of every submission ID</td><td>e-file application (phase 2)</td><td><span class="tag gated">phase 2</span></td></tr>
+          <tr><td class="mono">ETIN ×2</td><td>Identifies the <em>transmitter</em>; used for A2A login. Transmitter option yields a production-type ETIN (born in Test status); Software Developer yields a permanent test-only ETIN — you'll hold both and must use the right one</td><td>e-file application (phase 2)</td><td><span class="tag gated">phase 2</span></td></tr>
+          <tr><td class="mono">RA PIN</td><td>5-digit Reporting Agent PIN that signs every client return (<code>ReportingAgentPINGrp</code>). System-generated, mailed USPS to the firm address; also obtainable via the e-Help Desk</td><td>e-file application (phase 2)</td><td><span class="tag gated">phase 2</span></td></tr>
+          <tr><td class="mono">Software ID</td><td>Per-package, per-tax-year ID in the return header. 94x Quarterly format <code>YY99NNNN</code> — a TY2026 941 package gets <code>2699NNNN</code>. Separate IDs for 94x Annual (<code>YY88NNNN</code>) and PIN registration</td><td>Software Packages questionnaire, after the application reaches "Completed"</td><td><span class="tag gated">phase 2b</span></td></tr>
+          <tr><td class="mono">ASID</td><td>Application System ID = EFIN + a 2-digit sequence (8 chars; OneWell's <code>23868900</code> = <code>238689</code>&nbsp;+&nbsp;<code>00</code>). The certificate is registered against it</td><td>Automated Enrollment (phase 4)</td><td><span class="tag gated">phase 4</span></td></tr>
+          <tr><td class="mono">Cert</td><td>X.509 client certificate from an IRS-approved CA (IdenTrust or WidePoint/ORC). A2A is certificate-only — passwords are no longer supported</td><td>IdenTrust</td><td><span class="tag done">done</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The seven phases</h2>
+    <p>In dependency order. Phase 0 and phase 1 start immediately and in parallel; phases 3–4 prep work fits
+       inside phase 2's 45-day wait.</p>
+
+    <div class="phases">
+
+      <div class="phase is-next">
+        <div class="phase-node">0</div>
+        <div class="phase-head"><h3>Client authorizations — Form 8655 + Reporting Agent's List</h3><span class="tag next">start now</span></div>
+        <div class="phase-meta"><span><b>Who:</b> Pyramos ops/legal, per client</span><span><b>Duration:</b> 2–4 weeks incl. RAF posting</span><span><b>Governing:</b> Rev. Proc. 2012-32 · Pub 1474 (Rev. 4-2026) · Form 8655 (Rev. 1-2024)</span></div>
+        <div class="phase-body">
+          <ul>
+            <li>Each <strong>client</strong> signs Form 8655 (Rev. January 2024 or later). Line 15 = returns Pyramos
+                may sign and e-file (940/941/943/944/945; authority for a form automatically covers related forms —
+                941 → 941-X, 941&nbsp;(sp), vouchers). Line 16 = deposits/payments via EFTPS. Lines 17–18 = disclosure.</li>
+            <li><strong>E-signatures are allowed only under Pub 1474 §01.03's specific methods</strong> — generic
+                e-signature guidance for other forms does not apply, and each e-signed 8655 must carry evidence of
+                the signature event.</li>
+            <li>Submit the 8655s <em>with</em> a <strong>Reporting Agent's List</strong> — clients in ascending EIN
+                order, separate lists for additions and deletions. The IRS returns an add/error list with each
+                employer's Name Control (you'll need those name controls in the return XML).</li>
+            <li><strong>Where:</strong> IRS, Accounts Management Service Center, MS 6748 RAF Team,
+                1973 N. Rulon White Blvd., Ogden, UT 84404 — or fax <span class="mono">855-214-7523</span>
+                (max 25 forms per transmission).</li>
+            <li>Over 100 client submissions <em>per week</em> the List must go electronically via
+                <strong>SLFT B2B</strong> (the old SDT channel was fully retired December 2025, and the IRS can't
+                support optional SLFT use below the threshold) — at launch volume, paper/fax is the path.</li>
+            <li>Retain a copy or reproducible image of every original 8655 at the principal place of business
+                until the limitations period of the last return filed under it expires.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase is-next">
+        <div class="phase-node">1</div>
+        <div class="phase-head"><h3>e-Services accounts (ID.me) for every key person</h3><span class="tag next">parallel with 0</span></div>
+        <div class="phase-meta"><span><b>Who:</b> every Principal, every Responsible Official, every future MeF System Enroller</span><span><b>Where:</b> irs.gov/e-services → E-file Provider Services</span><span><b>Duration:</b> 1–3 days</span></div>
+        <div class="phase-body">
+          <ul>
+            <li>ID.me identity verification is mandatory (government photo ID + selfie/video); Login.gov is not
+                offered for e-Services. Minutes when documents are clean, days if it drops to manual review.</li>
+            <li>All Principals and Responsible Officials must have accounts <em>before</em> the application can be
+                submitted. Pub 4163 recommends <strong>at least two Responsible Officials</strong> for backup.
+                For an LLC, a Principal is "an individual authorized to act for the entity in legal and/or tax
+                matters." Each must be a US citizen or lawful permanent resident, 18+.</li>
+            <li>Decide the roster now — adding a Principal or Responsible Official later reopens suitability.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-node">2</div>
+        <div class="phase-head"><h3>The IRS e-file application → EFIN, ETINs, RA PIN, Software ID</h3><span class="tag longpole">long pole · up to 45 days</span></div>
+        <div class="phase-meta"><span><b>Who:</b> a Principal or Responsible Official</span><span><b>Where:</b> e-Services → E-file Provider Services → Access e-file Application</span><span><b>Governing:</b> Pub 3112 (Rev. 11-2025)</span></div>
+        <div class="phase-body">
+          <p><strong>Provider options — check all three:</strong></p>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Option</th><th>Why Pyramos needs it</th><th>Yields</th></tr></thead>
+              <tbody>
+                <tr><td><b>Reporting Agent</b></td><td>Legal authority to prepare and sign clients' 94x returns (companies only — a sole proprietorship can't select it; an LLC can)</td><td>EFIN + 5-digit RA PIN</td></tr>
+                <tr><td><b>Transmitter</b></td><td>Required to send to MeF yourself over A2A — an RA only receives an ETIN by also checking Transmitter</td><td>ETIN (production-type, starts in Test status)</td></tr>
+                <tr><td><b>Software Developer</b></td><td>Issues the Software ID that passes <span class="rule">R0000-904-03</span>, and grants SOR access to schemas/business rules</td><td>Test-only ETIN + Software ID per package</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul>
+            <li><strong>Contents:</strong> firm identity + EIN; provider options; for each Principal/Responsible
+                Official — name, SSN, DOB, email, citizenship, credentials, personal suitability questions; Terms of
+                Agreement signed with the e-Services PIN. Keep the tracking number.</li>
+            <li><strong>Fingerprinting:</strong> every Principal and Responsible Official without a qualifying
+                credential (attorney, CPA — <em>not</em> Enrolled Agent) is fingerprinted by electronic Livescan
+                through the IRS Authorized Vendor, scheduled per-person from the Application Summary page → Terms of
+                Agreement Signature(s) &amp; Personal Information. No charge; paper FD-258 cards are retired.</li>
+            <li><strong>Suitability:</strong> tax compliance, prior e-file history, FBI criminal background, credit;
+                fingerprinted participants are enrolled in FBI Rap Back continuous monitoring. IRS allows
+                <strong>up to 45 days</strong>; one person's unfiled return stalls the whole company.</li>
+            <li><strong>2b — Software ID:</strong> once the application shows "Completed": Organization Role →
+                <em>Software Packages</em> tab → Add Software Package → questionnaire → Save; the ID is issued
+                automatically. New ID needed each tax year.</li>
+            <li><strong>Delegations to set immediately</strong> (needed for phase 4): grant
+                <em>MeF System Enroller</em> to one or more Responsible Officials or Delegated Users, and
+                <em>Add &amp; Change Software Package Information</em> to whoever runs the questionnaire.</li>
+            <li><strong>Outputs:</strong> acceptance letter with the EFIN; the ETINs; the RA PIN (mailed USPS —
+                or call the e-Help Desk, <span class="mono">866-255-0654</span>); Software ID(s).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase is-done">
+        <div class="phase-node">✓</div>
+        <div class="phase-head"><h3>X.509 certificate for A2A strong authentication</h3><span class="tag done">already complete</span></div>
+        <div class="phase-meta"><span><b>Who:</b> ops/security</span><span><b>Where:</b> identrust.com (or WidePoint/ORC)</span></div>
+        <div class="phase-body">
+          <div class="callout done">
+            <h4>Done — the Pyramos certificate is issued and on disk</h4>
+            <p><code>Pyramos Software Certificates/your-issued-cert.pem</code>:
+               <span class="mono">O=Pyramos Software LLC, CN=c2s.pahealthmanagement.org</span>, issued by IGC Device
+               CA 2 (chain: <code>SubCA1.txt</code> → <code>Root.txt</code>), RSA 2048 / SHA-256, valid
+               <strong>2026-08-21 → 2027-08-21</strong>. SHA-256 satisfies the current mandate (SHA-1 is rejected in
+               both ATS and Production). Companion deep-dive: <code>identrust-igc-certificate-guide.html</code>.</p>
+          </div>
+          <div class="callout warn">
+            <h4>Diary the renewal for ~July 2027</h4>
+            <p>It's a one-year certificate. Expiry is a hard stop on transmission, and each renewal requires a
+               <em>Replace Certificate</em> action in Automated Enrollment. Note the old OneWell cert has the
+               <em>same CN</em> (<span class="mono">c2s.pahealthmanagement.org</span>, <span class="mono">O=Onewell
+               LLC</span>) — only the organization differs; don't mix them up when building keystores.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-node">4</div>
+        <div class="phase-head"><h3>Automated Enrollment → ASID + certificate registration</h3><span class="tag gated">needs phase 2 + cert</span></div>
+        <div class="phase-meta"><span><b>Who:</b> the MeF System Enroller (delegated in phase 2)</span><span><b>Where:</b> e-Services / Integrated Enterprise Portal → Automated Enrollment (AE)</span><span><b>Duration:</b> same day</span></div>
+        <div class="phase-body">
+          <p>This is the step that tells MeF which machine will be calling it. You supply:</p>
+          <ul>
+            <li><strong>EFIN + a 2-digit sequence number</strong> (00–99) → the ASID is the 8-character concatenation.</li>
+            <li>Application system <strong>name</strong> (≤30 chars) and <strong>description</strong> (≤50).</li>
+            <li>The <strong>ETIN(s)</strong> to bind to this system.</li>
+            <li>The <strong>A2A services</strong> to authorize. Unselected services simply fail at runtime, so
+                over-select: <code>Login/Logout</code>, <code>SendSubmissions</code>, <code>GetSubmissionStatus</code>,
+                <code>GetNewSubmissionsStatus</code>, <code>GetAck</code>, <code>GetNewAcks</code>,
+                <code>GetAcksByMsgID</code>, <code>ETINRetrieval</code>, <code>EtinStatus</code>.</li>
+            <li><strong>Upload the certificate</strong> (the public leaf from
+                <code>Pyramos Software Certificates/your-issued-cert.pem</code>).</li>
+          </ul>
+          <p>Status goes <em>new → active</em> automatically. Later lifecycle actions: inactivate/reactivate,
+             Replace Certificate (used at every renewal), un-enroll (permanent — the ASID is gone). Only the
+             e-Help Desk can lift a <em>disabled</em> status. Then rebuild the keystore:
+             chain + key → PKCS12 via <code>create-pkcs12.sh</code> (fix its stale <code>cd</code> path first),
+             verify with <code>verify-pkcs12.sh</code>, and point <code>MEF_KEYSTORE_PATH</code> /
+             <code>MEF_KEY_ALIAS</code> at it in <code>.env</code>.</p>
+          <div class="callout warn">
+            <h4>Confirm: one ASID or two?</h4>
+            <p>Pub 4164 §4.1.6 says a separate ASID must be used for <em>testing digital certificates</em>, but the
+               AE External User Guide (still the 10/2017 revision — expect UI drift) draws no ATS/Production
+               distinction. Ask the e-Help Desk before enrolling.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-node">5</div>
+        <div class="phase-head"><h3>ATS — scenario testing and the A2A communications test</h3><span class="tag gated">needs Software ID + ASID</span></div>
+        <div class="phase-meta"><span><b>Who:</b> dev + ops</span><span><b>Duration:</b> 1–3 weeks + days</span><span><b>Governing:</b> Pub 5078 (Rev. 12-2025, PY2026)</span></div>
+        <div class="phase-body">
+          <p>Two distinct tests for two different hats — most write-ups conflate them:</p>
+          <ul>
+            <li><strong>(a) Scenario testing, as Software Developer.</strong> For 94x Quarterly TY2026: three
+                standard Form 941 scenarios + one 941-X scenario + Scenario 10 (94x On-Line Signature PIN
+                registration). Passing <em>at least one</em> 941 scenario earns "Pass" status for Production.
+                Passing quarterly does <em>not</em> cover the annual forms (940/943/944/945) — those need a separate
+                e-Help Desk arrangement. Notify the e-Help Desk when ready to test. All test filer EINs must begin
+                with <span class="mono">00</span> (<span class="rule">R0000-148</span>) — the repo's Orchid scenario
+                EIN <span class="mono">003000004</span> already complies. Local material is staged:
+                <code>test-scenarios/941-scenario-1-orchid-q1-2026/</code> and <code>94x-2026/</code>.</li>
+            <li><strong>(b) Communications test, as Transmitter/Reporting Agent.</strong> A one-time, first-year,
+                error-free transmission test — and since Pyramos will submit through A2A, it must be performed
+                <em>through A2A</em> (IRM 3.42.4.13.2). Not repeated when adding forms later.</li>
+          </ul>
+          <p>PY2026 ATS opened October 14, 2025; communications testing is available any time since. ATS is slower
+             than production and can't be used for load testing.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-node">6</div>
+        <div class="phase-head"><h3>Production cutover</h3><span class="tag gated">after the comm test</span></div>
+        <div class="phase-meta"><span><b>Who:</b> e-Help Desk, <span class="mono">866-255-0654</span></span><span><b>Duration:</b> 1–3 days</span></div>
+        <div class="phase-body">
+          <ul>
+            <li>The Forms Transmission Status on the application starts in <em>Test</em>; the <strong>IRS</strong>
+                flips it to <em>Production</em> after the communications test passes — nothing flips automatically
+                on your side.</li>
+            <li><strong>Ask for a separate Test-type ETIN on the same call.</strong> Once the original ETIN moves to
+                Production you lose your ATS path on it (per the MeF employment-tax FAQ); a standing test ETIN keeps
+                regression testing possible forever. Re-testing on the production ETIN requires flipping it back to
+                Test, which blocks live filing meanwhile.</li>
+            <li>Config switch: <code>mef.sdk.environment: PRD</code>, production ETIN in <code>.env</code>, and
+                import the <strong>production MeF server SSL chain</strong>. These rotate quarterly (current bundle:
+                <span class="mono">maincert-4q26.zip</span> / ATS <span class="mono">altcert-4q26.zip</span>, valid
+                Aug 10 – Oct 26, 2026) — a recurring operational task; missing it breaks transmission.</li>
+            <li>Note the PRD endpoint discrepancy already in the repo: <code>application.yml</code> says
+                <span class="mono">www.irs.gov</span>, the SDK's <code>prd_endpoints.properties</code> says
+                <span class="mono">la.www4.irs.gov</span> — the SDK properties file is what's used; reconcile before
+                cutover.</li>
+            <li>Optional: Pyramos appears on the IRS "TY2026 94x MeF providers" list once ATS is passed.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Timeline at a glance</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Phase</th><th>Who</th><th>Duration</th><th>Dependency</th></tr></thead>
+        <tbody>
+          <tr><td>0 · Form 8655s + RA List → RAF</td><td>Ops/legal</td><td>2–4 weeks</td><td>Must <b>precede</b> phase 2</td></tr>
+          <tr><td>1 · e-Services / ID.me accounts</td><td>Each Principal / Responsible Official</td><td>1–3 days</td><td>Parallel with 0</td></tr>
+          <tr><td>2 · e-file application (RA + Transmitter + SWD)</td><td>Principal / Responsible Official</td><td><b>Up to 45 days</b></td><td>Long pole</td></tr>
+          <tr><td>2b · Software ID questionnaire</td><td>Delegated user</td><td>Minutes</td><td>After application "Completed"</td></tr>
+          <tr><td>3 · IdenTrust certificate</td><td>Ops</td><td>—</td><td><b>✓ done</b></td></tr>
+          <tr><td>4 · Automated Enrollment → ASID</td><td>MeF System Enroller</td><td>Same day</td><td>Needs 2 + 3</td></tr>
+          <tr><td>5a · ATS 941 scenarios</td><td>Dev</td><td>1–3 weeks</td><td>Needs Software ID + ASID</td></tr>
+          <tr><td>5b · A2A communications test</td><td>Dev/ops</td><td>Days</td><td>After 5a</td></tr>
+          <tr><td>6 · Production cutover</td><td>e-Help Desk</td><td>1–3 days</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Realistic total: 8–14 weeks.</strong> Compress it by starting phases 0 and 1 today and submitting
+       the e-file application as early as the first 8655 posts to the RAF; everything else fits inside the 45-day
+       suitability wait.</p>
+  </section>
+
+  <section>
+    <h2>Then: the code changes the new role requires</h2>
+    <p>The existing Spring Boot integration was built for a <em>self-filer</em> (OneWell, originator type
+       <code>OnlineFiler</code>). Checked against the repo's own 2026 schemas and business rules
+       (<code>94x-2026/…/2026Q1</code>), filing as a Reporting Agent requires, in rough order:</p>
+    <ol>
+      <li><strong>Return header:</strong> <code>OriginatorTypeCd</code> → <code>ReportingAgent</code>.
+          Keeping <code>OnlineFiler</code> trips <span class="rule">R0000-119-01</span> (requires an EFIN starting
+          10/21/32/44/53), and <span class="rule">EMPL-003</span> then requires adding a
+          <code>ReportingAgent94XFilerGrp</code> block (Pyramos's EIN, business name, name control, address)
+          alongside the per-client <code>&lt;Filer&gt;</code>.</li>
+      <li><strong>Signature:</strong> replace <code>OnlineFilerPINGrp</code> with <code>ReportingAgentPINGrp</code> —
+          the 5-digit RA PIN (<span class="rule">R0000-187</span>: not all zeros;
+          <span class="rule">R0000-188</span>: must match the e-file database),
+          <code>RAPINEnteredByCd = REPORTING AGENT</code>, <code>JuratDisclosureCd = REPORTING AGENT PIN</code>.</li>
+      <li><strong>Identifier fix:</strong> Pyramos's EFIN in <em>both</em> the manifest <code>EFIN</code> and
+          <code>OriginatorGrp</code> (<span class="rule">R0000-054-01</span>); manifest <code>TIN</code> = the
+          <em>client's</em> EIN per submission (<span class="rule">R0000-079</span>). Rewrite
+          <code>EFIN_ETIN_USAGE.md</code> accordingly.</li>
+      <li><strong>Real Software ID:</strong> replace the placeholder <span class="mono">12345678</span> in the
+          return XML with the issued <span class="mono">2699NNNN</span> (<span class="rule">R0000-904-03</span>).</li>
+      <li><strong>Multi-tenancy:</strong> a client model (EIN, name, name control, address, tax period, 8655
+          authorization status) and persistence of submission ↔ deposit ID ↔ status ↔ acknowledgment per client —
+          acknowledgment retention is an IRS requirement, and today the app stores nothing.</li>
+      <li><strong>Session hygiene:</strong> implement real logout via <code>LogoutClient</code> (today's logout only
+          clears local state, leaving IRS sessions open) and add expiry/refresh — required at Reporting Agent volume.</li>
+      <li><strong>Toolkit currency:</strong> current IRS WSDLs are R10.9 = A2A Toolkit v16.0 — matching
+          <code>Version_16/</code> in the repo (the checked-in <code>sdk-reference</code> WSDLs are older, R10.3).
+          The SDK jar must be installed into <code>~/.m2</code> before anything builds — see <code>CLAUDE.md</code>
+          and <code>CODE_MAP.md</code> §6. Newer toolkits come from <span class="mono">mefmailbox@irs.gov</span>
+          with subject "A2A Toolkit".</li>
+      <li><strong>Purge OneWell values:</strong> ETIN <span class="mono">97661</span>, EFIN
+          <span class="mono">238689</span>, ASID <span class="mono">23868900</span> hardcoded in
+          <code>test-mef-login.sh</code>, the integration tests, and docs; recreate <code>.env</code> with Pyramos
+          values as each identifier is issued.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Recent IRS changes worth knowing (2025–2026)</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Change</th><th>Detail</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Schemas are SOR-only</td><td>Schemas/business rules are distributed only via the e-Services Secure Object Repository mailbox, gated on the Software Developer option; messages purge after ~30 days</td><td>Pub 4163 Rev. 12-2025 §3.2</td></tr>
+          <tr><td>SDT → SLFT B2B</td><td>Since Dec 2025, SLFT B2B is the only electronic channel for Reporting Agent's Lists (needs its own purchased identity certificate); under 100/week, paper/fax</td><td>Pub 1474 Rev. 4-2026</td></tr>
+          <tr><td>SHA-1 rejected</td><td>Production and ATS both refuse SHA-1 signature/digest. Repo config is already SHA-256</td><td>MeF status page, 03-2026</td></tr>
+          <tr><td>Passwords dead for A2A</td><td>Certificate-only since 2017; AE no longer supports password ASIDs</td><td>IRM 3.42.4.13.2</td></tr>
+          <tr><td>ID.me required</td><td>For e-Services and to maintain the e-file application — Principals, Responsible Officials, Enrollers</td><td>Pub 4163 Rev. 12-2025</td></tr>
+          <tr><td>Livescan fingerprinting</td><td>Electronic only, via the IRS Authorized Vendor; FBI Rap Back monitoring since 2023</td><td>Pub 3112 Rev. 11-2025</td></tr>
+          <tr><td>94x forms retired</td><td>940-PR, 941-PR, 941-SS, 943-PR gone from XML; Spanish filers use (sp) variants</td><td>Pub 4164 PY2026 §1.7.1</td></tr>
+          <tr><td>Form 941 direct deposit</td><td>Added beginning TY2026</td><td>IRM 3.42.4 eff. 01-2026</td></tr>
+          <tr><td>MeF server SSL rotates quarterly</td><td>Import each quarter's cert bundle or transmission breaks</td><td>MeF user guides page, 08-2026</td></tr>
+          <tr><td>TLS minimum unpublished</td><td>No current published TLS floor; assume TLS 1.2+ and confirm with the e-Help Desk</td><td>Security-during-transmission page</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Confirm with the e-Help Desk (866-255-0654)</h2>
+    <ul>
+      <li>One ASID or separate test/production ASIDs (Pub 4164 §4.1.6 vs the AE guide).</li>
+      <li>The fingerprinting vendor link — it's only exposed inside your own application; the public
+          electronic-fingerprinting page currently 404s.</li>
+      <li>TLS minimum for A2A (no published floor).</li>
+      <li>Annual-form (940/943/944/945) ATS arrangements, if Pyramos will file beyond 941 — the TY2026 ATS page
+          lists only 941/941-X scenarios.</li>
+      <li>The RA PIN, if the mailed letter is slow.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Sources</h2>
+    <ul class="sources">
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p3112.pdf">Pub 3112 — e-file Application &amp; Participation (Rev. 11-2025)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p4163.pdf">Pub 4163 — MeF for Business Providers (Rev. 12-2025)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p4164.pdf">Pub 4164 — MeF Guide for Software Developers &amp; Transmitters (PY2026)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p5078.pdf">Pub 5078 — ATS Guidelines (Rev. 12-2025)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p1474.pdf">Pub 1474 — Reporting Agent Authorization Technical Guide (Rev. 4-2026)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/f8655.pdf">Form 8655 (Rev. 1-2024)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-drop/rp-12-32.pdf">Rev. Proc. 2012-32 (still controlling)</a></li>
+      <li><a href="https://www.irs.gov/pub/irs-wi/automated_enrollment_ae_external_user_guide.pdf">Automated Enrollment External User Guide (10/2017)</a></li>
+      <li><a href="https://www.irs.gov/irm/part3/irm_03-042-004r">IRM 3.42.4 — e-file for Business Tax Returns (eff. 01-2026)</a></li>
+      <li><a href="https://www.irs.gov/irm/part3/irm_03-042-010r">IRM 3.42.10 — Authorized IRS e-file Providers (eff. 10-2025)</a></li>
+      <li><a href="https://www.irs.gov/e-file-providers/become-an-authorized-e-file-provider">Become an authorized e-file provider</a></li>
+      <li><a href="https://www.irs.gov/e-file-providers/reporting-agent-technical-fact-sheet">Reporting Agent technical fact sheet</a></li>
+      <li><a href="https://www.irs.gov/e-file-providers/modernized-e-file-mef-status">MeF status page</a></li>
+      <li><a href="https://www.irs.gov/e-file-providers/modernized-e-file-mef-assurance-testing-system-ats">MeF ATS page</a></li>
+      <li><a href="https://www.irs.gov/e-file-providers/tax-year-2026-94x-mef-ats-information">TY2026 94x ATS information</a></li>
+      <li><a href="https://www.irs.gov/e-file-providers/modernized-e-file-mef-for-employment-taxes-frequently-asked-questions">MeF employment-tax FAQ</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    Pyramos Software LLC · prepared 2026-08-28 from the MeF repo and current IRS publications ·
+    companions: <span class="mono">mef-efiling-onboarding.html</span> (generic 7-phase guide) ·
+    <span class="mono">identrust-igc-certificate-guide.html</span> (certificate deep-dive) ·
+    <span class="mono">CODE_MAP.md</span> · <span class="mono">CLAUDE.md</span>
+  </footer>
+</div>

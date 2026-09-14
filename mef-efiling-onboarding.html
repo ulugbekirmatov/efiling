@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starting MeF e-Filing — Enrollment, IdenTrust Certificates, ATS, Production</title>
+<style>
+:root {
+  /* Surfaces */
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  /* Text */
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  /* Accents */
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --rust:   #B04A3F;
+  /* Typography */
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--ivory); color: var(--slate);
+  font-family: var(--sans); line-height: 1.55;
+  overflow-wrap: break-word; word-break: break-word;
+}
+p, li, dd, dt, td, th, h1, h2, h3, h4, figcaption, blockquote,
+.card, .milestone, .callout, .summary, .gotchas { overflow-wrap: break-word; word-break: break-word; }
+.milestone, .summary > *, [class*="grid"] > *, .lg-row > * { min-width: 0; }
+
+main { max-width: 880px; margin: 0 auto; padding: 56px 28px 80px; }
+
+/* ---- Page chrome ---- */
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--g500); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(34px, 5vw, 54px); line-height: 1.08;
+  letter-spacing: -0.018em; color: var(--slate); margin: 0 0 8px;
+}
+h1 em { font-style: italic; color: var(--clay); }
+.intro { font-size: 16.5px; color: var(--g700); margin: 18px 0 0; max-width: 660px; }
+.intro a, p a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin: 56px 0 14px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; letter-spacing: -0.012em; }
+
+h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 22px 0 8px; }
+p { color: var(--g700); font-size: 14.5px; margin: 0 0 12px; }
+strong { color: var(--slate); }
+
+/* ---- TL;DR dark ---- */
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius: 12px; padding: 22px 26px; margin: 34px 0 20px; }
+.tldr-dark .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--oat); margin-bottom: 10px; }
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark code { font-family: var(--mono); font-size: 13.5px; background: rgba(250,249,245,0.12); color: var(--ivory); padding: 1px 5px; border-radius: 4px; }
+
+/* ---- Summary band ---- */
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0 8px; }
+@media (max-width: 720px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.summary .cell { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 16px 18px; }
+.summary .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 6px; }
+.summary .v { font-size: 16px; color: var(--slate); font-weight: 600; }
+.summary .v.accent { color: var(--clay); }
+
+/* ---- Callouts ---- */
+.callout {
+  display: flex; gap: 12px; border: 1.5px solid var(--oat);
+  background: rgba(227,218,204,0.35); border-radius: 10px;
+  padding: 14px 16px; font-size: 14px; margin: 16px 0; color: var(--g700);
+}
+.callout .ico { color: var(--clay); font-weight: 600; flex-shrink: 0; }
+.callout.done { border-color: var(--olive); background: rgba(120,140,93,0.08); }
+.callout.done .ico { color: var(--olive); }
+.callout p { margin: 0; font-size: 14px; }
+.callout p + p { margin-top: 8px; }
+
+.gotchas { border: 1.5px solid var(--clay); border-radius: 12px; background: rgba(217,119,87,0.06); padding: 18px 20px; margin: 18px 0; }
+.gotchas h4 { font-family: var(--sans); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clay); margin-bottom: 10px; }
+.gotchas ul { list-style: none; }
+.gotchas li { position: relative; padding-left: 16px; font-size: 13.5px; margin-bottom: 8px; color: var(--g700); }
+.gotchas li::before { content:""; position:absolute; left:0; top:8px; width:5px; height:5px; background: var(--clay); border-radius:2px; }
+.gotchas li:last-child { margin-bottom: 0; }
+
+/* ---- Path chips ---- */
+.path-chip {
+  display: inline-block; font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1px solid var(--g300); border-radius: 6px;
+  padding: 2px 8px; color: var(--g700); margin: 2px 4px 2px 0;
+}
+.found { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--olive); font-weight: 600; }
+
+/* ---- Tables ---- */
+table.shipped {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden; margin: 14px 0; font-size: 14px;
+}
+table.shipped thead th {
+  text-align: left; font-family: var(--sans); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500);
+  background: var(--g100); padding: 11px 14px; border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td { padding: 11px 14px; border-bottom: 1px solid var(--g100); font-size: 13.5px; vertical-align: top; color: var(--g700); }
+table.shipped tbody tr:last-child td { border-bottom: none; }
+table.shipped td:first-child { font-family: var(--mono); font-size: 12.5px; color: var(--slate); white-space: nowrap; }
+
+/* ---- Milestone timeline ---- */
+.milestones { display: flex; flex-direction: column; margin-top: 8px; }
+.milestone { display: grid; grid-template-columns: 92px 28px 1fr; gap: 0 18px; position: relative; }
+@media (max-width: 640px) { .milestone { grid-template-columns: 60px 22px 1fr; gap: 0 10px; } }
+.milestone .when { text-align: right; font-family: var(--mono); font-size: 11.5px; color: var(--g500); padding-top: 6px; line-height: 1.4; }
+.milestone .dot-col { display: flex; flex-direction: column; align-items: center; }
+.milestone .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 3px solid var(--clay); margin-top: 6px; flex-shrink: 0; }
+.milestone .dot.done { background: var(--olive); border-color: var(--olive); }
+.milestone .line { width: 2px; flex: 1; background: var(--g300); margin: 4px 0; }
+.milestone:last-child .line { display: none; }
+.milestone .body { padding-bottom: 40px; min-width: 0; }
+.milestone .body > h3 { margin-top: 2px; font-size: 21px; }
+.milestone .who { font-family: var(--mono); font-size: 11.5px; color: var(--g500); margin-bottom: 10px; }
+
+/* ---- Code blocks ---- */
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 14px 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw  { color: var(--clay); }
+.code .str { color: #9DB380; }
+.code .cm  { color: var(--g500); }
+.code .fn  { color: #C9B98A; }
+:not(pre) > code {
+  font-family: var(--mono); font-size: 0.92em; background: var(--g100);
+  color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word;
+}
+
+/* ---- Worked-example ledger ---- */
+.ledger { border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; background: var(--paper); margin: 14px 0; font-size: 13.5px; }
+.lg-row { display: grid; grid-template-columns: 190px 1fr; }
+@media (max-width: 560px) { .lg-row { grid-template-columns: 120px 1fr; } }
+.lg-row + .lg-row { border-top: 1px solid var(--g200); }
+.lg-row .lk { padding: 10px 14px; font-family: var(--mono); font-size: 12px; color: var(--g500); background: var(--g100); border-right: 1px solid var(--g200); }
+.lg-row .lv { padding: 10px 14px; color: var(--g700); }
+.lg-row.was .lv { background: rgba(217,119,87,0.08); }
+.lg-row.now .lv { background: rgba(120,140,93,0.10); }
+.lg-row.punch .lv { font-weight: 700; color: var(--slate); background: var(--oat); }
+.lg-row .lv code { background: rgba(20,20,19,0.06); }
+
+/* ---- Details accordion ---- */
+details { border: 1.5px solid var(--g300); border-radius: 10px; background: var(--paper); margin: 12px 0; overflow: hidden; }
+details summary { list-style: none; cursor: pointer; padding: 13px 16px; font-family: var(--serif); font-size: 15.5px; color: var(--slate); display: flex; align-items: baseline; gap: 10px; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "▸"; color: var(--clay); font-family: var(--sans); font-size: 12px; transition: transform 120ms; }
+details[open] summary::before { transform: rotate(90deg); }
+details summary .where { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-left: auto; }
+details .dbody { padding: 0 16px 16px; }
+details .dbody p, details .dbody li { font-size: 13.5px; }
+details .dbody ul, details .dbody ol { padding-left: 20px; margin-bottom: 10px; color: var(--g700); }
+details .dbody li { margin-bottom: 5px; }
+
+/* ---- Checklist ---- */
+.checklist { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; margin: 14px 0; }
+.ai-row { display: grid; grid-template-columns: 36px 1fr 130px; align-items: center; gap: 14px; padding: 13px 18px; border-bottom: 1px solid var(--g100); }
+.ai-row:last-child { border-bottom: none; }
+.ai-check { width: 18px; height: 18px; border: 1.5px solid var(--g300); border-radius: 5px; background: var(--paper); position: relative; }
+.ai-row.done .ai-check { background: var(--olive); border-color: var(--olive); }
+.ai-row.done .ai-check::after { content:""; position:absolute; left:5px; top:2px; width:5px; height:9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(40deg); }
+.ai-row.done .ai-desc { color: var(--g500); text-decoration: line-through; text-decoration-color: var(--g300); }
+.ai-desc { font-size: 14px; color: var(--g700); }
+.ai-due { font-family: var(--mono); font-size: 11.5px; color: var(--g500); text-align: right; }
+@media (max-width: 560px) { .ai-row { grid-template-columns: 36px 1fr; } .ai-due { display: none; } }
+
+/* ---- Pills ---- */
+.pill { display: inline-flex; align-items: baseline; gap: 6px; font-family: var(--sans); font-size: 12px; font-weight: 600; border-radius: 999px; padding: 5px 12px; line-height: 1; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g300); }
+
+/* ---- FAQ ---- */
+dl.faq dt { font-family: var(--serif); font-size: 16px; color: var(--slate); margin-top: 18px; }
+dl.faq dd { font-size: 14px; margin: 4px 0 0; max-width: 680px; color: var(--g700); }
+
+ul.plain { padding-left: 20px; margin: 0 0 12px; color: var(--g700); font-size: 14.5px; }
+ul.plain li { margin-bottom: 6px; }
+
+/* ---- Fixed TOC ---- */
+@media (min-width: 1240px) {
+  .toc-fixed { position: fixed; top: 72px; right: max(24px, calc(50vw - 620px - 180px)); width: 168px; font-size: 12.5px; }
+  .toc-fixed .t-head { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 8px; }
+  .toc-fixed a { display: block; color: var(--g500); text-decoration: none; padding: 4px 0 4px 12px; border-left: 1.5px solid var(--g300); line-height: 1.3; }
+  .toc-fixed a:hover { color: var(--slate); border-left-color: var(--clay); }
+}
+@media (max-width: 1239px) { .toc-fixed { display: none; } }
+
+@media print {
+  .toc-fixed { display: none; }
+  details { border: none; }
+  details .dbody { display: block; }
+  .code { background: #fff; border: 1px solid #ccc; }
+  .code pre, .code .kw, .code .str, .code .fn { color: #141413; }
+  .tldr-dark { background: #fff; color: #141413; border: 2px solid #141413; }
+  .tldr-dark p, .tldr-dark strong, .tldr-dark code { color: #141413; }
+  .milestone .body { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<nav class="toc-fixed" aria-label="Contents">
+  <div class="t-head">Contents</div>
+  <a href="#glossary">The five numbers</a>
+  <a href="#phase1">1 · e-Services accounts</a>
+  <a href="#phase2">2 · e-file application</a>
+  <a href="#phase3">3 · IdenTrust certificate</a>
+  <a href="#phase4">4 · Automated Enrollment</a>
+  <a href="#phase5">5 · Keystore &amp; client</a>
+  <a href="#phase6">6 · ATS testing</a>
+  <a href="#phase7">7 · Production</a>
+  <a href="#checklist">Checklist</a>
+  <a href="#faq">FAQ</a>
+</nav>
+
+<main>
+<header>
+  <div class="eyebrow">Guide · IRS Modernized e-File · A2A onboarding</div>
+  <h1>Starting MeF <em>e-filing</em>, end to end</h1>
+  <p class="intro">Every step from zero to transmitting live returns to the IRS over Application-to-Application (A2A): the e-Services accounts, the e-file application that issues your EFIN and ETIN, the IdenTrust certificate, Automated Enrollment, ATS testing, and the production cutover — grounded in what already exists in the <code>MeF</code> repo.</p>
+</header>
+
+<div class="tldr-dark">
+  <div class="label">TL;DR — the whole process in two sentences</div>
+  <p>The IRS will not accept a return from software it doesn't know, sent by an entity it hasn't vetted, over a connection it can't authenticate — so onboarding is three approvals in sequence: an <strong>e-file application</strong> (who you are → EFIN + ETIN), a <strong>registered IdenTrust certificate</strong> (how you authenticate → Automated Enrollment + ASID), and <strong>ATS testing</strong> (proof your software works → production ETIN).</p>
+  <p>The suitability check inside the e-file application is the long pole (up to <strong>45 days</strong>); everything else is days, so start the application first and do the certificate and build work while you wait.</p>
+</div>
+
+<div class="summary">
+  <div class="cell"><div class="k">Phases</div><div class="v">7</div></div>
+  <div class="cell"><div class="k">Realistic total</div><div class="v accent">6–10 weeks</div></div>
+  <div class="cell"><div class="k">Long pole</div><div class="v">45-day suitability</div></div>
+  <div class="cell"><div class="k">This repo</div><div class="v">ATS-live (phase 6)</div></div>
+</div>
+
+<div class="callout done"><span class="ico">✓</span>
+  <div>
+    <p><span class="found">Found in code —</span> this repo has already cleared phases 1–5: it authenticates against ATS with ETIN <code>97661</code>, submits Form 941 (Deposit ID received), and pulls status and acknowledgments. The IdenTrust chain and keystore tooling are checked in:</p>
+    <p><span class="path-chip">Root.txt</span> <span class="path-chip">SubCA1.txt</span> <span class="path-chip">create-pkcs12.sh</span> <span class="path-chip">mef-spring-boot-integration/EFIN_ETIN_USAGE.md</span> <span class="path-chip">src/main/resources/mef_config/ats_endpoints.properties</span></p>
+    <p>What remains for production: finish the ATS scenario set for the forms you'll file (phase 6) and the cutover in phase 7.</p>
+  </div>
+</div>
+
+<!-- ============ GLOSSARY ============ -->
+<section id="glossary">
+  <div class="sec-head"><span class="idx">00</span><h2>The five numbers you'll collect</h2></div>
+  <p>MeF onboarding is mostly the act of collecting identifiers, each issued by a different step. Learn them once — every later step and every error message refers to them.</p>
+
+  <table class="shipped">
+    <thead><tr><th>Identifier</th><th>What it is</th><th>Issued by</th></tr></thead>
+    <tbody>
+      <tr><td>EIN</td><td>Employer Identification Number — your business's tax ID. You need one before anything else; the e-file application is filed under it.</td><td>IRS (Form SS-4, usually same-day online)</td></tr>
+      <tr><td>EFIN</td><td>Electronic Filing Identification Number — identifies the <strong>originator</strong>: who prepared/originated the return. Goes in the return XML and the first 6 digits of every Submission ID.</td><td>e-file application (phase 2)</td></tr>
+      <tr><td>ETIN</td><td>Electronic Transmitter Identification Number — identifies the <strong>transmitter</strong>: the system physically sending returns. Used to log in to MeF. Starts in <em>test</em> status; flips to <em>production</em> only after ATS.</td><td>e-file application (phase 2)</td></tr>
+      <tr><td>ASID</td><td>Application System ID — identifies your specific A2A software system. Your certificate is registered against it.</td><td>Automated Enrollment (phase 4)</td></tr>
+      <tr><td>Cert</td><td>An X.509 client certificate from an IRS-approved CA (IdenTrust). MeF A2A has no password login in practice — the certificate <em>is</em> your credential.</td><td>IdenTrust (phase 3)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>EFIN vs ETIN — the pair everyone confuses</h3>
+  <p>One organization can wear two hats: it <em>prepares</em> returns (originator) and it <em>sends</em> them (transmitter). The IRS tracks the hats separately, so a single Form 941 submission uses <strong>both numbers in different places</strong>. This repo's real values make it concrete:</p>
+
+  <div class="ledger">
+    <div class="lg-row"><div class="lk">Login / authentication</div><div class="lv">ETIN <code>97661</code> — the transmitter account opening the A2A session</div></div>
+    <div class="lg-row"><div class="lk">Manifest &lt;EFIN&gt; field</div><div class="lv">ETIN <code>97661</code> — despite the tag name, the manifest identifies who is <em>transmitting</em></div></div>
+    <div class="lg-row"><div class="lk">Submission ID prefix</div><div class="lv">EFIN <code>238689</code> — e.g. <code>2386892025331test941</code> (6-digit EFIN + date + suffix)</div></div>
+    <div class="lg-row"><div class="lk">Return XML OriginatorGrp</div><div class="lv">EFIN <code>238689</code> — who prepared the return</div></div>
+    <div class="lg-row punch"><div class="lk">The rule</div><div class="lv">Transmitter 97661 sends on behalf of originator 238689 — mixing them up is rejected at validation.</div></div>
+  </div>
+  <p><span class="found">Found in code —</span> <span class="path-chip">mef-spring-boot-integration/EFIN_ETIN_USAGE.md</span> documents this exact mapping.</p>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<div class="sec-head"><span class="idx">→</span><h2>The seven phases</h2></div>
+<p>In dependency order. Phases 3–5 can run in parallel with phase 2's 45-day wait — that's how you land at 6–10 weeks instead of 4 months.</p>
+
+<div class="milestones">
+
+<!-- PHASE 1 -->
+<div class="milestone" id="phase1">
+  <div class="when">Week 0<br>~1–3 days</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 1 — e-Services accounts for every key person</h3>
+    <div class="who">Who: each Principal and Responsible Official · Where: irs.gov → “Tax Pros” → e-Services</div>
+    <p>The IRS won't let an anonymous person file an application that grants filing privileges — so before the company can apply, every <strong>Principal</strong> (owner/officer) and <strong>Responsible Official</strong> (the person who will control e-filing day-to-day) must individually prove who they are.</p>
+    <ul class="plain">
+      <li>Each person creates an IRS online account through <strong>ID.me</strong>: government photo ID + a selfie/video identity check. Takes minutes when documents are clean; days if it falls to manual review.</li>
+      <li>Use each person's <em>legal</em> name and personal details — mismatches with IRS records stall the e-file application later.</li>
+      <li>Decide now who your Responsible Officials are. Adding one later reopens suitability checks.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="milestone" id="phase2">
+  <div class="when">Week 0–6<br>up to 45 days</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 2 — IRS e-file application → EFIN + ETIN</h3>
+    <div class="who">Who: Responsible Official · Where: e-Services → “e-file application” · Governing doc: IRS Publication 3112</div>
+    <p>This is the application to become an <strong>Authorized IRS e-file Provider</strong>. Submit it first — its suitability check is the longest wait in the whole process, and everything after phase 2 can proceed while it runs.</p>
+    <p>Fill in the business (legal name, EIN, addresses), list Principals and Responsible Officials, and — the decision that shapes everything downstream — pick your <strong>provider options</strong>:</p>
+    <table class="shipped">
+      <thead><tr><th>Role</th><th>Pick it if</th><th>What it issues</th></tr></thead>
+      <tbody>
+        <tr><td>Transmitter</td><td>You will send returns to MeF yourself over A2A. <strong>Required</strong> for this project.</td><td>ETIN (test status)</td></tr>
+        <tr><td>Software Developer</td><td>You write the software that builds return XML. Pick it if you develop in-house — it gives standing ATS access.</td><td>ETIN (test-only)</td></tr>
+        <tr><td>ERO / Reporting Agent</td><td>You originate returns (your own, or clients' as a payroll provider filing 94x series).</td><td>EFIN</td></tr>
+      </tbody>
+    </table>
+    <details>
+      <summary>Suitability check — what the IRS vets, and the fingerprint rule</summary>
+      <div class="dbody">
+        <ul>
+          <li><strong>Everyone listed</strong> goes through a tax-compliance check (returns filed, no outstanding IRS debt), a credit check, and a criminal background check.</li>
+          <li>Principals and Responsible Officials <strong>without</strong> a professional credential (CPA, attorney, Enrolled Agent) must be fingerprinted — done electronically through the IRS-authorized vendor, scheduled from inside the application.</li>
+          <li>The IRS says allow <strong>up to 45 days</strong>. Clean applications often clear faster; one person's unfiled return stalls the whole company's application.</li>
+        </ul>
+      </div>
+    </details>
+    <p>On approval you receive an acceptance letter with your <strong>EFIN</strong>, and — because you chose Transmitter — an <strong>ETIN</strong>. The ETIN is born in <em>test</em> status: it can only talk to the test system until phase 6 is passed.</p>
+  </div>
+</div>
+
+<!-- PHASE 3 -->
+<div class="milestone" id="phase3">
+  <div class="when">parallel<br>~1–2 weeks</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 3 — Get the IdenTrust IGC certificate</h3>
+    <div class="who">Who: your ops/security owner · Where: identrust.com → IGC certificates for IRS</div>
+    <p>A2A sessions are authenticated with an X.509 client certificate instead of a password — the IRS trusts only certificates chaining to an approved Certificate Authority, and in practice that means <strong>IdenTrust's IGC (IdenTrust Global Common)</strong> program. Start this the day you submit the e-file application; identity/organization vetting by IdenTrust takes days to a couple of weeks.</p>
+    <ul class="plain">
+      <li><strong>Order:</strong> on identrust.com, choose the IGC offering for IRS use (they list “IRS – Modernized e-File” as a use case). The product selected for this project: <strong>“IGC Standard Medium Assurance | Organization Identity | Device”</strong>, purchased in the name of <strong>Pyramos Software</strong>. Check current pricing and pick the longest validity offered (typically 2 years) — every renewal repeats phase 4's registration.</li>
+      <li><strong>Validation:</strong> IdenTrust verifies the organization and the named applicant (documents, sometimes a callback). Only after approval can you retrieve the certificate.</li>
+      <li><strong>Key generation:</strong> generate the private key on the machine you control — via the browser pickup flow or OpenSSL. The private key never goes to IdenTrust or the IRS; only the public half travels.</li>
+      <li><strong>Download the chain:</strong> you need the IGC Root CA and the issuing SubCA certificate alongside your own, or nothing downstream will trust the chain.</li>
+    </ul>
+    <p><span class="found">Found in code —</span> the chain is already saved here: <span class="path-chip">Root.txt</span> (IdenTrust Global Common Root CA 1) and <span class="path-chip">SubCA1.txt</span>.</p>
+    <div class="code"><pre><span class="cm"># If you go the OpenSSL route: key + certificate signing request (CSR)</span>
+openssl req -new -newkey rsa:2048 -nodes \
+  -keyout <span class="str">private-irs.key</span> \
+  -out <span class="str">irs-mef.csr</span> \
+  -subj <span class="str">"/C=US/O=Your Legal Company Name/CN=mef.yourcompany.com"</span>
+<span class="cm"># Paste the CSR into IdenTrust's retrieval page; download the issued cert + chain.</span></pre></div>
+  </div>
+</div>
+
+<!-- PHASE 4 -->
+<div class="milestone" id="phase4">
+  <div class="when">after 2 + 3<br>~1–3 days</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 4 — Automated Enrollment: register the system + certificate → ASID</h3>
+    <div class="who">Who: Responsible Official · Where: e-Services → MeF “Automated Enrollment” (AE) application · Governing doc: Automated Enrollment External User Guide</div>
+    <p>The IRS now knows your company (phase 2) and a CA vouches for your keys (phase 3) — but MeF still has no idea which <em>machine</em> will be calling it. Automated Enrollment closes that gap: it registers your software system as an A2A client and binds your certificate to it.</p>
+    <ul class="plain">
+      <li><strong>Enroll the system:</strong> in the AE application, create an A2A client system under your ETIN. The IRS assigns it an <strong>ASID</strong> (Application System ID) — this repo's is <code>23868900</code>.</li>
+      <li><strong>Register the certificate:</strong> upload the <em>public</em> certificate from phase 3 against that ASID. At login, MeF matches the cert your client presents to the one on file — an unregistered or expired cert fails authentication before any SOAP call is processed.</li>
+      <li><strong>Assign services:</strong> grant the system the transmitter service set — Login/Logout, SendSubmissions, GetSubmissionStatus, GetNewAcks, etc. A service you didn't enable returns an authorization error even with a valid session.</li>
+    </ul>
+    <div class="callout"><span class="ico">↻</span><p><strong>Recurring duty:</strong> when the IdenTrust certificate is renewed (phase 3 repeats every ~2 years), the new certificate must be re-registered here <em>before</em> the old one expires — otherwise your transmitter is locked out mid-season with no code change to blame.</p></div>
+  </div>
+</div>
+
+<!-- PHASE 5 -->
+<div class="milestone" id="phase5">
+  <div class="when">parallel<br>~2–5 days</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 5 — Build the keystore and configure the client</h3>
+    <div class="who">Who: engineering · Where: this repo</div>
+    <p>The Java SDK wants one file that holds your private key plus the full certificate chain: a <strong>PKCS12 keystore</strong>. Build the chain file first (your cert, then SubCA, then Root — order matters for some validators), then export:</p>
+    <div class="code"><pre><span class="cm"># 1. Assemble the chain: leaf cert + IdenTrust SubCA + IdenTrust Root</span>
+cat <span class="str">your-issued-cert.pem</span> <span class="str">SubCA1.txt</span> <span class="str">Root.txt</span> &gt; <span class="str">irs-cert-chain.pem</span>
+
+<span class="cm"># 2. Combine chain + private key into a PKCS12 keystore</span>
+openssl pkcs12 -export \
+  -in <span class="str">irs-cert-chain.pem</span> \
+  -inkey <span class="str">private-irs.key</span> \
+  -out <span class="str">irs-mef-test.p12</span> \
+  -name <span class="str">"IRS MEF Test Certificate"</span> \
+  -certfile <span class="str">irs-cert-chain.pem</span>
+
+<span class="cm"># 3. Verify what's inside</span>
+openssl pkcs12 -info -in <span class="str">irs-mef-test.p12</span> -noout -nodes</pre></div>
+    <p><span class="found">Found in code —</span> steps 2–3 are scripted in <span class="path-chip">create-pkcs12.sh</span> and <span class="path-chip">verify-pkcs12.sh</span> at the repo root.</p>
+    <p>Then wire the identifiers and keystore into the app via environment variables — never hardcoded:</p>
+    <div class="code"><pre><span class="kw">export</span> <span class="fn">MEF_ETIN</span>=<span class="str">97661</span>              <span class="cm"># transmitter (phase 2)</span>
+<span class="kw">export</span> <span class="fn">MEF_ASID</span>=<span class="str">23868900</span>           <span class="cm"># system ID (phase 4)</span>
+<span class="kw">export</span> <span class="fn">MEF_KEYSTORE_PATH</span>=<span class="str">/path/to/irs-mef-test.p12</span>
+<span class="kw">export</span> <span class="fn">MEF_KEYSTORE_PASSWORD</span>=<span class="str">'…'</span>
+<span class="kw">export</span> <span class="fn">MEF_KEYSTORE_TYPE</span>=<span class="str">PKCS12</span>
+<span class="kw">export</span> <span class="fn">MEF_KEY_ALIAS</span>=<span class="str">'IRS MEF Test Certificate'</span>
+<span class="kw">export</span> <span class="fn">MEF_KEY_PASSWORD</span>=<span class="str">'…'</span></pre></div>
+    <p>Point <code>mef.sdk.environment</code> in <code>application.yml</code> at <strong>ATS</strong> — endpoints live in <span class="path-chip">mef_config/ats_endpoints.properties</span> (test: <code>la.alt.www4.irs.gov</code>) and <span class="path-chip">mef_config/prd_endpoints.properties</span> (production).</p>
+  </div>
+</div>
+
+<!-- PHASE 6 -->
+<div class="milestone" id="phase6">
+  <div class="when">Week 4–8<br>days–weeks</div>
+  <div class="dot-col"><div class="dot"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 6 — ATS: prove the software works <span class="pill neutral">this repo is here now</span></h3>
+    <div class="who">Who: engineering · Where: MeF Assurance Testing System · Governing doc: IRS Publication 4164 + per-form ATS scenarios</div>
+    <p>Your ETIN can't touch production until your software has demonstrably produced valid returns against the <strong>Assurance Testing System (ATS)</strong> — the IRS's full test copy of MeF. This is not optional and not a formality: ATS enforces the same schemas and business rules production does.</p>
+    <ul class="plain">
+      <li><strong>Get the current schema/business-rule packages</strong> for your form family and processing year. For the 94x employment-tax series they're versioned per quarter — this repo already tracks them in <span class="path-chip">94x-2026/</span> (e.g. <code>94x_Quarterly_BusinessRules_Schemas_2026Q1v2.0</code>).</li>
+      <li><strong>Run the IRS's published ATS scenarios</strong> for each form you intend to file — predefined test returns with known-correct data (repo folder: <span class="path-chip">test-scenarios/</span>). Each must come back <strong>Accepted</strong> in the acknowledgment.</li>
+      <li><strong>Exercise the full service loop</strong>, because the IRS checks that transmitters handle it: Login → SendSubmissions → GetSubmissionStatus → GetNewAcks → Logout.</li>
+      <li><strong>Then call the e-help Desk (866-255-0654)</strong>: they review your ATS results and flip the ETIN from test to <strong>production</strong> status. Nothing flips automatically.</li>
+    </ul>
+    <div class="gotchas">
+      <h4>Hard-won lessons already paid for in this repo</h4>
+      <ul>
+        <li><strong>Submission ID format is exactly 20 characters</strong> — 13 digits + 7 lowercase alphanumerics, regex <code>[0-9]{13}[a-z0-9]{7}</code>. Discovered via SDK bytecode analysis; wrong format is rejected client-side. (<code>SUBMISSION_ID_FORMAT.md</code>)</li>
+        <li><strong>The manifest is mandatory</strong> — EFIN, TIN, and tax-period dates must be present; a null manifest fails serialization. (<code>FORM_941_SUBMISSION_IMPLEMENTATION.md</code>)</li>
+        <li><strong>Reuse the login's ServiceContext</strong> for every subsequent call — a fresh context invalidates the SAML session.</li>
+        <li><strong>Use in-memory constructors</strong> for <code>SubmissionXML</code> / <code>SubmissionManifest</code>; the file-based paths break SDK serialization.</li>
+        <li>Java 17 needs the <code>--add-opens</code>/<code>--add-exports</code> JVM flags from <code>CLAUDE.md</code> — already baked into <code>pom.xml</code> for <code>mvn spring-boot:run</code>.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 7 -->
+<div class="milestone" id="phase7">
+  <div class="when">Week 6–10<br>~1 day</div>
+  <div class="dot-col"><div class="dot"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Phase 7 — Production cutover and the ongoing duties</h3>
+    <div class="who">Who: engineering + Responsible Official</div>
+    <p>Once the e-help Desk confirms the ETIN is in production status, the cutover itself is small: switch <code>mef.sdk.environment</code> from <code>ATS</code> to <code>PRD</code> so the SDK reads <span class="path-chip">prd_endpoints.properties</span>, and confirm submissions carry the production test-code (the SDK's <code>TestCdType</code> distinguishes test from live traffic). Send one real return, watch it through status → acknowledgment, and you are e-filing.</p>
+    <p>Three duties never end:</p>
+    <ul class="plain">
+      <li><strong>Certificate lifecycle</strong> — renew with IdenTrust before expiry and re-register in Automated Enrollment (phase 4's callout). Put the expiry date in a calendar with a 60-day lead.</li>
+      <li><strong>Schema/business-rule updates</strong> — the IRS revises them per quarter for 94x forms (see the version churn inside <span class="path-chip">94x-2026/</span>: v1.0 → v4.0 within a single quarter). Filing against a retired version gets rejections, not warnings.</li>
+      <li><strong>e-file application upkeep</strong> — personnel or address changes must be updated in the application; a stale Responsible Official can suspend the EFIN.</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /milestones -->
+
+<!-- ============ CHECKLIST ============ -->
+<section id="checklist">
+  <div class="sec-head"><span class="idx">✓</span><h2>The full checklist</h2></div>
+  <p>Ticked items are already done in this repo's setup, per <code>CLAUDE.md</code> and the working ATS integration.</p>
+  <div class="checklist">
+    <div class="ai-row done"><div class="ai-check"></div><div class="ai-desc">EIN exists; Principals &amp; Responsible Officials identified</div><div class="ai-due">phase 1</div></div>
+    <div class="ai-row done"><div class="ai-check"></div><div class="ai-desc">e-Services / ID.me accounts for each key person</div><div class="ai-due">phase 1</div></div>
+    <div class="ai-row done"><div class="ai-check"></div><div class="ai-desc">e-file application approved — EFIN 238689, ETIN 97661</div><div class="ai-due">phase 2</div></div>
+    <div class="ai-row done"><div class="ai-check"></div><div class="ai-desc">IdenTrust IGC certificate issued; chain saved (Root + SubCA1)</div><div class="ai-due">phase 3</div></div>
+    <div class="ai-row done"><div class="ai-check"></div><div class="ai-desc">Automated Enrollment: system registered (ASID 23868900), cert on file, services assigned</div><div class="ai-due">phase 4</div></div>
+    <div class="ai-row done"><div class="ai-check"></div><div class="ai-desc">PKCS12 keystore built; env vars wired; ATS login working</div><div class="ai-due">phase 5</div></div>
+    <div class="ai-row"><div class="ai-check"></div><div class="ai-desc">All required ATS scenarios Accepted for each target form (941 in progress)</div><div class="ai-due">phase 6</div></div>
+    <div class="ai-row"><div class="ai-check"></div><div class="ai-desc">e-help Desk (866-255-0654) moves ETIN to production status</div><div class="ai-due">phase 6</div></div>
+    <div class="ai-row"><div class="ai-check"></div><div class="ai-desc">Switch environment to PRD; first live return through status + ack</div><div class="ai-due">phase 7</div></div>
+    <div class="ai-row"><div class="ai-check"></div><div class="ai-desc">Calendar reminders: cert renewal (60-day lead) + quarterly schema versions</div><div class="ai-due">ongoing</div></div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="sec-head"><span class="idx">?</span><h2>Questions that come up every time</h2></div>
+  <dl class="faq">
+    <dt>Do we really need both an EFIN and an ETIN?</dt>
+    <dd>Yes, if you both prepare and transmit. They answer different questions — "who made this return?" (EFIN, in the XML) vs "who is sending it?" (ETIN, at login). A payroll provider transmitting for clients uses its own ETIN with each client's context; this repo transmits under ETIN 97661 for originator EFIN 238689.</dd>
+    <dt>Which IdenTrust certificate exactly?</dt>
+    <dd>The one this project selected: <strong>“IGC Standard Medium Assurance | Organization Identity | Device”</strong> — an organization-identity device certificate, right for an unattended transmitter system. Confirm current pricing on identrust.com at purchase time. What never changes: it must chain to the IGC Root the IRS trusts, which is the root already saved in <code>Root.txt</code>.</dd>
+    <dt>How long does the whole thing take?</dt>
+    <dd>6–10 weeks when phases overlap. The 45-day suitability check dominates; IdenTrust vetting (1–2 weeks) and ATS iteration (days to weeks, depending on how many forms and how clean your XML is) fit inside that window if started immediately.</dd>
+    <dt>What does it cost?</dt>
+    <dd>The IRS charges nothing for the e-file application, enrollment, or ATS. The IdenTrust certificate is the only purchase — order of a few hundred dollars per validity period — plus the electronic fingerprinting fee for any non-credentialed principals.</dd>
+    <dt>Can we skip ATS since the software "already works"?</dt>
+    <dd>No. The ETIN is created in test status and only the e-help Desk moves it to production, after reviewing ATS results. Re-testing is also required when you add a new form family later.</dd>
+    <dt>What breaks first in year two?</dt>
+    <dd>The certificate. It expires before anything else needs touching, and the failure looks like a sudden authentication error with no code change. Renew with IdenTrust, rebuild the PKCS12 (<code>create-pkcs12.sh</code>), and re-register the new cert in Automated Enrollment before the old one lapses.</dd>
+  </dl>
+</section>
+
+<!-- ============ REFERENCES ============ -->
+<section id="refs">
+  <div class="sec-head"><span class="idx">§</span><h2>Primary sources</h2></div>
+  <ul class="plain">
+    <li><strong>IRS Publication 3112</strong> — IRS e-file Application and Participation (phase 2 rules).</li>
+    <li><strong>IRS Publication 4164</strong> — MeF Guide for Software Developers and Transmitters (schemas, ATS, transmission rules).</li>
+    <li><strong>Automated Enrollment (AE) External User Guide</strong> — the ASID + certificate registration flow (phase 4).</li>
+    <li><strong>identrust.com</strong> — IGC certificates for IRS programs (phase 3).</li>
+    <li><strong>e-help Desk: 866-255-0654</strong> — ATS review and ETIN production activation.</li>
+    <li>In-repo: <span class="path-chip">mef-spring-boot-integration/README.md</span> <span class="path-chip">EFIN_ETIN_USAGE.md</span> <span class="path-chip">FORM_941_SUBMISSION_IMPLEMENTATION.md</span> <span class="path-chip">SUBMISSION_ID_FORMAT.md</span></li>
+  </ul>
+  <p style="margin-top:28px; font-family: var(--mono); font-size: 11px; color: var(--g500);">Generated 2026-08-21 from the MeF repo state · IRS process details reflect published IRS guidance — verify current-year specifics in Pub 3112 / Pub 4164 before relying on dates or fees.</p>
+</section>
+
+</main>
+</body>
+</html>

@@ -9,6 +9,15 @@ server:
 
 # MeF Client SDK Configuration
 mef:
+  # NewSend vertical (com.irs.mef.newsend) - write-ahead journal + submit safety
+  newsend:
+    journal:
+      mode: file                             # file (default, durable) | memory (tests only)
+      path: data/newsend-journal.jsonl
+    xml-validation: enforce                  # enforce | warn | off
+    processing-zone: America/New_York        # zone for the submission id's yyyyDDD date
+    session-wait-seconds: 30
+
   sdk:
     # A2A_TOOLKIT_HOME - Location of SDK configuration files
     # This should point to the mef_config directory in resources

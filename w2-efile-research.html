@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to e-file W-2 forms for Pyramos clients</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D; --rust:#B04A3F;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; font-size: 15px;
+  overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .callout, .summary, .story, .exbox, .gotchas, .milestone {
+  overflow-wrap: break-word; word-break: break-word; }
+.card, .milestone, [class*="col"], [class*="grid"] > *, .summary .cell, .story { min-width: 0; }
+table { table-layout: auto; min-width: 640px; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; margin: 14px 0; }
+
+main { max-width: 1120px; margin: 0 auto; padding: 48px 28px 96px; }
+header.top { margin-bottom: 40px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--g500); margin-bottom: 12px; display:flex; align-items:center; gap:12px; }
+.eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(36px, 5vw, 56px); line-height: 1.06; letter-spacing: -.018em; color: var(--slate); margin: 0 0 14px; max-width: 20ch; }
+h1 em { font-style: italic; color: var(--clay); }
+h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; line-height: 1.2; letter-spacing: -.012em; margin: 0 0 14px; }
+h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 26px 0 8px; }
+.intro { font-size: 17px; color: var(--g700); max-width: 68ch; margin: 0 0 26px; }
+section { margin: 56px 0; scroll-margin-top: 20px; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+:not(pre) > code { font-family: var(--mono); font-size: .92em; background: var(--g100); color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word; }
+
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 26px 0; }
+@media (max-width: 760px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.summary .cell { background: var(--paper); border: var(--border); border-radius: 12px; padding: 18px 20px; }
+.summary .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); margin-bottom: 6px; }
+.summary .v { font-size: 17px; color: var(--slate); font-weight: 600; }
+.summary .v.accent { color: var(--clay); }
+.summary .s { font-size: 12.5px; color: var(--g500); margin-top: 4px; }
+
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius: 12px; padding: 22px 26px; margin: 0 0 32px; }
+.tldr-dark .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--oat); margin-bottom: 10px; }
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,.5); }
+.tldr-dark code { font-family: var(--mono); font-size: 13.5px; background: rgba(250,249,245,.12); color: var(--ivory); padding: 1px 5px; border-radius: 4px; }
+
+.toc-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+.toc-pills a { font-size: 12.5px; padding: 7px 14px; border: var(--border); border-radius: 999px; text-decoration: none; color: var(--g700); background: var(--paper); display: inline-flex; align-items: center; gap: 7px; }
+.toc-pills a .n { font-family: var(--mono); font-size: 10px; color: var(--g500); }
+.toc-pills a:hover { border-color: var(--slate); color: var(--slate); }
+.toc-pills a:hover .n { color: var(--clay); }
+
+.callout { display: flex; gap: 12px; border: 1.5px solid var(--oat); background: rgba(227,218,204,.35); border-radius: 10px; padding: 14px 16px; font-size: 14px; margin: 16px 0; }
+.callout .ico { color: var(--clay); font-weight: 600; }
+.reco { border-left: 4px solid var(--clay); background: var(--paper); border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 18px 0; }
+.reco h3 { margin-top: 0; }
+
+.gotchas { border: 1.5px solid var(--clay); border-radius: 12px; background: rgba(217,119,87,.06); padding: 18px 20px; }
+.gotchas h3 { font-family: var(--sans); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--clay); margin: 0 0 10px; }
+.gotchas ol { margin: 0; padding-left: 0; list-style: none; counter-reset: g; }
+.gotchas li { position: relative; padding-left: 28px; font-size: 14px; margin-bottom: 10px; counter-increment: g; }
+.gotchas li::before { content: counter(g); position: absolute; left: 0; top: 1px; font-family: var(--mono); font-size: 11px; color: var(--clay); font-weight: 700; border: 1px solid var(--clay); border-radius: 6px; width: 20px; height: 20px; display:flex; align-items:center; justify-content:center; }
+
+table.shipped { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--paper); border: var(--border); border-radius: 12px; overflow: hidden; font-size: 13.5px; }
+table.shipped thead th { text-align: left; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); background: var(--g100); padding: 12px 12px; border-bottom: 1px solid var(--g300); }
+table.shipped tbody td { padding: 11px 12px; border-bottom: 1px solid var(--g100); vertical-align: top; }
+table.shipped tbody tr:last-child td { border-bottom: none; }
+table.shipped tbody tr:hover { background: var(--ivory); }
+table.shipped .nowrap { white-space: nowrap; }
+table.shipped td.good { color: var(--olive); font-weight: 600; }
+table.shipped td.bad { color: var(--rust); }
+table.shipped td.mono, table.shipped th.mono { font-family: var(--mono); font-size: 12.5px; }
+table.wide { table-layout: fixed; min-width: 1200px; }
+table.compare { border-collapse: collapse; width: 100%; max-width: 760px; font-size: 13.5px; }
+table.compare th, table.compare td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--g300); vertical-align: top; }
+table.compare th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); font-weight: 500; }
+table.compare td.bad { color: var(--rust); }
+table.compare td.good { color: var(--olive); font-weight: 600; }
+
+.chip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: var(--border); color: var(--g700); padding: 4px 9px; border-radius: 8px; white-space: nowrap; display: inline-block; }
+.chip.olive { background: rgba(120,140,93,.16); color: var(--olive); border-color: transparent; }
+.chip.clay { background: rgba(217,119,87,.14); color: var(--clay); border-color: transparent; }
+.chip.slate { background: var(--slate); color: var(--ivory); border-color: transparent; }
+.pill { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 11px; line-height: 1; }
+.pill.sev { background: var(--clay); color: #fff; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral { background: var(--g100); color: var(--g700); border: var(--border); }
+
+.step { display: grid; grid-template-columns: 44px 1fr; gap: 18px; padding: 18px 0; border-bottom: 1.5px solid var(--g100); }
+.step:last-child { border-bottom: none; }
+.step-badge { width: 34px; height: 34px; border-radius: 50%; background: var(--oat); border: var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; color: var(--slate); font-size: 14px; }
+.step.hot .step-badge { background: rgba(217,119,87,.14); border-color: var(--clay); color: var(--clay); }
+.step-title { font-family: var(--serif); font-size: 17px; margin-bottom: 4px; display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+.step p { margin: 6px 0; color: var(--g700); font-size: 14px; }
+
+.story { border: 1.5px solid var(--g200); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 16px 0; }
+.story .stitle { font-family: var(--serif); font-weight: 500; font-size: 18.5px; margin: 0 0 6px; }
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.exbox { background: var(--g100); border: 1px solid var(--g200); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.exbox .exhead { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--g500); margin-bottom: 8px; }
+.exrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: var(--g700); border-bottom: 1px dashed var(--g200); }
+.exrow:last-child { border-bottom: none; }
+.exrow .was { color: var(--clay-d); }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; }
+.analogy { border-left: 3px solid var(--oat); padding: 4px 12px; margin: 10px 0; font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--g700); }
+.analogy .abreak { display: block; font-family: var(--sans); font-style: normal; font-size: 12px; color: var(--clay-d); margin-top: 4px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } }
+.card { background: var(--paper); border: var(--border); border-radius: 14px; padding: 20px 22px; }
+.card h3 { margin-top: 0; }
+.card ul { padding-left: 18px; margin: 8px 0; font-size: 14px; color: var(--g700); }
+.card li { margin: 4px 0; }
+
+details { border: var(--border); border-radius: 10px; background: var(--paper); margin: 12px 0; overflow: hidden; }
+details summary { list-style: none; cursor: pointer; padding: 14px 16px; font-family: var(--serif); font-size: 16px; color: var(--slate); display: flex; align-items: baseline; gap: 10px; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "▸"; color: var(--clay); font-family: var(--sans); font-size: 12px; transition: transform 120ms; }
+details[open] summary::before { transform: rotate(90deg); }
+details summary .where { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-left: auto; }
+details .body { padding: 0 16px 16px; font-size: 14px; color: var(--g700); }
+details .body p { margin: 8px 0; }
+details .body ul { padding-left: 18px; }
+
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 14px 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw { color: var(--clay); } .code .str { color: var(--olive); } .code .cm { color: var(--g500); } .code .fn { color: #C9B98A; }
+
+.milestones { display: flex; flex-direction: column; }
+.milestone { display: grid; grid-template-columns: 120px 28px 1fr; gap: 0 18px; position: relative; }
+@media (max-width: 640px) { .milestone { grid-template-columns: 84px 24px 1fr; } }
+.milestone .when { text-align: right; font-family: var(--mono); font-size: 12px; color: var(--g500); padding-top: 4px; }
+.milestone .dot-col { display: flex; flex-direction: column; align-items: center; }
+.milestone .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 3px solid var(--clay); margin-top: 4px; flex-shrink: 0; }
+.milestone .dot.done { background: var(--olive); border-color: var(--olive); }
+.milestone .dot.hard { background: var(--clay); }
+.milestone .line { width: 2px; flex: 1; background: var(--g300); margin: 4px 0; }
+.milestone:last-child .line { display: none; }
+.milestone .body { padding-bottom: 28px; font-size: 14px; color: var(--g700); }
+.milestone .body strong { color: var(--slate); }
+.milestone .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.milestone .tag { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g300); border-radius: 6px; padding: 3px 8px; color: var(--g700); }
+
+dl.faq dt { font-family: var(--serif); font-size: 16px; color: var(--slate); margin-top: 18px; }
+dl.faq dd { font-size: 14px; margin: 4px 0 0; max-width: 72ch; color: var(--g700); }
+.src { font-size: 13px; color: var(--g700); columns: 2; column-gap: 28px; }
+@media (max-width: 760px) { .src { columns: 1; } }
+.src li { margin: 3px 0; break-inside: avoid; }
+.legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--g700); margin: 8px 0 0; }
+.legend span::before { content:""; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align: 1px; }
+.legend .m::before { background: var(--olive); } .legend .h::before { background: var(--clay); }
+
+@media print {
+  body { background: #fff; }
+  .toc-pills { display: none; }
+  details { break-inside: avoid; } details:not([open]) > *:not(summary) { display: block; }
+  .tldr-dark, .code { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  section { margin: 28px 0; }
+}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="eyebrow">Investigation · MeF repo · Pyramos Software LLC · 2026-09-08</div>
+  <h1>How to e-file <em>W-2 forms</em> for Pyramos clients</h1>
+  <p class="intro">Tax year 2026 Forms W-2 are due 2027-02-01. This page answers where they go, what file SSA takes, what each of the eleven payroll jurisdictions wants on top, what a Reporting Agent must have in place, and what to build in the Spring Boot repo.</p>
+
+  <div class="summary">
+    <div class="cell"><div class="k">Federal channel</div><div class="v accent">Browser upload</div><div class="s">SSA BSO Wage File Upload. The consolidator web service is closed to new users.</div></div>
+    <div class="cell"><div class="k">Jurisdictions filing W-2</div><div class="v">10 of 11</div><div class="s">New York takes no W-2. It wants quarterly NYS-45 wage detail.</div></div>
+    <div class="cell"><div class="k">State machine channels</div><div class="v">3</div><div class="s">NJ Axway SFTP, MA Bulk File Portal, VA server-to-server.</div></div>
+    <div class="cell"><div class="k">Copy A deadline</div><div class="v">Feb 1, 2027</div><div class="s">Jan 31 is a Sunday. BSO opens Dec 8, 2026.</div></div>
+  </div>
+
+  <div class="tldr-dark">
+    <div class="label">Two-sentence version</div>
+    <p><strong>W-2s go to the Social Security Administration, not the IRS, so neither the IRS MeF channel this repo already speaks nor IRS IRIS can carry them.</strong> The pipeline for January 2027 is: Java builds and validates one EFW2 fixed-width file covering every client, a person runs it through AccuWage Online and uploads it in BSO, and the app stores the Wage File Identifier and polls status.</p>
+    <p>State W-2 reporting is a separate obligation with its own file, portal and reconciliation form in ten jurisdictions. Four of them will reject an unmodified copy of the SSA file, and New York wants something else entirely.</p>
+  </div>
+
+  <nav class="toc-pills" aria-label="Sections">
+    <a href="#where"><span class="n">01</span>Where W-2s go</a>
+    <a href="#pipeline"><span class="n">02</span>Federal pipeline</a>
+    <a href="#file"><span class="n">03</span>The EFW2 file</a>
+    <a href="#states"><span class="n">04</span>State layer</a>
+    <a href="#compliance"><span class="n">05</span>Authorization and penalties</a>
+    <a href="#design"><span class="n">06</span>What to build</a>
+    <a href="#gotchas"><span class="n">07</span>Gotchas</a>
+    <a href="#plan"><span class="n">08</span>Plan to Feb 1</a>
+    <a href="#open"><span class="n">09</span>Open items and sources</a>
+  </nav>
+</header>
+
+<section id="where">
+  <h2>01 · Where W-2s go, and why the existing code cannot carry them</h2>
+  <p>The MeF integration in this repo sends Form 941 returns to the IRS over SOAP. A W-2 is not a return. It is a wage statement whose Copy A goes to SSA, which forwards the federal fields to the IRS and forwards nothing to any state. The three federal systems are easy to confuse because all three take employer data in January.</p>
+  <div class="table-wrap">
+  <table class="shipped">
+    <thead><tr><th>System</th><th>Owner</th><th>Takes</th><th>Does not take</th><th>Transport open to Pyramos</th></tr></thead>
+    <tbody>
+      <tr><td><strong>MeF A2A</strong></td><td>IRS</td><td>Forms 940, 941, 943, 944, 945 and other returns</td><td class="bad">Form W-2</td><td>SOAP with X.509 cert (already built)</td></tr>
+      <tr><td><strong>IRIS</strong> (and its A2A API)</td><td>IRS</td><td>1099 series, 1098, 1042-S, 5498, W-2G and other information returns. Only IRS intake system from 2027-01-01. FIRE closes 2026-11-19.</td><td class="bad">Form W-2. The IRIS page says W-2s are "e-filed with the Social Security Administration."</td><td>REST plus JWT, separate TCC enrollment, about 45 business days</td></tr>
+      <tr><td><strong>BSO</strong> Business Services Online</td><td>SSA</td><td class="good">Form W-2 Copy A (EFW2 file or keyed), W-2c (EFW2C)</td><td>Anything else</td><td>Browser upload behind Login.gov or ID.me</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout"><span class="ico">→</span><div>W-2G on the IRIS list is the gambling-winnings form. It is unrelated to Form W-2. Nothing in the MeF SDK, the reflection pattern, or the mef_config security profiles is reusable for W-2 filing.</div></div>
+</section>
+
+<section id="pipeline">
+  <h2>02 · The federal pipeline, and where the human sits</h2>
+  <p>SSA documents exactly three intake channels for EFW2 files and a fourth that is shut. Electronic Data Transfer is for federal and state agencies only. The Electronic Wage Reporting Web Service (EWRWS) is a SOAP service built for consolidators such as payroll providers, and it can submit files and poll status. Its page carries an alert: "SSA is currently not accepting new EWR Web Service users/consolidators." That leaves the browser.</p>
+  <div class="legend"><span class="m">Java does this</span><span class="h">A person does this in BSO</span></div>
+
+  <div class="step"><div class="step-badge">1</div><div><div class="step-title">Register once, as a person, with Pyramos's EIN <span class="chip clay">human</span></div>
+    <p>One employee registers in BSO through Login.gov or ID.me, checks the Third-Party box, and uses Pyramos's own EIN and address. "You may not register on behalf of another person." SSA mails one activation code per service to Pyramos's IRS address of record, usually within two weeks. Request Wage Reporting and SSNVS. Clients do not need BSO accounts today. The 8-character BSO User ID this produces goes into the file as the electronic signature. Register two people, because the User ID leaves with the employee.</p></div></div>
+
+  <div class="step"><div class="step-badge">2</div><div><div class="step-title">Generate one combined EFW2 file for all clients <span class="chip olive">java</span></div>
+    <p>One RA record for Pyramos, then for each client one RE, its RW records, optional RO and RS records, one RT (plus RU if any RO), and one RF at the end with the total RW count. SSA asks for this: "We encourage you to file combined reports to avoid creating a separate file for each employer."</p></div></div>
+
+  <div class="step"><div class="step-badge">3</div><div><div class="step-title">Validate locally, then in AccuWage Online <span class="chip olive">java</span> <span class="chip clay">human</span></div>
+    <p>The local validator catches what would otherwise cost an upload cycle. AccuWage Online is the SSA checker inside BSO. It is not formally mandatory, but BSO no longer accepts malformed files and SSA tells filers to retest after every fix. AccuWage does not check names against SSNs. That is SSNVS.</p></div></div>
+
+  <div class="step hot"><div class="step-badge">4</div><div><div class="step-title">Upload through Wage File Upload <span class="chip clay">human</span></div>
+    <p>Every upload is a live filing. There is no test indicator in the file and no test environment. Front-end validation returns within 60 seconds with a receipt and a Wage File Identifier (WFID). Save that page. If you spot a mistake while status is RECEIVED you can delete the submission yourself. While IN PROCESSING you must phone SSA. After COMPLETE the only remedy is a W-2c.</p></div></div>
+
+  <div class="step"><div class="step-badge">5</div><div><div class="step-title">Record the WFID and poll status <span class="chip olive">java</span> <span class="chip clay">human</span></div>
+    <p>SSA does not notify on success. A person checks Submission Status in BSO and the app stores the result per client. Processing takes a few days, at most 30.</p></div></div>
+
+  <div class="step"><div class="step-badge">6</div><div><div class="step-title">Resubmit or correct <span class="chip olive">java</span> <span class="chip clay">human</span></div>
+    <p>If SSA returns the file, resubmit the entire corrected file in the same format with RA position 29 set to 1 and the WFID in positions 30 to 35, within 45 days of the notice. One 15-day extension exists. If the file reached COMPLETE and the data was wrong, that is a W-2c through EFW2C (Publication 42-014) or W-2c Online.</p></div></div>
+
+  <div class="story" id="story-ein">
+    <div class="stitle">The one field that posts wages to the wrong company</div>
+    <p>SSA posts every employee's earnings to the EIN in the RE record. The rule for positions 8 to 16 is "the EIN under which tax payments were submitted to the IRS under Form 941." A Form 8655 Reporting Agent files and deposits under the client's own EIN, so the client's EIN belongs there and Pyramos appears only once, in the RA record. The Agent Indicator at RE position 7 is not for Reporting Agents. SSA reserves code 1 for Form 2678 agents, code 2 for common paymasters and code 3 for a narrow Section 3504 class (state and local agencies serving home-care recipients). For all three codes the agent's EIN goes in 8 to 16 and the client's EIN in 17 to 25.</p>
+    <div class="callout"><span class="ico">!</span><div><strong>This is an inference, not a quote.</strong> Publication 42-007 never uses the words "Form 8655" or "reporting agent." The treatment below follows from the deposit rule and is almost certainly right, but it decides whose earnings record every wage lands on. Confirm it with an Employer Services Liaison Officer (1-800-772-6270) before the first live file.</div></div>
+    <div class="exbox">
+      <div class="exhead">Worked example · Pyramos EIN 12-3456789 files for client Orchid Dental, EIN 98-7654321</div>
+      <div class="exrow"><span>RA positions 3-11 (submitter)</span><span>123456789</span></div>
+      <div class="exrow"><span>RE position 7 (agent indicator)</span><span>blank</span></div>
+      <div class="exrow"><span>RE positions 8-16 if Pyramos EIN were used</span><span class="was">123456789 → Orchid's wages post to Pyramos</span></div>
+      <div class="exrow"><span>RE positions 8-16 correct</span><span class="now">987654321 → wages post to Orchid Dental</span></div>
+      <div class="exrow"><span>RE positions 17-25 (agent for EIN)</span><span>blanks</span></div>
+      <div class="exrow punch"><span>Also required</span><span>RA EIN must equal the BSO registration EIN, or BSO refuses resubmission</span></div>
+    </div>
+    <div class="analogy">Like a courier company's return address on a parcel. The courier is on the label once; the parcel is addressed to the client.
+      <span class="abreak">Where this breaks: a parcel that goes astray is re-sent. Wages posted to the wrong EIN sit on the wrong earnings record until a W-2c pair moves them, and the client's 941 no longer reconciles.</span></div>
+  </div>
+</section>
+
+<section id="file">
+  <h2>03 · The EFW2 file for tax year 2026</h2>
+  <p>The format is SSA Publication 42-007, <em>Specifications for Filing Forms W-2 Electronically</em>, tax year 2026 edition, version 1 dated 2026-07-07. Every record is 512 bytes, ASCII, upper case except the two e-mail fields, terminated by CR+LF. Money fields are unsigned digits with an implied decimal point, right-justified and zero-filled: $59.60 is <code>00000005960</code>. Fields marked Blank are spaces, never zeros. Money fields with nothing to report are zeros, never spaces.</p>
+
+  <div class="table-wrap">
+  <table class="shipped">
+    <thead><tr><th class="mono">Record</th><th>Name</th><th>Required</th><th>Cardinality and role</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">RA</td><td>Submitter</td><td class="good">Yes</td><td>Once, first. Pyramos EIN (3-11), BSO User ID (12-19), Resub indicator (29) and WFID (30-35), Software Code 98 for in-house, contact e-mail (446-485, required), Preparer Code S for service bureau (500).</td></tr>
+      <tr><td class="mono">RE</td><td>Employer</td><td class="good">Yes</td><td>One per client. Tax year (3-6), Agent Indicator (7), client EIN (8-16), name and delivery address and contact name, phone, e-mail (all required since TY2025), Tax Jurisdiction blank for domestic (220), Employer Signature PIN (319-328, new).</td></tr>
+      <tr><td class="mono">RW</td><td>Employee</td><td class="good">Yes</td><td>One per W-2. SSN (3-11, full nine digits), name, address, wages 188-198, federal withholding 199-209, SS wages 210-220, SS tax 221-231, Medicare wages 232-242, Medicare tax 243-253, SS tips 254-264, deferrals and box 12 amounts, new Treasury Tipped Occupation Codes (490-495).</td></tr>
+      <tr><td class="mono">RO</td><td>Employee Optional</td><td>Only if any field applies</td><td>Immediately after its RW. Never emit an all-zero RO. If one field applies, complete the whole record.</td></tr>
+      <tr><td class="mono">RS</td><td>State</td><td>Optional</td><td>Zero or more per employee. "SSA and IRS do not read or process this information." Layout convention that states reuse in their own portals.</td></tr>
+      <tr><td class="mono">RT</td><td>Total</td><td class="good">Yes</td><td>One per RE. RW count since last RE (3-9) and 15-digit sums of each RW money field.</td></tr>
+      <tr><td class="mono">RU</td><td>Total Optional</td><td>Only if any RO</td><td>Sums of RO fields for the employer.</td></tr>
+      <tr><td class="mono">RV</td><td>State Total</td><td>Optional</td><td>Never without RS records. SSA ignores it. Maryland redefines it to carry the whole MW508.</td></tr>
+      <tr><td class="mono">RF</td><td>Final</td><td class="good">Yes</td><td>Once, last. Total RW count in the entire file (8-16). Nothing may follow it.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h3>New for tax year 2026</h3>
+      <ul>
+        <li><strong>Employer Signature PIN</strong> at RE 319-328, opt-in for TY2026. If a client opts in, Pyramos must carry that client's PIN or SSA will not process that report. SSA also says "no action is required now for employers." Issued annually. Model it as a nullable per-client, per-year field.</li>
+        <li><strong>Treasury Tipped Occupation Codes</strong> in the RW record (Box 14b).</li>
+        <li><strong>Box 12 codes</strong> A and B split into separate money fields. Codes J, K, L, P added. Three new codes: TA (Trump Account contributions), TP (cash tips), TT (qualified overtime).</li>
+        <li>Wage base <strong>$184,500</strong>. Maximum employee SS tax <strong>$11,439.00</strong>. Household coverage threshold <strong>$3,000</strong>.</li>
+        <li>Carried from TY2025 and enforced: submitter e-mail and the employer name, delivery address, contact name, phone and e-mail. "Submissions will be returned if any of these fields are left blank."</li>
+      </ul></div>
+    <div class="card"><h3>Limits and hygiene</h3>
+      <ul>
+        <li>Spec limit 1,000,000 RW and 50,000 RE per submission. The BSO handbook says keep a multi-employer file under <strong>500,000 records total</strong> to avoid session timeout. Build to 500,000.</li>
+        <li>Upload cap 350 MB. AccuWage cap 350 MB before zipping. One wage file per .zip.</li>
+        <li>Group every employee of one employer under a single RE. "Unnecessary RE records can cause serious processing errors or delays."</li>
+        <li>A money amount that overflows its field has no legal representation. Fail loudly and call an Employer Services Liaison Officer.</li>
+        <li>W-2 Online (keyed, 50 forms) is decommissioned 2026-09-19. Anything still to key for TY2025 must be in by 2026-09-18. Its replacement handles domestic reports; territories arrive December 2026.</li>
+      </ul></div>
+  </div>
+</section>
+
+<section id="states">
+  <h2>04 · The state layer</h2>
+  <p>SSA forwards nothing to states, so each jurisdiction that wants W-2 data collects it directly. Ten of Pyramos's eleven do. Most accept an EFW2-shaped file with an RS record, which is why the RS record exists at all, but "EFW2-shaped" hides four kinds of deviation. Every TY2026 due date below is derived from the state's own rule and the 2027 calendar unless marked published. Every state specification read is a TY2025 edition except New Jersey's, so none of them yet reflects SSA's TY2026 layout changes. Re-read each one in November.</p>
+
+  <div class="table-wrap">
+  <table class="shipped wide">
+    <colgroup><col style="width:5%"><col style="width:21%"><col style="width:12%"><col style="width:14%"><col style="width:10%"><col style="width:10%"><col style="width:17%"><col style="width:11%"></colgroup>
+    <thead><tr><th>Juris.</th><th>Format the state takes</th><th>Portal</th><th>Reconciliation</th><th>E-file at</th><th>TY2026 due (derived unless marked)</th><th>Machine channel</th><th>Spec edition read</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">PA</td><td>Own trimmed layouts: <strong>RA, RE, RS, RV, RF only</strong> (no RW, no RT), state code 42, 8-digit withholding ID at RS 248-255, employee ITIN at 338-346, and a <strong>PA-specific mandatory RV</strong> (RS count, PA wages, PA tax). CSV alternative.</td><td>myPATH</td><td>REV-1667 as a 29-column CSV, uploaded after the W-2 records, one per FEIN</td><td>10 or more income statements (W-2 plus 1099)</td><td>Feb 1, 2027</td><td>None published</td><td>Live pa.gov page, undated</td></tr>
+      <tr><td class="mono">DE</td><td>EFW2, RS required ("optional to SSA, required to Delaware")</td><td>Taxpayer Portal, Transmitter Transactions</td><td>WTH-REC (replaced W-3)</td><td>More than 10</td><td>Feb 1, 2027</td><td>None published. Validate-only mode exists. 5 MB txt, 49 MB before zip.</td><td>Portal PDF, TY2025</td></tr>
+      <tr><td class="mono">GA</td><td>EFW2 or CSV. <strong>RS deviations not read</strong> (site blocks non-browser clients).</td><td>Georgia Tax Center</td><td>G-1003 one-line-per-return CSV, multi-client and multi-year, per-line acknowledgements</td><td>Federal rule (10) or any EFT remitter</td><td class="nowrap">Feb 1, 2027 (published)</td><td>None published</td><td>2026 Employer's Guide; RS spec unread</td></tr>
+      <tr><td class="mono">MA</td><td>EFW2, state code 25 in RS 3-4 and 274-275. RA EIN must match the portal user.</td><td>MassTaxConnect; Bulk File Portal</td><td>M-3 for paper filers only</td><td>50 or more</td><td>Feb 1, 2027</td><td class="good">Bulk File Portal: SSH/SFTP and HTTPS, separate registration</td><td>Handbook rev. 2019-12-19</td></tr>
+      <tr><td class="mono">MD</td><td>Six record types only (RA, RE, RW, RS, RV, RF; <strong>no RT, RO, RU</strong>). Modified RE and RS, and a <strong>Maryland-only RV carrying the entire MW508</strong>, NAICS mandatory at 333-338. State code 24.</td><td>Maryland Tax Connect (bFile retired 2024-12-11), Transmitter Bulk Filer role</td><td>MW508, inside the RV record</td><td>25 or more, $100 per violation</td><td>Feb 1, 2027</td><td class="bad">SFTP withdrawn for TY2025</td><td>TY2025</td></tr>
+      <tr><td class="mono">NJ</td><td>EFW2 with about a dozen <strong>NJ-only RS fields</strong>: test/production flag, 12-digit NJ TIN, FLI and DI plan types and amounts, UI/WF/HC withheld, pension and deferred-comp indicators. State code 34.</td><td>Online Upload, or Axway SFTP for 100+ forms</td><td>NJ-W-3</td><td>Everyone, no paper since TY2020</td><td class="nowrap">Feb 16, 2027 (spec says Feb 17)</td><td class="good">Axway SecureTransport SFTP, file named W2Report, same profile as WR-30</td><td>TY2026, rev. 08/2026</td></tr>
+      <tr><td class="mono">NY</td><td><strong>No W-2 filing with the state</strong> (employees still get their copies). Quarterly NYS-45 Part C wage detail as a Pub 72.5 512-byte RA/RE/RS/RV/RZ file or FSET XML.</td><td>Online Services Web Upload (payroll providers with 10+ employers)</td><td>Q4 NYS-45 is the reconciliation</td><td>Everyone</td><td class="nowrap">Q4 due Feb 1, 2027</td><td>FSET XML, transmitter approval needed</td><td>Pub 72.5 rev. 01/2025</td></tr>
+      <tr><td class="mono">OH</td><td>EFW2, state code 39 twice per RS, <strong>file must contain only Ohio RS records</strong>, 8-digit account at RS 248-267, school-district block 308-337, RV not accepted. W-2s required for Ohio residents and Ohio workers <strong>even with zero Ohio withholding</strong>. <strong>RE 319-512 reserved blank</strong>, colliding with SSA's new PIN at 319-328.</td><td>OH|TAX eServices</td><td>IT 3 generated from the upload. IT 941 due Jan 31 separately.</td><td>All electronic withholding filers</td><td>Feb 1, 2027</td><td>None published</td><td>TY2025, rev. Nov 2025</td></tr>
+      <tr><td class="mono">VA</td><td>EFW2 (state code 51 on every RS) or spreadsheet. CR at 513, LF at 514.</td><td>Web Upload</td><td>VA-6 or VA-6H through the same channel</td><td>Everyone, hardship waiver only</td><td>Feb 1, 2027</td><td class="good">Server-to-server. Register egress IP, 10 to 15 business days.</td><td>Guide, undated (Wayback 2026)</td></tr>
+      <tr><td class="mono">WI</td><td>EFW2, state code 55 in RS 3-4 and 274-275, employer TAN on every RS</td><td>My Tax Account or Data File Transfer (no login)</td><td>WT-7, blocked until all WT-6 deposits filed; skip if no active account</td><td>10 or more</td><td>Feb 1, 2027</td><td>sFTP is 1099/W-2G only. XML for certified vendors.</td><td>Pub 172, TY2025</td></tr>
+      <tr><td class="mono">DC</td><td>EFW2, RS required, full RA-RE-RW-RO-RS-RT-RU-RV-RF order even for records DC ignores, strict SSN ranges</td><td>MyTax.DC.gov, Option 3 third-party bulk</td><td>FR-900Q (Q4) and FR-900A with their own CSV spec</td><td>25 or more</td><td>Feb 1, 2027</td><td>None published</td><td>TY2025, rev. 09/2025</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h3>Format groups, so one generator can be sized</h3>
+      <ul>
+        <li><strong>Copy of the SSA file with RS records and the right state code:</strong> DE, DC, MA, WI, VA (VA adds the 513/514 line ending). GA probably, but its RS spec was not read.</li>
+        <li><strong>State-specific record sets or RS/RV content, one profile each:</strong> PA (trimmed RA/RE/RS plus its own RV, no RW/RT), MD (no RT/RO/RU, MW508 in RV), OH (single-state file, no RV), NJ (a dozen RS extras).</li>
+        <li><strong>Not EFW2 at all:</strong> NY (quarterly NYS-45), and nearly every reconciliation form: PA REV-1667, GA G-1003 and DC FR-900 are CSVs; MD folds MW508 into RV; OH derives IT 3 for free.</li>
+        <li><strong>Layers this page does not cover:</strong> quarterly state unemployment wage reports exist in all eleven jurisdictions, often to a different agency (PA UC-2, NJ WR-30, WI DWD). Pennsylvania Act 32 local earned income tax and Ohio municipal withholding (RITA, CCA, self-collecting cities) each need a year-end reconciliation and W-2 copies to the local collector.</li>
+      </ul></div>
+    <div class="card"><h3>Rules that break "one file for all clients"</h3>
+      <ul>
+        <li><strong>Ohio</strong> rejects a file containing non-Ohio RS records. Ohio needs a filtered, single-state file.</li>
+        <li><strong>Virginia</strong> runs Complete Business Authentication at upload: it picks accounts from the file at random and asks for the 15-digit account number and total withholding paid. Have those figures for every client in the file.</li>
+        <li><strong>Dormant clients:</strong> Maryland cannot take zero-wage bulk filings until calendar 2027; Wisconsin says do not file a WT-7 for an inactive account. Write an explicit rule for clients with no wages.</li>
+        <li><strong>Corrections diverge by state:</strong> Massachusetts wants an amended W-2 on paper with the federal W-2c, Delaware takes W-2c/W-3c on paper only, New Jersey wants the W-2c with Form NJ-W-3.</li>
+        <li><strong>Year-round duties</strong> ride along: payroll providers acting for 100 or more Virginia taxpayers must remit by ACH Credit; Georgia providers with more than 250 employers must pay by EFT.</li>
+      </ul></div>
+  </div>
+</section>
+
+<section id="compliance">
+  <h2>05 · Authorization, identity, penalties</h2>
+
+  <details open><summary>Form 8655 does not authorize W-2 filing, and no SSA process references it <span class="where">f8655 · Pub 42-007 §5.2</span></summary><div class="body">
+    <p>Form 8655 line 15 lists Forms 940, 941, 943, 944, 945, 1042 and CT-1. Line 18a lets the IRS disclose W-2-series notices to the agent. That is disclosure, not filing authority, but it is what lets Pyramos answer the Combined Annual Wage Reporting notices that fire when a client's W-2 totals do not reconcile to the Forms 941 Pyramos filed. No SSA registration or filing step asks for Form 8655; no SSA page states that in so many words either. What SSA relies on is the BSO User ID in RA positions 12-19, which is a perjury attestation by the person named. For a third party, Pub 42-007 section 5.2 says the attestation "is based on the information available, and assurances provided by the client," and tells submitters to put a client-assurance clause in the service agreement. Add that clause next to the Form 8655 language. Rev. Proc. 2012-32 separately requires a Reporting Agent to remind each client in writing, at contract start and at least quarterly, that the employer remains liable for its deposits and filings.</p>
+  </div></details>
+
+  <details><summary>Whose EIN goes on the W-2: Reporting Agent vs Section 3504 agent vs CPEO <span class="where">Pub 42-007 §2.1</span></summary><div class="body">
+    <div class="table-wrap"><table class="compare">
+      <thead><tr><th>Role</th><th>IRS paper</th><th>EIN in RE 8-16</th><th>RE position 7</th></tr></thead>
+      <tbody>
+        <tr><td>Reporting Agent (Pyramos)</td><td>Form 8655</td><td class="good">Client EIN (inferred from the deposit rule; confirm with SSA)</td><td>blank, 17-25 blank</td></tr>
+        <tr><td>Form 2678 agent</td><td>Form 2678</td><td>Agent EIN, client EIN in 17-25</td><td>1</td></tr>
+        <tr><td>Common paymaster</td><td>none</td><td>Paymaster EIN, client EIN in 17-25</td><td>2</td></tr>
+        <tr><td>Section 3504 agent (SSA scopes this to state and local home-care agencies)</td><td>varies</td><td>Agent EIN, client EIN in 17-25</td><td>3</td></tr>
+        <tr><td>Certified PEO</td><td>CPEO certification</td><td>CPEO EIN</td><td>blank</td></tr>
+      </tbody></table></div>
+    <p>Pyramos's current MeF design (client EIN in the 941 Filer group, Pyramos in the Reporting Agent group) is consistent with client EIN in the RE record. Do not use Form 2678 unless Pyramos intends to take joint and several liability for the client's employment taxes.</p>
+  </div></details>
+
+  <details><summary>Identity: BSO takes Login.gov or ID.me, and the credential is personal <span class="where">bsoregug.pdf</span></summary><div class="body">
+    <p>Since March 2023 the legacy BSO password is not accepted for sign-in. Both Login.gov and ID.me work. IRS e-Services uses ID.me. Registration is verified against SSA records for the individual (name, SSN, date of birth, address). Activation codes come by mail, one per service, to the address the IRS holds for Pyramos. "BSO User IDs are assigned to and stay with a person." SSA plans an updated authorization system for December 2026 and has run a pilot letting a Responsible Entity Officer manage user access for an entity. Expect the third-party flow to change; re-read the W-2 News page before the season.</p>
+  </div></details>
+
+  <details><summary>SSNVS is the W-2 name check. IRS TIN Matching does not cover W-2 <span class="where">Pub 2108 · ssnvshandbk</span></summary><div class="body">
+    <p>IRS Publication 2108 says TIN Matching "cannot enroll employers submitting Forms W-2" and points them to SSA. SSNVS verifies up to 10 name/SSN pairs interactively and up to 250,000 per overnight batch file. Third-party use is limited to firms with a valid wage-reporting contract, only for W-2 purposes, never for pre-hire screening. SSNVS requests carry the client's EIN, not Pyramos's. Run it at hire and again before the season.</p>
+  </div></details>
+
+  <details><summary>Penalties for TY2026 W-2s (returns due after 2026-12-31) <span class="where">iw2w3 pp.15-16 · Rev. Proc. 2025-32</span></summary><div class="body">
+    <div class="table-wrap"><table class="compare">
+      <thead><tr><th>Corrected</th><th>Per W-2</th><th>Annual cap</th><th>Cap, gross receipts ≤ $5M</th></tr></thead>
+      <tbody>
+        <tr><td>Within 30 days</td><td>$60</td><td>$698,500</td><td>$244,500</td></tr>
+        <tr><td>By August 1</td><td>$130</td><td>$2,095,500</td><td>$698,500</td></tr>
+        <tr><td>After August 1 or never</td><td>$340</td><td>$4,191,500</td><td>$1,397,000</td></tr>
+        <tr><td>Intentional disregard</td><td>at least $690, or a percentage of the amount</td><td>none</td><td>none</td></tr>
+      </tbody></table></div>
+    <p>Section 6721 covers the copy to SSA. Section 6722 is a second, identical penalty for the employee copy. Filing on paper when e-filing was required is a 6721 trigger. Small-business status is measured on the client. Defenses in the General Instructions: reasonable cause, the de minimis correction rule (on-time file corrected by August 1, waived for the greater of 10 returns or 0.5%), and the dollar-error safe harbor ($100 per amount, $25 for withheld tax). The IRS puts liability on the employer "even if the employer contracts with a third party." Pyramos's exposure is contractual.</p>
+  </div></details>
+
+  <details><summary>The 10-return e-file mandate and the retention rule <span class="where">TD 9972 · Reg. 31.6001-1</span></summary><div class="body">
+    <p>Since returns filed in 2024, a filer with 10 or more information returns in a year, aggregated across W-2, 1099, 1095, 5498 and the rest of the list, must e-file them all. Corrections and 94x returns do not count. The count is per filer, meaning the client employer. No IRS page addresses a service bureau's whole book. Practically, put every client in the combined file; below-threshold clients may e-file, and SSA encourages it. Never send paper Copy A for a client whose data is also in the EFW2 file. Form 8508 is the hardship waiver, due 45 days before the W-2 due date. Retain W-2 data and the submission confirmation for four years after the later of the due date or the date the tax was paid.</p>
+  </div></details>
+
+  <details><summary>Electronic employee copies, sick pay, truncation, W-2c <span class="where">Pub 15-A · iw2w3</span></summary><div class="body">
+    <ul>
+      <li>Employee copies may be delivered electronically only with the employee's affirmative consent and the seven disclosures in Publication 15-A. Store consent, channel, timestamp and disclosure version per employee per year. If the original was electronic, the W-2c must be too.</li>
+      <li>Copy A and the EFW2 SSN field carry the full nine digits. Employee copies may be truncated. No logos or slogans on employee copies or envelopes.</li>
+      <li>Third-party sick pay recap reports must not be filed electronically.</li>
+      <li>Form 8809 extension for W-2 is non-automatic, one 30-day period, paper only, granted for extraordinary circumstances, and itself due January 31. Form 15397 extends the employee-copy deadline. Neither is a planning tool.</li>
+      <li>A client that closes has an earlier deadline: W-2s are due by the last day of the month after its final Form 941. With client churn this fires several times a year.</li>
+      <li>Required RE fields the pipeline must set for every client: Kind of Employer (174), Employment Code (219, and code H interacts with the $3,000 household rule), Tax Jurisdiction Code (220, blank for domestic), Third-Party Sick Pay Indicator (221). On RA: Software Code 98 and Preparer Code S.</li>
+      <li>SSA names suspended third-party submitters publicly under POMS RM 01101.004 (dated 2026-01-27).</li>
+    </ul>
+  </div></details>
+</section>
+
+<section id="design">
+  <h2>06 · What to build in this repo</h2>
+  <p>Nothing here touches the MeF session code. An EFW2 generator is a pure function from domain objects to bytes plus a validator, with no network calls and no reflection. It is the most testable thing that could be added to this repository, and no maintained Java library exists for it (Maven Central's only hit for EFW2 is an unrelated framework). The format knowledge is the asset; own it.</p>
+
+  <div class="grid2">
+    <div class="card"><h3>Domain model, then derived records</h3>
+      <p style="font-size:14px;color:var(--g700)">Money is <code>long</code> cents everywhere. Totals are computed, never accepted as input, which removes the "RT does not match RW" rejection class.</p>
+      <div class="code"><pre><span class="kw">record</span> <span class="fn">WageSubmission</span>(<span class="fn">Submitter</span> submitter,          <span class="cm">// RA</span>
+                      List&lt;<span class="fn">EmployerReport</span>&gt; reports) {}
+<span class="kw">record</span> <span class="fn">EmployerReport</span>(<span class="fn">Employer</span> employer,             <span class="cm">// RE</span>
+                      List&lt;<span class="fn">EmployeeWage</span>&gt; employees) {} <span class="cm">// RW, RO</span>
+<span class="kw">record</span> <span class="fn">EmployeeWage</span>(<span class="fn">Ssn</span> ssn, <span class="fn">PersonName</span> name, <span class="fn">Address</span> address,
+                    <span class="kw">long</span> wagesCents, <span class="kw">long</span> fitwCents,
+                    <span class="kw">long</span> ssWagesCents, <span class="kw">long</span> ssTaxCents,
+                    <span class="kw">long</span> medicareWagesCents, <span class="kw">long</span> medicareTaxCents,
+                    <span class="fn">Box12Amounts</span> box12,
+                    List&lt;<span class="fn">StateWage</span>&gt; stateWages) {}    <span class="cm">// RS</span>
+<span class="kw">record</span> <span class="fn">Employer</span>(<span class="kw">int</span> taxYear, <span class="fn">String</span> ein,             <span class="cm">// client EIN</span>
+                <span class="fn">AgentIndicator</span> agent,               <span class="cm">// NONE for 8655</span>
+                <span class="fn">Contact</span> contact,                    <span class="cm">// required TY2025+</span>
+                <span class="fn">String</span> signaturePin) {}             <span class="cm">// nullable, TY2026</span>
+<span class="cm">// RT, RU, RV, RF are derived by the generator, not modelled.</span></pre></div>
+    </div>
+    <div class="card"><h3>Writer core and profiles</h3>
+      <p style="font-size:14px;color:var(--g700)">Three primitives over a 512-byte buffer prefilled with spaces cover the whole spec. Positions stay 1-based at the call site, as in the publication. Overflow throws; it never truncates.</p>
+      <div class="code"><pre><span class="kw">void</span> <span class="fn">alpha</span>(<span class="kw">int</span> from, <span class="kw">int</span> to, <span class="fn">String</span> v);  <span class="cm">// left, blank fill, upper</span>
+<span class="kw">void</span> <span class="fn">money</span>(<span class="kw">int</span> from, <span class="kw">int</span> to, <span class="kw">long</span> cents); <span class="cm">// right, zero fill, throws</span>
+<span class="kw">void</span> <span class="fn">numeric</span>(<span class="kw">int</span> from, <span class="kw">int</span> to, <span class="kw">long</span> n);
+
+<span class="kw">interface</span> <span class="fn">Efw2Profile</span> {                <span class="cm">// SSA, Standard(state), PA, MD, NJ, OH</span>
+  EnumSet&lt;<span class="fn">RecordType</span>&gt; <span class="fn">recordsEmitted</span>();  <span class="cm">// PA: RA RE RS RV RF; MD: no RT RO RU</span>
+  <span class="kw">void</span> <span class="fn">writeRe</span>(<span class="fn">Efw2Writer</span> w, <span class="fn">Employer</span> emp); <span class="cm">// OH blanks 319-512</span>
+  <span class="kw">void</span> <span class="fn">writeRs</span>(<span class="fn">Efw2Writer</span> w, <span class="fn">StateWage</span> s, <span class="fn">EmployeeWage</span> e, <span class="fn">Employer</span> emp);
+  <span class="kw">void</span> <span class="fn">writeRv</span>(<span class="fn">Efw2Writer</span> w, <span class="fn">EmployerReport</span> r);
+  List&lt;<span class="fn">Finding</span>&gt; <span class="fn">validate</span>(<span class="fn">WageSubmission</span> s);
+}</pre></div>
+    </div>
+  </div>
+
+  <h3>Validator: three layers, findings not exceptions</h3>
+  <div class="table-wrap">
+  <table class="shipped">
+    <thead><tr><th>Layer</th><th>Checks</th><th>Why locally</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1 Structure</strong></td><td>512 bytes each, RA first, RF last, nothing after RF, grammar <code>RA (RE RW RO? RS* … RT RU? RV?)+ RF</code>, ASCII-1, no RV without RS, no RU without RO</td><td>These fail at upload in under a minute, but only after a person has logged in</td></tr>
+      <tr><td><strong>2 Fields</strong></td><td>EIN prefixes (not 00, 07, 08, 09, 17, 18, 19, 28, 29, 49, 69, 70, 78, 79, 89), SSN not starting 666 or 9, BSO User ID present, required-since-TY2025 contact fields, e-mail syntax, enumerations, Resub indicator implies WFID</td><td>"Submissions will be returned if any of these fields are left blank"</td></tr>
+      <tr><td><strong>3 Relational</strong></td><td>Medicare wages ≥ SS wages + tips; SS tax only with SS wages; SS wages + tips ≤ $184,500; SS tax ≤ $11,439.00; household under $3,000 rule; RT sums equal RW sums; RF count equals total RW</td><td>These are the conditions SSA rejects days later with a Resubmission Notice</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout"><span class="ico">!</span><div><strong>Layout collision to watch.</strong> SSA's new Employer Signature PIN sits at RE 319-328. Ohio's current specification reserves RE 319-512 as blank. Until Ohio republishes, the Ohio profile must blank that range even when the SSA profile fills it. This is the first concrete reason the RE writer has to be profile-aware, not only the RS writer.</div></div>
+  <p>Put the three TY2026 constants in a <code>TaxYearParameters</code> record keyed by year. Each finding carries severity, record ordinal, byte range, field name and rule text, which is the shape AccuWage reports, so reconciling the two lists after the first December run is a diff.</p>
+
+  <h3>Persistence, which the MeF side also lacks</h3>
+  <div class="table-wrap">
+  <table class="shipped">
+    <thead><tr><th>Entity</th><th>Fields</th></tr></thead>
+    <tbody>
+      <tr><td><code>WageFileRun</code></td><td>runId, taxYear, profile, generatedAt, record counts, fileSha256, fileSizeBytes, storagePath, findings</td></tr>
+      <tr><td><code>WageFileSubmission</code></td><td>runId, WFID, receiptDate, uploadedBy, status (RECEIVED, IN PROCESSING, COMPLETE, RETURN, DELETE), statusDate, resubmissionDeadline</td></tr>
+      <tr><td><code>EmployerReportOutcome</code></td><td>runId, clientId, employerEin, employeeCount, reportStatus, errorSummary</td></tr>
+      <tr><td><code>ClientAuthorization</code></td><td>clientId, ein, form8655 signed and scope (94x), signaturePin per tax year (W-2), quarterly liability notice dates</td></tr>
+      <tr><td><code>EmployeeDeliveryConsent</code></td><td>employeeId, taxYear, consentedAt, channel, disclosureVersion, withdrawnAt</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Keep the exact file and its hash. A resubmission must be the same format with the same WFID, and reconstructing January's file from a payroll database that has moved on is how a two-hour fix becomes a two-day one.</p>
+
+  <div class="grid2">
+    <div class="card"><h3>Two deliverables the file alone does not cover</h3>
+      <ul>
+        <li><strong>Employee copies.</strong> Pub 42-007 says an EFW2 file cannot produce a Form W-2. Copies B, C and 2 are due to employees on the same 2027-02-01, and IRC 6722 is a second penalty of identical size for them. The pipeline needs a W-2 rendering step (PDF from the same domain model) plus the consent record for electronic delivery.</li>
+        <li><strong>Corrections.</strong> A first season guarantees some. Federal corrections are EFW2C (nine RC* record types) or W-2c Online for low volume. State corrections diverge: MA paper, DE paper only, NJ with NJ-W-3. Model a correction as a new run keyed to the original WFID rather than a patch.</li>
+        <li><strong>Reconciliation to the 941s.</strong> Each client's W-2 totals must match the four Forms 941 this repo already files. Add a pre-generation check that sums RW wages and withholding per client against the 941 quarters. Mismatches surface later as IRS/SSA CAWR notices.</li>
+      </ul></div>
+    <div class="card"><h3>Security of the wage file</h3>
+      <ul>
+        <li>One file will hold full SSNs, names, addresses and wages for every employee of every client. Treat it as the most sensitive artifact in the system.</li>
+        <li>Encrypt at rest with a key outside the application database. Restrict read access to the two BSO-registered staff. Log every read.</li>
+        <li>Retention is four years, then destruction. Record destruction as an event.</li>
+        <li>Write the information security plan a third-party payroll and tax filer is expected to hold, and put breach-notification steps in it. This gap is larger than any formatting risk on this page.</li>
+        <li>Never log a record. Existing repo rules on sensitive payloads apply to the RW record verbatim.</li>
+      </ul></div>
+  </div>
+
+  <div class="reco"><h3>If 1099s are on the roadmap, apply to IRIS now</h3>
+    <p style="margin:0;font-size:14px;color:var(--g700)">IRIS A2A is REST with JWT bearer tokens, not SOAP. The ETIN, ASID and EFIN do not carry over. The IdenTrust device certificate does: Pub 5718 says "you can use the same public certificate as used for other IRS programs such as MeF." That ties IRIS token issuance to the same 2027-08-21 expiry as MeF login. IRIS TCC processing runs about 45 business days and FIRE stops accepting returns on 2026-11-19. Combined Federal/State Filing for 1099s covers nine of Pyramos's jurisdictions but not New York or Virginia.</p></div>
+</section>
+
+<section id="gotchas">
+  <h2>07 · Gotchas</h2>
+  <div class="gotchas"><h3>Do not rediscover these</h3>
+    <ol>
+      <li>The RS record in the SSA file is inert. SSA and IRS do not read it, and nothing reaches any state. State filing is a second submission.</li>
+      <li>Every BSO upload is live. No test flag, no test environment. The first real AccuWage pass is the test.</li>
+      <li>Form 2678 agents use Agent Indicator 1, not 3, with the agent EIN in 8-16 and the client EIN in 17-25. A Form 8655 Reporting Agent uses no indicator and puts the client EIN in 8-16. SSA has never written that sentence down; confirm it by phone before the first live file.</li>
+      <li>RA EIN must equal the BSO registration EIN, or the file cannot be resubmitted through BSO at all.</li>
+      <li>Pub 42-007 section 7.3 still says files "after February 2, 2026" are late. That is stale TY2025 text. The TY2026 date is 2027-02-01.</li>
+      <li>Pub 42-007 says IRIS is the preferred way to file Form 8809. Form 8809 itself says W-2 extension requests must be on paper. The form wins.</li>
+      <li>Four states reject an unmodified SSA file: PA (own RA/RE/RS/RV, no RW/RT), OH (Ohio-only RS, no RV, RE 319-512 blank), MD (no RT/RO/RU, RV carries MW508), NJ (a dozen extra RS fields). VA and DC have their own ordering and line-ending rules.</li>
+      <li>The EFW2 file does not produce the employee copies, and the employee-copy penalty is the same size as the filing penalty. Half the exposure needs its own artifact.</li>
+      <li>The BSO handbook and the returnfilers page are still TY2025 editions. Trust the TY2026 Pub 42-007 for dates. Re-read everything in late November, when SSA's December authorization changes and the signature PIN land.</li>
+      <li>Do not script the BSO browser. It defeats a federal MFA control, SSA prohibits screen scraping, and suspended submitters are named publicly.</li>
+      <li>January 31, 2027 is a Sunday. Everything rolls to Monday February 1 except New Jersey (February 16 by rule, February 17 in its 08/2026 spec).</li>
+    </ol>
+  </div>
+</section>
+
+<section id="plan">
+  <h2>08 · Sequenced plan to February 1, 2027</h2>
+  <div class="milestones">
+    <div class="milestone"><div class="when">Now</div><div class="dot-col"><div class="dot hard"></div><div class="line"></div></div><div class="body"><strong>Register two Pyramos staff in BSO</strong> via Login.gov or ID.me, Third-Party box, Pyramos EIN. Request Wage Reporting and SSNVS. Record the BSO User IDs. Allow two weeks for activation codes.<div class="tags"><span class="tag">operations</span><span class="tag">SSA</span></div></div></div>
+    <div class="milestone"><div class="when">Now</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><strong>Call an Employer Services Liaison Officer (1-800-772-6270).</strong> Two questions: confirm the Reporting Agent RE treatment (position 7 blank, client EIN in 8-16), and ask whether EWRWS consolidator enrollment reopens (also EWR.WebService.Support@ssa.gov). Do not plan on the second.<div class="tags"><span class="tag">operations</span></div></div></div>
+    <div class="milestone"><div class="when">Now</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><strong>If 1099s are in scope, file the IRIS TCC application.</strong> About 45 business days. FIRE closes 2026-11-19.<div class="tags"><span class="tag">operations</span><span class="tag">IRS</span></div></div></div>
+    <div class="milestone"><div class="when">Sep 18</div><div class="dot-col"><div class="dot hard"></div><div class="line"></div></div><div class="body"><strong>Last day to key anything in the old W-2 Online.</strong> It is decommissioned 2026-09-19.<div class="tags"><span class="tag">hard stop</span></div></div></div>
+    <div class="milestone"><div class="when">Sep to Oct</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><strong>Build the EFW2 module, employee-copy rendering, and persistence.</strong> Domain model, writer, SSA profile, three-layer validator, 941 reconciliation check, committed golden 512-byte files, encrypted storage. Add signature PIN and 8655 status to the client model. Add the client-assurance clause, quarterly liability notice, data-delivery deadline and PIN obligation to the service agreement.<div class="tags"><span class="tag">engineering</span><span class="tag">legal</span></div></div></div>
+    <div class="milestone"><div class="when">Nov</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><strong>Retrieve each state's TY2026 booklet and register the machine channels.</strong> VA server-to-server (static IP, 10 to 15 business days), NJ Axway, MA Bulk File Portal. Build state profiles in client-count order. Run SSNVS across all employees.<div class="tags"><span class="tag">engineering</span><span class="tag">states</span></div></div></div>
+    <div class="milestone"><div class="when">Dec 8</div><div class="dot-col"><div class="dot hard"></div><div class="line"></div></div><div class="body"><strong>BSO opens for TY2026.</strong> Generate a full-volume file, run AccuWage Online, reconcile its findings into the local validator, repeat until clean. Collect signature PINs from opted-in clients.<div class="tags"><span class="tag">both</span></div></div></div>
+    <div class="milestone"><div class="when">Jan 2027</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><strong>Final generate, validate, upload, record WFID, poll to COMPLETE.</strong> Then the ten state files and their reconciliations. Furnish employee copies.<div class="tags"><span class="tag">both</span></div></div></div>
+    <div class="milestone"><div class="when">Feb 1</div><div class="dot-col"><div class="dot hard"></div><div class="line"></div></div><div class="body"><strong>Federal deadline and most states.</strong> New Jersey February 16. Georgia's non-NEC 1099 wave March 1.<div class="tags"><span class="tag">deadline</span></div></div></div>
+    <div class="milestone"><div class="when">Jul 2027</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><strong>Renew the IdenTrust certificate before 2027-08-21.</strong> It gates MeF login and any IRIS token issuance.<div class="tags"><span class="tag">operations</span></div></div></div>
+  </div>
+</section>
+
+<section id="open">
+  <h2>09 · Open items, how this was researched, sources</h2>
+  <h3>Open items</h3>
+  <dl class="faq">
+    <dt>Reporting Agent treatment in the RE record</dt><dd>Client EIN in 8-16 with position 7 blank follows from SSA's deposit rule but is not stated by SSA anywhere. Highest-consequence open item. One phone call closes it.</dd>
+    <dt>Does SSA ever ask for Form 8655?</dt><dd>No SSA process references it and no SSA page says so. Treated here as "not referenced," not as a stated rule.</dd>
+    <dt>Machine channels in PA, DE, GA, OH, DC</dt><dd>None is published. That is absence of evidence, not a published denial.</dd>
+    <dt>New Jersey deadline</dt><dd>NJ-WT says February 15 rolled to the next business day, which is Tuesday February 16, 2027. The 08/2026 NJ-EFW2 spec says February 17 without explanation. File by the 16th unless the Division of Revenue confirms the 17th in writing.</dd>
+    <dt>Georgia RS deviations</dt><dd>dor.georgia.gov blocks non-browser clients and its file-formats page has no archive copy. Georgia accepts the federal file, but any RS repurposing was not read.</dd>
+    <dt>TY2026 state layouts</dt><dd>Ohio, Maryland, Wisconsin and DC have not posted TY2026 specs. Their rows show TY2025 rules with derived dates. Massachusetts' withholding guide still mentions a March date for some filers; its W-2 page does not restate January 31.</dd>
+    <dt>December 2026 SSA changes</dt><dd>Whether the updated BSO authorization system adds per-client steps for third-party submitters is unknown. Today, clients need no BSO account.</dd>
+    <dt>New York FSET</dt><dd>Whether Pyramos can transmit NYS-45 data via FSET XML without a separate software-developer approval cycle was not verified.</dd>
+    <dt>State FIPS codes</dt><dd>DE 10, DC 11 and GA 13 are assumed from the standard table. MA 25, MD 24, NJ 34, OH 39, PA 42, VA 51 and WI 55 are restated in the states' own specs.</dd>
+  </dl>
+
+  <h3>Seat ledger</h3>
+  <p>Eight budgeted seats plus one sonnet verifier. Grok ran through the Cursor CLI. Its read-only "ask" mode blocked web tools, so the three Grok research seats answered from memory and are marked as such. The fourth Grok seat ran in a writable scratch workspace with web access and produced the most valuable single review.</p>
+  <div class="table-wrap">
+  <table class="shipped">
+    <thead><tr><th>Seat</th><th>Brief</th><th>Web</th><th>Outcome</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip">opus 1</span></td><td>Federal SSA mechanics</td><td class="good">yes</td><td>22 official sources. Found the EWRWS closure, the Employer Signature PIN, the TY2026 layout changes, the Form 8809 paper conflict.</td></tr>
+      <tr><td><span class="chip">opus 2</span></td><td>Eleven-jurisdiction state matrix</td><td class="good">yes, some via Wayback</td><td>Per-state rows. Found NJ, MA, VA machine channels, MD's SFTP withdrawal, NY's no-W-2 rule, Ohio's single-state file.</td></tr>
+      <tr><td><span class="chip">opus 3</span></td><td>Integration design</td><td class="good">yes</td><td>Generator design, validator layers, IRIS comparison, cert reuse finding, no-library finding.</td></tr>
+      <tr><td><span class="chip">opus 4</span></td><td>Adversarial critic of the draft</td><td class="good">yes</td><td>22 claims checked. Refuted the same 2678 error and PA grouping. Added: employee copies and corrections missing from the design, 941 reconciliation, Ohio RE 319-512 collision with the PIN, MD's six-record file, security section, state spec vintage, dropped hedges on two unverified claims.</td></tr>
+      <tr><td><span class="chip">grok 1</span></td><td>Federal second opinion</td><td class="bad">no</td><td>Agreed on mechanics and dates. Missed EWRWS. Every claim self-marked unverified.</td></tr>
+      <tr><td><span class="chip">grok 2</span></td><td>State second opinion</td><td class="bad">no</td><td>Agreed on NY. Stale on Maryland (still bFile) and on VA/WI thresholds. Missed the MA and VA channels.</td></tr>
+      <tr><td><span class="chip">grok 3</span></td><td>Authorization and compliance</td><td class="bad">no</td><td>Right on 8655 scope, 3504 vs Reporting Agent, TIN Matching. Overstated Login.gov as SSA-only.</td></tr>
+      <tr><td><span class="chip">grok 4</span></td><td>Adversarial critic of the draft</td><td class="good">yes</td><td>Caught the draft's 2678/indicator-3 error, PA's RW-less upload, NJ's RS extras, Ohio IT 941, and a false "confirmation" by the sonnet verifier.</td></tr>
+      <tr><td><span class="chip">sonnet</span></td><td>Verify grok 3 against primary sources</td><td class="good">yes</td><td>Confirmed 8655 line 15, Pub 2108, the penalty figures, four-year retention. Corrected Login.gov-only. Wrongly confirmed that a TCC is needed for W-2 bulk filing; SSA says it is not.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>Both critics independently caught the same two errors</strong> in the draft (the Form 2678 indicator code and Pennsylvania's grouping), which is the cross-vendor agreement the second seat exists for. Everything they raised is folded into the page above.</p>
+
+  <h3>Primary sources read this session</h3>
+  <details><summary>SSA <span class="where">17 pages</span></summary><div class="body"><ul class="src">
+    <li>https://www.ssa.gov/employer/efw/26efw2.pdf (Pub 42-007 TY2026, v1 2026-07-07)</li>
+    <li>https://www.ssa.gov/employer/efw/26efw2c.pdf (Pub 42-014 TY2026)</li>
+    <li>https://www.ssa.gov/employer/efw/25efw2.pdf (Pub 42-007 TY2025 v3.3)</li>
+    <li>https://www.ssa.gov/employer/EFW2&amp;EFW2C.htm</li>
+    <li>https://www.ssa.gov/employer/EWRWS.htm</li>
+    <li>https://www.ssa.gov/employer/webservices/ewrwstos.pdf</li>
+    <li>https://www.ssa.gov/employer/returnfilers.html</li>
+    <li>https://www.ssa.gov/bso/services.htm</li>
+    <li>https://www.ssa.gov/employer/bsohbnew.htm (handbook, Dec 2025)</li>
+    <li>https://www.ssa.gov/employer/bsoregug.pdf (registration handbook, Jul 2025)</li>
+    <li>https://www.ssa.gov/employer/accuwage/index.html</li>
+    <li>https://www.ssa.gov/employer/software.htm</li>
+    <li>https://www.ssa.gov/employer/cpaFilers.htm</li>
+    <li>https://www.ssa.gov/employer/employer-signature-pin.htm</li>
+    <li>https://www.ssa.gov/employer/w2news/index.htm</li>
+    <li>https://www.ssa.gov/employer/ssnvshandbk/registration.htm and access.htm</li>
+    <li>https://www.ssa.gov/oact/cola/cbb.html and CovThresh.html</li>
+  </ul></div></details>
+  <details><summary>IRS and Federal Register <span class="where">10 documents</span></summary><div class="body"><ul class="src">
+    <li>https://www.irs.gov/pub/irs-pdf/iw2w3.pdf (2026 General Instructions for Forms W-2 and W-3)</li>
+    <li>https://www.irs.gov/pub/irs-pdf/p15a.pdf (Pub 15-A, 2026)</li>
+    <li>https://www.irs.gov/pub/irs-pdf/f8655.pdf and i8655.pdf</li>
+    <li>https://www.irs.gov/pub/irs-pdf/f8809.pdf (Rev. Dec 2025)</li>
+    <li>https://www.irs.gov/pub/irs-pdf/p5718.pdf (IRIS A2A, PY2026)</li>
+    <li>https://www.irs.gov/pub/irs-drop/rp-25-32.pdf (penalty inflation adjustments)</li>
+    <li>https://www.irs.gov/pub/irs-pdf/p2108.pdf (TIN Matching)</li>
+    <li>https://www.irs.gov/filing/e-file-information-returns-with-iris</li>
+    <li>https://www.irs.gov/e-file-providers/filing-information-returns-electronically-fire</li>
+    <li>https://www.federalregister.gov/documents/2023/02/23/2023-03710/ (T.D. 9972)</li>
+  </ul></div></details>
+  <details><summary>States <span class="where">11 jurisdictions</span></summary><div class="body"><ul class="src">
+    <li>PA: pa.gov revenue W-2 electronic filing requirement; myPATH employer withholding file upload specs; REV-415</li>
+    <li>DE: revenue.delaware.gov W-2 and 1099 FAQs; Taxpayer Portal "How to Submit W2s and 1099s"</li>
+    <li>GA: 2026 Employer's Withholding Tax Guide; Uploading G-1003, W-2s and 1099s (via Wayback)</li>
+    <li>MA: Form W-2 responsibilities; W-2 electronic filing specifications handbook; Bulk File Portal user guide (via Wayback)</li>
+    <li>MD: 2025 Maryland Employer Reporting of W2s Instructions; Maryland Tax Connect transmitter registration</li>
+    <li>NJ: NJ-EFW2 rev. 08/2026; NJ-WT (Sep 2025); njit34</li>
+    <li>NY: tax.ny.gov withholding filing requirements; Publication 72.5; NYS-45 instructions</li>
+    <li>OH: 2025 W-2 Upload Specifications; EFW2 upload FAQs; OAC 5703-7-19</li>
+    <li>VA: Web Upload; electronic filing requirements; Web Upload W-2/1099 guide (via Wayback)</li>
+    <li>WI: Publication 172; W-2 transmittal FAQs; WT-7 instructions (via Wayback)</li>
+    <li>DC: 2025 W-2/W-2C electronic filing specifications; bulk filing page; 2026 FR-900 bulk specs</li>
+  </ul></div></details>
+</section>
+</main>
+</body>
+</html>

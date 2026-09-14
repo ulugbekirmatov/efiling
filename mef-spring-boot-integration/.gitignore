@@ -74,3 +74,6 @@ acks/
 # Audit logs
 audit_log.txt
 mef_audit_log.txt
+
+# NewSend write-ahead journal (contains filing metadata)
+data/

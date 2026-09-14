@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IdenTrust IGC Certificate for IRS MeF — Every Step, CSR to Keystore</title>
+<style>
+:root {
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --rust:   #B04A3F;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--ivory); color: var(--slate);
+  font-family: var(--sans); line-height: 1.55;
+  overflow-wrap: break-word; word-break: break-word;
+}
+p, li, dd, dt, td, th, h1, h2, h3, h4, figcaption, blockquote,
+.card, .milestone, .callout, .summary, .gotchas { overflow-wrap: break-word; word-break: break-word; }
+.milestone, .summary > *, .lg-row > * { min-width: 0; }
+
+main { max-width: 880px; margin: 0 auto; padding: 56px 28px 80px; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--g500); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(32px, 4.8vw, 50px); line-height: 1.08;
+  letter-spacing: -0.018em; color: var(--slate); margin: 0 0 8px;
+}
+h1 em { font-style: italic; color: var(--clay); }
+.intro { font-size: 16.5px; color: var(--g700); margin: 18px 0 0; max-width: 660px; }
+.intro a, p a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin: 56px 0 14px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; letter-spacing: -0.012em; }
+
+h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 22px 0 8px; }
+p { color: var(--g700); font-size: 14.5px; margin: 0 0 12px; }
+strong { color: var(--slate); }
+
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius: 12px; padding: 22px 26px; margin: 34px 0 20px; }
+.tldr-dark .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--oat); margin-bottom: 10px; }
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark code { font-family: var(--mono); font-size: 13.5px; background: rgba(250,249,245,0.12); color: var(--ivory); padding: 1px 5px; border-radius: 4px; }
+
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0 8px; }
+@media (max-width: 720px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.summary .cell { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 16px 18px; }
+.summary .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 6px; }
+.summary .v { font-size: 15.5px; color: var(--slate); font-weight: 600; }
+.summary .v.accent { color: var(--clay); }
+
+.callout {
+  display: flex; gap: 12px; border: 1.5px solid var(--oat);
+  background: rgba(227,218,204,0.35); border-radius: 10px;
+  padding: 14px 16px; font-size: 14px; margin: 16px 0; color: var(--g700);
+}
+.callout .ico { color: var(--clay); font-weight: 600; flex-shrink: 0; }
+.callout.done { border-color: var(--olive); background: rgba(120,140,93,0.08); }
+.callout.done .ico { color: var(--olive); }
+.callout p { margin: 0; font-size: 14px; }
+.callout p + p { margin-top: 8px; }
+
+.gotchas { border: 1.5px solid var(--clay); border-radius: 12px; background: rgba(217,119,87,0.06); padding: 18px 20px; margin: 18px 0; }
+.gotchas h4 { font-family: var(--sans); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clay); margin-bottom: 10px; }
+.gotchas ul { list-style: none; }
+.gotchas li { position: relative; padding-left: 16px; font-size: 13.5px; margin-bottom: 8px; color: var(--g700); }
+.gotchas li::before { content:""; position:absolute; left:0; top:8px; width:5px; height:5px; background: var(--clay); border-radius:2px; }
+.gotchas li:last-child { margin-bottom: 0; }
+
+.path-chip {
+  display: inline-block; font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1px solid var(--g300); border-radius: 6px;
+  padding: 2px 8px; color: var(--g700); margin: 2px 4px 2px 0;
+}
+.found { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--olive); font-weight: 600; }
+
+table.shipped {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden; margin: 14px 0; font-size: 14px;
+}
+table.shipped thead th {
+  text-align: left; font-family: var(--sans); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500);
+  background: var(--g100); padding: 11px 14px; border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td { padding: 11px 14px; border-bottom: 1px solid var(--g100); font-size: 13.5px; vertical-align: top; color: var(--g700); }
+table.shipped tbody tr:last-child td { border-bottom: none; }
+
+.milestones { display: flex; flex-direction: column; margin-top: 8px; }
+.milestone { display: grid; grid-template-columns: 92px 28px 1fr; gap: 0 18px; position: relative; }
+@media (max-width: 640px) { .milestone { grid-template-columns: 54px 22px 1fr; gap: 0 10px; } }
+.milestone .when { text-align: right; font-family: var(--mono); font-size: 11.5px; color: var(--g500); padding-top: 6px; line-height: 1.4; }
+.milestone .dot-col { display: flex; flex-direction: column; align-items: center; }
+.milestone .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 3px solid var(--clay); margin-top: 6px; flex-shrink: 0; }
+.milestone .dot.done { background: var(--olive); border-color: var(--olive); }
+.milestone .line { width: 2px; flex: 1; background: var(--g300); margin: 4px 0; }
+.milestone:last-child .line { display: none; }
+.milestone .body { padding-bottom: 44px; min-width: 0; }
+.milestone .body > h3 { margin-top: 2px; font-size: 21px; }
+.milestone .who { font-family: var(--mono); font-size: 11.5px; color: var(--g500); margin-bottom: 10px; }
+
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 14px 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw  { color: var(--clay); }
+.code .str { color: #9DB380; }
+.code .cm  { color: var(--g500); }
+.code .fn  { color: #C9B98A; }
+:not(pre) > code {
+  font-family: var(--mono); font-size: 0.92em; background: var(--g100);
+  color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word;
+}
+
+.ledger { border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; background: var(--paper); margin: 14px 0; font-size: 13.5px; }
+.lg-row { display: grid; grid-template-columns: 200px 1fr; }
+@media (max-width: 560px) { .lg-row { grid-template-columns: 120px 1fr; } }
+.lg-row + .lg-row { border-top: 1px solid var(--g200); }
+.lg-row .lk { padding: 10px 14px; font-family: var(--mono); font-size: 12px; color: var(--g500); background: var(--g100); border-right: 1px solid var(--g200); }
+.lg-row .lv { padding: 10px 14px; color: var(--g700); }
+.lg-row.was .lv { background: rgba(217,119,87,0.08); }
+.lg-row.now .lv { background: rgba(120,140,93,0.10); }
+.lg-row.punch .lv { font-weight: 700; color: var(--slate); background: var(--oat); }
+.lg-row .lv code { background: rgba(20,20,19,0.06); }
+
+/* Chain diagram */
+.chain { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 16px 0; max-width: 560px; }
+.chain .cnode { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 10px; padding: 12px 16px; }
+.chain .cnode .cn-title { font-family: var(--mono); font-size: 12.5px; color: var(--slate); font-weight: 600; }
+.chain .cnode .cn-sub { font-size: 12px; color: var(--g500); margin-top: 2px; }
+.chain .cnode.leaf { border-left: 4px solid var(--clay); }
+.chain .cnode.inter { border-left: 4px solid var(--oat); }
+.chain .cnode.root { border-left: 4px solid var(--olive); }
+.chain .carrow { text-align: center; color: var(--g500); font-size: 13px; padding: 3px 0; font-family: var(--mono); }
+
+details { border: 1.5px solid var(--g300); border-radius: 10px; background: var(--paper); margin: 12px 0; overflow: hidden; }
+details summary { list-style: none; cursor: pointer; padding: 13px 16px; font-family: var(--serif); font-size: 15.5px; color: var(--slate); display: flex; align-items: baseline; gap: 10px; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "▸"; color: var(--clay); font-family: var(--sans); font-size: 12px; transition: transform 120ms; }
+details[open] summary::before { transform: rotate(90deg); }
+details .dbody { padding: 0 16px 16px; }
+details .dbody p, details .dbody li { font-size: 13.5px; }
+details .dbody ul, details .dbody ol { padding-left: 20px; margin-bottom: 10px; color: var(--g700); }
+details .dbody li { margin-bottom: 5px; }
+
+dl.faq dt { font-family: var(--serif); font-size: 16px; color: var(--slate); margin-top: 18px; }
+dl.faq dd { font-size: 14px; margin: 4px 0 0; max-width: 680px; color: var(--g700); }
+
+ul.plain { padding-left: 20px; margin: 0 0 12px; color: var(--g700); font-size: 14.5px; }
+ul.plain li { margin-bottom: 6px; }
+ol.plain { padding-left: 20px; margin: 0 0 12px; color: var(--g700); font-size: 14.5px; }
+ol.plain li { margin-bottom: 6px; }
+
+/* Analogy card */
+.analogy { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 18px 20px; margin: 16px 0; max-width: 720px; }
+.analogy .a-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 8px; }
+.analogy p { font-size: 14px; margin-bottom: 0; }
+.analogy .a-break { border-left: 3px solid var(--clay); background: rgba(217,119,87,0.06); border-radius: 0 8px 8px 0; padding: 10px 14px; margin-top: 12px; font-size: 13px; color: var(--g700); }
+.analogy .a-break b { color: var(--clay-d); font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+
+@media (min-width: 1240px) {
+  .toc-fixed { position: fixed; top: 72px; right: max(24px, calc(50vw - 620px - 180px)); width: 178px; font-size: 12.5px; }
+  .toc-fixed .t-head { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 8px; }
+  .toc-fixed a { display: block; color: var(--g500); text-decoration: none; padding: 4px 0 4px 12px; border-left: 1.5px solid var(--g300); line-height: 1.3; }
+  .toc-fixed a:hover { color: var(--slate); border-left-color: var(--clay); }
+}
+@media (max-width: 1239px) { .toc-fixed { display: none; } }
+
+@media print {
+  .toc-fixed { display: none; }
+  details { border: none; }
+  details .dbody { display: block; }
+  .code { background: #fff; border: 1px solid #ccc; }
+  .code pre, .code .kw, .code .str, .code .fn { color: #141413; }
+  .tldr-dark { background: #fff; color: #141413; border: 2px solid #141413; }
+  .tldr-dark p, .tldr-dark strong, .tldr-dark code { color: #141413; }
+  .milestone .body { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<nav class="toc-fixed" aria-label="Contents">
+  <div class="t-head">Contents</div>
+  <a href="#why">Why a certificate at all</a>
+  <a href="#chain">The chain, explained</a>
+  <a href="#step1">1 · Pick the product</a>
+  <a href="#step2">2 · Order &amp; vetting</a>
+  <a href="#step3">3 · Key + CSR</a>
+  <a href="#step4">4 · Retrieve the cert</a>
+  <a href="#step5">5 · Verify the chain</a>
+  <a href="#step6">6 · Build the PKCS12</a>
+  <a href="#step7">7 · Verify the keystore</a>
+  <a href="#step8">8 · Register with IRS</a>
+  <a href="#step9">9 · Renewal &amp; lifecycle</a>
+  <a href="#faq">FAQ</a>
+</nav>
+
+<main>
+<header>
+  <div class="eyebrow">Deep dive · IdenTrust IGC · companion to mef-efiling-onboarding.html (phase 3)</div>
+  <h1>The IdenTrust certificate, <em>every step</em></h1>
+  <p class="intro">From choosing the right IGC product to a verified PKCS12 keystore registered with the IRS — with the exact OpenSSL commands, what each file is, and how to check your work at every step. Grounded in the certificate chain already checked into the <code>MeF</code> repo.</p>
+</header>
+
+<div class="tldr-dark">
+  <div class="label">TL;DR — the whole certificate process in two sentences</div>
+  <p>You generate a <strong>private key</strong> that never leaves your server, send IdenTrust a <strong>signing request</strong> (the public half plus your identity), and after they vet your organization they hand back a <strong>certificate</strong> — their signed statement that this public key belongs to you.</p>
+  <p>You then bundle key + certificate + IdenTrust's two CA certificates into one <code>.p12</code> keystore for the MeF SDK, and upload the public certificate to the IRS's Automated Enrollment so MeF recognizes it at login.</p>
+</div>
+
+<div class="summary">
+  <div class="cell"><div class="k">Steps</div><div class="v">9</div></div>
+  <div class="cell"><div class="k">Wall-clock</div><div class="v accent">~1–2 weeks</div></div>
+  <div class="cell"><div class="k">Long pole</div><div class="v">IdenTrust vetting</div></div>
+  <div class="cell"><div class="k">Product</div><div class="v">IGC Medium Assurance · Device</div></div>
+</div>
+
+<div class="callout done"><span class="ico">✓</span>
+  <div>
+    <p><span class="found">Found in code —</span> this process has been completed once already for this project. The issued certificate is a device certificate for <code>c2s.pahealthmanagement.org</code> under <strong>Pyramos Software</strong>, product <strong>“IGC Standard Medium Assurance | Organization Identity | Device”</strong>, issued by <strong>IGC Device CA 2</strong>, chaining to <strong>IdenTrust Global Common Root CA 1</strong>. The evidence:</p>
+    <p><span class="path-chip">Root.txt</span> (root CA, valid to 2034) · <span class="path-chip">SubCA1.txt</span> (IGC Device CA 2, valid to 2032) · <span class="path-chip">create-pkcs12.sh</span> · <span class="path-chip">verify-pkcs12.sh</span> (expects 1 key + 3 certs)</p>
+    <p>This page documents the repeatable process — you will run it again at every renewal.</p>
+  </div>
+</div>
+
+<!-- ============ WHY ============ -->
+<section id="why">
+  <div class="sec-head"><span class="idx">00</span><h2>Why a certificate at all — and why IdenTrust</h2></div>
+  <p>The problem: MeF A2A is a machine calling a machine. There is no human to type a password, and a password on a server is just a string anyone who copies it can replay. The IRS's answer is <strong>mutual TLS with client certificates</strong>: your system proves its identity with a private key it never transmits, and the IRS checks the matching public certificate it has on file.</p>
+  <p>But the IRS won't take your word that a public key is yours — someone the IRS already trusts has to vouch for it. That someone is a <strong>Certificate Authority (CA)</strong>, and for MeF A2A the approved CA program is <strong>IdenTrust's IGC — IdenTrust Global Common</strong>. IdenTrust vets your organization once, then signs your public key; the IRS trusts IdenTrust's signature, therefore it trusts your key.</p>
+
+  <div class="analogy">
+    <div class="a-label">Analogy — a notarized signature card</div>
+    <p>Your bank doesn't verify your handwriting itself — it keeps a signature card that a notary witnessed. The private key is your hand; the certificate is the notarized card; IdenTrust is the notary the IRS accepts. Anyone can <em>claim</em> a signature; only the card on file, vouched by the notary, makes the bank honor it.</p>
+    <div class="a-break"><b>Where this breaks</b>A signature card is compared by eye and can be forged with practice. Certificate checks are mathematical: without the private key, no amount of copying the certificate (which is public) lets an attacker pass the check. That's why protecting the <em>key file</em> is the entire security model.</div>
+  </div>
+</section>
+
+<!-- ============ CHAIN ============ -->
+<section id="chain">
+  <div class="sec-head"><span class="idx">§</span><h2>The chain, explained once</h2></div>
+  <p>You will juggle exactly four files through this guide. Three are certificates forming a chain of vouching; one is the secret. This is the actual chain from this repo:</p>
+
+  <div class="chain">
+    <div class="cnode leaf">
+      <div class="cn-title">c2s.pahealthmanagement.org — Pyramos Software</div>
+      <div class="cn-sub">Your leaf certificate — the one IdenTrust issues to you (step 4)</div>
+    </div>
+    <div class="carrow">↑ signed by</div>
+    <div class="cnode inter">
+      <div class="cn-title">IGC Device CA 2</div>
+      <div class="cn-sub">Intermediate CA — SubCA1.txt · valid 2022 → 2032</div>
+    </div>
+    <div class="carrow">↑ signed by</div>
+    <div class="cnode root">
+      <div class="cn-title">IdenTrust Global Common Root CA 1</div>
+      <div class="cn-sub">Root CA — Root.txt · valid 2014 → 2034 · self-signed; this is what the IRS ultimately trusts</div>
+    </div>
+  </div>
+
+  <table class="shipped">
+    <thead><tr><th>File</th><th>What it is</th><th>Secret?</th></tr></thead>
+    <tbody>
+      <tr><td><code>private-irs.key</code></td><td>Your private key. Generated by you in step 3, used to sign every TLS handshake. Never sent anywhere.</td><td><strong>Yes — the only secret</strong></td></tr>
+      <tr><td>leaf certificate (<code>.pem</code>/<code>.cer</code>)</td><td>IdenTrust's signed statement binding your public key to your organization/FQDN.</td><td>No — you'll upload it to the IRS</td></tr>
+      <tr><td><code>SubCA1.txt</code></td><td>IGC Device CA 2 — the intermediate that actually signed your leaf.</td><td>No — public</td></tr>
+      <tr><td><code>Root.txt</code></td><td>IGC Root CA 1 — the anchor. Validators walk leaf → intermediate → root.</td><td>No — public</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<div class="sec-head"><span class="idx">→</span><h2>The nine steps</h2></div>
+
+<div class="milestones">
+
+<!-- STEP 1 -->
+<div class="milestone" id="step1">
+  <div class="when">Day 0<br>~1 hour</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 1 — Pick the right IGC product</h3>
+    <div class="who">Where: identrust.com → Certificates → IGC → IRS programs</div>
+    <p>IdenTrust sells several IGC certificate types and the wrong one wastes a purchase: certificates issued to a <em>person</em> (Individual/Affiliated) require that person present at use, which an unattended server can't do. A transmitter system needs a <strong>Device certificate</strong> — issued to a machine identity (an FQDN) under the organization's name.</p>
+    <ul class="plain">
+      <li>On identrust.com, follow the <strong>“IRS – Modernized e-File (MeF)”</strong> path in their certificate selection wizard — it filters to the IGC products the IRS accepts.</li>
+      <li>Choose <strong>“IGC Standard Medium Assurance | Organization Identity | Device”</strong> — the product selected for this project. It's an organization-identity device certificate, which is why it's issued by <em>IGC Device CA 2</em>.</li>
+      <li>Storage form: choose <strong>software</strong> (downloadable, exportable to PKCS12) — not a hardware token/HSM option, which can't be loaded by the MeF SDK on a server.</li>
+      <li>Validity: buy the longest offered (typically 2 years). Every renewal repeats steps 3–8, so fewer renewals = fewer chances to break production. Check current pricing at purchase; budget a few hundred dollars per period.</li>
+    </ul>
+    <div class="callout"><span class="ico">i</span><p><strong>Decide the FQDN now.</strong> The certificate's Common Name is fixed at issuance — this project used <code>c2s.pahealthmanagement.org</code>. Pick a hostname you control and won't rename within the cert's lifetime; a rename means a re-issue, not an edit.</p></div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="milestone" id="step2">
+  <div class="when">Day 0–10<br>vetting wait</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 2 — Order, pay, and pass IdenTrust's vetting</h3>
+    <div class="who">Who: an authorized representative of the organization</div>
+    <p>IdenTrust's signature is only worth something because they check before they sign. The order form collects what they'll verify — fill it to match official records exactly, because mismatches are the #1 cause of week-long delays:</p>
+    <ul class="plain">
+      <li><strong>Organization legal name and address</strong> — exactly as registered (state records / D&amp;B). This must also match your IRS e-file application; the IRS cross-references the certificate's O= field. Here: <code>Pyramos Software</code>.</li>
+      <li><strong>The device FQDN</strong> from step 1 — IdenTrust verifies your organization controls the domain (DNS or email challenge to the domain's registered contacts).</li>
+      <li><strong>The applicant</strong> — a real person authorized to request certificates for the org. Expect a verification callback to a publicly listed phone number, not the number you typed on the form.</li>
+      <li><strong>Payment</strong> — card at order time.</li>
+    </ul>
+    <p>Then you wait. Vetting runs <strong>a few days to two weeks</strong>. When it clears, IdenTrust emails <strong>retrieval instructions with an account/activation code</strong> — you need those codes plus the CSR from step 3 to collect the certificate.</p>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="milestone" id="step3">
+  <div class="when">parallel<br>~15 min</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 3 — Generate the private key and the CSR</h3>
+    <div class="who">Where: the server (or a secured admin machine) — never a shared laptop</div>
+    <p>Here's the elegant trick that makes the whole system safe: IdenTrust never needs your private key to certify it. A keypair has two halves — whatever one half encrypts, only the other can decrypt. So you keep one half (the private key) and send only the other half, wrapped in a <strong>CSR — Certificate Signing Request</strong>: a small signed file saying “here is my public key, and here is who I claim to be.”</p>
+    <div class="code"><pre><span class="cm"># 1. Generate a 2048-bit RSA private key (IGC minimum; 3072/4096 also fine)</span>
+<span class="cm">#    -nodes = no passphrase on the key file. See the note below before choosing.</span>
+openssl genrsa -out <span class="str">private-irs.key</span> 2048
+chmod 600 <span class="str">private-irs.key</span>          <span class="cm"># owner-read only — this file IS your identity</span>
+
+<span class="cm"># 2. Create the CSR. Subject fields must match your IdenTrust order:</span>
+<span class="cm">#    C  = country, O = exact legal org name, CN = the device FQDN from step 1</span>
+openssl req -new \
+  -key <span class="str">private-irs.key</span> \
+  -out <span class="str">irs-mef.csr</span> \
+  -subj <span class="str">"/C=US/O=Pyramos Software/CN=c2s.pahealthmanagement.org"</span>
+
+<span class="cm"># 3. Read back what you just built — verify before submitting</span>
+openssl req -in <span class="str">irs-mef.csr</span> -noout -subject -text | head -20</pre></div>
+    <details>
+      <summary>Passphrase or not? (<code>-nodes</code> vs encrypted key)</summary>
+      <div class="dbody">
+        <p>An encrypted key file needs its passphrase typed (or supplied) every time it's loaded — awkward for an unattended server. The common server pattern is an <em>unencrypted</em> key protected by strict file permissions and disk encryption, then a <em>password-protected</em> PKCS12 built from it in step 6 (the SDK supplies that password from <code>MEF_KEYSTORE_PASSWORD</code>). If policy requires an encrypted raw key, add <code>-aes256</code> to the genrsa command and be ready to enter its passphrase during step 6.</p>
+      </div>
+    </details>
+    <details>
+      <summary>The browser-pickup alternative (and why CSR is better for servers)</summary>
+      <div class="dbody">
+        <p>IdenTrust's retrieval page can generate the keypair inside your browser instead of accepting a CSR. That marries the key to one person's browser profile — you then have to export it and move it to the server, an extra hop where the key can leak or get lost. The CSR route creates the key where it will live and it never moves. Use browser pickup only if the CSR option is unavailable for your product.</p>
+      </div>
+    </details>
+    <div class="gotchas">
+      <h4>Key handling rules — the entire security model lives here</h4>
+      <ul>
+        <li>The private key never leaves the machine: not in email, not in Slack, not in the git repo. (<code>.gitignore</code> should cover <code>*.key</code> and <code>*.p12</code>.)</li>
+        <li>Keep one offline backup of the key in a password manager or sealed storage — lose the key and the paid certificate is scrap (see FAQ).</li>
+        <li>If the key is ever exposed, you revoke and re-issue (step 9); there is no “change the password” equivalent.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="milestone" id="step4">
+  <div class="when">after vetting<br>~15 min</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 4 — Submit the CSR and retrieve the issued certificate</h3>
+    <div class="who">Where: IdenTrust's retrieval portal, using the codes from step 2's email</div>
+    <ol class="plain">
+      <li>Open the retrieval link from IdenTrust's approval email and enter the account/activation codes.</li>
+      <li>When prompted for the key, choose the <strong>CSR / “I will provide a PKCS#10”</strong> option and paste the full contents of <code>irs-mef.csr</code> (including the <code>BEGIN/END CERTIFICATE REQUEST</code> lines).</li>
+      <li>IdenTrust signs it on the spot and returns your <strong>leaf certificate</strong> — download as PEM (Base64). If you're only offered DER (binary <code>.cer</code>), convert below.</li>
+    </ol>
+    <div class="code"><pre><span class="cm"># DER (binary) → PEM (Base64 text), if needed</span>
+openssl x509 -inform der -in <span class="str">downloaded.cer</span> -out <span class="str">your-issued-cert.pem</span>
+
+<span class="cm"># Inspect the issued certificate — check all four facts:</span>
+openssl x509 -in <span class="str">your-issued-cert.pem</span> -noout -subject -issuer -dates -fingerprint
+<span class="cm"># subject = your org + FQDN        (C=US, O=Pyramos Software, CN=c2s.pahealthmanagement.org)</span>
+<span class="cm"># issuer  = IGC Device CA 2        (the intermediate — NOT the root directly)</span>
+<span class="cm"># dates   = today → +2 years       (calendar the notAfter date now, minus 60 days)</span></pre></div>
+    <p>Also confirm the certificate really matches <em>your</em> key — the two must share the same public modulus:</p>
+    <div class="code"><pre><span class="cm"># These two hashes must be identical, or the cert is for some other key</span>
+openssl x509 -in <span class="str">your-issued-cert.pem</span> -noout -modulus | openssl md5
+openssl rsa  -in <span class="str">private-irs.key</span>       -noout -modulus | openssl md5</pre></div>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div class="milestone" id="step5">
+  <div class="when">same day<br>~10 min</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 5 — Download the CA chain and verify it end to end</h3>
+    <div class="who">Where: IdenTrust's certificate-chain download page</div>
+    <p>Your leaf alone can't be validated — the validator needs every link up to a trusted root. Download both CA certificates from IdenTrust (they publish them freely): the <strong>IGC Device CA 2</strong> intermediate and the <strong>IdenTrust Global Common Root CA 1</strong>. In this repo they're saved as <span class="path-chip">SubCA1.txt</span> and <span class="path-chip">Root.txt</span>.</p>
+    <div class="code"><pre><span class="cm"># Sanity-check each CA file</span>
+openssl x509 -in <span class="str">Root.txt</span>   -noout -subject -issuer   <span class="cm"># self-signed root, IGC Root CA 1</span>
+openssl x509 -in <span class="str">SubCA1.txt</span> -noout -subject -issuer   <span class="cm"># IGC Device CA 2, issued by the root</span>
+
+<span class="cm"># The real test: does YOUR cert verify against this chain?</span>
+openssl verify -CAfile <span class="str">Root.txt</span> -untrusted <span class="str">SubCA1.txt</span> <span class="str">your-issued-cert.pem</span>
+<span class="cm"># expected output:  your-issued-cert.pem: OK</span></pre></div>
+    <p>If verify fails with “unable to get local issuer certificate”, your leaf was signed by a <em>different</em> intermediate (IdenTrust operates several — e.g. CA 2 vs CA 3). Read your leaf's <code>issuer</code> line and download exactly that intermediate.</p>
+  </div>
+</div>
+
+<!-- STEP 6 -->
+<div class="milestone" id="step6">
+  <div class="when">same day<br>~10 min</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 6 — Bundle key + chain into the PKCS12 keystore</h3>
+    <div class="who">Where: the server · Repo script: <span class="path-chip">create-pkcs12.sh</span></div>
+    <p>The Java SDK doesn't read loose PEM files — it wants one password-protected container holding the private key and the full chain: a <strong>PKCS12</strong> (<code>.p12</code>) keystore. Concatenate the chain leaf-first, then export:</p>
+    <div class="code"><pre><span class="cm"># 1. Assemble the chain file — ORDER MATTERS: leaf, then intermediate, then root</span>
+cat <span class="str">your-issued-cert.pem</span> <span class="str">SubCA1.txt</span> <span class="str">Root.txt</span> &gt; <span class="str">irs-cert-chain.pem</span>
+
+<span class="cm"># 2. Export to PKCS12 (this is what create-pkcs12.sh runs)</span>
+openssl pkcs12 -export \
+  -in <span class="str">irs-cert-chain.pem</span> \
+  -inkey <span class="str">private-irs.key</span> \
+  -out <span class="str">irs-mef-test.p12</span> \
+  -name <span class="str">"IRS MEF Test Certificate"</span> \
+  -certfile <span class="str">irs-cert-chain.pem</span>
+<span class="cm"># prompts: (a) key passphrase, if you encrypted it in step 3</span>
+<span class="cm">#          (b) a NEW export password for the .p12 — twice</span></pre></div>
+    <p>Two values you choose here get wired into the app later, and they must match <em>exactly</em>:</p>
+    <div class="ledger">
+      <div class="lg-row"><div class="lk">-name (the alias)</div><div class="lv"><code>IRS MEF Test Certificate</code> → becomes <code>MEF_KEY_ALIAS</code></div></div>
+      <div class="lg-row"><div class="lk">export password</div><div class="lv">→ becomes <code>MEF_KEYSTORE_PASSWORD</code> (and <code>MEF_KEY_PASSWORD</code> — PKCS12 uses one password for both)</div></div>
+      <div class="lg-row punch"><div class="lk">The trap</div><div class="lv">An alias typo doesn't fail loudly — the SDK finds no key under that alias and authentication just fails. Check the alias with step 7 before blaming the IRS.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 7 -->
+<div class="milestone" id="step7">
+  <div class="when">same day<br>~5 min</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 7 — Verify the keystore before touching the IRS</h3>
+    <div class="who">Repo script: <span class="path-chip">verify-pkcs12.sh</span></div>
+    <p>Thirty seconds of verification here saves hours of debugging opaque login failures later. The keystore must contain exactly <strong>one private-key entry and three certificates</strong> — that's precisely what <code>verify-pkcs12.sh</code> asserts:</p>
+    <div class="code"><pre><span class="cm"># Java's view — this is what the SDK will actually see</span>
+keytool -list -v -keystore <span class="str">irs-mef-test.p12</span> -storetype PKCS12
+<span class="cm"># Expect: "Your keystore contains 1 entry"</span>
+<span class="cm">#         Alias name: irs mef test certificate   (keytool lowercases it)</span>
+<span class="cm">#         Entry type: PrivateKeyEntry</span>
+<span class="cm">#         Certificate chain length: 3</span>
+<span class="cm">#           [1] CN=c2s.pahealthmanagement.org  (leaf)</span>
+<span class="cm">#           [2] CN=IGC Device CA 2             (intermediate)</span>
+<span class="cm">#           [3] CN=IdenTrust Global Common Root CA 1  (root)</span>
+
+<span class="cm"># OpenSSL's view — cross-check</span>
+openssl pkcs12 -info -in <span class="str">irs-mef-test.p12</span> -nokeys</pre></div>
+    <p>Chain length 1 instead of 3 means step 6's <code>cat</code> order or <code>-certfile</code> went wrong — rebuild; don't ship it, some validators reject an incomplete chain even when others tolerate it.</p>
+  </div>
+</div>
+
+<!-- STEP 8 -->
+<div class="milestone" id="step8">
+  <div class="when">after step 7<br>~1 day</div>
+  <div class="dot-col"><div class="dot done"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 8 — Register the public certificate with IRS Automated Enrollment</h3>
+    <div class="who">Who: Responsible Official · Where: e-Services → MeF Automated Enrollment (AE)</div>
+    <p>IdenTrust vouching for you isn't enough — MeF also keeps its own list of exactly which certificate each system (ASID) is allowed to log in with. Upload the <strong>public leaf only</strong> (never the .p12, never the key):</p>
+    <div class="code"><pre><span class="cm"># AE upload forms typically want the binary DER form (.cer)</span>
+openssl x509 -in <span class="str">your-issued-cert.pem</span> -outform der -out <span class="str">upload-to-irs.cer</span></pre></div>
+    <ol class="plain">
+      <li>In the AE application, open your A2A system (ASID <code>23868900</code> for this project).</li>
+      <li>Upload/replace the certificate on that system record.</li>
+      <li>Confirm the fingerprint the portal shows matches your local one (<code>openssl x509 -fingerprint</code> from step 4) — proof you uploaded the right file.</li>
+    </ol>
+    <p>From this point the login handshake works end to end: your client signs with the private key, MeF matches the presented certificate against the one registered on ASID <code>23868900</code>, and the SAML session opens. Wire the keystore into the app (<code>MEF_KEYSTORE_PATH</code>, <code>MEF_KEYSTORE_PASSWORD</code>, <code>MEF_KEY_ALIAS</code>…) and run the repo's <span class="path-chip">test-mef-login.sh</span> against ATS to prove it.</p>
+  </div>
+</div>
+
+<!-- STEP 9 -->
+<div class="milestone" id="step9">
+  <div class="when">every ~2 yrs</div>
+  <div class="dot-col"><div class="dot"></div><div class="line"></div></div>
+  <div class="body">
+    <h3>Step 9 — Renewal, replacement, revocation</h3>
+    <div class="who">Recurring — put notAfter minus 60 days in a shared calendar today</div>
+    <p>The certificate is the component of your MeF stack that <em>will</em> fail on a schedule. The failure mode is nasty: no code changed, no config changed, and one morning every login returns an authentication error. Prevent it with a 60-day-lead renewal ritual:</p>
+    <ol class="plain">
+      <li><strong>~60 days out:</strong> start a renewal order with IdenTrust (renewals of an unexpired cert usually skip full re-vetting — cheaper and faster than letting it lapse).</li>
+      <li><strong>Generate a fresh key + CSR</strong> (repeat step 3 — re-using the old key is allowed by some CAs but a new key is better hygiene) and retrieve the new leaf (step 4).</li>
+      <li><strong>Build a new .p12</strong> (steps 5–7) alongside the old one — don't overwrite; you want instant rollback.</li>
+      <li><strong>Register the new cert in AE</strong> (step 8) <em>before</em> the old one expires, then switch <code>MEF_KEYSTORE_PATH</code> and restart. Verify with a login against ATS, then production.</li>
+    </ol>
+    <div class="gotchas">
+      <h4>When things go wrong</h4>
+      <ul>
+        <li><strong>Key compromised or lost:</strong> request revocation through IdenTrust immediately, then re-issue from step 3. A revoked cert fails IRS validation within CRL/OCSP propagation time.</li>
+        <li><strong>Renewed with IdenTrust but forgot AE:</strong> logins fail even though the cert is valid — MeF matches against its <em>registered</em> copy, not the CA's records. Step 8 is part of renewal, always.</li>
+        <li><strong>Intermediate changed:</strong> IdenTrust rotates issuing CAs over the years (CA 2 today). At each renewal, re-read the new leaf's issuer and refresh <code>SubCA1.txt</code> if it changed.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div><!-- /milestones -->
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="sec-head"><span class="idx">?</span><h2>FAQ</h2></div>
+  <dl class="faq">
+    <dt>Individual, Affiliated, or Device certificate?</dt>
+    <dd>Device, for a transmitter server. Individual/Affiliated certs bind to a <em>person</em> and suit humans logging into IRS web portals. An unattended Spring Boot service authenticating A2A is a machine identity — exactly what this repo's cert is (issued by <em>IGC Device CA 2</em>).</dd>
+    <dt>Does the CSR expose anything sensitive?</dt>
+    <dd>No. It carries your public key and identity fields, signed by your private key to prove you hold it. It's safe to paste into IdenTrust's portal or email — though the private key file next to it never is.</dd>
+    <dt>Can the same certificate serve ATS and production?</dt>
+    <dd>Yes. The certificate authenticates <em>who you are</em>, not which environment you're calling; ATS vs PRD is just an endpoint choice (<code>ats_endpoints.properties</code> vs <code>prd_endpoints.properties</code>). One cert, registered once in AE, covers both.</dd>
+    <dt>What if we lose the private key but still have the .p12?</dt>
+    <dd>You're fine — the .p12 <em>contains</em> the private key; extract it with <code>openssl pkcs12 -in irs-mef-test.p12 -nocerts -nodes -out recovered.key</code>. Lost the .p12 <em>and</em> the raw key? The certificate is unusable; revoke it and re-issue from step 3.</dd>
+    <dt>Why three certificates in the keystore instead of just mine?</dt>
+    <dd>Some TLS stacks demand the client present its full chain so the server can validate without hunting for intermediates. Shipping leaf + intermediate + root in the .p12 costs nothing and removes a whole class of “works locally, fails at the IRS” bugs — it's why <code>verify-pkcs12.sh</code> asserts exactly 3.</dd>
+    <dt>RSA 2048 — is that enough?</dt>
+    <dd>It's the IGC baseline and what the MeF SDK expects; 3072/4096 also work if policy demands, at a negligible handshake cost. What you can't use: ECDSA keys or self-signed certs — the IRS trusts the IdenTrust chain, full stop.</dd>
+  </dl>
+</section>
+
+<!-- ============ REFERENCES ============ -->
+<section id="refs">
+  <div class="sec-head"><span class="idx">§</span><h2>Sources</h2></div>
+  <ul class="plain">
+    <li><strong>identrust.com</strong> — IGC product selection, retrieval portal, CA chain downloads.</li>
+    <li><strong>Automated Enrollment (AE) External User Guide</strong> — the IRS-side certificate registration flow (step 8).</li>
+    <li><strong>IRS Publication 4164</strong> — MeF transmitter requirements, including strong authentication.</li>
+    <li>In-repo: <span class="path-chip">Root.txt</span> <span class="path-chip">SubCA1.txt</span> <span class="path-chip">create-pkcs12.sh</span> <span class="path-chip">verify-pkcs12.sh</span> <span class="path-chip">mef-spring-boot-integration/test-mef-login.sh</span> <span class="path-chip">mef-spring-boot-integration/README.md</span></li>
+    <li>Companion overview: <span class="path-chip">mef-efiling-onboarding.html</span> (this page expands its phase 3).</li>
+  </ul>
+  <p style="margin-top:28px; font-family: var(--mono); font-size: 11px; color: var(--g500);">Generated 2026-08-21 · IdenTrust product names, prices, and portal flows change — confirm on identrust.com at order time; the OpenSSL mechanics and the chain logic do not change.</p>
+</section>
+
+</main>
+</body>
+</html>

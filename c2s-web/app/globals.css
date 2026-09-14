@@ -1,0 +1,24 @@
+:root {
+  --ivory: #f6f8fb;
+  --paper: #ffffff;
+  --ink: #142033;
+  --muted: #5b677a;
+  --line: #d8dee8;
+  --accent: #274869;
+  --good: #1f7a4d;
+  --warn: #9a6700;
+  --banner: #eef4f8;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ivory);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.45;
+}
+
+a { color: var(--accent); }

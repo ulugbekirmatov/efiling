@@ -15,6 +15,7 @@ Spring Boot application (Java 17, Spring Boot 3.2.0, Maven) integrating the IRS 
 | Path | Contents |
 |---|---|
 | `mef-spring-boot-integration/` | The Spring Boot app |
+| `c2s/` | C2S platform context: how to write backend functions (Nashorn ES5), queries (QIDs), and page scripts that call them. Start at `c2s/README.md` |
 | `Version_16/A2A_Toolkit_Version16.0/` | IRS A2A Toolkit v16 — SDK JARs + IRS PDFs (Pub 5830, Strong Auth guide) |
 | `Version_15/` | Older toolkit, reference only |
 | `94x-2026/` | IRS 94x XSD schemas + business rules, 2026 Q1–Q4 (note quarterly version churn v1.0→v4.0) |

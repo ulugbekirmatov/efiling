@@ -18,6 +18,13 @@ mef:
     processing-zone: America/New_York        # zone for the submission id's yyyyDDD date
     session-wait-seconds: 30
 
+  # Last-N SendSubmissions document ring for GET /api/inspector (wage PII exception; local only)
+  inspector:
+    enabled: true
+    ring-size: 20          # 1..100
+    path: data/inspector-ring
+    max-xml-bytes: 1048576
+
   reporting-agent:
     pin: ${MEF_RA_PIN:}
     software-id: ${MEF_SOFTWARE_ID:}

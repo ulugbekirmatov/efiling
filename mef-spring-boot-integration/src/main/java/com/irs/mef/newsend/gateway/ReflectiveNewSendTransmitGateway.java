@@ -42,6 +42,8 @@ import java.util.GregorianCalendar;
 @Slf4j
 public class ReflectiveNewSendTransmitGateway implements NewSendTransmitGateway {
 
+    private final SendSubmissionsWireTap wireTap;
+
     private static final String SUBMISSION_XML = "gov.irs.mef.inputcomposition.SubmissionXML";
     private static final String SUBMISSION_MANIFEST = "gov.irs.mef.inputcomposition.SubmissionManifest";
     private static final String SUBMISSION_BUILDER = "gov.irs.mef.inputcomposition.SubmissionBuilder";
@@ -58,20 +60,26 @@ public class ReflectiveNewSendTransmitGateway implements NewSendTransmitGateway 
     private static final String[] RECEIPT_TIMESTAMP_GETTERS =
             {"getTimestamp", "getSubmissionReceiptTs", "getReceiptTs", "getReceiptTimestamp", "getTs"};
 
+    public ReflectiveNewSendTransmitGateway(SendSubmissionsWireTap wireTap) {
+        this.wireTap = wireTap;
+    }
+
     @Override
     public NewSendOutcome transmit(Object serviceContext, NewSendFiling filing) {
         PreparedCall prepared = prepare(filing);
-        Object result;
-        try {
-            result = prepared.invokeMethod().invoke(prepared.client(), serviceContext, prepared.container());
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause() != null ? e.getCause() : e;
-            return classify(cause, filing);
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            // Method.invoke raises these BEFORE the target method runs — provably pre-wire.
-            throw new NewSendCompositionException(NewSendFault.composition(e), e);
+        try (SendSubmissionsWireTap.Session tap = wireTap.open(filing)) {
+            tap.attach(prepared.client());
+            try {
+                Object result = prepared.invokeMethod().invoke(prepared.client(), serviceContext, prepared.container());
+                return readReceipt(result, filing, Instant.now());
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                return classify(cause, filing);
+            } catch (IllegalAccessException | IllegalArgumentException e) {
+                // Method.invoke raises these BEFORE the target method runs — provably pre-wire.
+                throw new NewSendCompositionException(NewSendFault.composition(e), e);
+            }
         }
-        return readReceipt(result, filing, Instant.now());
     }
 
     /**

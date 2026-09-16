@@ -8,11 +8,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.io.File;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,41 +33,39 @@ public class XmlValidator {
      * @return ValidationResult containing validation status and any errors
      */
     public static ValidationResult validate(File xmlFile, File... xsdFiles) {
-        log.info("Validating XML file: {} against {} schema files", xmlFile.getName(), xsdFiles.length);
+        return validate(new StreamSource(xmlFile), xmlFile.getName(), xsdFiles);
+    }
+
+    public static ValidationResult validate(String xml, File... xsdFiles) {
+        return validate(new StreamSource(new StringReader(xml)), "composed-return.xml", xsdFiles);
+    }
+
+    private static ValidationResult validate(Source xmlSource, String xmlName, File... xsdFiles) {
+        log.info("Validating XML: {} against {} schema files", xmlName, xsdFiles.length);
 
         List<ValidationError> errors = new ArrayList<>();
         boolean isValid = true;
 
         try {
-            // Create schema factory
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-            // Load all XSD files
             StreamSource[] sources = new StreamSource[xsdFiles.length];
             for (int i = 0; i < xsdFiles.length; i++) {
                 sources[i] = new StreamSource(xsdFiles[i]);
                 log.debug("Loading schema: {}", xsdFiles[i].getName());
             }
 
-            // Compile schemas
             Schema schema = schemaFactory.newSchema(sources);
-
-            // Create validator
             Validator validator = schema.newValidator();
-
-            // Set custom error handler to collect all validation errors
             ValidationErrorHandler errorHandler = new ValidationErrorHandler(errors);
             validator.setErrorHandler(errorHandler);
+            validator.validate(xmlSource);
 
-            // Validate the XML file
-            validator.validate(new StreamSource(xmlFile));
-
-            // Check if any errors were collected
             if (!errors.isEmpty()) {
                 isValid = false;
                 log.warn("XML validation failed with {} error(s)", errors.size());
             } else {
-                log.info("XML validation successful: {}", xmlFile.getName());
+                log.info("XML validation successful: {}", xmlName);
             }
 
         } catch (SAXException e) {
@@ -86,7 +86,7 @@ public class XmlValidator {
 
         return ValidationResult.builder()
                 .valid(isValid)
-                .xmlFile(xmlFile.getName())
+                .xmlFile(xmlName)
                 .errorCount(errors.size())
                 .errors(errors)
                 .build();
@@ -183,6 +183,10 @@ public class XmlValidator {
         private String xmlFile;
         private int errorCount;
         private List<ValidationError> errors;
+
+        public String report() {
+            return XmlValidator.generateReport(this);
+        }
     }
 
     /**

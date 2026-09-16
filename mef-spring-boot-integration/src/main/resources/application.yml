@@ -18,6 +18,17 @@ mef:
     processing-zone: America/New_York        # zone for the submission id's yyyyDDD date
     session-wait-seconds: 30
 
+  reporting-agent:
+    pin: ${MEF_RA_PIN:}
+    software-id: ${MEF_SOFTWARE_ID:}
+    ein: ${MEF_RA_EIN:}
+    business-name: ${MEF_RA_NAME:}
+    name-control: ${MEF_RA_NAME_CONTROL:}
+    address-line1: ${MEF_RA_ADDRESS_LINE1:}
+    city: ${MEF_RA_CITY:}
+    state: ${MEF_RA_STATE:}
+    zip: ${MEF_RA_ZIP:}
+
   sdk:
     # A2A_TOOLKIT_HOME - Location of SDK configuration files
     # This should point to the mef_config directory in resources

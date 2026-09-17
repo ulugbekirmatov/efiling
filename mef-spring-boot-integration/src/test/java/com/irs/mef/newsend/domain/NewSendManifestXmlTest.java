@@ -29,7 +29,7 @@ class NewSendManifestXmlTest {
     void elementOrderMatchesSchema() {
         String xml = NewSendManifestXml.render(filing(FormType.F941));
 
-        String[] orderedElements = {"<SubmissionId>", "<EFIN>", "<GovernmentCd>",
+        String[] orderedElements = {"<SubmissionId>", "<EFIN>", "<TaxYr>", "<GovernmentCd>",
                 "<FederalSubmissionTypeCd>", "<TaxPeriodBeginDt>", "<TaxPeriodEndDt>", "<TIN>"};
         int previousIndex = -1;
         for (String element : orderedElements) {
@@ -46,6 +46,7 @@ class NewSendManifestXmlTest {
 
         assertTrue(xml.contains("<SubmissionId>2386892026090abc1234</SubmissionId>"));
         assertTrue(xml.contains("<EFIN>238689</EFIN>"));
+        assertTrue(xml.contains("<TaxYr>2026</TaxYr>"));
         assertTrue(xml.contains("<GovernmentCd>IRS</GovernmentCd>"));
         assertTrue(xml.contains("<FederalSubmissionTypeCd>941</FederalSubmissionTypeCd>"));
         assertTrue(xml.contains("<TaxPeriodBeginDt>2026-01-01</TaxPeriodBeginDt>"));
@@ -71,5 +72,18 @@ class NewSendManifestXmlTest {
         String xml = NewSendManifestXml.render(filing(FormType.F941));
 
         assertEquals(-1, xml.indexOf("></"), "empty element found in:\n" + xml);
+    }
+
+    @Test
+    @DisplayName("manifest root binds xmlns:efile to the efile namespace")
+    void rootDeclaresEfilePrefix() {
+        String xml = NewSendManifestXml.render(filing(FormType.F941));
+        String root = xml.lines()
+                .filter(line -> line.startsWith("<IRSSubmissionManifest"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("no IRSSubmissionManifest root in:\n" + xml));
+        assertEquals(
+                "<IRSSubmissionManifest xmlns=\"http://www.irs.gov/efile\" xmlns:efile=\"http://www.irs.gov/efile\">",
+                root);
     }
 }

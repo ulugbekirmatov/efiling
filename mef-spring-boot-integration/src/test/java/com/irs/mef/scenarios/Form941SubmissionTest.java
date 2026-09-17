@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,29 +55,30 @@ public class Form941SubmissionTest {
     private static String submissionId;
     private static String depositId;
 
-    @BeforeAll
-    public static void beforeAll() {
-        // IRS MeF Submission ID requirements (discovered from IRS error MEF00004):
-        // Pattern: [0-9]{13}[a-z0-9]{7}
-        // - Total length: Exactly 20 characters
-        // - Characters 0-5: EFIN (6 digits) - must match EFIN in XML
-        // - Characters 6-12: Tax period date (7 digits) - format: YYYYDDD or YYYYmDD
-        // - Characters 13-19: Unique suffix (7 lowercase alphanumeric)
+    /** Orchid Incorporated, the IRS ATS scenario-1 employer. An IRS test EIN, not a real filer. */
+    private static final String ORCHID_SCENARIO_EIN = "003000004";
 
-        // Generate valid submission ID for Q1 2026 (ending March 31, 2026)
-        // IRS requires CURRENT YEAR (processing year), not tax period year
-        String efin = "238689";  // Real EFIN - Electronic Filing Identification Number
-        String processingDate = "2025331";  // Current year 2025 + month/day (March 31) as YYYYmDD
+    /** yyyyDDD: processing year + day-of-year, per SUBMISSION_ID_FORMAT.md. Must be the current date, not the tax period. */
+    private static final DateTimeFormatter PROCESSING_DATE = DateTimeFormatter.ofPattern("yyyyDDD");
 
-        // Generate unique 7-character lowercase alphanumeric suffix
-        // Using current timestamp to ensure global uniqueness across test runs
+    /**
+     * Submission ID = [EFIN 6][processing date yyyyDDD 7][suffix 7], pattern [0-9]{13}[a-z0-9]{7}.
+     * The EFIN comes from MEF_EFIN so the id prefix, the manifest EFIN and the return's OriginatorGrp
+     * all carry the same value (rule R0000-054-01).
+     */
+    private String buildSubmissionId(String efin) {
+        String processingDate = LocalDate.now(ZoneId.of("America/New_York")).format(PROCESSING_DATE);
         String suffix = generateUniqueSubmissionSuffix();
-        submissionId = efin + processingDate + suffix;
+        String id = efin + processingDate + suffix;
+        assertTrue(id.matches("[0-9]{13}[a-z0-9]{7}"), "Submission id must match [0-9]{13}[a-z0-9]{7}, got " + id);
+        return id;
+    }
 
-        log.info("=============================================================");
-        log.info("Starting Form 941 Submission Integration Test");
-        log.info("Submission ID: {} (EFIN: {}, Date: {}, Suffix: {})", submissionId, efin, processingDate, suffix);
-        log.info("=============================================================");
+    private String configuredEfin() {
+        String efin = mefConfig.getAuthentication().getEfin();
+        assertNotNull(efin, "MEF_EFIN must be configured");
+        assertTrue(efin.matches("\\d{6}"), "MEF_EFIN must be 6 digits, got " + efin);
+        return efin;
     }
 
     @Test
@@ -154,12 +157,16 @@ public class Form941SubmissionTest {
         File parentDir = projectDir.getParentFile();
         File xmlFile = new File(parentDir, "test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml");
 
-        // Create submission request with manifest fields
+        String efin = configuredEfin();
+        submissionId = buildSubmissionId(efin);
+
+        // Manifest EFIN must equal the id prefix and the return header's OriginatorGrp EFIN (R0000-054-01).
+        // The ETIN only authenticates the session and never appears here.
         SubmitRequest submitRequest = SubmitRequest.builder()
                 .submissionId(submissionId)
                 .submissionFilePath(xmlFile.getAbsolutePath())
-                .efin("97661")  // From .env MEF_ETIN
-                .tin("003000004")  // EIN from Return941-Scenario1.xml
+                .efin(efin)
+                .tin(ORCHID_SCENARIO_EIN)
                 .taxPeriodBegin(LocalDate.of(2026, 1, 1))  // Q1 2026 start
                 .taxPeriodEnd(LocalDate.of(2026, 3, 31))   // Q1 2026 end
                 .build();

@@ -129,6 +129,16 @@
                 </configuration>
             </plugin>
 
+            <!-- Java 17 module access for the IRS SDK under mvn test -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED --add-exports=java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED --add-exports=java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED --add-exports=java.xml.crypto/org.jcp.xml.dsig.internal.dom=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

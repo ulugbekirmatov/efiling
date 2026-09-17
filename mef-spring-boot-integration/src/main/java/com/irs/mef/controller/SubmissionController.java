@@ -27,6 +27,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubmissionController {
 
+    /** IRS ATS scenario 1 (Orchid Incorporated, Q1 2026), relative to the repo root. */
+    private static final String SCENARIO_1_RETURN_XML =
+            "test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml";
+
     private final SubmissionService submissionService;
     private final StatusService statusService;
     private final MefClientService mefClientService;
@@ -221,8 +225,16 @@ public class SubmissionController {
         SubmitRequest request = new SubmitRequest();
         request.setSubmissionId(submissionId);
 
-        // Path to test scenario XML file
-        request.setSubmissionFilePath("/Users/ulugbekirmatov/Documents/MeF-test/test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml");
+        // Scenario XML lives in the repo, one level above the Maven module (user.dir is the module when run via mvn).
+        java.nio.file.Path moduleDir = java.nio.file.Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
+        java.nio.file.Path repoRoot = moduleDir.getParent() != null ? moduleDir.getParent() : moduleDir;
+        java.nio.file.Path scenarioXml = repoRoot.resolve(SCENARIO_1_RETURN_XML);
+        if (!java.nio.file.Files.exists(scenarioXml)) {
+            throw new MefException("CONFIG_ERROR",
+                "Test scenario XML not found",
+                "Expected " + scenarioXml + " (run from the mef-spring-boot-integration module directory)");
+        }
+        request.setSubmissionFilePath(scenarioXml.toString());
 
         // Production mode (false = ATS test environment)
         request.setProductionMode(false);

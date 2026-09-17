@@ -21,7 +21,9 @@ final class ReportingAgentReturnXml {
         OffsetDateTime truncated = returnTs.withNano(0);
         StringBuilder xml = new StringBuilder(4096);
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        xml.append("<Return xmlns=\"").append(NS).append("\" returnVersion=\"")
+        xml.append("<Return xmlns=\"").append(NS)
+                .append("\" xmlns:efile=\"").append(NS)
+                .append("\" returnVersion=\"")
                 .append(escape(client.returnVersion())).append("\">\n");
         xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
         element(xml, 2, "ReturnTypeCd", "941");
@@ -30,7 +32,7 @@ final class ReportingAgentReturnXml {
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
         filingSecurity(xml, client, truncated);
         element(xml, 2, "QuarterEndingDt", client.quarterEnding().toString());
-        xml.append("    ").append(client.filerXml()).append('\n');
+        xml.append("    ").append(inDefaultNs(client.filerXml())).append('\n');
         xml.append("    <OriginatorGrp>\n");
         element(xml, 3, "EFIN", originator.efin().value());
         element(xml, 3, "OriginatorTypeCd", ReportingAgentReturn.ORIGINATOR_TYPE);
@@ -44,9 +46,14 @@ final class ReportingAgentReturnXml {
         element(xml, 2, "DiscussWithThirdPartyNoInd", "X");
         reportingAgentFiler(xml, originator.identity());
         xml.append("  </ReturnHeader>\n");
-        xml.append("  ").append(client.returnDataXml()).append('\n');
+        xml.append("  ").append(inDefaultNs(client.returnDataXml())).append('\n');
         xml.append("</Return>\n");
         return xml.toString();
+    }
+
+    /** LSSerializer repeats the default xmlns on spliced fragments. Children inherit Return's default ns. */
+    private static String inDefaultNs(String fragment) {
+        return fragment.replace(" xmlns=\"" + NS + "\"", "");
     }
 
     /**

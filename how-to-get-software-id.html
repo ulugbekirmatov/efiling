@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to get an IRS Software ID</title>
+<style>
+:root {
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+  --radius-panel: 12px;
+  --rust: #B04A3F;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--sans);
+  line-height: 1.55;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .story, .callout, .tldr-dark, .tldr-light, .gotchas, .demo, .step {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.card, .story, .demo, [class*="col"], [class*="grid"] > *, .step { min-width: 0; }
+
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 48px 28px 96px; }
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 48px;
+}
+@media (max-width: 900px) {
+  .page { grid-template-columns: 1fr; }
+  aside { display: none; }
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+  margin-bottom: 12px;
+}
+.eyebrow.rule { display: flex; align-items: center; gap: 12px; }
+.eyebrow.rule::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+
+h1, h2, h3 { text-wrap: balance; }
+body { -webkit-font-smoothing: antialiased; }
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(38px, 5.4vw, 62px);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  color: var(--slate);
+  margin: 0 0 8px;
+  max-width: 18ch;
+}
+h1 em { font-style: italic; color: var(--clay); }
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+.intro {
+  font-size: 16.5px;
+  color: var(--g700);
+  margin: 22px 0 0;
+  max-width: 620px;
+}
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+
+.sec { margin-top: 56px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 14px; }
+.sec-head .idx {
+  font-family: var(--mono); font-size: 13px; color: var(--clay);
+  font-weight: 600; width: 34px; flex-shrink: 0;
+}
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.lede { font-size: 16px; color: var(--g700); max-width: 640px; margin: 0 0 16px; }
+
+.tldr-dark {
+  background: var(--slate); color: var(--ivory);
+  border-radius: 12px; padding: 22px 26px; margin: 28px 0 0;
+}
+.tldr-dark .label {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--oat); margin-bottom: 10px;
+}
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,0.5); }
+.tldr-dark code {
+  font-family: var(--mono); font-size: 13.5px;
+  background: rgba(250, 249, 245, 0.12); color: var(--ivory);
+  padding: 1px 5px; border-radius: 4px;
+}
+
+.tldr-light {
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-left: 4px solid var(--clay);
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 760px;
+}
+.tldr-light .k {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); margin-bottom: 8px;
+}
+.tldr-light p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--slate); }
+.tldr-light p + p { margin-top: 10px; }
+
+.callout {
+  display: flex; gap: 12px;
+  border: 1.5px solid var(--oat);
+  background: rgba(227,218,204,0.35);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 14px;
+  margin: 16px 0;
+}
+.callout .ico { color: var(--clay); font-weight: 600; }
+
+.gotchas {
+  border: 1.5px solid var(--clay);
+  border-radius: 12px;
+  background: rgba(217,119,87,0.06);
+  padding: 18px 20px;
+}
+.gotchas h3 {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--clay); margin: 0 0 10px;
+}
+.gotchas ul { margin: 0; padding: 0; list-style: none; }
+.gotchas li { position: relative; padding-left: 16px; font-size: 13px; margin-bottom: 8px; }
+.gotchas li::before {
+  content:""; position:absolute; left:0; top:8px;
+  width:5px; height:5px; background: var(--clay); border-radius:2px;
+}
+
+.story { border: 1.5px solid var(--g200); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 16px 0; min-width: 0; }
+.story .stitle { font-family: var(--serif); font-weight: 500; font-size: 18.5px; margin: 0 0 6px; }
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.story .pathchip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g200); border-radius: 6px; padding: 2px 8px; color: var(--g700); }
+
+.exbox { background: var(--g100); border: 1px solid var(--g200); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.exbox .exhead { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--g500); margin-bottom: 8px; }
+.exrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: var(--g700); border-bottom: 1px dashed var(--g200); }
+.exrow:last-child { border-bottom: none; }
+.exrow .was { color: var(--clay-d); }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; }
+
+.analogy { border-left: 3px solid var(--oat); padding: 4px 12px; margin: 10px 0; font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--g700); }
+.analogy .abreak { display: block; font-family: var(--sans); font-style: normal; font-size: 12px; color: var(--clay-d); margin-top: 4px; }
+
+.rule-card {
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-radius: 12px;
+  padding: 22px 24px;
+  max-width: 760px;
+}
+.rule-card p { margin: 0; font-size: 16px; color: var(--slate); }
+
+.step { display: grid; grid-template-columns: 44px 1fr; gap: 18px; padding: 20px 0; border-bottom: 1.5px solid var(--g100); }
+.step:last-child { border-bottom: none; }
+.step-badge {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--oat); border: 1.5px solid var(--g300);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-weight: 600; color: var(--slate); font-size: 14px;
+}
+.step.hot .step-badge {
+  background: rgba(217,119,87,0.14); border-color: var(--clay); color: var(--clay);
+}
+.step-loc { font-family: var(--mono); font-size: 13px; color: var(--slate); margin-bottom: 6px; }
+.step-loc .range { color: var(--g500); }
+.step p { margin: 0; font-size: 14.5px; color: var(--g700); }
+
+.pill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  border-radius: 999px; padding: 5px 12px; line-height: 1;
+}
+.pill .k { font-weight: 400; opacity: 0.75; }
+.pill .v { font-family: var(--mono); }
+.pill.sev      { background: var(--clay);  color: #fff; letter-spacing: 0.03em; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral  { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g300); }
+a.pill { text-decoration: none; color: inherit; }
+a.pill.neutral { color: var(--g700); }
+
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table { table-layout: auto; min-width: 640px; border-collapse: collapse; width: 100%; font-size: 13.5px; }
+td, th { word-break: normal; overflow-wrap: break-word; text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--g300); }
+th {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); font-weight: 500;
+}
+td.bad  { color: var(--rust); }
+td.good { color: var(--olive); }
+.nowrap { white-space: nowrap; }
+
+.code {
+  background: var(--slate);
+  border-radius: 12px;
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin-top: 12px;
+}
+.code pre {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #E8E6DE;
+  white-space: pre;
+  margin: 0;
+}
+.code .kw  { color: var(--clay); }
+.code .str { color: var(--olive); }
+.code .cm  { color: var(--g500); }
+.code .fn  { color: #C9B98A; }
+:not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--g100);
+  color: var(--slate);
+  padding: 1px 6px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+}
+
+.demo {
+  border: 1.5px solid var(--g300); border-radius: 14px;
+  background: var(--paper); padding: 24px;
+  margin-top: 16px;
+}
+.demo-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+@media (max-width: 720px) { .demo-grid { grid-template-columns: 1fr; } }
+.controls .row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.controls label { color: var(--g700); font-size: 14px; }
+.controls input[type=checkbox] { accent-color: var(--clay); width: 16px; height: 16px; }
+.demo-out {
+  border-radius: 10px;
+  padding: 16px 18px;
+  min-height: 120px;
+  border: 1.5px solid var(--g200);
+  background: var(--g100);
+}
+.demo-out.clay { border-color: var(--clay); background: #FBF1EC; }
+.demo-out.olive { border-color: var(--olive); background: #F1F3EC; }
+.demo-out .k {
+  font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--g500); margin-bottom: 8px;
+}
+.demo-out p { margin: 0; font-size: 14.5px; color: var(--slate); }
+.demo-out p + p { margin-top: 8px; }
+
+.term {
+  border-bottom: 1.5px dotted var(--clay);
+  cursor: help; color: var(--slate);
+  position: relative;
+}
+.term:hover::after, .term:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0; top: 1.6em;
+  z-index: 5;
+  width: min(280px, 70vw);
+  background: var(--slate);
+  color: var(--ivory);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 8px;
+  white-space: normal;
+}
+
+dl.faq { margin-top: 8px; }
+dl.faq dt {
+  font-family: var(--serif); font-size: 16px;
+  color: var(--slate); margin-top: 18px;
+}
+dl.faq dd { font-size: 14px; margin: 4px 0 0; max-width: 640px; color: var(--g700); }
+
+details {
+  border: 1.5px solid var(--g300);
+  border-radius: 10px;
+  background: var(--paper);
+  margin: 14px 0;
+  overflow: hidden;
+}
+details summary {
+  list-style: none; cursor: pointer;
+  padding: 14px 16px;
+  font-family: var(--serif); font-size: 16px; color: var(--slate);
+  display: flex; align-items: baseline; gap: 10px;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸"; color: var(--clay);
+  font-family: var(--sans); font-size: 12px;
+  transition: transform 120ms;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details summary .where {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--g500); margin-left: auto;
+}
+details .body { padding: 0 16px 16px; color: var(--g700); font-size: 14px; }
+
+.toc {
+  position: sticky; top: 32px;
+  border-left: 1.5px solid var(--g300);
+  padding-left: 18px;
+  font-size: 13px;
+}
+.toc .t-head {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); margin-bottom: 10px;
+}
+.toc a { display: block; color: var(--g700); text-decoration: none; padding: 4px 0; }
+.toc a:hover { color: var(--clay); }
+
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px 0 0;
+}
+@media (max-width: 640px) { .stat-strip { grid-template-columns: 1fr; } }
+.stat {
+  background: var(--paper);
+  border: 1.5px solid var(--g200);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.stat .n { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.stat .v { font-family: var(--serif); font-size: 22px; margin-top: 4px; }
+.stat.pending .v { color: var(--clay-d); }
+.stat.ok .v { color: var(--olive); }
+
+.sources { font-size: 13px; color: var(--g700); max-width: 680px; }
+.sources li { margin-bottom: 6px; }
+
+/* Teammate click path */
+.need {
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-radius: 12px;
+  padding: 16px 18px;
+  max-width: 760px;
+  margin: 0 0 22px;
+}
+.need .k {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); margin-bottom: 8px;
+}
+.need ul { margin: 0; padding: 0 0 0 18px; }
+.need li { font-size: 14px; color: var(--g700); margin: 4px 0; }
+
+.walk {
+  border: 1.5px solid var(--g300);
+  border-radius: 16px;
+  background: var(--paper);
+  padding: 8px;
+  max-width: 760px;
+}
+.walk-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 12px;
+  flex-wrap: wrap;
+}
+.walk-nav .count {
+  font-family: var(--mono); font-size: 12px; color: var(--g500);
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5ch;
+}
+.walk-btn {
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  color: var(--slate); background: var(--g100);
+  border: 1.5px solid var(--g300); border-radius: 8px;
+  min-height: 40px; min-width: 40px;
+  padding: 0 14px; cursor: pointer;
+  transition-property: transform, background-color, border-color;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.walk-btn:hover { background: var(--oat); }
+.walk-btn:active { transform: scale(0.96); }
+.walk-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.walk-btn:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+.walk-dots { display: flex; gap: 6px; margin-left: auto; flex: 0 0 auto; }
+.walk-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 0; padding: 0; background: var(--g300); cursor: pointer;
+  position: relative;
+}
+.walk-dot::after {
+  content: ""; position: absolute; inset: -15px;
+}
+.walk-dot[aria-current="step"] { background: var(--clay); }
+.walk-dot:focus-visible { outline: 2px solid var(--clay); outline-offset: 3px; }
+
+.walk-screen { padding: 4px 10px 14px; min-width: 0; }
+.walk-screen.is-off { display: none; }
+.walk-do {
+  font-size: 15.5px; color: var(--slate); margin: 0 0 12px;
+  text-wrap: pretty; max-width: 62ch;
+}
+.walk-do .hint { display: block; margin-top: 6px; font-size: 13.5px; color: var(--g700); }
+
+.mock {
+  border: 1.5px solid var(--g300);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--g100);
+  outline: 1px solid rgba(0,0,0,0.1);
+  outline-offset: -1px;
+}
+.mock-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: var(--g200);
+  font-family: var(--mono); font-size: 11px; color: var(--g700);
+}
+.mock-dots { display: flex; gap: 5px; }
+.mock-dots i {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--g500);
+  display: block;
+}
+.gov { background: #F6F5F0; min-height: 240px; padding-bottom: 12px; }
+.gov-banner {
+  background: var(--g100); border-bottom: 1px solid var(--g300);
+  font-size: 11px; color: var(--g700); padding: 6px 14px;
+}
+.gov-top {
+  background: var(--slate); color: var(--ivory);
+  padding: 10px 14px; font-size: 13px; font-weight: 600;
+  display: flex; align-items: baseline; gap: 12px;
+}
+.gov-top .sub { font-weight: 400; color: var(--oat); font-size: 12px; }
+.gov-body { padding: 16px 14px 20px; }
+.gov h3 {
+  font-family: var(--sans); font-size: 16px; font-weight: 650;
+  margin: 0 0 12px; color: var(--slate);
+}
+.gov-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; background: var(--paper);
+  border: 1.5px solid var(--g300); border-radius: 8px;
+  margin-bottom: 8px; font-size: 13.5px;
+}
+.gov-row.pick { border-color: var(--clay); background: #FBF1EC; }
+.gov-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--g300); margin: 0 -14px 14px; padding: 0 14px; }
+.gov-tab {
+  font-size: 12.5px; padding: 8px 12px; color: var(--g700);
+  border-bottom: 2px solid transparent; margin-bottom: -1.5px;
+}
+.gov-tab.on { color: var(--slate); font-weight: 650; border-bottom-color: var(--clay); }
+.gov-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; padding: 0 14px; border-radius: 6px;
+  font-size: 13px; font-weight: 650; border: 1.5px solid var(--g300);
+  background: var(--paper); color: var(--slate);
+}
+.gov-btn.primary { background: var(--slate); color: var(--ivory); border-color: var(--slate); }
+.gov-btn.hot {
+  outline: 2px solid var(--clay); outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(217,119,87,0.18);
+}
+.gov-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--paper); }
+.gov-table th {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--g500); font-weight: 500;
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--g300);
+}
+.gov-table td { padding: 8px 10px; border-bottom: 1px solid var(--g200); color: var(--g700); }
+.gov-table td.sid { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--olive); font-weight: 700; }
+.gov-foot { display: flex; justify-content: flex-end; margin-top: 14px; }
+.gov-modal-back {
+  background: rgba(20,20,19,0.18);
+  padding: 18px 12px;
+  min-height: 260px;
+}
+.gov-modal {
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 10px; padding: 16px 16px 14px; max-width: 420px; margin: 0 auto;
+  box-shadow: 0 12px 32px rgba(20,20,19,0.12);
+}
+.gov-field { margin-bottom: 10px; }
+.gov-field label {
+  display: block; font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.05em; text-transform: uppercase; color: var(--g500); margin-bottom: 4px;
+}
+.gov-field .box {
+  border: 1.5px solid var(--g300); border-radius: 6px; padding: 7px 10px;
+  font-size: 13px; background: var(--g100); color: var(--slate);
+}
+.gov-field .box.pick { border-color: var(--clay); background: #FBF1EC; }
+.gov-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.sketch-note {
+  font-family: var(--mono); font-size: 11px; color: var(--g500);
+  margin: 8px 2px 0;
+}
+
+.sendback {
+  background: var(--slate); color: var(--ivory);
+  border-radius: 12px; padding: 18px 20px; margin: 18px 0 0; max-width: 760px;
+}
+.sendback .k {
+  font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--oat); margin-bottom: 8px;
+}
+.sendback p { margin: 0; font-size: 14.5px; color: var(--ivory); }
+.sendback code {
+  font-family: var(--mono); font-size: 13px;
+  background: rgba(250,249,245,0.12); color: var(--ivory);
+  padding: 1px 5px; border-radius: 4px;
+}
+.sendback .copyrow {
+  display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; flex-wrap: wrap;
+}
+.sendback pre {
+  flex: 1; min-width: 0; margin: 0;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.55;
+  background: rgba(250,249,245,0.08); color: #E8E6DE;
+  border-radius: 8px; padding: 10px 12px; white-space: pre-wrap;
+}
+.sendback .walk-btn { background: var(--ivory); color: var(--slate); border-color: transparent; }
+.sendback .walk-btn.copied { background: var(--olive); color: #fff; }
+
+@media (max-width: 640px) {
+  .gov-tabs { overflow-x: auto; }
+  .walk-dots { width: 100%; margin-left: 0; }
+}
+
+@media print {
+  .toc, .demo, .walk-nav { display: none !important; }
+  .walk-screen, .walk-screen.is-off { display: block !important; padding-bottom: 24px; break-inside: avoid; }
+  details { border: none; }
+  details[open] .body, details .body { display: block; }
+  .tldr-dark { background: var(--g100); color: var(--slate); }
+  .tldr-dark p, .tldr-dark strong { color: var(--slate); }
+  .code { background: var(--g100); }
+  .code pre { color: var(--slate); white-space: pre-wrap; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow rule">Pyramos · MeF 94x · 16 Sep 2026</div>
+    <h1>How to get a <em>Software ID</em></h1>
+    <p class="intro">The Orchid Form 941 cannot leave the laptop until IRS assigns an 8-digit package number. That number is not in the acceptance letter. If you can sign into e-Services, jump to <a href="#click-path">Get the Software ID</a> and send the eight digits back.</p>
+    <div class="pills">
+      <span class="pill sev"><span class="k">Software ID</span> <span class="v">pending</span></span>
+      <span class="pill resolved"><span class="k">SWD ETIN</span> <span class="v">44754</span></span>
+      <span class="pill resolved"><span class="k">e-file app</span> <span class="v">Completed</span></span>
+      <a class="pill neutral" href="#click-path"><span class="k">For e-Services</span> <span class="v">8 screens</span></a>
+    </div>
+    <div class="stat-strip">
+      <div class="stat ok"><div class="n">Already issued</div><div class="v">EFIN, ETINs, ASID, RA PIN</div></div>
+      <div class="stat pending"><div class="n">You do this week</div><div class="v">Save the package</div></div>
+      <div class="stat"><div class="n">Still after that</div><div class="v">ATS pass, then 904 clears</div></div>
+    </div>
+  </header>
+
+  <div class="page">
+    <main>
+      <section class="sec" id="tldr">
+        <div class="tldr-dark">
+          <div class="label">Two sentences</div>
+          <p>IRS does not mail a Software ID. Sign into the completed e-file application, add a Software Package, click Save, and the 8-digit number appears on that row.</p>
+          <p>Paste it into <code>MEF_SOFTWARE_ID</code>. Call e-Help before you send ATS scenarios. Saving the questionnaire issues the ID. Passing ATS is what makes IRS accept it.</p>
+        </div>
+      </section>
+
+      <section class="sec" id="click-path">
+        <div class="sec-head"><span class="idx">00</span><h2>Get the Software ID</h2></div>
+        <p class="lede">If you can sign into e-Services, follow the eight screens. Add one 94x quarterly package for tax year 2026. Click <b>Save</b>. Send the eight digits back. IRS layout will not match these sketches. The button names match QuickAlerts, 1 Oct 2025.</p>
+
+        <div class="need">
+          <div class="k">Before you start</div>
+          <ul>
+            <li>You can sign into IRS e-Services for Pyramos Software LLC.</li>
+            <li>You are a Principal, or you have the <em>Add &amp; Change Software Package Information</em> permission.</li>
+            <li>The e-file application status is <strong>Completed</strong>.</li>
+          </ul>
+        </div>
+
+        <div class="walk" id="walk">
+          <div class="walk-nav">
+            <button type="button" class="walk-btn" id="walk-prev">Back</button>
+            <span class="count" id="walk-count">1 of 8</span>
+            <button type="button" class="walk-btn" id="walk-next">Next</button>
+            <div class="walk-dots" id="walk-dots" role="tablist" aria-label="Screens"></div>
+          </div>
+
+          <article class="walk-screen" data-i="0">
+            <p class="walk-do"><strong>Open the completed e-file application.</strong><span class="hint">Go to <a href="https://www.irs.gov/tax-professionals/e-file-provider-services">E-file provider services</a>. Click <b>Access e-file application</b>. If IRS asks you to sign in, sign in.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>irs.gov/tax-professionals/e-file-provider-services</div>
+              <div class="gov">
+                <div class="gov-banner">An official website of the United States government</div>
+                <div class="gov-top">IRS <span class="sub">e-file provider services</span></div>
+                <div class="gov-body">
+                  <h3>E-file application</h3>
+                  <p style="font-size:13px;color:var(--g700);margin:0 0 12px">Use the online e-file application to view or update an existing application.</p>
+                  <button type="button" class="gov-btn primary hot" tabindex="-1">Access e-file application</button>
+                  <p style="font-size:11px;color:var(--g500);margin:8px 0 0">requires login credentials</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="walk-screen is-off" data-i="1">
+            <p class="walk-do"><strong>Choose Organization Role.</strong><span class="hint">If the Pyramos Software LLC row does not show <b>Completed</b>, stop. Do not pick <b>Individual Role</b>. On <b>Select Your Organization</b>, pick <b>Organization Role</b> for Pyramos Software LLC.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>e-Services · Select Your Organization</div>
+              <div class="gov">
+                <div class="gov-top">IRS <span class="sub">e-Services</span></div>
+                <div class="gov-body">
+                  <h3>Select Your Organization</h3>
+                  <div class="gov-row">Individual Role</div>
+                  <div class="gov-row pick"><strong>Organization Role</strong> · Pyramos Software LLC · Completed</div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="walk-screen is-off" data-i="2">
+            <p class="walk-do"><strong>Open the application with View/Edit.</strong><span class="hint">You land on <b>External Service Authorization Management</b>. If you stay on <b>Summary</b>, <b>Save</b> later will do nothing. Click <b>View/Edit</b>.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>ESAM landing page</div>
+              <div class="gov">
+                <div class="gov-top">IRS <span class="sub">External Service Authorization Management</span></div>
+                <div class="gov-body">
+                  <h3>e-file Application</h3>
+                  <div class="gov-row">
+                    <div style="flex:1">
+                      <div style="font-weight:650">Pyramos Software LLC</div>
+                      <div style="font-size:12px;color:var(--g500)">Status · Completed</div>
+                    </div>
+                    <button type="button" class="gov-btn primary hot" tabindex="-1">View/Edit</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="walk-screen is-off" data-i="3">
+            <p class="walk-do"><strong>Select the Software Packages tab.</strong><span class="hint">You are now inside the application. If the <b>Software Packages</b> tab is missing, stop. Call e-Help at 866-255-0654. Do not hunt for a questionnaire on another page.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>e-file application · View/Edit</div>
+              <div class="gov">
+                <div class="gov-top">IRS <span class="sub">e-file application · Completed</span></div>
+                <div class="gov-body" style="padding-top:8px">
+                  <div class="gov-tabs">
+                    <span class="gov-tab">Summary</span>
+                    <span class="gov-tab">Provider Options</span>
+                    <span class="gov-tab on">Software Packages</span>
+                    <span class="gov-tab">Delegated Users</span>
+                  </div>
+                  <p style="font-size:13px;color:var(--g700);margin:0">Software Package Information</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="walk-screen is-off" data-i="4">
+            <p class="walk-do"><strong>Click Add Software Package.</strong><span class="hint">The button sits toward the bottom of the <b>Software Packages</b> screen, under the table. An empty table is expected. That means add a package.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>Software Packages tab</div>
+              <div class="gov">
+                <div class="gov-top">IRS <span class="sub">Software Packages</span></div>
+                <div class="gov-body">
+                  <h3>Software Package Information</h3>
+                  <table class="gov-table">
+                    <thead><tr><th>Tax year</th><th>Package</th><th>Software ID</th><th>Test status</th></tr></thead>
+                    <tbody><tr><td colspan="4" style="color:var(--g500)">No packages yet</td></tr></tbody>
+                  </table>
+                  <div class="gov-foot">
+                    <button type="button" class="gov-btn primary hot" tabindex="-1">Add Software Package</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="walk-screen is-off" data-i="5">
+            <p class="walk-do"><strong>Fill the pop-up for the 94x quarterly package you will test.</strong><span class="hint">IRS does not publish the field list. Fill every required field the pop-up shows. If it asks for a tax year, enter 2026. If it asks for a form family or package type, do not choose 94x annual. Do not choose PIN registration. Choose 94x quarterly. If it asks for a product name, enter Pyramos MeF 94x.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>Add Software Package Information · sketch</div>
+              <div class="gov">
+                <div class="gov-modal-back">
+                  <div class="gov-modal">
+                    <h3>Add Software Package Information</h3>
+                    <div class="gov-field"><label>Tax year, if shown</label><div class="box">2026</div></div>
+                    <div class="gov-field"><label>Package type, if shown (sketch)</label><div class="box pick">94x Quarterly</div></div>
+                    <div class="gov-field"><label>Product name, if shown (sketch)</label><div class="box">Pyramos MeF 94x</div></div>
+                    <p style="font-size:12px;color:var(--g700);margin:0">Plus every other required field IRS shows on the real pop-up.</p>
+                    <div class="gov-actions">
+                      <button type="button" class="gov-btn" tabindex="-1">Cancel</button>
+                      <button type="button" class="gov-btn primary" tabindex="-1">Save</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="sketch-note">Sketch of the pop-up. Real labels may differ. The 94x quarterly / 2026 choice is the load-bearing one.</p>
+          </article>
+
+          <article class="walk-screen is-off" data-i="6">
+            <p class="walk-do"><strong>Click Save.</strong><span class="hint"><b>Save</b> is what issues the ID. If <b>Save</b> does nothing, you are still on <b>Summary</b>. Click <b>View/Edit</b> again.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>Add Software Package Information · sketch · Save</div>
+              <div class="gov">
+                <div class="gov-modal-back">
+                  <div class="gov-modal">
+                    <h3>Add Software Package Information</h3>
+                    <div class="gov-field"><label>Tax year, if shown</label><div class="box">2026</div></div>
+                    <div class="gov-field"><label>Package type, if shown (sketch)</label><div class="box pick">94x Quarterly</div></div>
+                    <div class="gov-field"><label>Product name, if shown (sketch)</label><div class="box">Pyramos MeF 94x</div></div>
+                    <div class="gov-actions">
+                      <button type="button" class="gov-btn" tabindex="-1">Cancel</button>
+                      <button type="button" class="gov-btn primary hot" tabindex="-1">Save</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="walk-screen is-off" data-i="7">
+            <p class="walk-do"><strong>Copy the Software ID from the new package row.</strong><span class="hint">IRS prints an 8-digit number on that row after <b>Save</b>. For a 2026 94x quarterly package the first digits are often 2699. That pattern is a check. Do not copy the sketch value below. Copy the eight digits from the live IRS row.</span></p>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dots" aria-hidden="true"><i></i><i></i><i></i></span>Software Packages · after Save</div>
+              <div class="gov">
+                <div class="gov-top">IRS <span class="sub">Software Packages</span></div>
+                <div class="gov-body">
+                  <h3>Software Package Information</h3>
+                  <table class="gov-table">
+                    <thead><tr><th>Tax year</th><th>Package</th><th>Software ID</th><th>Test status</th></tr></thead>
+                    <tbody>
+                      <tr>
+                        <td>2026</td>
+                        <td>94x Quarterly</td>
+                        <td class="sid">________</td>
+                        <td>Not tested</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <p class="sketch-note">Sketch of the row. The live IRS number is eight digits. Do not send the blanks.</p>
+          </article>
+        </div>
+
+        <div class="sendback">
+          <div class="k">Then send it back</div>
+          <p>Paste the eight digits into the template below. Send that message to the person who asked you for the Software ID. Do not invent a number. Saving the package issues the ID. Passing ATS is a later step.</p>
+          <div class="copyrow">
+            <pre id="send-msg">Pyramos 94x quarterly 2026 Software ID: ________
+Copied from the Software Packages row after Save.</pre>
+            <button type="button" class="walk-btn" id="copy-msg">Copy</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="problem">
+        <div class="sec-head"><span class="idx">01</span><h2>The problem</h2></div>
+        <p class="lede">Pyramos already has a login. Login is not enough to file.</p>
+        <p>The return XML has a required header field named <code>SoftwareId</code>. The schema wants exactly eight digits. The live composer reads that value from <code>MEF_SOFTWARE_ID</code>. The env var is still empty because IRS has not issued the number.</p>
+        <p>ETIN <span class="term" data-tip="Electronic Transmitter Identification Number. The account that logs into A2A. Pyramos uses 44754 for ATS." tabindex="0">44754</span> is the Software Developer test account. It authenticates the SOAP session. It does not fill <code>&lt;SoftwareId&gt;</code>.</p>
+      </section>
+
+      <section class="sec" id="example">
+        <div class="sec-head"><span class="idx">02</span><h2>One worked example</h2></div>
+        <div class="story" id="story-1">
+          <div class="stitle">Orchid Q1 2026, with the ID still blank</div>
+          <p>You try to compose a Reporting Agent 941 for Orchid (EIN 003000004). The factory looks up <code>MEF_SOFTWARE_ID</code> before it writes any XML.</p>
+          <div class="exbox">
+            <div class="exhead">Worked example · Pyramos, tax year 2026, Form 941</div>
+            <div class="exrow"><span>EFIN / SWD ETIN</span><span>102192 / 44754 (issued)</span></div>
+            <div class="exrow"><span>Env today</span><span class="was">MEF_SOFTWARE_ID empty</span></div>
+            <div class="exrow"><span>Composer result</span><span class="was">throws, names MEF_SOFTWARE_ID</span></div>
+            <div class="exrow"><span>After you Save the package</span><span class="now">IRS prints an 8-digit ID</span></div>
+            <div class="exrow punch"><span>Then paste and send ATS</span><span class="now">904-03 still rejects until the package Passes</span></div>
+          </div>
+          <p>
+            <span class="pathchip">ReportingAgentOriginatorFactory.java:48</span>
+            <span class="pathchip">SoftwareId.java:5-12</span>
+            <span class="pathchip">R0000-904-03</span>
+          </p>
+          <div class="code"><pre><span class="kw">return new</span> <span class="fn">ReportingAgentOriginator</span>(
+        <span class="kw">new</span> <span class="fn">Efin</span>(efinValue),
+        <span class="kw">new</span> <span class="fn">ReportingAgentPin</span>(requireConfigured(<span class="str">"MEF_RA_PIN"</span>, properties.getPin())),
+        <span class="kw">new</span> <span class="fn">SoftwareId</span>(requireConfigured(<span class="str">"MEF_SOFTWARE_ID"</span>, properties.getSoftwareId())),
+        <span class="cm">// 8 digits, IRS-issued. Not ETIN 44754. Not 12345678.</span>
+        ...);</pre></div>
+        </div>
+      </section>
+
+      <section class="sec" id="analogy">
+        <div class="sec-head"><span class="idx">03</span><h2>The analogy</h2></div>
+        <div class="analogy">Getting a Software ID is like registering a car and receiving the license-plate number. You fill out the form at the counter. The clerk prints the plate on the spot. You still need an inspection sticker before the highway.
+          <span class="abreak">Where this breaks: a plate usually lasts with the car. A Software ID is per tax year and per tax package. Tax year 2027 needs a new Save.</span>
+        </div>
+      </section>
+
+      <section class="sec" id="rule">
+        <div class="sec-head"><span class="idx">04</span><h2>The rule</h2></div>
+        <div class="rule-card">
+          <p>You must be an authorized user on a <strong>Completed</strong> e-file application, with Principal rights or the <em>Add &amp; Change Software Package Information</em> permission. Then you add a package and Save. The system issues the Software Identification Number for that package. Publication 5078 §2.4 is the official wording.</p>
+        </div>
+      </section>
+
+      <section class="sec" id="steps">
+        <div class="sec-head"><span class="idx">05</span><h2>Click Save in e-Services</h2></div>
+        <p class="lede">This is the only issuance path. There is no paper form and no mailed letter for the ID itself.</p>
+
+        <div class="step">
+          <div class="step-badge">1</div>
+          <div>
+            <div class="step-loc">Confirm the Software Developer option <span class="range">already true for Pyramos</span></div>
+            <p>The e-file application must include Software Developer. That option is what opens the Software Packages tab. CLAUDE.md already lists ETIN 44754 as Software Developer, Test. If the tab is missing, call e-Help before you hunt for a questionnaire that cannot exist yet.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-badge">2</div>
+          <div>
+            <div class="step-loc">Permission <span class="range">Principal, or delegated</span></div>
+            <p>Grant <em>Add &amp; Change Software Package Information</em> to whoever will click Save. QuickAlerts and Pub 5078 both name that permission. Responsible Officials who lack it will see the tab and still cannot add a package.</p>
+          </div>
+        </div>
+        <div class="step hot">
+          <div class="step-badge">3</div>
+          <div>
+            <div class="step-loc">e-Services UI <span class="range">the Save that mints the ID</span></div>
+            <p>The screens at <a href="#click-path">Get the Software ID</a> walk this click path. Sign into the completed IRS e-file application. Choose Organization Role. Open the application with View/Edit. Select the Software Packages tab. Click Add Software Package toward the bottom. Fill the pop-up for the 94x quarterly package you will test. Click Save. The ID appears automatically on that package row.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-badge">4</div>
+          <div>
+            <div class="step-loc">Scope the package <span class="range">one ID per tax year and tax package</span></div>
+            <p>Pub 5078. Software Developers need a new Software ID for each tax year and each tax package they support. For this repo that means a 94x quarterly package for tax year 2026. Project guides expect a number that looks like <code>2699NNNN</code>. Treat that pattern as a hint, not a value you type yourself. IRS assigns the eight digits.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-badge">5</div>
+          <div>
+            <div class="step-loc">Call e-Help <span class="range">866-255-0654</span></div>
+            <p>Tell them you are ready to test. There is no self-service ATS scheduler. Saving the questionnaire is not the same as being scored.</p>
+          </div>
+        </div>
+
+        <div class="callout"><span class="ico">↳</span><div>The QuickAlerts October 2025 note adds the View/Edit click that Pub 5078 skips. Use the longer path. If Save does nothing, you are probably on the summary page instead of inside the application.</div></div>
+      </section>
+
+      <section class="sec" id="wire">
+        <div class="sec-head"><span class="idx">06</span><h2>Then wire it into the app</h2></div>
+        <p class="lede">The ID lives in one env var. The return header is the only place it goes.</p>
+        <div class="code"><pre><span class="cm"># mef-spring-boot-integration/.env</span>
+<span class="fn">MEF_SOFTWARE_ID</span>=<span class="str">&lt;the 8 digits from the Software Packages row&gt;</span></pre></div>
+        <p><code>application.yml</code> binds that to <code>mef.reporting-agent.software-id</code>. <code>ReportingAgentReturnXml</code> writes <code>&lt;SoftwareId&gt;</code> in the 94x header. It does not belong in login, ASID, or the NewSend manifest.</p>
+        <div class="tldr-light" style="margin-top:18px">
+          <div class="k">Do not paste these</div>
+          <p><code>12345678</code> is the ATS scenario sample in <code>Return941-Scenario1.xml</code>. <code>00000000</code> is the offline schema stand-in. <code>11111111</code> is a unit-test fake. None of them have passed testing for Pyramos.</p>
+        </div>
+      </section>
+
+      <section class="sec" id="demo">
+        <div class="sec-head"><span class="idx">07</span><h2>Issuance is not a pass</h2></div>
+        <p class="lede">Toggle the two IRS events. Watch which error you would still get.</p>
+        <div class="demo">
+          <div class="demo-grid">
+            <div class="controls">
+              <div class="row">
+                <input type="checkbox" id="saved" aria-describedby="demo-out">
+                <label for="saved">Questionnaire saved, ID issued</label>
+              </div>
+              <div class="row">
+                <input type="checkbox" id="passed">
+                <label for="passed">Package passed ATS for 94x 2026</label>
+              </div>
+            </div>
+            <div class="demo-out clay" id="demo-out" role="status">
+              <div class="k">Result</div>
+              <p></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="not-this">
+        <div class="sec-head"><span class="idx">08</span><h2>What is not a Software ID</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="nowrap">Identifier</th>
+                <th>Job</th>
+                <th>Where it goes</th>
+                <th class="nowrap">Pyramos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nowrap">Software ID</td>
+                <td>Names the software package that built the return</td>
+                <td>Return header <code>SoftwareId</code> only</td>
+                <td class="bad nowrap">Not issued</td>
+              </tr>
+              <tr>
+                <td class="nowrap">ETIN 44754</td>
+                <td>Software Developer test account. Logs into ATS</td>
+                <td>A2A login / <code>ServiceContext</code></td>
+                <td class="good nowrap">Issued</td>
+              </tr>
+              <tr>
+                <td class="nowrap">ETIN 44753</td>
+                <td>Transmitter, Production type. After the communications test</td>
+                <td>Same login knob, later</td>
+                <td class="good nowrap">Issued</td>
+              </tr>
+              <tr>
+                <td class="nowrap">EFIN 102192</td>
+                <td>Originator firm number</td>
+                <td>Submission ID prefix, <code>OriginatorGrp</code>, NewSend manifest</td>
+                <td class="good nowrap">Issued</td>
+              </tr>
+              <tr>
+                <td class="nowrap">ASID 10219201</td>
+                <td>A2A system the cert is bound to</td>
+                <td>Login only. Never in return XML</td>
+                <td class="good nowrap">Issued</td>
+              </tr>
+              <tr>
+                <td class="nowrap">RA PIN</td>
+                <td>Reporting Agent jurat / signature</td>
+                <td><code>ReportingAgentPINGrp</code></td>
+                <td class="good nowrap">Issued</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="sec" id="gotchas">
+        <div class="sec-head"><span class="idx">09</span><h2>Traps</h2></div>
+        <div class="gotchas">
+          <h3>Easy to get wrong</h3>
+          <ul>
+            <li>Issuance and ATS Pass are different clocks. Rule R0000-904-03 rejects a brand-new ID until IRS records that it passed testing for the form family and tax year.</li>
+            <li>A Reporting Agent who buys vendor software can skip Software Developer and reuse the vendor ID. Pyramos writes the transmitter, so it cannot skip.</li>
+            <li>EFIN 102192 starts with 10. Rule R0000-118-01 still forces <code>OnlineFiler</code> on that prefix. Getting a Software ID does not fix that. e-Help still owns that ticket.</li>
+            <li>Pub 5830 <code>ClientSoftwareTxt</code> is a Toolkit SOAP header. It is not the return-header Software ID.</li>
+            <li><code>mef-efiling-onboarding.html</code> never documents this step. Use Pub 5078 §2.4 and <code>pyramos-mef-registration.html</code> phase 2b.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="sec" id="faq">
+        <div class="sec-head"><span class="idx">10</span><h2>FAQ</h2></div>
+        <dl class="faq">
+          <dt>Do ATS and Production get different Software IDs?</dt>
+          <dd>No local IRS source says that. Pub 5078 talks about one ID per tax year and tax package. ATS versus Production is an ETIN transmission-status split (44754 stays Test, 44753 flips after the communications test).</dd>
+          <dt>What if the Software Packages tab is empty or missing?</dt>
+          <dd>Empty means add a package. Missing usually means the Software Developer option is not on the application, or you are not inside View/Edit. ETIN 44754 is evidence the option exists. Call 866-255-0654 if the tab still is not there.</dd>
+          <dt>Do I need a new ID for Form 941-X or 94x annual?</dt>
+          <dd>Pub 5078 says each tax package. Project guides treat 94x annual as <code>YY88NNNN</code> and PIN registration as its own package. For the first ATS send, complete the 94x quarterly 2026 package. Ask e-Help before you invent extra packages.</dd>
+          <dt>Where is the official questionnaire field list?</dt>
+          <dd>Not in this repo and not in the Pub 5078 extract. The screen is the <em>Add Software Package Information</em> pop-up. Fill every required field IRS shows, then Save.</dd>
+        </dl>
+        <details>
+          <summary>Sources <span class="where">primary first</span></summary>
+          <div class="body">
+            <ul class="sources">
+              <li>Publication 5078 (Rev. 12-2025) §2.4, Software Identification Number. Automatic issue on Save. New ID per tax year and tax package.</li>
+              <li>QuickAlerts, 1 Oct 2025. Same UI path, plus View/Edit.</li>
+              <li>Publication 3112. Software Developers can view the assigned Software ID and the test status of each package.</li>
+              <li><code>941-BusinessRules-TY2026Q1v4.0</code> rule R0000-904-03. Reject and Stop until the ID has passed testing for form family and TaxYr.</li>
+              <li><code>efileTypes.xsd</code> <code>SoftwareIdType</code>. Pattern <code>[0-9]{8}</code>.</li>
+              <li>Project status. CLAUDE.md, issued 2026-09. Software ID not yet issued, questionnaire pending.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <aside>
+      <nav class="toc" aria-label="On this page">
+        <div class="t-head">On this page</div>
+        <a href="#tldr">Two sentences</a>
+        <a href="#click-path">Get the Software ID</a>
+        <a href="#problem">The problem</a>
+        <a href="#example">Worked example</a>
+        <a href="#analogy">The analogy</a>
+        <a href="#rule">The rule</a>
+        <a href="#steps">Click Save</a>
+        <a href="#wire">Wire the env</a>
+        <a href="#demo">Issuance vs pass</a>
+        <a href="#not-this">Not these IDs</a>
+        <a href="#gotchas">Traps</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </aside>
+  </div>
+</div>
+<script>
+(function () {
+  var screens = document.querySelectorAll(".walk-screen");
+  var dotsWrap = document.getElementById("walk-dots");
+  var prev = document.getElementById("walk-prev");
+  var next = document.getElementById("walk-next");
+  var count = document.getElementById("walk-count");
+  if (!screens.length || !dotsWrap || !prev || !next || !count) return;
+  var i = 0;
+  screens.forEach(function (s, k) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "walk-dot";
+    b.setAttribute("aria-label", "Screen " + (k + 1));
+    b.addEventListener("click", function () { show(k); });
+    dotsWrap.appendChild(b);
+  });
+  var dots = dotsWrap.querySelectorAll(".walk-dot");
+  function show(n) {
+    i = Math.max(0, Math.min(screens.length - 1, n));
+    screens.forEach(function (s, k) {
+      s.classList.toggle("is-off", k !== i);
+    });
+    dots.forEach(function (d, k) {
+      d.setAttribute("aria-current", k === i ? "step" : "false");
+    });
+    count.textContent = (i + 1) + " of " + screens.length;
+    prev.disabled = i === 0;
+    next.disabled = i === screens.length - 1;
+  }
+  prev.addEventListener("click", function () { show(i - 1); });
+  next.addEventListener("click", function () { show(i + 1); });
+  document.addEventListener("keydown", function (e) {
+    if (!document.getElementById("walk").contains(document.activeElement) && document.activeElement !== document.body) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); show(i + 1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); show(i - 1); }
+  });
+  show(0);
+
+  var copyBtn = document.getElementById("copy-msg");
+  var sendMsg = document.getElementById("send-msg");
+  if (copyBtn && sendMsg) {
+    copyBtn.addEventListener("click", function () {
+      var text = sendMsg.textContent;
+      function ok() {
+        copyBtn.textContent = "Copied";
+        copyBtn.classList.add("copied");
+        setTimeout(function () {
+          copyBtn.textContent = "Copy";
+          copyBtn.classList.remove("copied");
+        }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok).catch(function () {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          ok();
+        });
+      }
+    });
+  }
+})();
+(function () {
+  var saved = document.getElementById("saved");
+  var passed = document.getElementById("passed");
+  var out = document.getElementById("demo-out");
+  if (!saved || !passed || !out) return;
+  function paint() {
+    var s = saved.checked;
+    var p = passed.checked;
+    out.className = "demo-out";
+    var html;
+    if (!s) {
+      out.classList.add("clay");
+      html = '<div class="k">Result</div><p>Composer throws before any IRS call. Field name is MEF_SOFTWARE_ID.</p><p>Nothing to reject yet. There is no header value.</p>';
+    } else if (!p) {
+      out.classList.add("clay");
+      html = '<div class="k">Result</div><p>XML carries an 8-digit SoftwareId. Schema is happy.</p><p>IRS still returns R0000-904-03. The ID has not passed testing for 94x / 2026.</p>';
+    } else {
+      out.classList.add("olive");
+      html = '<div class="k">Result</div><p>904-03 clears for this package and tax year.</p><p>EFIN 102192 can still trip R0000-118-01 on OriginatorTypeCd=ReportingAgent. That is a separate e-Help ticket.</p>';
+    }
+    out.innerHTML = html;
+  }
+  saved.addEventListener("change", paint);
+  passed.addEventListener("change", paint);
+  paint();
+})();
+</script>
+</body>
+</html>

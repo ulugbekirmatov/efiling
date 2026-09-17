@@ -280,7 +280,7 @@ git branch --show-current</pre></div>
 --add-exports java.xml.crypto/org.jcp.xml.dsig.internal.dom=ALL-UNNAMED</pre></div>
       <ol start="5">
         <li><span class="ui">Working directory</span>: <code>$MODULE_WORKING_DIR$</code> (the default). This is what makes <code>.env</code>, the fixture paths, <code>a2a_sdk.log.*</code>, <code>logs/</code> and the NewSend journal <code>data/newsend-journal.jsonl</code> all resolve relative to <code>mef-spring-boot-integration/</code>.</li>
-        <li><span class="ui">Apply</span>. Do not add <code>Form941SubmissionTest</code> or <code>MefLoginIntegrationTest</code> to this configuration; they share the same gate and would also go live.</li>
+        <li><span class="ui">Apply</span>. Do not add <code>Form941SubmissionTest</code> to this configuration; it shares the same gate and would also go live (<code>MefLoginIntegrationTest</code> was deleted 2026-09-16).</li>
       </ol>
       <div class="callout"><span class="ico">↳</span><p>The four <code>--add-opens</code>/<code>--add-exports</code> lines are copied from the pom's <code>spring-boot-maven-plugin</code> block. The pom passes them to <code>spring-boot:run</code> but not to Surefire, and the existing login test has run under Maven without them. They are harmless here and remove <code>InaccessibleObjectException</code> as a variable.</p></div>
       <div class="check"><span class="k">Checkpoint</span><span class="body">Running the configuration with an <em>empty</em> <code>.env</code> fails immediately with <code>ReportingAgentValidationException: MEF_EFIN is required</code>. That proves the gate is armed and the property reached JUnit. A grey "ignored" result means the property did not.</span></div>
@@ -333,7 +333,7 @@ mvn test -Dtest=ReportingAgentForm941AtsTest -Dmef.integration.test.enabled=<spa
     <h3>Gotchas that cost time</h3>
     <ul>
       <li><strong>VM options, not environment variables.</strong> <code>@EnabledIfSystemProperty</code> reads <code>System.getProperty</code>. An env var named <code>mef.integration.test.enabled</code> is ignored and the test shows as skipped.</li>
-      <li><strong>Never run the test folder or a bare <code>mvn test</code> with the gate property set.</strong> <code>Form941SubmissionTest</code> (OnlineFiler, OneWell values) and <code>MefLoginIntegrationTest</code> use the same property and would also hit ATS.</li>
+      <li><strong>Never run the test folder or a bare <code>mvn test</code> with the gate property set.</strong> <code>Form941SubmissionTest</code> (OnlineFiler) uses the same property and would also hit ATS.</li>
       <li><strong><code>.env</code> location is the working directory.</strong> If you change the run configuration's working directory to the repo root, move the file too. The fixture helper tolerates either directory; the dotenv loader does not.</li>
       <li><strong>ASID is fixed at <code>10219201</code>.</strong> The gate throws on anything else. It is compared against the session config only and must never appear in the Return XML; the offline test asserts that.</li>
       <li><strong>EFIN must match in two places.</strong> The originator EFIN comes from <code>MEF_EFIN</code> and the gate re-checks it against the same value, because the submission id prefix, <code>OriginatorGrp</code>, and the manifest all share it. ETIN is a different number and only authenticates the session.</li>

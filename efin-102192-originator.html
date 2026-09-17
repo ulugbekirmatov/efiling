@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EFIN 102192 says online filer. Who signs Orchid's 941?</title>
+<style>
+:root {
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+  --radius-panel: 12px;
+  --rust: #B04A3F;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--sans);
+  line-height: 1.55;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .approach, .callout, .summary, .story, .reco, .tldr-dark, .tldr-light {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.card, .approach, [class*="col"], .summary > * { min-width: 0; }
+table { table-layout: auto; min-width: 640px; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }
+:not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--g100);
+  color: var(--slate);
+  padding: 1px 6px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+}
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 48px 28px 80px; }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+  margin-bottom: 12px;
+}
+.eyebrow.rule { display: flex; align-items: center; gap: 12px; }
+.eyebrow.rule::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(38px, 5.4vw, 62px);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  color: var(--slate);
+  margin: 0 0 8px;
+  max-width: 18ch;
+}
+h1 em { font-style: italic; color: var(--clay); }
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+.intro {
+  font-size: 16.5px;
+  color: var(--g700);
+  margin: 22px 0 0;
+  max-width: 680px;
+}
+.sec { margin-top: 56px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 16px; }
+.sec-head .idx {
+  font-family: var(--mono); font-size: 13px; color: var(--clay);
+  font-weight: 600; width: 34px; flex-shrink: 0;
+}
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.banner {
+  background: var(--oat);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  color: var(--g700);
+  margin: 18px 0 24px;
+}
+.tldr-dark {
+  background: var(--slate); color: var(--ivory);
+  border-radius: 12px; padding: 22px 26px; margin: 28px 0 36px;
+}
+.tldr-dark .label {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--oat); margin-bottom: 10px;
+}
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,0.5); }
+.tldr-dark code {
+  font-family: var(--mono); font-size: 13.5px;
+  background: rgba(250, 249, 245, 0.12); color: var(--ivory);
+  padding: 1px 5px; border-radius: 4px;
+}
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.summary .cell {
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; padding: 18px 20px;
+}
+.summary .k {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); margin-bottom: 6px;
+}
+.summary .v { font-size: 17px; color: var(--slate); font-weight: 600; }
+.summary .v.accent { color: var(--clay); }
+.summary .sub { font-size: 12.5px; color: var(--g500); margin-top: 6px; }
+.reco {
+  border-left: 4px solid var(--clay);
+  background: var(--paper);
+  border-radius: 0 12px 12px 0;
+  padding: 24px 28px;
+  margin-top: 28px;
+}
+.reco h2 { font-family: var(--serif); font-weight: 500; font-size: 22px; margin-bottom: 10px; }
+.reco p { color: var(--g700); margin: 0 0 10px; }
+.story { border: 1.5px solid var(--g200); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 16px 0; min-width: 0; }
+.story .stitle { font-family: var(--serif); font-weight: 500; font-size: 18.5px; margin: 0 0 6px; }
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.story .pathchip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g200); border-radius: 6px; padding: 2px 8px; color: var(--g700); }
+.exbox { background: var(--g100); border: 1px solid var(--g200); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.exbox .exhead { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--g500); margin-bottom: 8px; }
+.exrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: var(--g700); border-bottom: 1px dashed var(--g200); }
+.exrow:last-child { border-bottom: none; }
+.exrow .was { color: var(--clay-d); }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; }
+.analogy { border-left: 3px solid var(--oat); padding: 4px 12px; margin: 10px 0; font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--g700); }
+.analogy .abreak { display: block; font-family: var(--sans); font-style: normal; font-size: 12px; color: var(--clay-d); margin-top: 4px; }
+.approaches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.approach {
+  background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px;
+  padding: 24px; display: flex; flex-direction: column; gap: 16px;
+}
+.approach.lean { border-color: var(--olive); box-shadow: 0 0 0 1.5px rgba(120,140,93,.25); }
+.approach.weak { border: 1.5px dashed var(--clay); }
+.approach-head h2 { font-family: var(--serif); font-weight: 500; font-size: 21px; margin-bottom: 6px; }
+.approach-head .num {
+  display: inline-block;
+  font-family: var(--mono); font-size: 12px;
+  background: var(--oat); color: var(--slate);
+  padding: 2px 8px; border-radius: 8px;
+  margin-right: 8px; vertical-align: 3px;
+}
+.approach p { margin: 0; color: var(--g700); font-size: 14.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1.5px solid var(--g300);
+  color: var(--g700); padding: 5px 10px; border-radius: 8px;
+}
+.chip.olive { background: rgba(120,140,93,0.16); color: var(--olive); border-color: transparent; }
+.chip.clay  { background: rgba(217,119,87,0.14); color: var(--clay); border-color: transparent; }
+.tradeoffs { border: 1.5px solid var(--g300); border-radius: 8px; overflow: hidden; font-size: 13px; }
+.tradeoffs .row { display: grid; grid-template-columns: 1fr 1fr; }
+.tradeoffs .row + .row { border-top: 1.5px solid var(--g300); }
+.tradeoffs .cell { padding: 10px 14px; }
+.tradeoffs .cell:first-child { border-right: 1.5px solid var(--g300); }
+.tradeoffs .head {
+  background: var(--g100); font-weight: 600; color: var(--slate);
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.tradeoffs .pro::before, .tradeoffs .con::before {
+  content:""; display:inline-block; width:6px; height:6px; border-radius:50%;
+  margin-right:8px; vertical-align:2px;
+}
+.tradeoffs .pro::before { background: var(--olive); }
+.tradeoffs .con::before { background: var(--clay); }
+.callout {
+  display: flex; gap: 12px;
+  border: 1.5px solid var(--oat);
+  background: rgba(227,218,204,0.35);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 14px;
+}
+.callout .ico { color: var(--clay); font-weight: 600; }
+.gotchas {
+  border: 1.5px solid var(--clay);
+  border-radius: 12px;
+  background: rgba(217,119,87,0.06);
+  padding: 18px 20px;
+}
+.gotchas h3 {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--clay); margin-bottom: 10px;
+}
+.gotchas li { position: relative; padding-left: 16px; font-size: 13.5px; margin-bottom: 8px; color: var(--g700); list-style: none; }
+.gotchas li::before {
+  content:""; position:absolute; left:0; top:8px;
+  width:6px; height:6px; border-radius:50%; background: var(--clay);
+}
+.gotchas ul { margin: 0; padding: 0; }
+.code {
+  background: var(--slate);
+  border-radius: 12px;
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.code pre {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #E8E6DE;
+  white-space: pre;
+  margin: 0;
+}
+.code .kw  { color: var(--clay); }
+.code .str { color: var(--olive); }
+.code .cm  { color: var(--g500); }
+.code .fn  { color: #C9B98A; }
+details {
+  border: 1.5px solid var(--g300);
+  border-radius: 10px;
+  background: var(--paper);
+  margin: 14px 0;
+  overflow: hidden;
+}
+details summary {
+  list-style: none; cursor: pointer;
+  padding: 14px 16px;
+  font-family: var(--serif); font-size: 16px; color: var(--slate);
+  display: flex; align-items: baseline; gap: 10px;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸"; color: var(--clay);
+  font-family: var(--sans); font-size: 12px;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details summary .where {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--g500); margin-left: auto;
+}
+details .body { padding: 0 16px 16px; color: var(--g700); font-size: 14.5px; }
+details.mech summary { display: flex; align-items: center; gap: 10px; }
+details.mech summary .count { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-left: auto; }
+.tweak-row { display: flex; gap: 12px; align-items: flex-start; background: var(--paper); border: 1.5px solid var(--g300); border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.tweak-row .t-num { font-family: var(--mono); font-size: 11px; font-weight: 700; background: var(--oat); color: var(--g700); border-radius: 6px; padding: 2px 8px; }
+.tweak-row .t-body .t-q { font-family: var(--serif); font-style: italic; color: var(--slate); }
+.copy-btn, .copy-reply {
+  font-family: var(--mono); font-size: 11px;
+  padding: 5px 11px; border: 1.5px solid var(--g300); border-radius: 999px;
+  background: var(--paper); color: var(--g700); cursor: pointer;
+  flex-shrink: 0;
+}
+.copy-btn:hover, .copy-reply:hover { border-color: var(--clay); color: var(--clay); }
+.copy-btn.copied, .copy-reply.copied { border-color: var(--olive); color: var(--olive); }
+.reply-wrap { position: relative; }
+.reply {
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.75;
+  background: var(--slate); border-radius: 10px; padding: 16px 18px; color: #E8E6DE;
+  white-space: pre-wrap; word-break: break-word; min-height: 96px; margin: 0;
+}
+.copy-reply { position: absolute; top: 10px; right: 10px; }
+table.shipped {
+  width: 100%; min-width: 640px; table-layout: auto;
+  border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden;
+}
+table.shipped th, table.shipped td { word-break: normal; overflow-wrap: break-word; }
+table.shipped .nowrap { white-space: nowrap; }
+table.shipped thead th {
+  text-align: left;
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); background: var(--g100);
+  padding: 12px 16px; border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td {
+  padding: 13px 16px; border-bottom: 1px solid var(--g100);
+  font-size: 14px; vertical-align: top;
+}
+table.shipped tbody tr:last-child td { border-bottom: none; }
+.pick { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--olive); margin-top: 8px; }
+.sources { font-size: 13px; color: var(--g700); }
+.sources li { margin: 6px 0; }
+@media (max-width: 860px) {
+  .summary { grid-template-columns: 1fr 1fr; }
+  .approaches { grid-template-columns: 1fr; }
+  .tradeoffs .row { grid-template-columns: 1fr; }
+  .tradeoffs .cell:first-child { border-right: none; border-bottom: 1.5px solid var(--g300); }
+}
+@media print {
+  .copy-btn, .copy-reply { display: none; }
+  details { open: 1; }
+  details .body { display: block; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow rule">Investigation · 10 Grok seats · 16 Sep 2026</div>
+  <h1>EFIN 102192 says <em>online filer</em>. Who signs Orchid's 941?</h1>
+  <p class="intro">Pyramos already holds a Reporting Agent PIN and the 8655s. The EFIN IRS issued starts with 10, so a Reporting Agent header will be rejected before any tax math runs. Keep the product. Call e-Help for a second EFIN. Do not rewrite the composer to OnlineFiler.</p>
+
+  <div class="tldr-dark">
+    <div class="label">Two-sentence version</div>
+    <p>A 10-prefix EFIN may only carry <code>OriginatorTypeCd=OnlineFiler</code>. That is 941 business rule R0000-118-01, Active, Reject and Stop, in the local TY2026 Q1 v4 extract.</p>
+    <p>Switching the header to OnlineFiler would satisfy that rule and kill the Reporting Agent product. Pub 4163 §3.6.5 says the 10-digit online PIN is for the owner or principal of the business, not for a tax professional filing for other firms.</p>
+  </div>
+
+  <div class="summary">
+    <div class="cell"><div class="k">Verdict</div><div class="v accent">Keep RA. Call e-Help.</div><div class="sub">Option A. Code stays.</div></div>
+    <div class="cell"><div class="k">Send today</div><div class="v">118-01 on ACK</div><div class="sub">Login is unaffected.</div></div>
+    <div class="cell"><div class="k">Confidence</div><div class="v">85%</div><div class="sub">ATS might skip some R0000s. The rule text does not.</div></div>
+    <div class="cell"><div class="k">ATS dark</div><div class="v">Sep 28 → Oct 13</div><div class="sub">12 days left on WSDL 10.9.</div></div>
+  </div>
+
+  <div class="reco">
+    <h2>Recommendation</h2>
+    <p>Call 866-255-0654 this week. Ask for a second EFIN whose first two digits are not 10, 21, 32, 44, or 53, using the IRM 3.42.10.5.2.1 dance (temporarily drop Online Provider, generate, confirm prefix, restore Online Provider, resubmit). Quote that the non-online role here is Reporting Agent, not ERO. The IRM names ERO only.</p>
+    <p>Leave <code>ReportingAgentReturn</code> alone. Put the new EFIN in <code>MEF_EFIN</code>. Expect a new ASID and a cert re-upload if AE mints one. Do not uncheck Online Provider hoping 102192 loses its 10.</p>
+  </div>
+
+  <section class="sec" id="problem">
+    <div class="sec-head"><span class="idx">01</span><h2>The problem</h2></div>
+    <p>Every 941 names who filed it. The IRS checks that name against the first two digits of the EFIN in the <strong>manifest</strong>, not against a lookup of provider options. EFINs that start 10, 21, 32, 44, or 53 are Online Provider numbers. The return must then say OnlineFiler.</p>
+    <p>Pyramos checked Online Provider on the e-file application, so IRS issued 102192. The composer writes ReportingAgent plus PIN 17966. Those two facts cannot share a submission.</p>
+
+    <div class="story" id="story-1">
+      <div class="stitle">Orchid Q1 2026, filed by Pyramos today</div>
+      <p>The client body is ATS Scenario 1, EIN 003000004. The header is Pyramos. NewSend copies <code>MEF_EFIN</code> into the submission id, the manifest EFIN, and OriginatorGrp. All three become 102192.</p>
+      <div class="exbox">
+        <div class="exhead">Worked example · same Orchid return, two headers</div>
+        <div class="exrow"><span>Manifest EFIN</span><span>102192</span></div>
+        <div class="exrow"><span>Prefix 10</span><span>Online Provider label</span></div>
+        <div class="exrow"><span>Header OriginatorTypeCd</span><span class="was">ReportingAgent</span></div>
+        <div class="exrow"><span>Signature</span><span class="was">ReportingAgentPINGrp · 17966</span></div>
+        <div class="exrow punch"><span>IRS result</span><span class="was">R0000-118-01 Reject and Stop</span></div>
+        <div class="exrow"><span>If header were OnlineFiler</span><span class="now">118 and 119 pass</span></div>
+        <div class="exrow punch"><span>Then Pub 4163 §3.6.5</span><span class="was">not a tax-professional signature</span></div>
+      </div>
+      <p>
+        <span class="pathchip">941-BusinessRules-TY2026Q1v4.0.pdf · R0000-118-01</span>
+        <span class="pathchip">ReportingAgentReturnXml.java:34-42</span>
+        <span class="pathchip">Pub 4163 Rev. 12-2025 §3.6.5</span>
+      </p>
+      <div class="analogy">Like a notary seal that only fits one stamp. Pyramos bought the notary commission (RA PIN 17966, Form 8655) and then got issued a courier badge (EFIN 102192). The window clerk looks at the badge, not the commission.
+        <span class="abreak">Where this breaks: a courier can still carry a package the owner already signed. That is a different product, a 10-digit PIN per client, and Pub 4163 forbids using that PIN as a tax professional filing for other businesses.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="options">
+    <div class="sec-head"><span class="idx">02</span><h2>The two options</h2></div>
+    <div class="banner">Sorted by product, not by ATS calendar. Getting one accepted 941 into ATS before Sep 28 does not decide who signs production 941s.</div>
+    <div class="approaches">
+      <article class="approach lean">
+        <div class="approach-head">
+          <h2><span class="num">A</span> Keep Reporting Agent. Get a non-10 EFIN.</h2>
+        </div>
+        <div class="chips">
+          <span class="chip olive">Plan's pick</span>
+          <span class="chip olive">No composer rewrite</span>
+          <span class="chip clay">Needs e-Help</span>
+        </div>
+        <p>Code stays as built. Pyramos signs each client's 941 with PIN 17966 under the Form 8655 the client signed once. e-Help issues a regular EFIN beside 102192, or you add ERO so IRM 3.42.10.5.2.1 applies by the book.</p>
+        <div class="exbox">
+          <div class="exhead">Orchid Q1 under option A</div>
+          <div class="exrow"><span>Manifest EFIN</span><span class="now">new, prefix not in {10,21,32,44,53}</span></div>
+          <div class="exrow"><span>OriginatorTypeCd</span><span>ReportingAgent</span></div>
+          <div class="exrow"><span>Signature</span><span>PIN 17966 · Pyramos</span></div>
+          <div class="exrow"><span>Then EMPL-003</span><span>ReportingAgent94XFilerGrp already written</span></div>
+        </div>
+        <div class="tradeoffs">
+          <div class="row head"><div class="cell">Keeps</div><div class="cell">Costs</div></div>
+          <div class="row"><div class="cell pro">RA product, 8655s, PIN 17966</div><div class="cell con">Phone call. Timing is IRS, not you.</div></div>
+          <div class="row"><div class="cell pro">PR #1 composer and offline schema test stay valid</div><div class="cell con">New ASID likely. Gate hardcodes 10219201.</div></div>
+        </div>
+        <p class="pick">Pick this if clients sign Form 8655 once and never touch a quarterly return again.</p>
+      </article>
+      <article class="approach">
+        <div class="approach-head">
+          <h2><span class="num">B</span> Switch the header to OnlineFiler.</h2>
+        </div>
+        <div class="chips">
+          <span class="chip clay">Kills RA product</span>
+          <span class="chip clay">Pub 4163 §3.6.5</span>
+        </div>
+        <p>118 and 119 pass on 102192. Each client must become a 94x Online e-Filer, wait up to 45 days for a 10-digit PIN, and sign every quarter. That PIN is bound to the client's EIN by R0000-157. PIN 17966 cannot go in that field. Schema PIN groups are exclusive.</p>
+        <div class="exbox">
+          <div class="exhead">Orchid Q1 under option B</div>
+          <div class="exrow"><span>Manifest EFIN</span><span>102192 unchanged</span></div>
+          <div class="exrow"><span>OriginatorTypeCd</span><span class="now">OnlineFiler</span></div>
+          <div class="exrow"><span>Signature</span><span class="was">Orchid's 10-digit PIN, not 17966</span></div>
+          <div class="exrow punch"><span>Pub 4163</span><span class="was">not acceptable for tax professionals</span></div>
+        </div>
+        <div class="tradeoffs">
+          <div class="row head"><div class="cell">Keeps</div><div class="cell">Costs</div></div>
+          <div class="row"><div class="cell pro">No e-Help wait for a new EFIN</div><div class="cell con">Rewrites the RA package. Tests forbid OnlineFiler.</div></div>
+          <div class="row"><div class="cell pro">102192 is the right prefix for this header</div><div class="cell con">5 returns a year per online e-filer. No filing for other businesses.</div></div>
+        </div>
+        <p class="pick" style="color:var(--clay-d)">Pick this if Pyramos is shipping taxpayer self-prep software, not a payroll bureau that signs.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="sec" id="wrong">
+    <div class="sec-head"><span class="idx">03</span><h2>What the plan got wrong</h2></div>
+    <div class="gotchas">
+      <h3>Corrections</h3>
+      <ul>
+        <li>R0000-118-01 is real for 94x, not 1040 folklore. Same wording in Q1 v2 and v4. It inspects the <strong>manifest</strong> EFIN. Header mismatch is a separate rule, R0000-054-01.</li>
+        <li>Dropping Online Provider does not reissue 102192 without the 10. The digits are already baked in. IRM 3.42.10.5.2.1 generates a <strong>new</strong> EFIN while Online is temporarily Dropped, then restores Online.</li>
+        <li><code>pyramos-mef-registration.html</code> warned that keeping OnlineFiler trips 119-01. That assumed a non-10 EFIN (OneWell 238689). With 102192, OnlineFiler satisfies 119. 118 is the RA killer.</li>
+        <li>Option B is not "sendable this week by flipping a constant." OneWell Scenario1.xml still has EFIN 238689, SoftwareId 12345678, PIN 1234567890, and illegal security fields. R0000-904-03 still fires after 118 is fixed unless a real Software ID has passed 94x testing.</li>
+        <li>Login does not send OriginatorTypeCd. Today's login probe is unaffected either way.</li>
+        <li>A Transmitted SOAP result is not an Accepted 941. 118 is Reject and Stop on the ACK, before F941 math.</li>
+      </ul>
+    </div>
+    <div class="approach weak" style="margin-top:18px">
+      <div class="approach-head"><h2>Weakest part of this pick</h2></div>
+      <p>IRM 3.42.10.5.2.1 is written for adding an <strong>ERO</strong> EFIN to an Online Provider application. It does not name Reporting Agent. Pub 3112 allows more than one provider option on one application and forbids a second EFIN at the same location unless IRS issues it. The six-step dance exists. Whether e-Help will run it for RA, or will require adding ERO first, only e-Help can say. Your call on whether to add ERO as a paper option to make the IRM apply literally.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="call">
+    <div class="sec-head"><span class="idx">04</span><h2>What to say on the call</h2></div>
+    <p>e-Help Desk 866-255-0654. Have IRM 3.42.10.5.2.1 on screen. Get the new EFIN, the new ASID if any, and whether ETIN 44754 stays, in writing.</p>
+    <div class="reply-wrap" style="margin-top:16px">
+      <pre class="reply" id="script">Pyramos Software LLC is both an Online Provider and a Reporting Agent, also Transmitter. EFIN 102192 (prefix 10), ETIN 44754, ASID 10219201, RA PIN 17966. We will originate Form 94x as OriginatorTypeCd=ReportingAgent.
+
+941 TY2026 Q1 v4 rule R0000-118-01 (Reject and Stop): if the first two digits of the EFIN in the IRS Submission Manifest are 10, 21, 32, 44 or 53, OriginatorTypeCd must be OnlineFiler.
+
+1. Does IRM 3.42.10.5.2.1 (regular EFIN added beside Online Provider) apply when the non-online role is Reporting Agent, not ERO?
+2. Please issue a non-10/21/32/44/53 EFIN for Reporting Agent originations, or tell us the e-Services path for a second EFIN.
+3. If we drop Online Provider, is 102192 reused, or is a new EFIN assigned? Can 102192 ever be used with ReportingAgent?
+4. Must ASID 10219201 be re-linked? If a second EFIN is issued, do we enroll a new A2A Client System, re-upload the IdenTrust leaf, and bind ETIN 44754?
+5. Does ETIN 44754 stay valid across a second EFIN?</pre>
+      <button class="copy-reply" type="button" onclick="copyFrom('script', this, 'Copy script')">Copy script</button>
+    </div>
+  </section>
+
+  <section class="sec" id="tweaks">
+    <div class="sec-head"><span class="idx">05</span><h2>Tweak these</h2></div>
+    <div class="tweak-row">
+      <span class="t-num">①</span>
+      <div class="t-body"><span class="t-q">Keep RA. Call e-Help with the script. Freeze OriginatorTypeCd. Login-only against ATS this week.</span></div>
+      <button class="copy-btn" type="button" onclick="copyText('Keep RA. Call e-Help with the script. Freeze OriginatorTypeCd. Login-only against ATS this week.', this, 'Copy')">Copy</button>
+    </div>
+    <div class="tweak-row">
+      <span class="t-num">②</span>
+      <div class="t-body"><span class="t-q">Add ERO on the application so IRM 3.42.10.5.2.1 applies by the book, then still originate as ReportingAgent on the new EFIN.</span></div>
+      <button class="copy-btn" type="button" onclick="copyText('Add ERO on the application so IRM 3.42.10.5.2.1 applies by the book, then still originate as ReportingAgent on the new EFIN.', this, 'Copy')">Copy</button>
+    </div>
+    <div class="tweak-row">
+      <span class="t-num">③</span>
+      <div class="t-body"><span class="t-q">Switch the header to OnlineFiler anyway. I accept Pub 4163 §3.6.5 and a per-client 10-digit PIN.</span></div>
+      <button class="copy-btn" type="button" onclick="copyText('Switch the header to OnlineFiler anyway. I accept Pub 4163 §3.6.5 and a per-client 10-digit PIN.', this, 'Copy')">Copy</button>
+    </div>
+  </section>
+
+  <details class="mech">
+    <summary>Boring but necessary <span class="count">shared send blockers · not 118</span></summary>
+    <div class="body">
+      <ul>
+        <li>R0000-904-03. Software ID must have passed testing for the form family and tax year. Blank <code>MEF_SOFTWARE_ID</code> is a boot default. A send needs an issued 8-digit id, A or B.</li>
+        <li>R0000-148. ATS filer EIN must start 00. Orchid 003000004 is fine. Production uses the real EIN.</li>
+        <li>R0000-157. OnlineFilerPIN must match the e-File database for the EIN. Option B only.</li>
+        <li>R0000-187 / 188. RA PIN not zeros, must match e-File DB. Option A after 118 is cleared.</li>
+        <li>EMPL-003. ReportingAgent requires ReportingAgent94XFilerGrp. Already written.</li>
+        <li>Do not put ETIN 44754 in manifest EFIN. Prefix 44 is also an 118 list member.</li>
+        <li><code>ReportingAgentAtsGate.EXPECTED_ASID</code> is hardcoded 10219201. A new ASID is a one-line code change plus AE.</li>
+        <li>Factory already refuses MEF_RA_EIN=003000004. Pyramos EIN stays in ReportingAgent94XFilerGrp. Orchid stays in Filer.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>How the gate works<span class="where">rules · pubs · code</span></summary>
+    <div class="body">
+      <p><strong>Key concepts.</strong> EFIN is the originator number on the return. ETIN is the transmitter number on the login. ASID is the A2A system id, here 10219201, which is 102192 plus 01. OriginatorTypeCd is ERO, OnlineFiler, ReportingAgent, FinancialAgent, or LargeTaxpayer. PIN groups are an XSD choice. You get one.</p>
+      <p><strong>How it works.</strong> Login presents the IdenTrust cert against ASID 10219201. SendSubmissions carries a manifest EFIN and a Return header. R0000-054-01 forces those EFINs to match. R0000-118-01 then reads the first two digits of the manifest EFIN. If they are 10/21/32/44/53, the header must say OnlineFiler or the ACK is Reject and Stop. The converse is 119-01. Pub 3112 is why 102192 got that prefix. IRM 3.42.10.5.2.1 is how e-Help issues a second, non-online EFIN without permanently dropping Online Provider.</p>
+      <p><strong>Where things live.</strong> Rule text in the extracted 941 Q1 v4 PDF. Header writer in <code>ReportingAgentReturnXml.java</code>. Locked type in <code>ReportingAgentReturn.ORIGINATOR_TYPE</code>. Tests that forbid OnlineFiler in <code>ReportingAgentReturnTest.java</code>. Old OneWell header in <code>test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml</code>.</p>
+    </div>
+  </details>
+
+  <section class="sec" id="swarm">
+    <div class="sec-head"><span class="idx">06</span><h2>Swarm</h2></div>
+    <p>Ten Grok 4.6 high seats, ask mode, partitioned. Parent verified the rule PDF, Pub 3112, Pub 4163, IRM 3.42.10, the RA fact sheet, and the composer. Four default Sonnet seats were left unspent. The ten Grok partitions already covered the research.</p>
+    <div class="table-wrap">
+      <table class="shipped">
+        <thead><tr><th>Seat</th><th>Slice</th><th>Result</th><th>Load-bearing finding</th></tr></thead>
+        <tbody>
+          <tr><td class="nowrap">1</td><td>R0000-118 / 119 text</td><td>ISSUES</td><td>Active, Reject and Stop, manifest EFIN, v2=v4</td></tr>
+          <tr><td class="nowrap">2</td><td>Pub 3112 prefixes</td><td>ISSUES</td><td>IRS assigns 10/21/32/44/53 to Online Providers. Online is a secondary role.</td></tr>
+          <tr><td class="nowrap">3</td><td>IRM second EFIN</td><td>ISSUES</td><td>3.42.10.5.2.1 is ERO-titled. Dance exists. RA not named.</td></tr>
+          <tr><td class="nowrap">4</td><td>Resubmission / ASID</td><td>ISSUES</td><td>45-day inactivation risk. ASID is EFIN+01. Dropping Online does not rewrite 102192.</td></tr>
+          <tr><td class="nowrap">5</td><td>EMPL-003 / PIN groups</td><td>ISSUES</td><td>XSD choice is exclusive. 5-digit PINType vs 10-digit SignatureType.</td></tr>
+          <tr><td class="nowrap">6</td><td>8655 vs quarterly PIN</td><td>ISSUES</td><td>RA signs all returns with one 5-digit PIN. Option B is not a courier.</td></tr>
+          <tr><td class="nowrap">7</td><td>ATS traps</td><td>ISSUES</td><td>904, 148, 157 still fire. Scenario1.xml is not a two-field shortcut. Login skips originator type.</td></tr>
+          <tr><td class="nowrap">8</td><td>Local code cost</td><td>ISSUES</td><td>Option A is env if ASID stays. Option B rewrites the RA package. Gate hardcodes 10219201.</td></tr>
+          <tr><td class="nowrap">9</td><td>e-Help script</td><td>ISSUES</td><td>Ask the five questions. Confirm ETIN 44754 across a second EFIN.</td></tr>
+          <tr><td class="nowrap">10</td><td>Attack the premise</td><td>ISSUES</td><td>Not folklore. 85% a send today is 118 on the ACK. Residual is ATS skipping some R0000s.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec" id="sources">
+    <div class="sec-head"><span class="idx">07</span><h2>Sources</h2></div>
+    <ul class="sources">
+      <li>941-BusinessRules-TY2026Q1v4.0.pdf, extracted at <code>/tmp/mef-efin-swarm/rules-v4.txt</code>. R0000-118-01, 119-01, 054-01, 148, 157, 187, 188, 904-03, EMPL-003.</li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p3112.pdf">Publication 3112 Rev. 11-2025</a>. Prefix assignment. Online Provider is secondary. Choose only options you intend to use.</li>
+      <li><a href="https://www.irs.gov/irm/part3/irm_03-042-010r">IRM 3.42.10.5.2.1</a>. Six-step second EFIN procedure. Applications Requiring Resubmission, 45-day clock.</li>
+      <li><a href="https://www.irs.gov/pub/irs-pdf/p4163.pdf">Publication 4163 Rev. 12-2025</a> §1.4.5, §1.4.7, §3.6.4, §3.6.5.</li>
+      <li><a href="https://www.irs.gov/e-file-providers/reporting-agent-technical-fact-sheet">Reporting Agent technical fact sheet</a>. 5-digit PIN. Form 8655.</li>
+      <li><a href="https://www.irs.gov/e-file-providers/employment-tax-modernized-e-file-mef-e-signature-methods">Employment tax MeF e-signature methods</a>.</li>
+      <li><a href="https://www.irs.gov/e-file-providers/modernized-e-file-mef-for-employment-taxes-frequently-asked-questions">MeF employment tax FAQs</a>. Online PIN may take 45 days.</li>
+      <li>Local. <code>ReportingAgentReturnXml.java</code>, <code>ReportingAgentReturn.java:41</code>, <code>ReportingAgentReturnTest.java</code>, <code>ReportingAgentAtsGate.java:11</code>, <code>ReturnHeader94x.xsd</code>, <code>efileTypes.xsd</code>.</li>
+    </ul>
+  </section>
+</div>
+<script>
+function copyText(text, btn, idleLabel) {
+  function done() {
+    btn.classList.add('copied');
+    var prev = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(function () {
+      btn.classList.remove('copied');
+      btn.textContent = idleLabel || prev;
+    }, 1600);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, fallback);
+  } else {
+    fallback();
+  }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+}
+function copyFrom(id, btn, idleLabel) {
+  var el = document.getElementById(id);
+  copyText(el.textContent, btn, idleLabel);
+}
+</script>
+</body>
+</html>

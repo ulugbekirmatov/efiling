@@ -55,11 +55,18 @@ public class MefAuthController {
     public ResponseEntity<Map<String, Object>> logout() {
         log.info("Logout request received");
 
-        boolean success = mefClientService.logout();
+        boolean hadSession = mefClientService.isLoggedIn();
+        boolean irsConfirmed = mefClientService.logout();
 
         Map<String, Object> response = new HashMap<>();
-        response.put("success", success);
-        response.put("message", success ? "Logged out successfully" : "No active session");
+        response.put("success", irsConfirmed);
+        if (!hadSession) {
+            response.put("message", "No active session");
+        } else if (irsConfirmed) {
+            response.put("message", "IRS session terminated");
+        } else {
+            response.put("message", "IRS did not confirm the logout; local session cleared (fault in a2a_sdk.log.*)");
+        }
 
         return ResponseEntity.ok(response);
     }

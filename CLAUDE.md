@@ -36,17 +36,21 @@ mvn clean package               # build
 mvn clean package -DskipTests   # build without tests
 mvn spring-boot:run             # run (JVM flags + A2A_TOOLKIT_HOME are preconfigured in pom.xml)
 mvn test -Dtest=Form941XmlGenerationTest          # single test class (offline)
-mvn test -Dtest=MefLoginIntegrationTest -Dmef.integration.test.enabled=true   # live ATS login test
+./test-mef-login.sh                               # live ATS login probe (runs the app, GET /mef/auth/login; green 2026-09-16)
 ```
 
-**⚠️ `mvn test` is not safe to run blindly:** `Form941SubmissionTest` is ungated and submits to live IRS ATS during a plain `mvn test` (unlike `MefLoginIntegrationTest`, which is gated behind `-Dmef.integration.test.enabled=true`).
+**⚠️ One switch arms two live tests:** `ReportingAgentForm941AtsTest` and `Form941SubmissionTest` are both gated behind the same `-Dmef.integration.test.enabled=true` (`MefLoginIntegrationTest` was deleted 2026-09-16; the login probe is `test-mef-login.sh`). Note the pom has **no surefire block**, so under `mvn test` neither `A2A_TOOLKIT_HOME` nor the `--add-opens` flags are set — these two tests cannot reach the SDK until that is added. Never set that property without a `-Dtest=<one class>` filter, or every one of them contacts IRS ATS in the same run. A plain `mvn test` without the property is offline-safe.
 
-**⚠️ Build prerequisites (verified missing 2026-08-28):** no JDK, no Maven, and no `~/.m2` exist on this machine — `brew install openjdk@17 maven` first. The SDK dependencies are normal Maven coordinates (`gov.irs.mef:mef-client-sdk:16.0`, `com.sun.xml.ws:webservices-*:4.0.4`, `org.apache.santuario:xmlsec:4.0.2`) — there is **no `lib/` directory**. Install the SDK JAR by hand or the project will not compile:
+**⚠️ Build prerequisites (installed 2026-09-16 via `brew install openjdk@17 maven`; `JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`):** the pom declares the SDK and Metro stack as ordinary Maven coordinates, but **five of them are not on Maven Central**: `gov.irs.mef:mef-client-sdk:16.0` and the four `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` jars. All five ship inside the SDK zip and must be installed into `~/.m2` by hand on a fresh machine (`org.apache.santuario:xmlsec:4.0.2` does resolve from Central). There is **no `lib/` directory** in the repo:
 
 ```bash
 unzip -o "Version_16/A2A_Toolkit_Version16.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip" -d /tmp/mef_sdk
 mvn install:install-file -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/mef_client_sdk.jar \
   -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=16.0 -Dpackaging=jar
+for a in api rt extra tools; do
+  mvn install:install-file -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/webservices-$a-4.0.4.jar \
+    -DgroupId=com.sun.xml.ws -DartifactId=webservices-$a -Dversion=4.0.4 -Dpackaging=jar
+done
 ```
 
 When running a packaged JAR manually, these JVM args are mandatory for Java 17 + Metro/JAX-WS:
@@ -69,7 +73,7 @@ Standard layers under `src/main/java/com/irs/mef/`: `controller/` (REST), `servi
 
 **The central pattern — reflection for every SDK call.** All MeF SDK invocations go through `Class.forName("gov.irs.mef...")` + `getMethod().invoke()` to sidestep Java 17 module-access problems with the Metro stack. Follow this pattern for any new SDK operation (model: `MefClientService.login`).
 
-**Session model.** `MefClientService` performs certificate-only login (`LoginClient.invoke(ctx, keystoreFile, keystorePassword, keyAlias)`), extracts the SAML token, and stores the **`ServiceContext` as a singleton instance field**. Every subsequent SDK call MUST reuse `getCurrentServiceContext()` — a fresh `ServiceContext` invalidates the IRS session. State is not thread-safe and has no expiry handling; logout never actually calls `LogoutClient` (it only clears local state), which is the likely cause of IRS concurrent-session-limit errors that `RetryConfig`'s exponential backoff works around.
+**Session model.** `MefClientService` performs certificate-only login (`LoginClient.invoke(ctx, keystoreFile, keystorePassword, keyAlias)`), extracts the SAML token, and stores the **`ServiceContext` as a singleton instance field**. Every subsequent SDK call MUST reuse `getCurrentServiceContext()` — a fresh `ServiceContext` invalidates the IRS session. State is not thread-safe and has no expiry handling. `logout()` now calls `LogoutClient.invoke` by reflection and always clears local state afterward.
 
 **Submission pipeline** (`SubmissionService`): return XML string → in-memory `SubmissionXML` → generated manifest XML → `SubmissionBuilder.createIRSSubmissionArchive` → `PostmarkedSubmissionArchive` → container → `SendSubmissionsClient.invoke` → Deposit ID.
 
@@ -77,9 +81,9 @@ Standard layers under `src/main/java/com/irs/mef/`: `controller/` (REST), `servi
 
 ### Implementation status (verified 2026-08-28)
 
-Working against ATS: **Login** (`MefClientService.java:69-203`), **SendSubmissions** (`SubmissionService.java:39-186`, manifest at `:272-311`), **GetSubmissionStatus** (`StatusService.java:38-142`), **GetNewAcks** (`AcknowledgementService.java:175-273`), **GetAck** (`AcknowledgementService.java:68-167` — its "ackId" param is really the submission ID), acks-by-submission via client-side filtering (`:286-394`), certificate diagnostics (`MefClientService.java:342-568`, `GET /mef/auth/test-certificate`).
+Working against ATS: **Login** (`MefClientService.java:69-203`), **Logout** (`LogoutClient.invoke` via reflection, `MefClientService.java:215-255`), **SendSubmissions** (`SubmissionService.java:39-186`, manifest at `:272-311`), **GetSubmissionStatus** (`StatusService.java:38-142`), **GetNewAcks** (`AcknowledgementService.java:175-273`), **GetAck** (`AcknowledgementService.java:68-167` — its "ackId" param is really the submission ID), acks-by-submission via client-side filtering (`:286-394`), certificate diagnostics (`MefClientService.java:342-568`, `GET /mef/auth/test-certificate`).
 
-Stubbed / broken — do not trust these endpoints: **logout** (local-only, never calls `LogoutClient`; `MefClientService.java:210-245`), **GetNewSubmissionsStatus** (returns an empty list, `StatusService.java:149-199`), **createSubmissionArchive** (fabricates a path, `SubmissionService.java:197-234`), `/test/form941` (hardcoded absolute XML path pointing at a nonexistent directory, `SubmissionController.java:225`).
+Stubbed / broken — do not trust these endpoints: **GetNewSubmissionsStatus** (returns an empty list, `StatusService.java:149-199`), **createSubmissionArchive** (fabricates a path, `SubmissionService.java:197-234`). `/test/form941` now resolves the Orchid scenario XML relative to the repo root.
 
 Other traps: `RetryConfig` retries **every** `Exception` (including `MefException`s like `NOT_LOGGED_IN`) despite in-service "don't retry" comments; `getAcknowledgmentsBySubmission` drains the IRS ack queue (GetNewAcks marks acks retrieved server-side) and discards non-matching acks; every `MefException` maps to HTTP 500. Full defect list and per-class map with verified line numbers: `CODE_MAP.md` §7.
 
@@ -114,10 +118,10 @@ Key packages: `gov.irs.mef.services.msi.*` (Login/Logout), `gov.irs.mef.services
 
 What must change relative to the OneWell build:
 
-1. **New IRS identifiers** — EFIN/ETIN from the e-file application (Reporting Agent + Transmitter provider options), ASID from Automated Enrollment, Reporting Agent PIN. Purge the OneWell values (97661 / 238689 / 23868900 / test EIN 003000004) hardcoded in `test-mef-login.sh`, `MefLoginIntegrationTest.java`, `Form941SubmissionTest.java`, `SubmissionController.java:239`, and the test scenario XML.
+1. **New IRS identifiers** — issued (2026-09): EFIN 102192, ETINs 44753 (Transmitter, Production type), 44754 (Software Developer, Test — use this one for ATS), 44762 (Online Provider); ASID 10219201 (active, both ETINs attached); Reporting Agent PIN issued; Software ID **not yet issued** (software-package questionnaire pending). Values live in `mef-spring-boot-integration/.env` (gitignored). ⚠️ **EFIN 102192 starts with 10**, and rule R0000-118-01 forces `OriginatorTypeCd=OnlineFiler` for EFINs starting 10/21/32/44/53 — a `ReportingAgent` return under this EFIN is rejected; resolution pending with e-Help. OneWell values (97661 / 238689 / 23868900) purged from `test-mef-login.sh`, `Form941SubmissionTest.java` and `SubmissionController.java` on 2026-09-16; `MefLoginIntegrationTest.java` (OneWell values, nonexistent keystore path, direct SDK imports) was deleted the same day; the live login probe is `test-mef-login.sh` against the running app, green against ATS on 2026-09-16 (SAML for ASID 10219201). EIN 003000004 is Orchid, the IRS ATS scenario-1 employer, not a OneWell value; it stays.
 2. **Return header changes** (see `94x-2026/.../ReturnHeader94x.xsd`): `OriginatorTypeCd` = `ReportingAgent` (currently `OnlineFiler`), replace `OnlineFilerPINGrp` with `ReportingAgentPINGrp` (`PIN`, `RAPINEnteredByCd=REPORTING AGENT`, `JuratDisclosureCd=REPORTING AGENT PIN`), add `ReportingAgent94XFilerGrp` identifying Pyramos alongside the per-client `<Filer>`.
 3. **Multi-tenancy**: per-client EIN/name/address/tax period in submissions, a client model with Form 8655 authorization status, and persistence of submission ↔ deposit ID ↔ status ↔ acknowledgment per client (IRS retention requirement). Today there is no persistence and `SubmitRequest` has no tenant field.
-4. **Session hygiene**: implement real logout via `LogoutClient`, add session expiry/refresh — required at Reporting Agent volume.
+4. **Session hygiene**: `LogoutClient` is wired. Session expiry/refresh and a mutex around the singleton `ServiceContext` are still required at Reporting Agent volume.
 5. **Certificate**: build the PKCS12 from `Pyramos Software Certificates/` (cert + SubCA1 + Root chain), register it in Automated Enrollment against the new ASID. Note both the old OneWell cert and the new Pyramos cert share `CN=c2s.pahealthmanagement.org` — only the `O=` differs; don't mix them up. Cert renewal due before 2027-08-21.
 
 ## Documentation Authority Notes

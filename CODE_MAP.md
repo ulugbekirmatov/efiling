@@ -53,7 +53,6 @@ mef-spring-boot-integration/
 │   └── mef_config/config/                   A2A_TOOLKIT_HOME contents (see §5)
 ├── src/test/java/com/irs/mef/
 │   ├── config/CertificateLoadingTest.java   pure-JCE keystore tests
-│   ├── service/MefLoginIntegrationTest.java live IRS login, system-property gated
 │   ├── scenarios/Form941SubmissionTest.java @SpringBootTest end-to-end vs. ATS
 │   ├── scenarios/Form941XmlGenerationTest.java  XSD + field validation, offline
 │   └── xml/{ReturnXmlGenerator,XmlValidator}.java  test-only helpers
@@ -158,7 +157,7 @@ SDK classes via reflection:
 | 154 | `gov.irs.mef.services.SessionInfo` — `getSAMLToken()` returns `org.w3c.dom.Element` |
 | 423, 461 | `gov.irs.mef.services.util.KeyStoreUtil` — static `loadKeyStore(File, char[])`, `listPrivateKeyAliases(KeyStore)`, `listKeyInfo(KeyStore)` |
 
-`logout()` (lines 218-239) **calls no SDK service** — it clears the four session fields and returns `true`. `gov.irs.mef.services.msi.LogoutClient` is never referenced anywhere in `src/main`. The IRS-side session is left open, which is a plausible contributor to the "session limit" errors the retry logic exists to absorb.
+`logout()` (lines 215-236) calls `LogoutClient.invoke(ServiceContext)` by reflection (`invokeIrsLogout`, lines 242-255), then always `clearLocalSession()`. It returns `true` only when IRS confirmed; local state is cleared even on a fault so a dead SAML token is not reused.
 
 ### `com.irs.mef.service.SubmissionService`
 `src/main/java/com/irs/mef/service/SubmissionService.java`
@@ -366,7 +365,7 @@ The single-ack path (`getAcknowledgment` :68) is the same shape but calls `GetAc
 | `currentSamlAssertion` | 170 | `LoginResponse` only |
 | `currentSessionId` | 171 | `/mef/auth/status`, `/test/form941` logging |
 
-No expiry tracking, no re-login on IRS session timeout, no mutex — a second concurrent `login()` overwrites the context that in-flight submissions are using. `@PreDestroy cleanup()` (:592) calls the no-op `logout()`.
+No expiry tracking, no re-login on IRS session timeout, no mutex — a second concurrent `login()` overwrites the context that in-flight submissions are using. `@PreDestroy cleanup()` now calls the real `logout()` (LogoutClient + local clear).
 
 ---
 
@@ -436,7 +435,7 @@ Resolution order (per `DotenvEnvironmentPostProcessor`): OS environment → `.en
 | `audit_log.properties` | `audit_log_file=audit_log.txt`, `max_audit_file_size=1` (MB) — mirrors `mef.sdk.audit.*` |
 | `logging.properties` | `java.util.logging` config, `.level = FINEST`, `FileHandler` |
 
-The SDK appends `/config` to the toolkit home, so `A2A_TOOLKIT_HOME` must point at `mef_config`, not `mef_config/config` (`MefLoginIntegrationTest.java:45-47` documents this).
+The SDK appends `/config` to the toolkit home, so `A2A_TOOLKIT_HOME` must point at `mef_config`, not `mef_config/config` (`MefSpringBootApplication.configureMefSdkSystemProperties` sets it to `src/main/resources/mef_config` when unset; the deleted `MefLoginIntegrationTest` used to document this).
 
 ### `pom.xml` notables
 
@@ -500,14 +499,13 @@ mvn clean package                 # with tests
 mvn test                                              # offline tests only (see gating caveat below)
 mvn test -Dtest=Form941XmlGenerationTest              # XSD/field validation, no network
 mvn test -Dtest=CertificateLoadingTest                # needs ./irs_cert/IRS_test_keystore.p12
-mvn test -Dmef.integration.test.enabled=true \
-         -Dtest=MefLoginIntegrationTest               # live IRS ATS login
+./test-mef-login.sh                                   # live IRS ATS login probe (runs the app; MefLoginIntegrationTest deleted 2026-09-16)
 mvn test -Dtest=Form941SubmissionTest                 # @SpringBootTest, live ATS submit
 ```
 
-Gating: `MefLoginIntegrationTest` guards its live methods with `@EnabledIfSystemProperty(named="mef.integration.test.enabled", matches="true")` (lines 92, 314, 369, ~397); its offline methods (`testKeystoreExists` :66, `testLoadSdkClasses` :77, `testCreateLoginClient` :121, `testLoginClientInvokeMethods` :131, `testSdkKeystoreAccess` :183, `testKeystoreLoadingForSdk` :246) run unconditionally and expect `./irs_cert/IRS_test_keystore.p12` with password `test123`, alias `irs_test_cert` — hardcoded at lines 32-34; the file is not in the repo.
+Gating (historical, file deleted 2026-09-16): `MefLoginIntegrationTest` guarded its live methods with `@EnabledIfSystemProperty(named="mef.integration.test.enabled", matches="true")` (lines 92, 314, 369, ~397); its offline methods (`testKeystoreExists` :66, `testLoadSdkClasses` :77, `testCreateLoginClient` :121, `testLoginClientInvokeMethods` :131, `testSdkKeystoreAccess` :183, `testKeystoreLoadingForSdk` :246) run unconditionally and expect `./irs_cert/IRS_test_keystore.p12` with password `test123`, alias `irs_test_cert` — hardcoded at lines 32-34; the file is not in the repo.
 
-**`Form941SubmissionTest` is UNGATED and hits the live IRS ATS during a plain `mvn test`**: `test01_verifyConfiguration` :82, `test02_login` :117, `test03_submitForm941` :143, `test04_verifySubmissionResults` :192, `test05_getSubmissionStatus` :212, `test07_getAcknowledgmentsBySubmissionId` :338 (`test06_getNewAcknowledgments` commented out at 267-270). It hardcodes EFIN `238689` and processing date `2025331` (lines ~66-68).
+**`Form941SubmissionTest` is gated** behind `-Dmef.integration.test.enabled=true` (same switch as `ReportingAgentForm941AtsTest`). Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. Never set the property without `-Dtest=<one class>`.
 
 `Form941XmlGenerationTest` resolves its XML as `user.dir/../test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml` (lines 35-37), correct relative to the repo layout.
 
@@ -560,12 +558,12 @@ Documentation drift (older docs vs reality):
 
 Defects worth acting on, roughly by severity:
 
-5. **`/test/form941` is broken** — `SubmissionController.java:225` points at `Documents/MeF-test/...`; the file is at `Documents/MeF/test-scenarios/...`. A hardcoded absolute developer path in a controller regardless.
-6. **`logout()` never contacts the IRS** (`MefClientService.java:218-239`). Sessions accumulate server-side until they time out — the most likely source of the "session limit" errors the retry layer was built to absorb. `LogoutClient` is unreferenced in `src/main`.
+5. **`/test/form941` still belongs in a controller.** It now resolves the Orchid scenario XML relative to the repo root instead of a OneWell absolute path, but it remains a live ATS submit endpoint with no tenant field.
+6. **Logout now calls `LogoutClient`.** Local session is always cleared. Session expiry/refresh and a mutex around the singleton `ServiceContext` are still missing (`MefClientService` instance fields, defect 8).
 7. **The retry policy retries everything.** `RetryConfig.java:53-60` classifies `Exception.class` as retryable, so the `catch (MefException e) { throw e; }` "don't retry" blocks in `StatusService:111` and `AcknowledgementService:136/242/363` don't have their intended effect — `NOT_LOGGED_IN` and `ACK_NOT_FOUND` are retried three times across ~20 s of backoff.
 8. **Session state is unguarded shared mutable state** on a singleton (`MefClientService.java:34-37`). Concurrent requests share one `ServiceContext`; a second login silently swaps the context out from under in-flight calls. No expiry tracking or re-login on IRS session timeout.
 9. **`getAcknowledgmentsBySubmission` drains the ack queue.** GetNewAcks marks acknowledgments retrieved IRS-side; filtering client-side (`AcknowledgementService.java:341-343`) discards every non-matching ack permanently.
-10. **`Form941SubmissionTest` submits to live IRS ATS during `mvn test`** with no gating property — add `@EnabledIfSystemProperty` for parity with `MefLoginIntegrationTest`.
+10. **`Form941SubmissionTest` is gated** (`@EnabledIfSystemProperty mef.integration.test.enabled=true`, same switch as the RA ATS test). A plain `mvn test` is offline-safe; setting the property without `-Dtest=<one class>` still arms both live tests.
 11. Stubs presented as working endpoints: `StatusService.getNewSubmissionsStatus()` :149 always returns `[]`; `SubmissionService.createSubmissionArchive()` :197 returns a path to a file it never creates. Both reachable over HTTP.
 12. Dead code: `getCertificateFile()` duplicated and unused in `SubmissionService:241`, `StatusService:206`, `AcknowledgementService:594`. `LoginRequest` bound by nothing. `MefSdkConfig.Authentication.username`/`password` and the entire `endpoints`/`security` trees never read at call time.
 13. `buildAckResponseReflection`'s `getField` lambda (`AcknowledgementService.java:424-431`) swallows all reflection errors into `null` — an SDK getter rename degrades to silently-empty response fields.

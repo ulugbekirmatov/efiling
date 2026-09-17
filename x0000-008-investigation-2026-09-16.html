@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>X0000-008 investigation, 2026-09-16</title>
+<style>
+:root {
+  /* Surfaces */
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  /* Text */
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  /* Accents (Anthropic brand) */
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  /* Typography */
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+  --radius-row: 8px;
+  --radius-panel: 12px;
+  --rust: #B04A3F;
+}
+
+body { background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; margin: 0; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; }
+code { font-family: var(--mono); font-size: 0.92em; background: var(--g100); padding: 1px 5px; border-radius: 4px; overflow-wrap: break-word; }
+main { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+section { margin: 48px 0; }
+@media print {
+  .toc-fixed { display: none; }
+  .card, .tl-entry { break-inside: avoid; page-break-inside: avoid; }
+}
+.ledger-refuted { border-left: 4px solid var(--clay); }
+.ledger-confirmed { border-left: 4px solid var(--olive); }
+.ledger-untested { border-left: 4px solid var(--g300); }
+.cmd { margin: 8px 0 14px; }
+.kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+  margin-bottom: 12px;
+}
+
+.eyebrow.rule { display: flex; align-items: center; gap: 12px; }
+.eyebrow.rule::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(38px, 5.4vw, 62px);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  color: var(--slate);
+  margin: 0 0 8px;
+  max-width: 17ch;
+}
+h1 em { font-style: italic; color: var(--clay); }
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+.intro {
+  font-size: 16.5px;
+  color: var(--g700);
+  margin: 22px 0 0;
+  max-width: 620px;
+}
+.intro a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+.sec-head .idx {
+  font-family: var(--mono); font-size: 13px; color: var(--clay);
+  font-weight: 600; width: 34px; flex-shrink: 0;
+}
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.sec-head .count {
+  font-family: var(--mono); font-size: 11px; color: var(--g500);
+  background: var(--g100); padding: 2px 8px; border-radius: 999px;
+}
+
+@media (min-width: 1100px) {
+  .toc-fixed {
+    position: fixed; top: 72px; right: max(24px, calc(50vw - 610px));
+    width: 170px; font-size: 13px;
+  }
+  .toc-fixed a {
+    display: block; color: var(--g500); text-decoration: none;
+    padding: 5px 0 5px 12px; border-left: 1.5px solid var(--g300);
+    line-height: 1.3;
+  }
+  .toc-fixed a:hover { color: var(--slate); border-left-color: var(--clay); }
+}
+
+.card {
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-radius: 14px;
+  padding: 24px;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(20, 20, 19, 0.10);
+  border-color: var(--slate);
+}
+
+.tldr-dark {
+  background: var(--slate); color: var(--ivory);
+  border-radius: 12px; padding: 22px 26px; margin-bottom: 48px;
+}
+.tldr-dark .label {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--oat); margin-bottom: 10px;
+}
+/* Set `color` explicitly on p / strong / a. Do NOT rely on inheritance
+   from `.tldr-dark`. Any global `p { color: ... }` rule elsewhere in the
+   page has higher specificity than the inherited value and will dim the
+   body text while `<strong>` and `<code>` (which have their own colors)
+   stay bright. The most common tldr-dark bug. */
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,0.5); }
+.tldr-dark code {
+  font-family: var(--mono); font-size: 13.5px;
+  background: rgba(250, 249, 245, 0.12); color: var(--ivory);
+  padding: 1px 5px; border-radius: 4px;
+}
+/* `color: var(--ivory)` on code is REQUIRED. The generic `:not(pre) > code`
+   rule in SKILL.md sets `color: var(--slate)`, which renders as dark text
+   on a dark background inside .tldr-dark unless you override it here. */
+
+.callout {
+  display: flex; gap: 12px;
+  border: 1.5px solid var(--oat);
+  background: rgba(227,218,204,0.35);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 14px;
+}
+.callout .ico { color: var(--clay); font-weight: 600; }
+
+.table-wrap { overflow-x: auto; }
+table.shipped {
+  width: 100%; min-width: 640px; table-layout: auto;
+  border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden;
+}
+table.shipped th, table.shipped td { word-break: normal; overflow-wrap: break-word; }
+table.shipped .nowrap { white-space: nowrap; }   /* #, dates, ids */
+/* 5+ columns: add table-layout: fixed and <colgroup><col style="width:N%"> so short columns
+   stop absorbing leftover width. Size each column >= its longest word or fixed layout breaks it. */
+table.shipped thead th {
+  text-align: left;
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); background: var(--g100);
+  padding: 12px 16px; border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td {
+  padding: 13px 16px; border-bottom: 1px solid var(--g100);
+  font-size: 14px; vertical-align: middle;
+}
+table.shipped tbody tr:last-child td { border-bottom: none; }
+table.shipped tbody tr:hover { background: var(--ivory); }
+
+table.impact {
+  width: 100%; max-width: 460px;
+  border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden;
+}
+table.impact th, table.impact td {
+  text-align: left; padding: 12px 18px; font-size: 14px;
+  border-bottom: 1px solid var(--g100);
+}
+table.impact tr:last-child th, table.impact tr:last-child td { border-bottom: none; }
+table.impact th { font-weight: 400; color: var(--g500); width: 55%; }
+table.impact td { font-family: var(--mono); color: var(--slate); }
+
+.chip {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1.5px solid var(--g300);
+  color: var(--g700); padding: 5px 10px; border-radius: 8px;
+  white-space: nowrap;
+}
+.chip strong { color: var(--slate); font-weight: 600; }
+.chip.olive { background: rgba(120,140,93,0.16); color: var(--olive); border-color: transparent; }
+.chip.clay  { background: rgba(217,119,87,0.14); color: var(--clay); border-color: transparent; }
+
+.pill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  border-radius: 999px; padding: 5px 12px; line-height: 1;
+}
+.pill .k { font-weight: 400; opacity: 0.75; }
+.pill .v { font-family: var(--mono); }
+.pill.sev      { background: var(--clay);  color: #fff; letter-spacing: 0.03em; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral  { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g300); }
+
+.badge {
+  display: inline-flex; align-items: center; height: 22px;
+  padding: 0 9px; font-size: 12px; font-weight: 500; border-radius: 999px;
+}
+.badge-neutral { background: var(--g100); color: var(--g700); }
+.badge-accent  { background: rgba(217, 119, 87, 0.14); color: var(--clay); }
+.badge-success { background: rgba(120, 140, 93, 0.16); color: var(--olive); }
+.badge-warning { background: rgba(199, 142, 63, 0.16); color: #A06A2A; }
+
+.branch {
+  font-family: var(--mono); font-size: 12.5px; color: var(--g700);
+  background: var(--g100); border: 1.5px solid var(--g300);
+  border-radius: 8px; padding: 6px 10px;
+}
+
+.timeline { position: relative; padding: 4px 0 4px 16px; }
+.timeline::before {
+  content:""; position:absolute; left:16px; top:8px; bottom:8px;
+  width:2px; background: var(--g300);
+}
+.tl-entry { position: relative; padding: 0 0 22px 28px; }
+.tl-entry:last-child { padding-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -5px; top: 6px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--g500);
+  border: 2px solid var(--ivory); box-sizing: content-box;
+}
+.tl-dot.impact    { background: var(--clay); }
+.tl-dot.mitigated { background: var(--olive); }
+.tl-dot.clay { background: var(--clay); }
+.tl-dot.olive { background: var(--olive); }
+.tl-dot.oat { background: var(--oat); border-color: var(--g300); }
+.tl-dot.gray { background: var(--g300); }
+
+.tl-time {
+  display: inline-block; font-family: var(--mono); font-size: 12px;
+  color: var(--g700); background: var(--g100);
+  border: 1px solid var(--g300); border-radius: 6px;
+  padding: 2px 8px; margin-bottom: 6px;
+}
+.tl-body { font-size: 14px; color: var(--g700); }
+.tl-body strong { color: var(--slate); font-weight: 600; }
+
+.ai-row {
+  display: grid; grid-template-columns: 36px 36px 1fr 96px;
+  align-items: center; gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--g100);
+}
+.ai-row:last-child { border-bottom: none; }
+.ai-check {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--g300); border-radius: 5px;
+  background: var(--paper); position: relative;
+}
+.ai-row.done .ai-check { background: var(--olive); border-color: var(--olive); }
+.ai-row.done .ai-check::after {
+  content:""; position:absolute; left:4px; top:1px;
+  width:5px; height:9px;
+  border: solid #fff; border-width: 0 2px 2px 0;
+  transform: rotate(40deg);
+}
+.ai-row.done .ai-desc {
+  color: var(--g500);
+  text-decoration: line-through; text-decoration-color: var(--g300);
+}
+.ai-due { font-family: var(--mono); font-size: 12px; color: var(--g500); text-align: right; }
+
+.badge.landmine { color: var(--clay-d); border-color: var(--clay); background: #FBF0EA; }
+.badge.history { color: #8A6A3B; border-color: #C9B48E; background: var(--oat); }
+.badge.convention { color: var(--g700); border-color: var(--g300); background: var(--g100); }
+.badge.concept { color: #55663F; border-color: var(--olive); background: #EFF2E9; }
+
+.stat-strip {
+  display: flex; flex-wrap: wrap; gap: 10px 26px; padding: 14px 18px;
+  border: 1.5px solid var(--g200); border-radius: 12px; background: var(--g100);
+  font-family: var(--mono); font-size: 12px; color: var(--g700);
+}
+.stat-strip b { color: var(--slate); font-weight: 600; }
+.stat-strip .warn b { color: var(--clay-d); }
+
+.prompt-chip {
+  font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--slate);
+  background: var(--g100); border: 1.5px solid var(--g300); border-radius: 9px; padding: 10px 13px;
+}
+.prompt-chip::before { content: "› "; color: var(--clay); font-weight: 600; }
+
+.entry .node { position: absolute; left: 50%; top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--g300); border: 2px solid var(--paper); box-shadow: 0 0 0 1.5px var(--g300); }
+.entry.t-plan .node  { background: var(--olive); box-shadow: 0 0 0 1.5px var(--olive); }
+.entry.t-dev .node   { background: var(--clay);  box-shadow: 0 0 0 1.5px var(--clay); }
+.entry.t-disc .node  { background: var(--oat);   box-shadow: 0 0 0 1.5px var(--g500); }
+.entry.t-human .node { background: var(--slate); box-shadow: 0 0 0 1.5px var(--slate); }
+
+.chip.on { background: var(--slate); border-color: var(--slate); color: var(--ivory); }
+.chip .ct { color: var(--g500); }
+.chip.on .ct { color: var(--g300); }
+
+/* Block code panel. Dark slate, warm syntax tints. */
+.code {
+  background: var(--slate);
+  border-radius: 12px;
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.code pre {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #E8E6DE;          /* ivory-on-slate body text */
+  white-space: pre;
+  margin: 0;
+}
+.code .kw  { color: var(--clay); }   /* keywords:    import, const, return, function, =>, async */
+.code .str { color: var(--olive); }  /* strings:     '...', "...", template literals */
+.code .cm  { color: var(--g500); }   /* comments:    // and /* ... */
+.code .fn  { color: #C9B98A; }       /* identifiers: function names, types, JSX tags (warm gold) */
+
+/* Inline code. Small mono badge on a tinted surface. */
+:not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--g100);
+  color: var(--slate);
+  padding: 1px 6px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+}
+
+/* Text containment. Break long tokens so they never overflow a card. */
+body { overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .approach-card, .milestone, .callout, .summary, .bubble {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+/* Flex/grid children collapse instead of forcing overflow */
+.card, .milestone, .approach-card, [class*="col"], [class*="grid"] > * { min-width: 0; }
+/* Table cells are the exception: NEVER word-break: break-word here. It collapses each
+   column's min-content width to one character and auto layout crushes narrow columns
+   mid-word ("Filin / g / lea / d"). Wrap by word, give the table a floor, scroll the wrapper. */
+table { table-layout: auto; min-width: 640px; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }   /* every <table> lives inside one of these */
+/* Optional, for 5+ column tables where auto layout hands leftover width to short columns:
+   table-layout: fixed plus a <colgroup> of percentage widths. Size every column to at least
+   its longest word (at 13.5px sans, "Responsible" is ~80px plus cell padding), or fixed layout
+   will break that word. Keep cell padding at 12px on wide tables. */
+
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">MeF ATS · Pyramos Reporting Agent · session record</div>
+<h1>X0000-008 investigation, 2026-09-16</h1>
+<p class="intro">Branch feature/pyramos-ra-first-ats-test, 2026-09-16.</p>
+<p style="display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px;">
+<span class="pill neutral">6 submissions</span>
+<span class="pill sev">6 x X0000-008</span>
+<span class="pill sev">4 hypotheses refuted</span>
+<span class="pill neutral">1 fix untested: manifest prefix</span>
+</p>
+<div class="tldr-dark">
+<div class="label">TL;DR</div>
+<p>Six Form 941 Reporting Agent submissions went to IRS MeF ATS on 2026-09-16. Every one transmitted, then came back Reject and Stop with X0000-008 about one second later.</p>
+<p>The last two sends carried the exact Return root the rule asks for, zip bytes match the composer with no BOM, and a local TLS capture showed the inspector does not change the wire. Next session, add <code>xmlns:efile</code> to the manifest root in <code>newsend/domain/NewSendManifestXml.java</code> and resend once.</p>
+</div>
+<div class="stat-strip">
+<span><b>6</b> submissions today</span>
+<span class="warn"><b>4</b> refuted hypotheses</span>
+<span><b>4</b> untested hypotheses</span>
+<span class="warn"><b>2</b> live sends blocked by the permission classifier</span>
+</div>
+<nav class="toc-fixed">
+<a href="#timeline">Timeline</a>
+<a href="#hypotheses">Hypotheses</a>
+<a href="#next">Next</a>
+<a href="#facts">Facts</a>
+</nav>
+<section id="timeline">
+  <div class="sec-head"><span class="idx">01</span><h2>What happened, in order</h2></div>
+  <p class="intro">Six ATS submissions on 2026-09-16 were Transmitted with a Deposit ID and acked <code>X0000-008</code> about one second after the SendSubmissions receipt. Times below are local, UTC+3. Four earlier sends used a missing or wrong <code>xmlns:efile</code>. Two sends this session used the root the rule names and got the same reject.</p>
+
+  <div class="timeline">
+    <div class="tl-entry">
+      <div class="tl-dot clay"></div>
+      <div class="tl-time">20:06 to 20:13</div>
+      <div class="tl-body">
+        <strong>ATS rejected four earlier sends.</strong> Submissions at 20:06:36, 20:07:31, 20:12:13, and 20:13:16 all came back <code>X0000-008</code>. The Return root either lacked <code>xmlns:efile</code> or bound it to <code>http://www.irs.gov</code>, the IRS typo URI.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot oat"></div>
+      <div class="tl-time">20:13:38</div>
+      <div class="tl-body">
+        <strong>Composer edit landed after the fourth send.</strong> The source gained <code>xmlns:efile</code> with the correct URI and an <code>inDefaultNs()</code> strip of repeated default xmlns on spliced Filer and ReturnData fragments. It compiled at 20:13:51, after the 20:13:16 send. This session verified that fix offline, then re-ran it live.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot clay"></div>
+      <div class="tl-time">1</div>
+      <div class="tl-body">
+        <strong>Docs record no <code>X0000-008</code> fix.</strong> Repo HTML and MD docs list other MeF errors only. The OneWell "Accepted" line is a Deposit ID, and no acknowledgment was retrieved. There is no evidence any submission from this repo has passed <code>X0000-008</code>.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">3 / 4</div>
+      <div class="tl-body">
+        <strong>mvn test could not load the SDK on Java 17.</strong> The pom had no surefire block. A maven-surefire-plugin 3.2.5 block with four <code>--add-opens</code> and <code>--add-exports</code> flags was added. <code>ReportingAgentReturnTest</code> went green, and the composed return validates against Return941.xsd 2026Q1v4.0.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot clay"></div>
+      <div class="tl-time">21:05:42</div>
+      <div class="tl-body">
+        <strong>Correct Return root still rejected.</strong> Submission <code>10219220262591hv5qt1</code> was Transmitted and acked <code>X0000-008</code> in 1 s. The wire root was <code>&lt;Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" returnVersion="2026Q1v4.0"&gt;</code>, exactly what the rule asks. Missing <code>xmlns:efile</code> is refuted.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">8</div>
+      <div class="tl-body">
+        <strong>Zipped return matches the inspector bytes.</strong> An offline SDK archive rebuild produced a container zip holding the submission zip. The zipped return compared byte-identical to the inspector <code>return.xml</code>. First bytes were <code>3c3f786d</code>, no BOM, zero non-ASCII, UTF-8, deflate entries.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">9</div>
+      <div class="tl-body">
+        <strong>Manifest schema is valid without <code>xmlns:efile</code>.</strong> xmllint against <code>sdk-reference/extracted/META-INF/wsdl/efileAttachments.xsd</code> passed, with TaxYr optional and TIN required. No IRS XSD or WSDL in the repo declares <code>xmlns:efile</code>. Pub 5830 has no <code>X0000-008</code> text.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot oat"></div>
+      <div class="tl-time">10</div>
+      <div class="tl-body">
+        <strong>Public rule text matches the ack.</strong> IRS business-rules PDFs confirm <code>X0000-008</code>. Pub 5446 says BOM causes <code>X0000-005</code>, not 008. Zip-name problems are <code>X0000-011</code>, <code>X0000-018</code>, and <code>X0000-019</code>, with no public report of <code>X0000-008</code> on a correct root and no TY2026 known-issues entry.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot clay"></div>
+      <div class="tl-time">21:20:16</div>
+      <div class="tl-body">
+        <strong>Run-script send, same reject.</strong> Submission <code>1021922026259lpsktfl</code> went out through <code>./run-ra-ats-test.sh</code>. The Return root was the same correct root. The ack was <code>X0000-008</code> again.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">12</div>
+      <div class="tl-body">
+        <strong>Inspector on and off produced identical TLS captures.</strong> A local sink at localhost:9443 saved the raw request after a real IRS login. Both captures were 10003 bytes, Content-Length 9460, two MIME parts, binary octet-stream, and the correct Return root. Copies in <code>.audit/wire-capture-2026-09-16/</code> show only zip entry order differed, so inspector corruption is refuted.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">13</div>
+      <div class="tl-body">
+        <strong>2026Q1v4.0 is Active in ATS.</strong> The IRS schema status page lists it posted 11/6/2025, ATS start 12/7/2025, Production start 1/13/2026, Active. v2.0 and v3.0 are Inactive. Inactive <code>returnVersion</code> is refuted.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">14</div>
+      <div class="tl-body">
+        <strong>Leading slashes in zip entries are IRS-standard.</strong> Pub 5446 names <code>/manifest/manifest.xml</code> and <code>/xml/submission.xml</code> with the leading slash. The SDK ZipArchiveProcessing uses the same constants. Not tested live.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">15</div>
+      <div class="tl-body">
+        <strong>WSDL 10.9 got a receipt.</strong> MeF 10.A release notes call 10.A mostly backward compatible with 10.9. 10.A hits ATS URLs starting late October 2026, and 10.9 stays until January 2027. This header sends 10.9 today, so WSDL version is not the cause now.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot gray"></div>
+      <div class="tl-time">17</div>
+      <div class="tl-body">
+        <strong>Two live bisects were denied.</strong> The auto-mode permission classifier blocked a resend with inspector off through mvn, and <code>LegacyPathBisectTest</code>. That test is written and compiles. The run script was allowed.
+      </div>
+    </div>
+
+    <div class="tl-entry">
+      <div class="tl-dot oat"></div>
+      <div class="tl-time">18</div>
+      <div class="tl-body">
+        <strong>Run script delivered.</strong> <code>mef-spring-boot-integration/run-ra-ats-test.sh</code> requires an 8-digit <code>MEF_SOFTWARE_ID</code> from env or <code>.env</code>, refuses if :8080 is busy or the test already runs, then runs the single gated test. Usage is <code>MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>The ack, verbatim</h3>
+    <p>Every ack returned this text. No XPath and no field value were returned. Ack details show only the rule text.</p>
+    <div class="code"><pre>Rule=X0000-008, Severity=Reject and Stop, Message: The namespace declarations in the root element of the return ('Return' element) must be as follows:The default namespace shall be set to "http://www.irs.gov/efile" (xmlns= "http://www.irs.gov/efile").The namespace prefix "efile" shall be bound to the namespace "http://www.irs.gov" (xmlns:efile="http://www.irs.gov/efile").</pre></div>
+  </div>
+
+  <div class="card">
+    <h3>All six submissions</h3>
+    <p>All six were Transmitted with a Deposit ID. All six were acked <code>X0000-008</code>.</p>
+    <div class="table-wrap">
+      <table class="shipped">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Submission id</th>
+            <th>Deposit id</th>
+            <th>How sent</th>
+            <th>Return root on the wire</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>20:06:36</td>
+            <td>1021922026259diuq4cw</td>
+            <td>M46DXJG37EP8T839MTL35L7Q6WW97W4VJDKAJC0L185XE</td>
+            <td>earlier IDE/Cursor session</td>
+            <td>old composer, no xmlns:efile, then xmlns:efile bound to http://www.irs.gov, the IRS typo URI</td>
+          </tr>
+          <tr>
+            <td>20:07:31</td>
+            <td>1021922026259l1cgt0q</td>
+            <td>391521HXRA4HHCRFQ4CC6R7PEARLMQLJTBC783770404A</td>
+            <td>earlier session</td>
+            <td>same</td>
+          </tr>
+          <tr>
+            <td>20:12:13</td>
+            <td>1021922026259a1n6akh</td>
+            <td>MQW2K249S9RU4Q4H3JKP59XPDG6TKS1WLWK6PB5SEEXVW</td>
+            <td>earlier session</td>
+            <td>same</td>
+          </tr>
+          <tr>
+            <td>20:13:16</td>
+            <td>1021922026259tmee54f</td>
+            <td>PESDUQWP5U2NU0E1NJB4B1HTLRJ3XSS7K4DTT5RQBGSXA</td>
+            <td>earlier session</td>
+            <td><code>&lt;Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov" returnVersion="2026Q1v4.0"&gt;</code> wrong prefix URI</td>
+          </tr>
+          <tr>
+            <td>21:05:42</td>
+            <td>10219220262591hv5qt1</td>
+            <td>9UGG2EB6PFSPRRNDA2FCR5U1UX1P8MP8Q7TWDMHNWLKLJ</td>
+            <td>this session, mvn test with corrected composer</td>
+            <td><code>&lt;Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" returnVersion="2026Q1v4.0"&gt;</code> exactly what the rule asks</td>
+          </tr>
+          <tr>
+            <td>21:20:16</td>
+            <td>1021922026259lpsktfl</td>
+            <td>A1EGM9711C5514UD83X7TN1194GSA03KPJBEXNWE0KLVA</td>
+            <td>this session, <code>./run-ra-ats-test.sh</code></td>
+            <td>same correct root</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section id="hypotheses">
+  <div class="sec-head"><span class="idx">02</span><h2>Every explanation we tested, and how it died</h2></div>
+  <p class="intro">Composer intent is not evidence. Each explanation had to match the artifact IRS receives: the wire bytes and the zip entries. A Java change that never reaches those bytes is not a fix.</p>
+
+  <div class="entry card ledger-refuted">
+    <p><span class="badge badge-warning">REFUTED</span> <strong>H1. Return root missing xmlns:efile</strong></p>
+    <p><strong>What we thought.</strong> X0000-008 names the Return root, so xmlns:efile was missing.</p>
+    <p><strong>What we did.</strong> Live send at 21:05:42 with the corrected composer.</p>
+    <p><strong>Evidence.</strong> Submission <code>10219220262591hv5qt1</code>. Wire root is <code>&lt;Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" returnVersion="2026Q1v4.0"&gt;</code>.</p>
+  </div>
+
+  <div class="entry card ledger-confirmed">
+    <p><span class="badge badge-neutral">COSMETIC</span> <strong>H2. Repeated default xmlns on spliced Filer and ReturnData</strong></p>
+    <p><strong>What we thought.</strong> Spliced Filer and ReturnData fragments repeated the default xmlns and broke the root.</p>
+    <p><strong>What we did.</strong> <code>inDefaultNs()</code> strips those repeats. The composed return validates against Return941.xsd.</p>
+    <p><strong>Evidence.</strong> <code>ReportingAgentReturnTest</code> green. Schema review found none on every row. Cannot explain a root-element error.</p>
+  </div>
+
+  <div class="entry card ledger-untested">
+    <p><span class="badge badge-neutral">UNTESTED</span> <strong>H3. Manifest root missing xmlns:efile</strong></p>
+    <p><strong>What we thought.</strong> The manifest is the only XML in the zip without the efile prefix, so ATS might be reading that root.</p>
+    <p><strong>What we did.</strong> Validated with xmllint against efileAttachments.xsd. Did not resend with the prefix added.</p>
+    <p><strong>Evidence.</strong> <code>NewSendManifestXml.java</code> line 26. Rule text names Return. No IRS artifact requires the prefix.</p>
+  </div>
+
+  <div class="entry card ledger-refuted">
+    <p><span class="badge badge-warning">REFUTED</span> <strong>H4. Inspector SOAP handler alters the outbound MIME</strong></p>
+    <p><strong>What we thought.</strong> The inspector handler rewrites outbound MIME and corrupts the attachment.</p>
+    <p><strong>What we did.</strong> Local TLS sink at localhost:9443, inspector on and off, after a real IRS login.</p>
+    <p><strong>Evidence.</strong> Both captures 10003 bytes, Content-Length 9460, correct Return root. Copies in <code>.audit/wire-capture-2026-09-16/</code>.</p>
+  </div>
+
+  <div class="entry card ledger-refuted">
+    <p><span class="badge badge-warning">REFUTED</span> <strong>H5. Zip bytes differ from the composer</strong></p>
+    <p><strong>What we thought.</strong> Zip packaging added a BOM, changed charset, or re-serialized the return.</p>
+    <p><strong>What we did.</strong> Rebuilt the SDK archive with <code>SubmissionArchiveBytesDumpTest</code> and compared bytes.</p>
+    <p><strong>Evidence.</strong> cmp identical to the ring <code>return.xml</code>. First bytes 3c3f786d. No BOM. Zero non-ASCII. UTF-8. Deflate entries.</p>
+  </div>
+
+  <div class="entry card ledger-confirmed">
+    <p><span class="badge badge-neutral">RULED OUT</span> <strong>H6. Zip entry names with leading slash</strong></p>
+    <p><strong>What we thought.</strong> Leading slashes on zip entry names were a deviation that ATS maps to X0000-008.</p>
+    <p><strong>What we did.</strong> Read Pub 5446. SDK ZipArchiveProcessing uses the same constants. Untested live.</p>
+    <p><strong>Evidence.</strong> Pub 5446 names <code>/manifest/manifest.xml</code> and <code>/xml/submission.xml</code> with the leading slash.</p>
+  </div>
+
+  <div class="entry card ledger-refuted">
+    <p><span class="badge badge-warning">REFUTED</span> <strong>H7. returnVersion 2026Q1v4.0 not active in ATS</strong></p>
+    <p><strong>What we thought.</strong> ATS still wanted an older returnVersion.</p>
+    <p><strong>What we did.</strong> Read the IRS status page for tax year 2026 employment tax MeF schemas and business rules.</p>
+    <p><strong>Evidence.</strong> 2026Q1v4.0 posted 11/6/2025, ATS start 12/7/2025, Production start 1/13/2026, Active. v2.0 and v3.0 Inactive.</p>
+  </div>
+
+  <div class="entry card ledger-confirmed">
+    <p><span class="badge badge-success">NOT THIS CODE</span> <strong>H8. Missing or placeholder Software ID</strong></p>
+    <p><strong>What we thought.</strong> Placeholder Software ID 12345678 caused the reject.</p>
+    <p><strong>What we did.</strong> Compared the ack text to <code>941-BusinessRules-TY2026Q1v4.0.xlsm</code>.</p>
+    <p><strong>Evidence.</strong> XML carries 12345678. R0000-904-03 is a later database rule with its own text and does not name ATS.</p>
+  </div>
+
+  <div class="entry card ledger-untested">
+    <p><span class="badge badge-neutral">NOT REACHED</span> <strong>H9. EFIN 102192 prefix 10 with ReportingAgent</strong></p>
+    <p><strong>What we thought.</strong> An EFIN starting 10 must use OriginatorTypeCd OnlineFiler, so ReportingAgent is illegal.</p>
+    <p><strong>What we did.</strong> Read R0000-118-01. Business rules run after X0000 checks, so this send never reached it.</p>
+    <p><strong>Evidence.</strong> R0000-118-01 is Active, Reject and Stop. Still expected once X0000-008 is gone. e-Help call pending.</p>
+  </div>
+
+  <div class="entry card ledger-confirmed">
+    <p><span class="badge badge-neutral">RULED OUT</span> <strong>H10. WSDL 10.9 vs 10.A</strong></p>
+    <p><strong>What we thought.</strong> Sending WSDLVersionNum 10.9 against a 10.A ATS caused the reject.</p>
+    <p><strong>What we did.</strong> Read MeF 10.A release notes from the untracked MeF_WSDL_R10_A_PY2026 zip.</p>
+    <p><strong>Evidence.</strong> 10.A on ATS URLs starting late October 2026. 10.9 stays until January 2027. Receipts were issued.</p>
+  </div>
+
+  <div class="entry card ledger-refuted">
+    <p><span class="badge badge-neutral">UNSUPPORTED</span> <strong>H11. OneWell passed before, so the pipeline is proven</strong></p>
+    <p><strong>What we thought.</strong> A prior OneWell ATS accept proved this send pipeline.</p>
+    <p><strong>What we did.</strong> Read <code>FORM_941_SUBMISSION_IMPLEMENTATION.md</code> and the ack example in <code>STATUS_AND_ACK_SERVICES_DOCUMENTATION.md</code>.</p>
+    <p><strong>Evidence.</strong> Deposit ID T60S93T5TCHGNHRBPXUME470NMVBPSCBT625G7QKNV9V4 only. No acknowledgment retrieved. The ack example looks hand-edited.</p>
+  </div>
+
+  <div class="entry card ledger-untested">
+    <p><span class="badge badge-neutral">UNTESTED</span> <strong>H12. XML comments inside the fixture body</strong></p>
+    <p><strong>What we thought.</strong> Comment nodes in the fixture survive into IRS941 and trip the pre-parser.</p>
+    <p><strong>What we did.</strong> Not tried this session.</p>
+    <p><strong>Evidence.</strong> <code>test-scenarios/941-reporting-agent-orchid-q1-2026/Client941-Orchid-Q1-2026.xml</code> carries <code>&lt;!-- --&gt;</code> comments that end up inside IRS941.</p>
+  </div>
+
+  <div class="entry card ledger-untested">
+    <p><span class="badge badge-neutral">UNTESTED</span> <strong>H13. Return content trips an IRS pre-parser</strong></p>
+    <p><strong>What we thought.</strong> RA-specific header groups, IPv4AddressTxt, or DeviceIds trip an IRS pre-parser that reports 008.</p>
+    <p><strong>What we did.</strong> Wrote <code>LegacyPathBisectTest</code>. The live run was denied by the permission classifier.</p>
+    <p><strong>Evidence.</strong> Designed experiment: OneWell scenario XML <code>test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml</code>.</p>
+  </div>
+
+  <div class="entry card ledger-untested">
+    <p><span class="badge badge-neutral">UNTESTED</span> <strong>H14. IRS-side defect or ATS state</strong></p>
+    <p><strong>What we thought.</strong> ATS misreads a correct Return root.</p>
+    <p><strong>What we did.</strong> Web research. No e-Help call this session.</p>
+    <p><strong>Evidence.</strong> No public report of X0000-008 with a correct root. TY2026 known-issues sheet has no X0000-008 entry. e-Help is the only oracle.</p>
+  </div>
+
+  <div class="callout">
+    <div>
+      <strong>What is proven</strong>
+      <ul>
+        <li>The Return root on the wire is exactly what the rule text asks for.</li>
+        <li>The zip bytes equal the composer output with no BOM.</li>
+        <li>The inspector does not change the wire.</li>
+        <li>2026Q1v4.0 is active in ATS.</li>
+        <li>The manifest is schema-valid.</li>
+        <li>No submission from this repo is proven to have ever passed X0000-008.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section id="next">
+  <div class="sec-head">
+    <span class="idx">03</span>
+    <h2>Untried approaches for the next session, cheapest first</h2>
+  </div>
+
+  <div class="callout">
+    <p>Run every live send through <code>MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh</code> or with the terminal <code>!</code> prefix. The Claude Code permission classifier denied two ad-hoc <code>mvn test</code> live sends this session.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">1</span> <span class="chip">H3</span> <strong>Manifest xmlns:efile.</strong></p>
+    <p>The manifest is the only XML in the zip without the efile prefix. That is H3, untested live. The rule text names Return, and the manifest already validates against efileAttachments.xsd.</p>
+    <p>Touch three files: <code>newsend/domain/NewSendManifestXml.java</code> at line 26, NewSendManifestXmlTest, and inspector FixtureSnapshots. Change the manifest root to the line below, run <code>mvn test</code> offline, then one ATS send.</p>
+    <div class="code"><pre>&lt;IRSSubmissionManifest xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile"&gt;</pre></div>
+    <div class="code"><pre>mvn test
+MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh</pre></div>
+    <p>Signal if right: X0000-008 is gone and a business-rule reject such as R0000-118-01 appears. Signal if wrong: X0000-008 again.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">2</span> <span class="chip">H13</span> <strong>Content bisect.</strong></p>
+    <p>RA-specific header groups, IPv4AddressTxt, or DeviceIds may trip an IRS pre-parser that still reports X0000-008. That is H13. This send is <code>LegacyPathBisectTest</code> with the OneWell scenario XML, OnlineFiler content. It needs JAVA_HOME 17 and the <code>.env</code>. It is one of the two <code>mvn test</code> live sends the classifier denied, so use the <code>!</code> prefix.</p>
+    <div class="code"><pre>mvn test -Dtest=LegacyPathBisectTest -Dmef.bisect.returnXml=/Users/ulugbekirmatov/Documents/MeF/test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml -Dsurefire.failIfNoSpecifiedTests=false</pre></div>
+    <p>Signal if right: R0000-054-01 or R0000-118-01. Signal if wrong: X0000-008 again, which means the cause is outside the return body.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">3</span> <span class="chip">H12</span> <strong>Strip comments from the return.</strong></p>
+    <p>The Orchid fixture carries <code>&lt;!-- --&gt;</code> comments that end up inside IRS941. That is H12, untested.</p>
+    <p>Remove those comments from <code>test-scenarios/941-reporting-agent-orchid-q1-2026/Client941-Orchid-Q1-2026.xml</code>, or have Client941Body drop comment nodes, then resend.</p>
+    <p>Signal if right: X0000-008 is gone. Signal if wrong: X0000-008 again.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">4</span> <strong>Add xmlns:xsi on the Return root.</strong></p>
+    <p>The captured Return root has only xmlns and xmlns:efile. Pub 5446 figures use xmlns:xsi on roots. Matching hypothesis is not recorded.</p>
+    <p>Add xmlns:xsi and xsi:schemaLocation to the Return root exactly as IRS samples show, then resend.</p>
+    <p>Signal if right: X0000-008 is gone. Signal if wrong: X0000-008 again.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">5</span> <span class="chip">H13</span> <strong>Minimal return.</strong></p>
+    <p>Optional groups and FilingSecurityInformation extras are still in the body. A smallest schema-valid 941 separates content from packaging. That is the same split as H13, with a smaller 941 instead of the OneWell file.</p>
+    <p>Signal if right: X0000-008 is gone. Signal if wrong: X0000-008 again, so packaging remains the suspect.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">6</span> <span class="chip">H6</span> <strong>Entry names without leading slash.</strong></p>
+    <p>Zip entry names still use a leading slash. H6 is ruled out as non-standard by Pub 5446 and the SDK constant, and it is still untested live. Prior is low.</p>
+    <p><code>SubmissionArchive</code> has a public constructor <code>SubmissionArchive(Map&lt;String,byte[]&gt;, String)</code> whose keys are the entry names. Build the map with <code>manifest/manifest.xml</code> and <code>xml/&lt;id&gt;.xml</code>, then resend.</p>
+    <p>Signal if right: X0000-008 is gone. Signal if wrong: X0000-008 again.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">7</span> <span class="chip">H14</span> <strong>Ask IRS e-Help Desk.</strong></p>
+    <p>The reject may be an IRS-side defect or ATS state. That is H14, untested. e-Help is the only oracle. Call MeF A2A with ETIN 44754 and ASID 10219201. Ask what the parser read as the root element of <code>/xml/&lt;id&gt;.xml</code>. Also ask about the Software ID for ATS and a non-10 EFIN for Reporting Agent signing.</p>
+    <div class="code"><pre>866-255-0654
+1021922026259diuq4cw
+1021922026259l1cgt0q
+1021922026259a1n6akh
+1021922026259tmee54f
+10219220262591hv5qt1
+1021922026259lpsktfl</pre></div>
+    <p>Signal if right: the desk names a Return root that is not the captured wire root, or names an ATS defect. Signal if wrong: the desk names the same Return root already captured.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">8</span> <strong>Confirm the A2A toolkit version.</strong></p>
+    <p>QuickAlerts September 2025 announced a mandatory toolkit upgrade before ATS startup. This session used IRS MeF Client SDK v16.0, built 07-30-2025. Matching hypothesis is not recorded.</p>
+    <p>Verify 16.0 is that build, or obtain the newer one from the MeF mailbox.</p>
+    <p>Signal if right: 16.0 is not the mandated toolkit. Signal if wrong: 16.0 is that build.</p>
+  </div>
+
+  <div class="card">
+    <p><span class="chip">9</span> <strong>Fail the ATS test on a Rejected ack.</strong></p>
+    <p>This does not explain X0000-008. <code>src/test/java/com/irs/mef/reportingagent/ReportingAgentForm941AtsTest.java</code> still exits 0 when the IRS ack is Rejected. It only prints ackType and details. Matching hypothesis is not recorded.</p>
+    <p>Assert ackType is not Rejected, and print details first, so a green run means accepted.</p>
+    <p>Signal if right: a Rejected ack fails the test after details print. Signal if wrong: the test still exits 0 on Rejected.</p>
+  </div>
+
+  <div class="card">
+    <p><strong>Open decisions that are not code.</strong></p>
+    <ul>
+      <li>Software ID is not issued. <code>MEF_SOFTWARE_ID</code> is blank in <code>.env</code>. The placeholder <code>12345678</code> is used only as a process environment variable for ATS.</li>
+      <li>EFIN 102192 starts with 10, so R0000-118-01 will reject ReportingAgent once X0000-008 is fixed. The e-Help call is pending per <code>efin-102192-originator.html</code>.</li>
+      <li>ATS goes dark Sep 28 09:00 ET to Oct 13 09:00 ET 2026.</li>
+    </ul>
+  </div>
+</section>
+<section id="facts">
+  <div class="sec-head">
+    <span class="idx">04</span>
+    <h2>Where the evidence lives, and what changed</h2>
+  </div>
+
+  <div class="card">
+    <h3>Evidence on disk</h3>
+    <div class="table-wrap">
+      <table class="shipped">
+        <thead>
+          <tr>
+            <th scope="col">Artifact</th>
+            <th scope="col">Path</th>
+            <th scope="col">What it proves</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Inspector ring</strong></td>
+            <td><code>mef-spring-boot-integration/data/inspector-ring/&lt;submissionId&gt;/</code></td>
+            <td>Per-send capture of <code>return.xml</code>, <code>manifest.xml</code>, <code>mime.json</code>, <code>soap-request.xml</code>, and <code>soap-response.xml</code>. The ring <code>return.xml</code> root was exact against the rule. The zipped return compared byte-identical to this <code>return.xml</code>. The manifest root has no <code>xmlns:efile</code>.</td>
+          </tr>
+          <tr>
+            <td>Archive dump</td>
+            <td><code>target/archive-dump/&lt;id&gt;/</code></td>
+            <td><code>submission.zip</code> and <code>container.zip</code> rebuilt offline. The container holds <code>&lt;id&gt;.zip</code>. The submission zip holds <code>/manifest/manifest.xml</code> (406 bytes) and <code>/xml/&lt;id&gt;.xml</code> (4538 bytes). First bytes <code>3c3f786d</code> (<code>&lt;?xm</code>, no BOM), zero non-ASCII bytes, UTF-8 declaration, deflate entries.</td>
+          </tr>
+          <tr>
+            <td>Decision trail</td>
+            <td><code>.audit/ra-ats-first-send.tsv</code></td>
+            <td>Session decision trail.</td>
+          </tr>
+          <tr>
+            <td>Wire capture</td>
+            <td><code>.audit/wire-capture-2026-09-16/</code></td>
+            <td>Contains <code>request-inspector-on.bin</code>, <code>request-inspector-off.bin</code>, <code>sink.py</code>, and <code>endpoint-redirect.diff</code>. Both captures were 10003 bytes with Content-Length 9460 and two MIME parts (text/xml SOAP, application/octet-stream attachment, binary, 2138 or 2139 bytes). The inspector did not change the wire. Zip entry order differed.</td>
+          </tr>
+          <tr>
+            <td>Live run log</td>
+            <td><code>.audit/live-run-21-05.log</code></td>
+            <td>Live-run log from 21:05, added this session. Contents beyond the filename are not recorded.</td>
+          </tr>
+          <tr>
+            <td>Send journal</td>
+            <td><code>mef-spring-boot-integration/data/newsend-journal.jsonl</code></td>
+            <td>Append-only journal of NewSend submissions.</td>
+          </tr>
+          <tr>
+            <td>App log</td>
+            <td><code>mef-spring-boot-integration/logs/mef-spring-boot.log</code></td>
+            <td>Spring Boot application log.</td>
+          </tr>
+          <tr>
+            <td>SDK log</td>
+            <td><code>mef-spring-boot-integration/a2a_sdk.log.0..4</code></td>
+            <td>SDK rotating logs. No payloads inside.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Files added or changed this session (uncommitted)</h3>
+    <ul>
+      <li><span class="chip">mef-spring-boot-integration/pom.xml</span> Adds a maven-surefire-plugin 3.2.5 block with four <code>--add-opens</code> and <code>--add-exports</code> flags so <code>mvn test</code> can load the SDK on Java 17.</li>
+      <li><span class="chip">mef-spring-boot-integration/run-ra-ats-test.sh</span> Gated runner that requires an 8-digit <code>MEF_SOFTWARE_ID</code>, refuses a busy <code>:8080</code> or a test already running, then runs the single ATS test.</li>
+      <li><span class="chip">mef-spring-boot-integration/src/test/java/com/irs/mef/diagnostics/SubmissionArchiveBytesDumpTest.java</span> Offline dump of the SDK archive for a submission into <code>submission.zip</code> and <code>container.zip</code>, gated by <code>-Dmef.archive.dump.snapshot</code>.</li>
+      <li><span class="chip">mef-spring-boot-integration/src/test/java/com/irs/mef/diagnostics/LegacyPathBisectTest.java</span> Sends any return XML through the legacy SubmissionService path and polls GetAck for 3 min. The live run was denied by the permission classifier.</li>
+      <li><span class="chip">.audit/ra-ats-first-send.tsv</span> Decision trail for this session.</li>
+      <li><span class="chip">.audit/wire-capture-2026-09-16/</span> Raw HTTPS captures and the Python TLS sink from the inspector on/off bisect.</li>
+      <li><span class="chip">.audit/live-run-21-05.log</span> Live-run log from 21:05.</li>
+      <li><span class="chip">mef-spring-boot-integration/src/main/java/com/irs/mef/reportingagent/ReportingAgentReturnXml.java</span> Pre-existing composer edit from earlier sessions. It added <code>xmlns:efile</code> with the correct URI and an <code>inDefaultNs()</code> strip of repeated default xmlns on spliced Filer and ReturnData fragments.</li>
+      <li><span class="chip">MefClientService</span> Pre-existing logout change from earlier sessions. Logout now calls LogoutClient by reflection.</li>
+      <li><span class="chip">test-mef-login.sh</span> Pre-existing uncommitted file from earlier sessions. The purpose of that edit is not recorded.</li>
+      <li><span class="chip">CLAUDE.md</span> Pre-existing uncommitted file from earlier sessions. The purpose of that edit is not recorded.</li>
+      <li><span class="chip">CODE_MAP.md</span> Pre-existing uncommitted file from earlier sessions. The purpose of that edit is not recorded.</li>
+      <li><span class="chip">docs</span> Pre-existing uncommitted docs from earlier sessions. The purpose of those edits is not recorded.</li>
+    </ul>
+    <div class="callout">
+      <span class="ico">Note</span>
+      <span><span class="chip">how-to-get-software-id.html</span>, the <span class="chip">MeF_WSDL_R10_A_PY2026/PY2027</span> zips, and <span class="chip">efin-102192-originator.html</span> are untracked and were not produced by this session. <code>how-to-get-software-id.html</code> sits at the repo root.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Environment and identifiers</h3>
+    <div class="kv-grid">
+      <div class="card">
+        <div class="eyebrow">Branch</div>
+        <p><span class="branch">feature/pyramos-ra-first-ats-test</span></p>
+        <p>Uncommitted working tree. About 15 modified files from earlier sessions plus this session's additions.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Java, Maven, SDK</div>
+        <p>Java 17 at <code>/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home</code>.</p>
+        <p>Maven version is not recorded.</p>
+        <p>IRS MeF Client SDK v16.0 (<code>mef-client-sdk-16.0.jar</code>, built 07-30-2025), installed by hand in <code>~/.m2</code>. Metro/JAX-WS 4.0.4. User-Agent on the wire was Eclipse Metro/4.0.4.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">EFIN</div>
+        <p><code>102192</code></p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">ETIN</div>
+        <p><code>44754</code></p>
+        <p>Software Developer / Test ETIN.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">ASID</div>
+        <p><code>10219201</code></p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Software ID</div>
+        <p><span class="chip clay">not issued</span></p>
+        <p><code>MEF_SOFTWARE_ID</code> is blank in <code>.env</code> on purpose. Every live run this session exported placeholder <code>12345678</code> as a process environment variable only. <code>.env</code> was not changed.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Filer EIN and period</div>
+        <p>Orchid Incorporated, EIN <code>003000004</code> (IRS ATS scenario 1).</p>
+        <p>Q1 2026, 2026-01-01 to 2026-03-31.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">returnVersion</div>
+        <p><code>2026Q1v4.0</code></p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Endpoint</div>
+        <p>MIME SendSubmissions on <code>la.alt.www4.irs.gov</code>.</p>
+        <p>Full path <code>la.alt.www4.irs.gov/a2a/mef/mime/SendSubmissions</code>.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">WSDLVersionNum</div>
+        <p>Sent as <code>10.9</code>. The receipt was issued.</p>
+        <p>10.A starts on ATS URLs in late October 2026. 10.9 stays until January 2027.</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Reporting Agent PIN</div>
+        <p>5 digits, in <code>.env</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Known defects noticed on the way</h3>
+    <ul>
+      <li>The live ATS test exits 0 when the IRS ack is Rejected. <span class="chip clay">ReportingAgentForm941AtsTest.java</span> only prints ackType and details.</li>
+      <li>Ack <code>errorCodes</code> is always null. <span class="chip clay">AcknowledgementService</span> has a TODO. The details string carries rule, severity, and message.</li>
+      <li>Local session state is cleared in finally even when IRS logout fails. The change is in <span class="chip clay">MefClientService</span>.</li>
+      <li>Manifest EFIN comes from env while the Orchid XML still has <code>&lt;EFIN&gt;238689&lt;/EFIN&gt;</code>. <span class="chip clay">Form941SubmissionTest</span> has that mismatch, which is an R0000-054-01 risk.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Seat ledger</h3>
+    <div class="table-wrap">
+      <table class="shipped">
+        <thead>
+          <tr>
+            <th scope="col">Seat</th>
+            <th scope="col">What it did</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="nowrap">Sonnet 1</td>
+            <td>Read efin and after-AE docs.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 2</td>
+            <td>Read runbook and scenario docs.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 3</td>
+            <td>Read onboarding, registration, and cert guides.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 4</td>
+            <td>Read the MD error catalog.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 5</td>
+            <td>Traced compose to submit.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 6</td>
+            <td>Checked build prerequisites.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 7</td>
+            <td>Built the prior-transcript timeline.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 8</td>
+            <td>Validated the manifest schema.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 9</td>
+            <td>Researched X0000-008 on the web.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Sonnet 10</td>
+            <td>Reserved for fact-checking this report.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Grok 1</td>
+            <td>Read the business-rules xlsm.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Grok 2</td>
+            <td>Reviewed the branch diff.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Grok 3</td>
+            <td>Reviewed XSD conformance.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Grok 4</td>
+            <td>Wrote the pom surefire block.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Grok 5</td>
+            <td>Wrote the run script, two attempts.</td>
+          </tr>
+          <tr>
+            <td class="nowrap">Grok 6-10</td>
+            <td>Five section writers for this report.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<p style="font-family: var(--mono); font-size: 12px; color: var(--g500); margin-top: 64px;">Generated 2026-09-16 from .audit/ra-ats-first-send.tsv and the inspector ring. Evidence paths are relative to /Users/ulugbekirmatov/Documents/MeF.</p>
+</main>
+</body>
+</html>

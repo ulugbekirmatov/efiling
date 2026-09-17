@@ -1,95 +1,59 @@
 #!/bin/bash
+# Smoke-test the running app's certificate diagnostics and IRS ATS login over HTTP.
+# Reads every identifier from .env in this module directory (MEF_ETIN, MEF_EFIN, MEF_ASID, MEF_KEYSTORE_*);
+# nothing is hardcoded here. Login is certificate-only, so the request carries no body.
+#
+# Usage: ./test-mef-login.sh            (builds, starts the app, runs cert → login → status → logout → status, stops the app)
+#        ./test-mef-login.sh --no-build (app already built)
+set -euo pipefail
 
-# Test script for IRS MeF Login with new PKCS12 certificate
-# Prerequisites: Java 17+, Maven 3.6+, Spring Boot application built
+MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_URL="http://localhost:8080/api"
+STARTUP_WAIT_SECONDS=20
+JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
+export JAVA_HOME
+export PATH="$JAVA_HOME/bin:/opt/homebrew/bin:$PATH"
 
-echo "=========================================="
-echo "IRS MeF Login Test Script"
-echo "=========================================="
-echo ""
+cd "$MODULE_DIR"
 
-# Check Java version
-echo "Checking Java version..."
-java -version 2>&1 | head -n 1
-JAVA_VERSION=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | cut -d '.' -f 1)
-
-if [ "$JAVA_VERSION" -lt 17 ]; then
-    echo "❌ ERROR: Java 17 or higher is required"
-    echo "Current Java version is too old"
-    echo "Please install JDK 17: brew install openjdk@17"
-    exit 1
+[ -f .env ] || { echo ".env not found in $MODULE_DIR (see CLAUDE.md, Configuration)" >&2; exit 1; }
+if grep -qE '^MEF_KEYSTORE_PASSWORD=$' .env; then
+  echo "MEF_KEYSTORE_PASSWORD is empty in .env; run ../create-pkcs12.sh and fill it in" >&2
+  exit 1
 fi
 
-echo "✓ Java version OK"
-echo ""
+java_major="$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | cut -d. -f1)"
+[ "$java_major" = "17" ] || { echo "Java 17 required, found $java_major (Metro breaks on 21+)" >&2; exit 1; }
 
-# Navigate to project directory
-cd "/Users/ulugbekirmatov/Documents/MeF test/mef-spring-boot-integration" || exit 1
-
-# Check if .env file has been configured
-if grep -q "YOUR_PKCS12_PASSWORD_HERE" .env; then
-    echo "❌ ERROR: Please update the PKCS12 password in .env file"
-    echo "Edit: /Users/ulugbekirmatov/Documents/MeF test/mef-spring-boot-integration/.env"
-    exit 1
+if [ "${1:-}" != "--no-build" ]; then
+  echo "Building..."
+  mvn -q clean package -DskipTests
 fi
 
-echo "✓ .env file configured"
-echo ""
-
-# Build the application
-echo "Building Spring Boot application..."
-mvn clean package -DskipTests
-
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed"
-    exit 1
-fi
-
-echo "✓ Build successful"
-echo ""
-
-# Start the application in background
-echo "Starting Spring Boot application..."
-mvn spring-boot:run &
+echo "Starting the app (log: logs/mef-spring-boot.log)..."
+mvn -q spring-boot:run > /dev/null 2>&1 &
 APP_PID=$!
+trap 'echo; echo "Stopping app (pid $APP_PID)"; kill "$APP_PID" 2>/dev/null || true' EXIT
 
-echo "Waiting for application to start..."
-sleep 15
+for _ in $(seq 1 "$STARTUP_WAIT_SECONDS"); do
+  curl -sf "$BASE_URL/mef/auth/status" > /dev/null 2>&1 && break
+  sleep 1
+done
 
-# Test 1: Certificate loading
-echo ""
-echo "=========================================="
-echo "Test 1: Certificate Loading"
-echo "=========================================="
-curl -s http://localhost:8080/api/mef/auth/test-certificate | jq '.'
+echo; echo "== 1. Certificate diagnostics (keystore, alias, subject) =="
+curl -s "$BASE_URL/mef/auth/test-certificate" | jq '.'
 
-# Test 2: IRS Login
-echo ""
-echo "=========================================="
-echo "Test 2: IRS Login (ETIN: 97661, ASID: 23868900)"
-echo "=========================================="
-curl -s -X POST http://localhost:8080/api/mef/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "etin": "97661",
-    "productionMode": false
-  }' | jq '.'
+echo; echo "== 2. IRS ATS login (certificate-only; ETIN/ASID from .env) =="
+curl -s "$BASE_URL/mef/auth/login" | jq '.'
 
-# Test 3: Session Status
-echo ""
-echo "=========================================="
-echo "Test 3: Session Status"
-echo "=========================================="
-curl -s http://localhost:8080/api/mef/auth/status | jq '.'
+echo; echo "== 3. Session status =="
+curl -s "$BASE_URL/mef/auth/status" | jq '.'
 
-echo ""
-echo "=========================================="
-echo "Tests Complete"
-echo "=========================================="
-echo ""
-echo "Press Enter to stop the application..."
-read
+echo; echo "== 4. IRS logout (LogoutClient; must appear as /a2a/mef/Logout in a2a_sdk.log.*) =="
+curl -s "$BASE_URL/mef/auth/logout" | jq '.'
 
-# Stop the application
-kill $APP_PID
-echo "Application stopped"
+echo; echo "== 5. Session status after logout (loggedIn must be false) =="
+curl -s "$BASE_URL/mef/auth/status" | jq '.'
+
+echo
+echo "If login failed, the real SOAP fault is in a2a_sdk.log.* in this directory, not in the JSON above."

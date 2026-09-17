@@ -205,7 +205,12 @@ public class MefClientService {
     /**
      * Logout from IRS MeF A2A services.
      *
-     * @return true if logout successful
+     * Terminates the IRS session through the SDK's LogoutClient, then clears the local session
+     * whether or not the IRS accepted the request: a stale local session would keep sending a
+     * SAML token the IRS no longer honours, while an unanswered IRS session ends itself once the
+     * SAML lifetime passes (Pub 5830 §1.8: two hours).
+     *
+     * @return true if the IRS confirmed the session ended; false if there was no session or the IRS refused
      */
     public boolean logout() {
         log.info("Attempting logout");
@@ -215,33 +220,45 @@ public class MefClientService {
             return false;
         }
 
+        String sessionId = currentSessionId;
         try {
-            // TODO: Implement actual MeF SDK logout call
-            // Example code structure:
-            //
-            // LogoutServiceType logoutService = new LogoutServiceType();
-            //
-            // // Set SAML assertion from login
-            // Map<String, Object> requestContext = ((BindingProvider) logoutService).getRequestContext();
-            // requestContext.put("saml.assertion", currentSamlAssertion);
-            //
-            // // Invoke logout service
-            // Logout logoutRequest = new Logout();
-            // LogoutResponse logoutResponse = logoutService.logout(logoutRequest);
-
-            // PLACEHOLDER - Replace with actual SDK call
-            currentSamlAssertion = null;
-            currentSessionId = null;
-            currentServiceContext = null;
-            isLoggedIn = false;
-
-            log.info("Logout successful");
+            String statusText = invokeIrsLogout(currentServiceContext);
+            log.info("IRS session {} terminated: {}", sessionId, statusText);
             return true;
-
         } catch (Exception e) {
-            log.error("Logout failed", e);
-            throw new MefException("LOGOUT_FAILED", "Logout from IRS MeF failed", e.getMessage(), e);
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            log.error("IRS logout failed for session {}; clearing the local session anyway: {}",
+                    sessionId, cause.getMessage(), cause);
+            return false;
+        } finally {
+            clearLocalSession();
         }
+    }
+
+    /**
+     * Calls gov.irs.mef.services.msi.LogoutClient#invoke(ServiceContext) by reflection (see {@link #login()}
+     * for why every SDK call goes through reflection) and returns the LogoutResult status text.
+     */
+    private String invokeIrsLogout(Object serviceContext) throws Exception {
+        Class<?> serviceContextClass = Class.forName("gov.irs.mef.services.ServiceContext");
+        Class<?> logoutClientClass = Class.forName("gov.irs.mef.services.msi.LogoutClient");
+
+        Object logoutClient = logoutClientClass.getDeclaredConstructor().newInstance();
+        Method invokeMethod = logoutClientClass.getMethod("invoke", serviceContextClass);
+        Object logoutResult = invokeMethod.invoke(logoutClient, serviceContext);
+
+        if (logoutResult == null) {
+            return "no LogoutResult returned";
+        }
+        Method getStatusTxt = logoutResult.getClass().getMethod("getStatusTxt");
+        return String.valueOf(getStatusTxt.invoke(logoutResult));
+    }
+
+    private void clearLocalSession() {
+        currentSamlAssertion = null;
+        currentSessionId = null;
+        currentServiceContext = null;
+        isLoggedIn = false;
     }
 
     /**

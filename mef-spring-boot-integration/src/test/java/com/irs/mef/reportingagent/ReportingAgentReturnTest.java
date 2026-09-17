@@ -43,6 +43,10 @@ class ReportingAgentReturnTest {
         assertFalse(ret.xml().contains("10219201"), "ASID must not appear in the Return");
         assertFalse(ret.xml().contains("OnlineFilerPINGrp"));
         assertFalse(ret.xml().contains("OnlineFiler"));
+        assertTrue(ret.xml().contains("xmlns:efile=\"" + ReportingAgentReturnXml.NS + "\""),
+                "X0000-008 requires xmlns:efile on Return");
+        assertFalse(ret.xml().contains("<Filer xmlns="),
+                "Filer must inherit the Return default namespace");
     }
 
     @Test

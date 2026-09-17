@@ -278,12 +278,18 @@ public class SubmissionService {
             java.time.LocalDate taxPeriodEnd) {
 
         try {
-            // Build manifest XML string
+            String taxYr = "";
+            if (taxPeriodEnd != null) {
+                taxYr = "  <TaxYr>" + taxPeriodEnd.getYear() + "</TaxYr>\n";
+            } else if (taxPeriodBegin != null) {
+                taxYr = "  <TaxYr>" + taxPeriodBegin.getYear() + "</TaxYr>\n";
+            }
             String manifestXml = String.format(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<IRSSubmissionManifest xmlns=\"http://www.irs.gov/efile\">\n" +
+                "<IRSSubmissionManifest xmlns=\"http://www.irs.gov/efile\" xmlns:efile=\"http://www.irs.gov/efile\">\n" +
                 "  <SubmissionId>%s</SubmissionId>\n" +
                 "  <EFIN>%s</EFIN>\n" +
+                "%s" +
                 "  <GovernmentCd>IRS</GovernmentCd>\n" +
                 "  <FederalSubmissionTypeCd>941</FederalSubmissionTypeCd>\n" +
                 "%s%s" +
@@ -291,6 +297,7 @@ public class SubmissionService {
                 "</IRSSubmissionManifest>",
                 submissionId,
                 efin != null ? efin : "",
+                taxYr,
                 taxPeriodBegin != null ? "  <TaxPeriodBeginDt>" + taxPeriodBegin.toString() + "</TaxPeriodBeginDt>\n" : "",
                 taxPeriodEnd != null ? "  <TaxPeriodEndDt>" + taxPeriodEnd.toString() + "</TaxPeriodEndDt>\n" : "",
                 tin != null ? tin : ""

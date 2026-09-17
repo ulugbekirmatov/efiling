@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>X0000-008 fix, 2026-09-17</title>
+<style>
+:root {
+  /* Surfaces */
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  /* Text */
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  /* Accents (Anthropic brand) */
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  /* Typography */
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+  --radius-row: 8px;
+  --radius-panel: 12px;
+  --rust: #B04A3F;
+}
+
+body { background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; margin: 0; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; }
+code { font-family: var(--mono); font-size: 0.92em; background: var(--g100); padding: 1px 5px; border-radius: 4px; overflow-wrap: break-word; }
+main { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+section { margin: 48px 0; }
+@media print {
+  .toc-fixed { display: none; }
+  .card, .tl-entry { break-inside: avoid; page-break-inside: avoid; }
+}
+.ledger-refuted { border-left: 4px solid var(--clay); }
+.ledger-confirmed { border-left: 4px solid var(--olive); }
+.ledger-untested { border-left: 4px solid var(--g300); }
+.cmd { margin: 8px 0 14px; }
+.kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+  margin-bottom: 12px;
+}
+
+.eyebrow.rule { display: flex; align-items: center; gap: 12px; }
+.eyebrow.rule::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(38px, 5.4vw, 62px);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  color: var(--slate);
+  margin: 0 0 8px;
+  max-width: 17ch;
+}
+h1 em { font-style: italic; color: var(--clay); }
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+.intro {
+  font-size: 16.5px;
+  color: var(--g700);
+  margin: 22px 0 0;
+  max-width: 620px;
+}
+.intro a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+.sec-head .idx {
+  font-family: var(--mono); font-size: 13px; color: var(--clay);
+  font-weight: 600; width: 34px; flex-shrink: 0;
+}
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.sec-head .count {
+  font-family: var(--mono); font-size: 11px; color: var(--g500);
+  background: var(--g100); padding: 2px 8px; border-radius: 999px;
+}
+
+@media (min-width: 1100px) {
+  .toc-fixed {
+    position: fixed; top: 72px; right: max(24px, calc(50vw - 610px));
+    width: 170px; font-size: 13px;
+  }
+  .toc-fixed a {
+    display: block; color: var(--g500); text-decoration: none;
+    padding: 5px 0 5px 12px; border-left: 1.5px solid var(--g300);
+    line-height: 1.3;
+  }
+  .toc-fixed a:hover { color: var(--slate); border-left-color: var(--clay); }
+}
+
+.card {
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-radius: 14px;
+  padding: 24px;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(20, 20, 19, 0.10);
+  border-color: var(--slate);
+}
+
+.tldr-dark {
+  background: var(--slate); color: var(--ivory);
+  border-radius: 12px; padding: 22px 26px; margin-bottom: 48px;
+}
+.tldr-dark .label {
+  font-family: var(--mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--oat); margin-bottom: 10px;
+}
+/* Set `color` explicitly on p / strong / a. Do NOT rely on inheritance
+   from `.tldr-dark`. Any global `p { color: ... }` rule elsewhere in the
+   page has higher specificity than the inherited value and will dim the
+   body text while `<strong>` and `<code>` (which have their own colors)
+   stay bright. The most common tldr-dark bug. */
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,0.5); }
+.tldr-dark code {
+  font-family: var(--mono); font-size: 13.5px;
+  background: rgba(250, 249, 245, 0.12); color: var(--ivory);
+  padding: 1px 5px; border-radius: 4px;
+}
+/* `color: var(--ivory)` on code is REQUIRED. The generic `:not(pre) > code`
+   rule in SKILL.md sets `color: var(--slate)`, which renders as dark text
+   on a dark background inside .tldr-dark unless you override it here. */
+
+.callout {
+  display: flex; gap: 12px;
+  border: 1.5px solid var(--oat);
+  background: rgba(227,218,204,0.35);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 14px;
+}
+.callout .ico { color: var(--clay); font-weight: 600; }
+
+.table-wrap { overflow-x: auto; }
+table.shipped {
+  width: 100%; min-width: 640px; table-layout: auto;
+  border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden;
+}
+table.shipped th, table.shipped td { word-break: normal; overflow-wrap: break-word; }
+table.shipped .nowrap { white-space: nowrap; }   /* #, dates, ids */
+/* 5+ columns: add table-layout: fixed and <colgroup><col style="width:N%"> so short columns
+   stop absorbing leftover width. Size each column >= its longest word or fixed layout breaks it. */
+table.shipped thead th {
+  text-align: left;
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g500); background: var(--g100);
+  padding: 12px 16px; border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td {
+  padding: 13px 16px; border-bottom: 1px solid var(--g100);
+  font-size: 14px; vertical-align: middle;
+}
+table.shipped tbody tr:last-child td { border-bottom: none; }
+table.shipped tbody tr:hover { background: var(--ivory); }
+
+table.impact {
+  width: 100%; max-width: 460px;
+  border-collapse: separate; border-spacing: 0;
+  background: var(--paper); border: 1.5px solid var(--g300);
+  border-radius: 12px; overflow: hidden;
+}
+table.impact th, table.impact td {
+  text-align: left; padding: 12px 18px; font-size: 14px;
+  border-bottom: 1px solid var(--g100);
+}
+table.impact tr:last-child th, table.impact tr:last-child td { border-bottom: none; }
+table.impact th { font-weight: 400; color: var(--g500); width: 55%; }
+table.impact td { font-family: var(--mono); color: var(--slate); }
+
+.chip {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1.5px solid var(--g300);
+  color: var(--g700); padding: 5px 10px; border-radius: 8px;
+  white-space: nowrap;
+}
+.chip strong { color: var(--slate); font-weight: 600; }
+.chip.olive { background: rgba(120,140,93,0.16); color: var(--olive); border-color: transparent; }
+.chip.clay  { background: rgba(217,119,87,0.14); color: var(--clay); border-color: transparent; }
+
+.pill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  border-radius: 999px; padding: 5px 12px; line-height: 1;
+}
+.pill .k { font-weight: 400; opacity: 0.75; }
+.pill .v { font-family: var(--mono); }
+.pill.sev      { background: var(--clay);  color: #fff; letter-spacing: 0.03em; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral  { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g300); }
+
+.badge {
+  display: inline-flex; align-items: center; height: 22px;
+  padding: 0 9px; font-size: 12px; font-weight: 500; border-radius: 999px;
+}
+.badge-neutral { background: var(--g100); color: var(--g700); }
+.badge-accent  { background: rgba(217, 119, 87, 0.14); color: var(--clay); }
+.badge-success { background: rgba(120, 140, 93, 0.16); color: var(--olive); }
+.badge-warning { background: rgba(199, 142, 63, 0.16); color: #A06A2A; }
+
+.branch {
+  font-family: var(--mono); font-size: 12.5px; color: var(--g700);
+  background: var(--g100); border: 1.5px solid var(--g300);
+  border-radius: 8px; padding: 6px 10px;
+}
+
+.timeline { position: relative; padding: 4px 0 4px 16px; }
+.timeline::before {
+  content:""; position:absolute; left:16px; top:8px; bottom:8px;
+  width:2px; background: var(--g300);
+}
+.tl-entry { position: relative; padding: 0 0 22px 28px; }
+.tl-entry:last-child { padding-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -5px; top: 6px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--g500);
+  border: 2px solid var(--ivory); box-sizing: content-box;
+}
+.tl-dot.impact    { background: var(--clay); }
+.tl-dot.mitigated { background: var(--olive); }
+.tl-dot.clay { background: var(--clay); }
+.tl-dot.olive { background: var(--olive); }
+.tl-dot.oat { background: var(--oat); border-color: var(--g300); }
+.tl-dot.gray { background: var(--g300); }
+
+.tl-time {
+  display: inline-block; font-family: var(--mono); font-size: 12px;
+  color: var(--g700); background: var(--g100);
+  border: 1px solid var(--g300); border-radius: 6px;
+  padding: 2px 8px; margin-bottom: 6px;
+}
+.tl-body { font-size: 14px; color: var(--g700); }
+.tl-body strong { color: var(--slate); font-weight: 600; }
+
+.ai-row {
+  display: grid; grid-template-columns: 36px 36px 1fr 96px;
+  align-items: center; gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--g100);
+}
+.ai-row:last-child { border-bottom: none; }
+.ai-check {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--g300); border-radius: 5px;
+  background: var(--paper); position: relative;
+}
+.ai-row.done .ai-check { background: var(--olive); border-color: var(--olive); }
+.ai-row.done .ai-check::after {
+  content:""; position:absolute; left:4px; top:1px;
+  width:5px; height:9px;
+  border: solid #fff; border-width: 0 2px 2px 0;
+  transform: rotate(40deg);
+}
+.ai-row.done .ai-desc {
+  color: var(--g500);
+  text-decoration: line-through; text-decoration-color: var(--g300);
+}
+.ai-due { font-family: var(--mono); font-size: 12px; color: var(--g500); text-align: right; }
+
+.badge.landmine { color: var(--clay-d); border-color: var(--clay); background: #FBF0EA; }
+.badge.history { color: #8A6A3B; border-color: #C9B48E; background: var(--oat); }
+.badge.convention { color: var(--g700); border-color: var(--g300); background: var(--g100); }
+.badge.concept { color: #55663F; border-color: var(--olive); background: #EFF2E9; }
+
+.stat-strip {
+  display: flex; flex-wrap: wrap; gap: 10px 26px; padding: 14px 18px;
+  border: 1.5px solid var(--g200); border-radius: 12px; background: var(--g100);
+  font-family: var(--mono); font-size: 12px; color: var(--g700);
+}
+.stat-strip b { color: var(--slate); font-weight: 600; }
+.stat-strip .warn b { color: var(--clay-d); }
+
+.prompt-chip {
+  font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--slate);
+  background: var(--g100); border: 1.5px solid var(--g300); border-radius: 9px; padding: 10px 13px;
+}
+.prompt-chip::before { content: "› "; color: var(--clay); font-weight: 600; }
+
+.entry .node { position: absolute; left: 50%; top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--g300); border: 2px solid var(--paper); box-shadow: 0 0 0 1.5px var(--g300); }
+.entry.t-plan .node  { background: var(--olive); box-shadow: 0 0 0 1.5px var(--olive); }
+.entry.t-dev .node   { background: var(--clay);  box-shadow: 0 0 0 1.5px var(--clay); }
+.entry.t-disc .node  { background: var(--oat);   box-shadow: 0 0 0 1.5px var(--g500); }
+.entry.t-human .node { background: var(--slate); box-shadow: 0 0 0 1.5px var(--slate); }
+
+.chip.on { background: var(--slate); border-color: var(--slate); color: var(--ivory); }
+.chip .ct { color: var(--g500); }
+.chip.on .ct { color: var(--g300); }
+
+/* Block code panel. Dark slate, warm syntax tints. */
+.code {
+  background: var(--slate);
+  border-radius: 12px;
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.code pre {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #E8E6DE;          /* ivory-on-slate body text */
+  white-space: pre;
+  margin: 0;
+}
+.code .kw  { color: var(--clay); }   /* keywords:    import, const, return, function, =>, async */
+.code .str { color: var(--olive); }  /* strings:     '...', "...", template literals */
+.code .cm  { color: var(--g500); }   /* comments:    // and /* ... */
+.code .fn  { color: #C9B98A; }       /* identifiers: function names, types, JSX tags (warm gold) */
+
+/* Inline code. Small mono badge on a tinted surface. */
+:not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--g100);
+  color: var(--slate);
+  padding: 1px 6px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+}
+
+/* Text containment. Break long tokens so they never overflow a card. */
+body { overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .approach-card, .milestone, .callout, .summary, .bubble {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+/* Flex/grid children collapse instead of forcing overflow */
+.card, .milestone, .approach-card, [class*="col"], [class*="grid"] > * { min-width: 0; }
+/* Table cells are the exception: NEVER word-break: break-word here. It collapses each
+   column's min-content width to one character and auto layout crushes narrow columns
+   mid-word ("Filin / g / lea / d"). Wrap by word, give the table a floor, scroll the wrapper. */
+table { table-layout: auto; min-width: 640px; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }   /* every <table> lives inside one of these */
+/* Optional, for 5+ column tables where auto layout hands leftover width to short columns:
+   table-layout: fixed plus a <colgroup> of percentage widths. Size every column to at least
+   its longest word (at 13.5px sans, "Responsible" is ~80px plus cell padding), or fixed layout
+   will break that word. Keep cell padding at 12px on wide tables. */
+
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">MeF ATS · Pyramos Reporting Agent · 2026-09-17</div>
+<h1>X0000-008 is gone</h1>
+<p class="intro">The Return root was never the remaining cause. IRS applied the namespace check to the other XML in the zip, the submission manifest.</p>
+<p style="display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px;">
+<span class="pill resolved">X0000-008 gone</span>
+<span class="pill resolved">H3 confirmed live</span>
+<span class="pill sev">R0000-118-01 next</span>
+</p>
+<div class="tldr-dark">
+<div class="label">TL;DR</div>
+<p>Six prior ATS sends had a correct <code>&lt;Return xmlns ... xmlns:efile&gt;</code> and still came back X0000-008. The submission zip also holds <code>/manifest/manifest.xml</code>, whose root had only the default xmlns.</p>
+<p>Adding <code>xmlns:efile="http://www.irs.gov/efile"</code> on <code>IRSSubmissionManifest</code> cleared X0000-008 on send <code>1021922026260s6c9g0u</code>. The next Stop was R0000-143 (missing TaxYr). Emitting <code>&lt;TaxYr&gt;2026&lt;/TaxYr&gt;</code> cleared that on send <code>1021922026260udjc3ko</code>. ATS now stops on R0000-118-01, the known EFIN-starts-with-10 rule. That is an e-Help enrollment issue, not this compositor.</p>
+</div>
+<div class="stat-strip">
+<span><b>2</b> live ATS sends today</span>
+<span><b>0</b> remaining X0000-008</span>
+<span class="warn"><b>1</b> enrollment Stop still open</span>
+</div>
+<nav class="toc-fixed">
+<a href="#cause">Cause</a>
+<a href="#fix">Fix</a>
+<a href="#verify">Verify</a>
+<a href="#next">Next</a>
+</nav>
+<section id="cause">
+  <div class="sec-head"><span class="idx">01</span><h2>What was actually wrong</h2></div>
+  <p class="intro">The premise “fix xmlns:efile on Return and 008 goes away” failed twice. The imbalance sat on the manifest.</p>
+  <div class="card ledger-confirmed">
+    <p><span class="badge badge-success">CONFIRMED</span> <strong>H3. Manifest root missing xmlns:efile</strong></p>
+    <p>The inner zip has two XML documents. After the Return composer was corrected, only the manifest still lacked the efile prefix. SOAP has no Return element. A live send with that one attribute change retired X0000-008.</p>
+  </div>
+  <div class="table-wrap">
+    <table class="shipped">
+      <thead><tr><th>Actor</th><th>Root</th><th>xmlns:efile before</th><th>After H3</th></tr></thead>
+      <tbody>
+        <tr><td>Return <code>/xml/&lt;id&gt;.xml</code></td><td>Return</td><td>yes, correct URI</td><td>unchanged</td></tr>
+        <tr><td>Manifest <code>/manifest/manifest.xml</code></td><td>IRSSubmissionManifest</td><td>no</td><td>yes, same URI</td></tr>
+        <tr><td>SOAP envelope</td><td>S:Envelope</td><td>no (different NS)</td><td>unchanged</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section id="fix">
+  <div class="sec-head"><span class="idx">02</span><h2>What landed in code</h2></div>
+  <p class="intro"><code>NewSendManifestXml.render</code> is the live ATS path. The legacy <code>SubmissionService</code> emitter got the same two fields so the pattern cannot regress on that path either.</p>
+  <div class="code"><pre>&lt;IRSSubmissionManifest xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile"&gt;
+  &lt;SubmissionId&gt;…&lt;/SubmissionId&gt;
+  &lt;EFIN&gt;102192&lt;/EFIN&gt;
+  &lt;TaxYr&gt;2026&lt;/TaxYr&gt;
+  …</pre></div>
+  <p>TaxYr sits after EFIN, matching <code>efileAttachments.xsd</code>. The XSD marks it optional. R0000-143 Reject and Stop requires a value. Year comes from <code>taxPeriod.end().getYear()</code>.</p>
+</section>
+<section id="verify">
+  <div class="sec-head"><span class="idx">03</span><h2>Runtime evidence</h2></div>
+  <div class="timeline">
+    <div class="tl-entry">
+      <div class="tl-dot clay"></div>
+      <div class="tl-time">before, 21:20 2026-09-16</div>
+      <div class="tl-body"><strong>1021922026259lpsktfl</strong> Return root already matched the rule text. Ack X0000-008 in 1 s. Manifest root had no xmlns:efile and no TaxYr.</div>
+    </div>
+    <div class="tl-entry">
+      <div class="tl-dot oat"></div>
+      <div class="tl-time">10:52 2026-09-17</div>
+      <div class="tl-body"><strong>1021922026260s6c9g0u</strong> Manifest gained xmlns:efile. Ack R0000-143, TaxYr must have a value. X0000-008 gone.</div>
+    </div>
+    <div class="tl-entry">
+      <div class="tl-dot olive"></div>
+      <div class="tl-time">10:55 2026-09-17</div>
+      <div class="tl-body"><strong>1021922026260udjc3ko</strong> Manifest also has TaxYr 2026. Ack R0000-118-01 OriginatorTypeCd vs EFIN prefix 10. Deposit id M806A2MM1ARWUKUB2UD96RTJVSGUPBDVRSVEP1NWHE28E. Ring file <code>data/inspector-ring/1021922026260udjc3ko/manifest.xml</code> matches the composer.</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Failing then passing, verbatim</h3>
+    <p>Offline TDD, NewSendManifestXmlTest.rootDeclaresEfilePrefix before the xmlns:efile edit:</p>
+    <div class="code"><pre>expected: &lt;&lt;IRSSubmissionManifest xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile"&gt;&gt;
+but was:  &lt;&lt;IRSSubmissionManifest xmlns="http://www.irs.gov/efile"&gt;&gt;</pre></div>
+    <p>Live ATS before (16 Sep, last send):</p>
+    <div class="code"><pre>Rule=X0000-008, Severity=Reject and Stop, Message: The namespace declarations in the root element of the return ('Return' element) must be as follows:…</pre></div>
+    <p>Live ATS after xmlns:efile:</p>
+    <div class="code"><pre>Rule=R0000-143, Severity=Reject and Stop, Message='TaxYr' in the IRS Submission Manifest must have a value.</pre></div>
+    <p>Live ATS after TaxYr:</p>
+    <div class="code"><pre>Rule=R0000-118-01, Severity=Reject and Stop, Message=If first two digits of the EFIN in the IRS Submission Manifest are 10, 21, 32, 44 or 53, then 'OriginatorTypeCd' in the Return Header must have the value "OnlineFiler".
+(XPath: /efile:Return/efile:ReturnHeader/efile:OriginatorGrp/efile:OriginatorTypeCd) [Value: ReportingAgent]</pre></div>
+  </div>
+</section>
+<section id="next">
+  <div class="sec-head"><span class="idx">04</span><h2>What this does not fix</h2></div>
+  <div class="card">
+    <p>R0000-118-01 is the documented EFIN 102192 prefix-10 rule. Changing OriginatorTypeCd to OnlineFiler would be the wrong signature for a Reporting Agent. That stays an e-Help / enrollment item. See <code>efin-102192-originator.html</code>.</p>
+    <p>The live ATS test still exits 0 when the ack is Rejected. That is a separate test-quality defect. It did not cause X0000-008.</p>
+  </div>
+</section>
+<p style="font-family: var(--mono); font-size: 12px; color: var(--g500); margin-top: 64px;">Generated 2026-09-17. Evidence under mef-spring-boot-integration/data/inspector-ring/.</p>
+</main>
+</body>
+</html>

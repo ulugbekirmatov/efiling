@@ -94,7 +94,7 @@ class AtsScenarioComposeTest {
     }
 
     @Test
-    void a941HeaderIsRefusedByThe941XSchema() {
+    void a941ReturnIsRefusedByThe941XSchema() {
         ReportingAgentReturn scenario1 = ReportingAgentReturn.compose(
                 ReportingAgentOriginatorStandIn.pyramosShaped(),
                 ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody()), FIXED);

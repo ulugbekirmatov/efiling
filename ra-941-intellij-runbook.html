@@ -212,7 +212,7 @@ git branch --show-current</pre></div>
     <div>
       <div class="step-loc">src/test/java/com/irs/mef/reportingagent/ReportingAgentReturnTest.java</div>
       <h3>Run <code>ReportingAgentReturnTest</code> from the gutter</h3>
-      <p>This test composes a Reporting Agent Return from a schema-shaped stand-in originator (EFIN <code>000000</code>, which the live factory refuses on purpose) and the Orchid Q1 2026 client body, then validates it against <code>src/main/resources/schemas/94x/941/Return941.xsd</code>. It also asserts the header carries <code>OriginatorTypeCd=ReportingAgent</code>, a <code>ReportingAgentPINGrp</code>, no <code>OnlineFilerPINGrp</code>, and that the ASID never appears in the XML.</p>
+      <p>This test composes a Reporting Agent Return from a schema-shaped stand-in originator (EFIN <code>000000</code>, which the live factory refuses on purpose) and the Orchid Q1 2026 client body, then validates it against <code>src/main/resources/schemas/94x/2026Q1v4.0/EmploymentTax/941/Return941.xsd</code>. It also asserts the header carries <code>OriginatorTypeCd=ReportingAgent</code>, a <code>ReportingAgentPINGrp</code>, no <code>OnlineFilerPINGrp</code>, and that the ASID never appears in the XML.</p>
       <ol>
         <li>Open the file in the editor.</li>
         <li>Click the green ▶ in the gutter next to <code>class ReportingAgentReturnTest</code> and pick <span class="ui">Run 'ReportingAgentReturnTest'</span>.</li>

@@ -23,7 +23,7 @@ import java.util.GregorianCalendar;
  * per the house pattern (Class.forName + Method.invoke to dodge Java 17 module-access failures in
  * the Metro/JAX-WS stack).
  *
- * Verified SDK v16 signatures used here (parsed from the mef_client_sdk.jar bytecode):
+ * Verified SDK v16 signatures (unchanged in v17) used here (parsed from the mef_client_sdk.jar bytecode):
  * <pre>
  *   SubmissionXML(String, String) / SubmissionManifest(String, String)   [in-memory ctors ONLY]
  *   SubmissionBuilder.createIRSSubmissionArchive(String, SubmissionManifest, SubmissionXML, BinaryAttachment[])

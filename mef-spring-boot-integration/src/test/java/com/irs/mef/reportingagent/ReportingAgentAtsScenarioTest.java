@@ -26,7 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/** Sends the ATS scenario named by -Dmef.ats.scenario (default 1). Run through run-ra-ats-test.sh. */
+/**
+ * Sends the ATS scenario named by -Dmef.ats.scenario. Run through run-ra-ats-test.sh.
+ * No default: a forgotten flag would re-file scenario 1, which ATS already accepted.
+ */
 @SpringBootTest
 @EnabledIfSystemProperty(named = "mef.integration.test.enabled", matches = "true")
 class ReportingAgentAtsScenarioTest {
@@ -57,7 +60,11 @@ class ReportingAgentAtsScenarioTest {
 
     @Test
     void submitsOneReportingAgentScenarioToAts() throws InterruptedException {
-        AtsScenario scenario = AtsScenario.byNumber(System.getProperty(SCENARIO_PROPERTY, "1"));
+        String requested = System.getProperty(SCENARIO_PROPERTY);
+        if (requested == null || requested.isBlank()) {
+            fail("Set -D" + SCENARIO_PROPERTY + "=<1-4>; this test sends a real ATS submission");
+        }
+        AtsScenario scenario = AtsScenario.byNumber(requested);
         ReportingAgentOriginator pyramos = originators.fromEnvironment();
         ReportingAgentAtsGate.open(sdk, pyramos);
 

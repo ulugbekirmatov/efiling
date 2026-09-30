@@ -1,0 +1,32 @@
+document	form line	element path	value	pdf page
+Filer	EIN	Filer/EIN	003000004	1
+Filer	Name (not your trade name)	Filer/BusinessName/BusinessNameLine1Txt	Orchid Incorporated	1
+Filer	Name control (derived, first 4 letters)	Filer/BusinessNameControlTxt	ORCH	1
+Filer	Address	Filer/USAddress/AddressLine1Txt	1st Test St	1
+Filer	City	Filer/USAddress/CityNm	Willow Grove	1
+Filer	State	Filer/USAddress/StateAbbreviationCd	PA	1
+Filer	ZIP code	Filer/USAddress/ZIPCd	19090	1
+IRS941X	Return You're Correcting: 941	IRS941X/Form941CorrectionInd	X	1
+IRS941X	Check the ONE quarter you're correcting: 1 (Jan/Feb/Mar)	IRS941X/Qtr1CorrectionInd	X	1
+IRS941X	Calendar year of the quarter you're correcting	IRS941X/CorrectingReturnCalendarYrCd	2026	1
+IRS941X	Date you discovered errors	IRS941X/ErrorsDiscoveredDt	2026-05-21	1
+IRS941X	Part 1, Line 1: Adjusted employment tax return	IRS941X/AdjustedEmploymentTaxRetInd	X	1
+IRS941X	Part 2, Line 3: certify Forms W-2/W-2c filed	IRS941X/FiledW2W2cCorrWageTaxCertInd	X	1
+IRS941X	Part 2, Line 4a: repaid/reimbursed each affected employee	IRS941X/RpdOrReimbEmplShrTxsCYPYInd	X	1
+IRS941X	Line 6, Column 1: Wages, tips, and other compensation	IRS941X/TotalCorrectedAmount941XGrp/WagesAmt	2500.00	2
+IRS941X	Line 6, Column 2: Wages, tips, and other compensation	IRS941X/OriginallyRptOrPrevCorr941XGrp/WagesAmt	1000.00	2
+IRS941X	Line 6, Column 3: Wages, tips, and other compensation	IRS941X/CorrRptDifference941XGrp/WagesAmt	1500.00	2
+IRS941X	Line 7, Column 1: Federal income tax withheld	IRS941X/TotalCorrectedAmount941XGrp/FederalIncomeTaxWithheldAmt	250.00	2
+IRS941X	Line 7, Column 2: Federal income tax withheld	IRS941X/OriginallyRptOrPrevCorr941XGrp/FederalIncomeTaxWithheldAmt	100.00	2
+IRS941X	Line 7, Column 3: Federal income tax withheld	IRS941X/CorrRptDifference941XGrp/FederalIncomeTaxWithheldAmt	150.00	2
+IRS941X	Line 8, Column 1: Taxable social security wages	IRS941X/TotalCorrectedAmount941XGrp/SocialSecurityTaxCashWagesAmt	2500.00	2
+IRS941X	Line 8, Column 2: Taxable social security wages	IRS941X/OriginallyRptOrPrevCorr941XGrp/SocialSecurityTaxCashWagesAmt	1000.00	2
+IRS941X	Line 8, Column 3: Taxable social security wages	IRS941X/CorrRptDifference941XGrp/SocialSecurityTaxCashWagesAmt	1500.00	2
+IRS941X	Line 8, Column 4: Taxable social security wages x 0.124	IRS941X/TaxCorrection941XGrp/SocialSecurityTaxCashWagesAmt	186.00	2
+IRS941X	Line 12, Column 1: Taxable Medicare wages & tips	IRS941X/TotalCorrectedAmount941XGrp/TaxableMedicareWagesTipsAmt	2500.00	2
+IRS941X	Line 12, Column 2: Taxable Medicare wages & tips	IRS941X/OriginallyRptOrPrevCorr941XGrp/TaxableMedicareWagesTipsAmt	1000.00	2
+IRS941X	Line 12, Column 3: Taxable Medicare wages & tips	IRS941X/CorrRptDifference941XGrp/TaxableMedicareWagesTipsAmt	1500.00	2
+IRS941X	Line 12, Column 4: Taxable Medicare wages & tips x 0.029	IRS941X/TaxCorrection941XGrp/TaxableMedicareWagesTipsAmt	43.50	2
+IRS941X	Line 23, Column 4: Combine lines 7-22	IRS941X/TaxCorrection941XGrp/CombinedTaxAmt	379.50	3
+IRS941X	Line 27, Column 4: Total, combine lines 23-26c	IRS941X/TaxCorrection941XGrp/TotalAmt	379.50	3
+IRS941X	Line 43: Explanation of corrections (not on scenario PDF, see ambiguity note)	IRS941X/CorrectionsExplanationTxt	Correcting Form 941 for the quarter ending March 31, 2026: wages, tips, and other compensation (line 2) increased by $1,500.00, federal income tax withheld (line 3) increased by $150.00, and taxable social security wages (line 5a, Column 1) and taxable Medicare wages and tips (line 5c, Column 1) each increased by $1,500.00, as corrected in Part 3, lines 6, 7, 8, and 12 of this Form 941-X.	n/a

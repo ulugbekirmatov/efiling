@@ -60,3 +60,14 @@ replay_pid*
 
 # Pair-session cockpit state (local tooling)
 .pair-live/
+
+# A2A Toolkit v17: track only the Java SDK zip and the release notes
+Version_17/**
+!Version_17/
+!Version_17/A2A_Toolkit_Version17.0/
+!Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/
+!Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/
+!Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/dist/
+!Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip
+!Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/documents/
+!Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/documents/2026v17.0_release_notes.txt

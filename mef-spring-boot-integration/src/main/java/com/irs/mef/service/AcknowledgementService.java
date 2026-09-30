@@ -1,5 +1,8 @@
 package com.irs.mef.service;
 
+import com.irs.mef.ack.AckSource;
+import com.irs.mef.ack.AckStore;
+import com.irs.mef.ack.StoredAck;
 import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.dto.AckResponse;
 import com.irs.mef.exception.MefException;
@@ -11,10 +14,12 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
@@ -51,6 +56,8 @@ public class AcknowledgementService {
     private final MefClientService mefClientService;
     private final MefSdkConfig mefConfig;
     private final RetryTemplate mefRetryTemplate;
+    private final AckStore ackStore;
+    private final Clock clock;
 
     /**
      * Get a specific acknowledgment by submission ID.
@@ -66,6 +73,36 @@ public class AcknowledgementService {
      * @throws MefException if not logged in, acknowledgment not found, or IRS service error
      */
     public AckResponse getAcknowledgment(String ackId) {
+        AckResponse response = fetchAcknowledgment(ackId);
+        recordRetrieved(response, AckSource.GET_ACK);
+        return response;
+    }
+
+    /**
+     * Unlike {@link #getAcknowledgment(String)}, an ack-store write failure is thrown; GetAck is repeatable,
+     * so the caller can retry.
+     */
+    public StoredAck retrieveAndRecordAcknowledgment(String submissionId) {
+        AckResponse response = fetchAcknowledgment(submissionId);
+        StoredAck stored = StoredAck.from(response, clock.instant(), AckSource.GET_ACK);
+        ackStore.record(stored);
+        return stored;
+    }
+
+    /**
+     * Skipped, not thrown: IRS has already marked the whole GetNewAcks batch as retrieved, and the retry
+     * template would re-run GetNewAcks and drain the next batch.
+     */
+    private Optional<AckResponse> parseNewAck(Object ack) {
+        try {
+            return Optional.of(buildAckResponseReflection(ack));
+        } catch (MefException e) {
+            log.warn("Skipping unparseable acknowledgment in GetNewAcks batch: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private AckResponse fetchAcknowledgment(String ackId) {
         log.info("Retrieving acknowledgment by submission ID: {}", ackId);
 
         // Verify logged in
@@ -128,6 +165,9 @@ public class AcknowledgementService {
 
                 // Build response using helper method
                 AckResponse response = buildAckResponseReflection(ack);
+                if (response.getSubmissionId() == null || response.getSubmissionId().isBlank()) {
+                    response.setSubmissionId(ackId);
+                }
 
                 log.info("Acknowledgment retrieved successfully for submission ID: {}", ackId);
 
@@ -182,7 +222,7 @@ public class AcknowledgementService {
         }
 
         // Wrap with retry logic for handling session limits and transient errors
-        return mefRetryTemplate.execute(context -> {
+        AckResponse.AckListResponse response = mefRetryTemplate.execute(context -> {
             try {
                 // Get ServiceContext from login session
                 Object serviceContext = mefClientService.getCurrentServiceContext();
@@ -218,8 +258,7 @@ public class AcknowledgementService {
                         log.info("Processing {} acknowledgments from IRS", acks.size());
 
                         for (Object ack : acks) {
-                            AckResponse ackResponse = buildAckResponseReflection(ack);
-                            results.add(ackResponse);
+                            parseNewAck(ack).ifPresent(results::add);
                         }
                     }
                 } else {
@@ -270,6 +309,8 @@ public class AcknowledgementService {
                         "Failed to retrieve new acknowledgments", e.getMessage(), e);
             }
         });
+        response.getAcknowledgments().forEach(ack -> recordRetrieved(ack, AckSource.GET_NEW_ACKS));
+        return response;
     }
 
     /**
@@ -330,22 +371,21 @@ public class AcknowledgementService {
                         log.info("Processing {} acknowledgments from IRS, filtering by submission ID: {}",
                                 acks.size(), submissionId);
 
-                        // Get method for submissionId
-                        Class<?> ackClass = Class.forName("gov.irs.mef.AcknowledgementList$Acknowledgement");
-                        Method getSubmissionIdMethod = ackClass.getMethod("getSubmissionId");
-
                         for (Object ack : acks) {
-                            String ackSubmissionId = (String) getSubmissionIdMethod.invoke(ack);
-
-                            // Filter: only include acknowledgments matching the requested submission ID
-                            if (!submissionId.equals(ackSubmissionId)) {
+                            Optional<AckResponse> parsed = parseNewAck(ack);
+                            if (parsed.isEmpty()) {
                                 continue;
                             }
-
-                            AckResponse ackResponse = buildAckResponseReflection(ack);
+                            AckResponse ackResponse = parsed.get();
+                            // GetNewAcks marks every returned ack as retrieved server-side, so the
+                            // non-matching ones are persisted too; otherwise they are gone for good.
+                            recordRetrieved(ackResponse, AckSource.GET_NEW_ACKS);
+                            if (!submissionId.equals(ackResponse.getSubmissionId())) {
+                                continue;
+                            }
                             results.add(ackResponse);
 
-                            log.info("Found matching acknowledgment for SubmissionID: {}", ackSubmissionId);
+                            log.info("Found matching acknowledgment for SubmissionID: {}", submissionId);
                         }
                     }
                 } else {
@@ -391,6 +431,25 @@ public class AcknowledgementService {
                         "Failed to retrieve acknowledgments for submission", e.getMessage(), e);
             }
         });
+    }
+
+    /**
+     * Persist a retrieved ack without ever failing the IRS call. GetNewAcks has already consumed
+     * the ack server-side, so throwing here would lose the response as well as the local copy.
+     */
+    private StoredAck recordRetrieved(AckResponse response, AckSource source) {
+        if (response.getSubmissionId() == null || response.getSubmissionId().isBlank()) {
+            log.warn("ack store: skipping {} acknowledgment without a submission id", source.operationName());
+            return null;
+        }
+        StoredAck stored = StoredAck.from(response, clock.instant(), source);
+        try {
+            ackStore.record(stored);
+        } catch (RuntimeException e) {
+            log.warn("ack store: could not persist {} acknowledgment for {}: {}",
+                    source.operationName(), stored.submissionId(), e.toString());
+        }
+        return stored;
     }
 
     /**
@@ -477,6 +536,8 @@ public class AcknowledgementService {
             boolean hasErrors = false;
             boolean hasAlerts = false;
             String errorDetails = null;
+            List<String> errorCodes = new ArrayList<>();
+            List<String> errorMessages = new ArrayList<>();
 
             if (errorList != null) {
                 try {
@@ -513,6 +574,9 @@ public class AcknowledgementService {
                                 errorBuilder.append(" [Value: ").append(fieldValue).append("]");
                             }
                             errorBuilder.append("\n");
+                            errorCodes.add(ruleNum);
+                            errorMessages.add("[" + severityCd + "] " + errorMessage
+                                    + (fieldValue != null && !fieldValue.isBlank() ? " [Value: " + fieldValue + "]" : ""));
                         }
                         errorDetails = errorBuilder.toString();
                     }
@@ -541,8 +605,8 @@ public class AcknowledgementService {
                     .timestamp(statusDate != null ? statusDate.toString() :
                             LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
                     .ackFilePath(null) // SDK doesn't provide file path
-                    .errorCodes(null) // TODO: Extract from validation errors if needed
-                    .errorMessages(null) // TODO: Extract from validation errors if needed
+                    .errorCodes(errorCodes)
+                    .errorMessages(errorMessages)
                     .details(errorDetails != null ? errorDetails : "Acknowledgment retrieved successfully")
 
                     // Tax Identifiers

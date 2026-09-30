@@ -20,6 +20,7 @@ final class ReportingAgentOriginatorStandIn {
                 new Efin("000000"),
                 new ReportingAgentPin("00000"),
                 new SoftwareId("00000000"),
+                "192.0.2.1",
                 new ReportingAgentIdentity(
                         new Ein("000000000"),
                         "PYRAMOS SOFTWARE LLC",

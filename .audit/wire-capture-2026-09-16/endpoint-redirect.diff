@@ -1,0 +1,23 @@
+--- mef-spring-boot-integration/src/main/resources/mef_config/config/ats_endpoints.properties	2026-08-21 20:36:48
++++ /private/tmp/claude-501/-Users-ulugbekirmatov-Documents-MeF/909afac4-aa33-4b3f-aa20-be1066940f6f/scratchpad/wiretest/mef_config/config/ats_endpoints.properties	2026-09-16 21:25:53
+@@ -16,7 +16,7 @@
+ GET_SUBMISSIONS=la.alt.www4.irs.gov/a2a/mef/mime/GetSubmissions
+ GET_SUBMISSIONS_STATUS=la.alt.www4.irs.gov/a2a/mef/mime/GetSubmissionsStatus
+ GET_SUBMISSION_STATUS=la.alt.www4.irs.gov/a2a/mef/mime/GetSubmissionStatus
+-SEND_SUBMISSIONS=la.alt.www4.irs.gov/a2a/mef/mime/SendSubmissions
++SEND_SUBMISSIONS=localhost:9443/a2a/mef/mime/SendSubmissions
+ ETIN_RETRIEVAL=la.alt.www4.irs.gov/a2a/mef/EtinRetrieval
+ ETIN_STATUS=la.alt.www4.irs.gov/a2a/mef/EtinStatus
+ GET_STATE_PARTICIPANTS_LIST=la.alt.www4.irs.gov/a2a/mef/GetStateParticipantsList
+--- mef-spring-boot-integration/src/main/resources/mef_config/config/transport.properties	2026-08-21 20:36:48
++++ /private/tmp/claude-501/-Users-ulugbekirmatov-Documents-MeF/909afac4-aa33-4b3f-aa20-be1066940f6f/scratchpad/wiretest/mef_config/config/transport.properties	2026-09-16 21:25:53
+@@ -7,7 +7,7 @@
+ read.timeout.seconds=600
+ 
+ #Enable http 1.1 chunking transfer coding
+-http.chunking.enabled=true
++http.chunking.enabled=false
+ 
+ #Desired chunk size in bytes
+ http.chunk.size=8192
+\ No newline at end of file

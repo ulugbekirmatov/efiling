@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClientReturnBody returnTypeCd="941" xmlns="http://www.irs.gov/efile"
+               returnVersion="2026Q1v4.0"
+               taxPeriodBegin="2026-01-01"
+               taxPeriodEnd="2026-03-31"
+               quarterEndingDt="2026-03">
+  <Filer>
+    <EIN>003333330</EIN>
+    <BusinessName>
+      <BusinessNameLine1Txt>Marigold Corporation</BusinessNameLine1Txt>
+    </BusinessName>
+    <BusinessNameControlTxt>MARI</BusinessNameControlTxt>
+    <USAddress>
+      <AddressLine1Txt>2nd Test Street</AddressLine1Txt>
+      <CityNm>Philadelephia</CityNm>
+      <StateAbbreviationCd>PA</StateAbbreviationCd>
+      <ZIPCd>19040</ZIPCd>
+    </USAddress>
+  </Filer>
+  <ReturnData documentCnt="2">
+    <IRS941 documentId="IRS941" referenceDocumentId="IRS941ScheduleB">
+      <!-- Part 1: Answer these questions for this quarter -->
+      <!-- Line 1: Number of employees who received wages -->
+      <EmployeeCnt>10</EmployeeCnt>
+      <!-- Line 2: Wages, tips, and other compensation -->
+      <WagesAmt>33594.00</WagesAmt>
+      <!-- Line 3: Federal income tax withheld from wages, tips, and other compensation -->
+      <FederalIncomeTaxWithheldAmt>3576.00</FederalIncomeTaxWithheldAmt>
+      <!-- Line 5a: Taxable social security wages -->
+      <SocialSecurityWageAndTaxGrp>
+        <SocialSecurityTaxCashWagesAmt>33594.00</SocialSecurityTaxCashWagesAmt>
+        <SocialSecurityTaxAmt>4165.66</SocialSecurityTaxAmt>
+      </SocialSecurityWageAndTaxGrp>
+      <!-- Line 5c: Taxable Medicare wages and tips -->
+      <MedicareWageTipsAndTaxGrp>
+        <TaxableMedicareWagesTipsAmt>33594.00</TaxableMedicareWagesTipsAmt>
+        <TaxOnMedicareWagesTipsAmt>974.23</TaxOnMedicareWagesTipsAmt>
+      </MedicareWageTipsAndTaxGrp>
+      <!-- Line 5e: Total social security and Medicare taxes (Column 2 sum from lines 5a-5d) -->
+      <TotalSSMdcrTaxAmt>5139.89</TotalSSMdcrTaxAmt>
+      <!-- Line 6: Total taxes before adjustments (lines 3 + 5e + 5f) -->
+      <TotalTaxBeforeAdjustmentAmt>8715.89</TotalTaxBeforeAdjustmentAmt>
+      <!-- Lines 7-9: Current quarter adjustments (blank on the form) -->
+      <!-- Line 10: Total taxes after adjustments (lines 6 through 9) -->
+      <TotalTaxAfterAdjustmentAmt>8715.89</TotalTaxAfterAdjustmentAmt>
+      <!-- Line 11: Qualified small business payroll tax credit (blank on the form) -->
+      <!-- Line 12: Total taxes after adjustments and nonrefundable credits -->
+      <TotalTaxAmt>8715.89</TotalTaxAmt>
+      <!-- Line 13: Total deposits for this quarter -->
+      <TotalTaxDepositAmt>9000.00</TotalTaxDepositAmt>
+      <!-- Line 15a-b: Overpayment, refund requested -->
+      <OverpaymentGrp>
+        <OverpaidAmt>284.11</OverpaidAmt>
+        <RefundOverpaymentInd>X</RefundOverpaymentInd>
+      </OverpaymentGrp>
+      <!-- Part 2, Line 16: Semiweekly schedule depositor for part of the quarter -->
+      <SemiweeklyScheduleDepositorInd>X</SemiweeklyScheduleDepositorInd>
+    </IRS941>
+    <IRS941ScheduleB documentId="IRS941ScheduleB">
+      <TaxLiabilityQtrMonthlyDetail>
+        <MonthOfQuarterCd>1</MonthOfQuarterCd>
+        <DailyTaxLiabilityDetail>
+          <DayNum>11</DayNum>
+          <TaxLiabilityAmt>1452.64</TaxLiabilityAmt>
+        </DailyTaxLiabilityDetail>
+        <DailyTaxLiabilityDetail>
+          <DayNum>20</DayNum>
+          <TaxLiabilityAmt>1452.65</TaxLiabilityAmt>
+        </DailyTaxLiabilityDetail>
+        <TotalTaxLiabilityAmt>2905.29</TotalTaxLiabilityAmt>
+      </TaxLiabilityQtrMonthlyDetail>
+      <TaxLiabilityQtrMonthlyDetail>
+        <MonthOfQuarterCd>2</MonthOfQuarterCd>
+        <DailyTaxLiabilityDetail>
+          <DayNum>1</DayNum>
+          <TaxLiabilityAmt>1452.64</TaxLiabilityAmt>
+        </DailyTaxLiabilityDetail>
+        <DailyTaxLiabilityDetail>
+          <DayNum>18</DayNum>
+          <TaxLiabilityAmt>1452.65</TaxLiabilityAmt>
+        </DailyTaxLiabilityDetail>
+        <TotalTaxLiabilityAmt>2905.29</TotalTaxLiabilityAmt>
+      </TaxLiabilityQtrMonthlyDetail>
+      <TaxLiabilityQtrMonthlyDetail>
+        <MonthOfQuarterCd>3</MonthOfQuarterCd>
+        <DailyTaxLiabilityDetail>
+          <DayNum>10</DayNum>
+          <TaxLiabilityAmt>1452.64</TaxLiabilityAmt>
+        </DailyTaxLiabilityDetail>
+        <DailyTaxLiabilityDetail>
+          <DayNum>19</DayNum>
+          <TaxLiabilityAmt>1452.67</TaxLiabilityAmt>
+        </DailyTaxLiabilityDetail>
+        <TotalTaxLiabilityAmt>2905.31</TotalTaxLiabilityAmt>
+      </TaxLiabilityQtrMonthlyDetail>
+      <TotalQuarterTaxLiabilityAmt>8715.89</TotalQuarterTaxLiabilityAmt>
+    </IRS941ScheduleB>
+  </ReturnData>
+</ClientReturnBody>

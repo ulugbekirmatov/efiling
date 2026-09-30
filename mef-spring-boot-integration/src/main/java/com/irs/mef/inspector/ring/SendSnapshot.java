@@ -52,6 +52,7 @@ public record SendSnapshot(
         return new SnapshotSummary(
                 submissionId,
                 capturedAt,
+                environment,
                 einMasked,
                 formType.code(),
                 taxPeriod.begin() + " to " + taxPeriod.end(),

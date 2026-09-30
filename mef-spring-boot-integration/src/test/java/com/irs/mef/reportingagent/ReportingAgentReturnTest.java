@@ -1,6 +1,7 @@
 package com.irs.mef.reportingagent;
 
 import com.irs.mef.config.MefSdkConfig;
+import com.irs.mef.newsend.domain.FormType;
 import com.irs.mef.xml.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -18,13 +19,13 @@ class ReportingAgentReturnTest {
 
     @Test
     void composedReturnIsSchemaValidReportingAgent() {
-        Client941Body orchid = Client941Body.load(OrchidQ1_2026.CLIENT_BODY);
+        ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
         ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
 
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
                 standIn, orchid, Clock.system(ZoneId.of("America/New_York")));
 
-        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.return941());
+        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.root(FormType.F941));
         assertTrue(xsd.isValid(), xsd::report);
 
         ReportingAgentReturn.Structure s = ret.structure();
@@ -53,7 +54,7 @@ class ReportingAgentReturnTest {
     void loadRejectsScenario1ReturnRoot() {
         ReportingAgentValidationException ex = assertThrows(
                 ReportingAgentValidationException.class,
-                () -> Client941Body.load(OrchidQ1_2026.SCENARIO_1_RETURN));
+                () -> ClientReturnBody.load(AtsScenario.repoPath("test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml")));
         assertEquals("xml", ex.field());
     }
 
@@ -70,7 +71,7 @@ class ReportingAgentReturnTest {
 
     @Test
     void agentEinDiffersFromFilerEin() {
-        Client941Body orchid = Client941Body.load(OrchidQ1_2026.CLIENT_BODY);
+        ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
         ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
         assertEquals("003000004", orchid.filerEin().value());
         assertNotEquals(orchid.filerEin(), standIn.identity().ein());
@@ -126,6 +127,7 @@ class ReportingAgentReturnTest {
         ReportingAgentProperties properties = new ReportingAgentProperties();
         properties.setPin("11111");
         properties.setSoftwareId("11111111");
+        properties.setFilingIp("192.0.2.1");
         properties.setEin("111111111");
         properties.setBusinessName("PYRAMOS SOFTWARE LLC");
         properties.setNameControl("PYRA");

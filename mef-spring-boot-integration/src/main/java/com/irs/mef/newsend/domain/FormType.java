@@ -27,6 +27,9 @@ public enum FormType {
     F945X("945X"),
     F94XPINREG("94XPINREG");
 
+    /** The IRS 2026Q1v4.0 schema tree, copied verbatim so its relative includes resolve unchanged. */
+    private static final String SCHEMA_BUNDLE = "schemas/94x/2026Q1v4.0/";
+
     private final String code;
 
     FormType(String code) {
@@ -50,7 +53,11 @@ public enum FormType {
 
     /** Classpath root XSD for this form when one is bundled; empty means schema validation degrades to a warning. */
     public Optional<String> schemaRoot() {
-        return this == F941 ? Optional.of("schemas/94x/941/Return941.xsd") : Optional.empty();
+        return switch (this) {
+            case F941 -> Optional.of(SCHEMA_BUNDLE + "EmploymentTax/941/Return941.xsd");
+            case F941X -> Optional.of(SCHEMA_BUNDLE + "EmploymentTax/941X/Return941X.xsd");
+            default -> Optional.empty();
+        };
     }
 
     private static String legalCodes() {

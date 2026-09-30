@@ -9,7 +9,7 @@ import static com.irs.mef.reportingagent.ReportingAgentChecks.requireText;
 /**
  * Pyramos as ReportingAgent94XFilerGrp. Required by this type even though the XSD
  * lists the group as minOccurs=0 — EMPL-003 is treated as load-bearing for RA originators.
- * Distinct from Client941Body.filerEin.
+ * Distinct from ClientReturnBody.filerEin.
  */
 public record ReportingAgentIdentity(
         Ein ein,

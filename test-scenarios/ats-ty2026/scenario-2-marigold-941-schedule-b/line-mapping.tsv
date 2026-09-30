@@ -1,0 +1,40 @@
+document	form line	element path	value	pdf page
+Filer	header	EIN	003333330	2
+Filer	header	BusinessName/BusinessNameLine1Txt	Marigold Corporation	2
+Filer	header	BusinessNameControlTxt	MARI	2
+Filer	header	USAddress/AddressLine1Txt	2nd Test Street	2
+Filer	header	USAddress/CityNm	Philadelephia	2
+Filer	header	USAddress/StateAbbreviationCd	PA	2
+Filer	header	USAddress/ZIPCd	19040	2
+IRS941	line 1	EmployeeCnt	10	2
+IRS941	line 2	WagesAmt	33594.00	2
+IRS941	line 3	FederalIncomeTaxWithheldAmt	3576.00	2
+IRS941	line 5a col 1	SocialSecurityWageAndTaxGrp/SocialSecurityTaxCashWagesAmt	33594.00	2
+IRS941	line 5a col 2	SocialSecurityWageAndTaxGrp/SocialSecurityTaxAmt	4165.66	2
+IRS941	line 5c col 1	MedicareWageTipsAndTaxGrp/TaxableMedicareWagesTipsAmt	33594.00	2
+IRS941	line 5c col 2	MedicareWageTipsAndTaxGrp/TaxOnMedicareWagesTipsAmt	974.23	2
+IRS941	line 5e	TotalSSMdcrTaxAmt	5139.89	2
+IRS941	line 6	TotalTaxBeforeAdjustmentAmt	8715.89	2
+IRS941	line 10	TotalTaxAfterAdjustmentAmt	8715.89	2
+IRS941	line 12	TotalTaxAmt	8715.89	2
+IRS941	line 13	TotalTaxDepositAmt	9000.00	2
+IRS941	line 15a	OverpaymentGrp/OverpaidAmt	284.11	2
+IRS941	line 15b	OverpaymentGrp/RefundOverpaymentInd	X	2
+IRS941	line 16	SemiweeklyScheduleDepositorInd	X	3
+IRS941ScheduleB	quarter check	(Quarter 1 checked, matches Form 941 quarter; not a body element)	--	4
+IRS941ScheduleB	Month 1 day 11	TaxLiabilityQtrMonthlyDetail[1]/DailyTaxLiabilityDetail[1]/DayNum	11	4
+IRS941ScheduleB	Month 1 day 11	TaxLiabilityQtrMonthlyDetail[1]/DailyTaxLiabilityDetail[1]/TaxLiabilityAmt	1452.64	4
+IRS941ScheduleB	Month 1 day 20	TaxLiabilityQtrMonthlyDetail[1]/DailyTaxLiabilityDetail[2]/DayNum	20	4
+IRS941ScheduleB	Month 1 day 20	TaxLiabilityQtrMonthlyDetail[1]/DailyTaxLiabilityDetail[2]/TaxLiabilityAmt	1452.65	4
+IRS941ScheduleB	Month 1 total	TaxLiabilityQtrMonthlyDetail[1]/TotalTaxLiabilityAmt	2905.29	4
+IRS941ScheduleB	Month 2 day 1	TaxLiabilityQtrMonthlyDetail[2]/DailyTaxLiabilityDetail[1]/DayNum	1	4
+IRS941ScheduleB	Month 2 day 1	TaxLiabilityQtrMonthlyDetail[2]/DailyTaxLiabilityDetail[1]/TaxLiabilityAmt	1452.64	4
+IRS941ScheduleB	Month 2 day 18	TaxLiabilityQtrMonthlyDetail[2]/DailyTaxLiabilityDetail[2]/DayNum	18	4
+IRS941ScheduleB	Month 2 day 18	TaxLiabilityQtrMonthlyDetail[2]/DailyTaxLiabilityDetail[2]/TaxLiabilityAmt	1452.65	4
+IRS941ScheduleB	Month 2 total	TaxLiabilityQtrMonthlyDetail[2]/TotalTaxLiabilityAmt	2905.29	4
+IRS941ScheduleB	Month 3 day 10	TaxLiabilityQtrMonthlyDetail[3]/DailyTaxLiabilityDetail[1]/DayNum	10	4
+IRS941ScheduleB	Month 3 day 10	TaxLiabilityQtrMonthlyDetail[3]/DailyTaxLiabilityDetail[1]/TaxLiabilityAmt	1452.64	4
+IRS941ScheduleB	Month 3 day 19	TaxLiabilityQtrMonthlyDetail[3]/DailyTaxLiabilityDetail[2]/DayNum	19	4
+IRS941ScheduleB	Month 3 day 19	TaxLiabilityQtrMonthlyDetail[3]/DailyTaxLiabilityDetail[2]/TaxLiabilityAmt	1452.67	4
+IRS941ScheduleB	Month 3 total	TaxLiabilityQtrMonthlyDetail[3]/TotalTaxLiabilityAmt	2905.31	4
+IRS941ScheduleB	total liability for quarter	TotalQuarterTaxLiabilityAmt	8715.89	4

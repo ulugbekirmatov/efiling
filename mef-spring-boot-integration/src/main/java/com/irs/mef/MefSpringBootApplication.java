@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * Main Spring Boot application class for IRS MeF Client SDK integration.
  *
  * This application provides REST API endpoints to interact with IRS Modernized e-File (MeF)
- * Application-to-Application (A2A) services using the MeF Client SDK v16.
+ * Application-to-Application (A2A) services using the MeF Client SDK v17.
  *
  * Key Features:
  * - Authentication (Login/Logout) with IRS MeF servers

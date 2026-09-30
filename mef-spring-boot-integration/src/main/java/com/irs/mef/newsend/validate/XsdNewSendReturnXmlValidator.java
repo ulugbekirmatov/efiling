@@ -27,8 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * XXE-hardened well-formedness check plus optional per-form XSD validation.
- * Schemas are compiled once per form and cached; the 941 set is bundled under
- * classpath:schemas/94x/941/ (copied from the IRS 2026 schema drop).
+ * Schemas are compiled once per form and cached; the 941 and 941X roots are bundled under
+ * classpath:schemas/94x/2026Q1v4.0/ (the IRS 2026Q1v4.0 schema tree, see {@link FormType#schemaRoot()}).
  */
 @Component
 @RequiredArgsConstructor

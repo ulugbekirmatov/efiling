@@ -112,7 +112,8 @@ parse lives on the wire DTO — one fewer hop).
   behind a port a database can implement later without redesign.
 - We accept ~30 small files in exchange for a pure, testable core and exactly one class that
   knows the SDK exists. The call chain — the thing that costs readers — is three files.
-- We accept duplicating the 941 XSDs into `src/main/resources/schemas/94x/941/` in exchange for
+- We accept duplicating the IRS 94x XSD tree (941 and 941X roots, verbatim) into
+  `src/main/resources/schemas/94x/2026Q1v4.0/` in exchange for
   pre-flight schema validation instead of an opaque IRS reject minutes later.
 - We accept boot-time WARN (not failure) on a missing/malformed EFIN so the app still starts for
   login/diagnostics without a `.env`; submits fail fast with `NEWSEND_CONFIGURATION`.

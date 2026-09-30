@@ -21,7 +21,104 @@
       "file": "composed-return.xml",
       "title": "Composed Return",
       "producedBy": "ReportingAgentReturn.compose (snapshot kept by AtsScenarioSnapshotTest)",
-      "description": "The full Return IRS receives. The composer wraps the client body in a ReturnHeader with OriginatorTypeCd ReportingAgent, a ReportingAgentPINGrp, and a ReportingAgent94XFilerGrp naming Pyramos. This snapshot uses schema-valid stand-in originator values (EFIN 000000, PIN 00000, agent EIN 000000000) and a fixed clock of 2026-10-13T14:00Z. A live send fills those from MEF_EFIN, MEF_RA_PIN, MEF_SOFTWARE_ID and the other MEF_RA_* settings."
+      "description": "The full Return IRS receives. The composer wraps the client body in a ReturnHeader with OriginatorTypeCd ReportingAgent, a ReportingAgentPINGrp, and a ReportingAgent94XFilerGrp naming Pyramos. This snapshot uses schema-valid stand-in originator values (EFIN 000000, PIN 00000, agent EIN 000000000) and a fixed clock of 2026-10-13T14:00Z. A live send fills those from MEF_EFIN, MEF_RA_PIN, MEF_SOFTWARE_ID and the other MEF_RA_* settings.",
+      "headerFields": [
+        {
+          "element": "Return/@returnVersion",
+          "source": "client",
+          "from": "returnVersion attribute of the client body"
+        },
+        {
+          "element": "ReturnTypeCd",
+          "source": "client",
+          "from": "returnTypeCd attribute (941 or 941X)"
+        },
+        {
+          "element": "ReturnTs",
+          "source": "generated",
+          "from": "composer clock, America/New_York, to the second"
+        },
+        {
+          "element": "SoftwareId",
+          "source": "pyramos",
+          "from": "MEF_SOFTWARE_ID"
+        },
+        {
+          "element": "MultSoftwarePackagesUsedInd",
+          "source": "generated",
+          "from": "always false"
+        },
+        {
+          "element": "AdditionalFilerInformation (refund product block)",
+          "source": "generated",
+          "from": "schema-required constants"
+        },
+        {
+          "element": "FilingSecurityInformation/IPv4AddressTxt",
+          "source": "pyramos",
+          "from": "MEF_RA_FILING_IP"
+        },
+        {
+          "element": "VendorControlNum",
+          "source": "generated",
+          "from": "hash of filer EIN and tax period"
+        },
+        {
+          "element": "AtSubmissionCreationDeviceId / AtSubmissionFilingDeviceId",
+          "source": "generated",
+          "from": "hash of filer EIN"
+        },
+        {
+          "element": "QuarterEndingDt",
+          "source": "client",
+          "from": "quarterEndingDt attribute"
+        },
+        {
+          "element": "Filer",
+          "source": "client",
+          "from": "the client body Filer block, copied as is"
+        },
+        {
+          "element": "OriginatorGrp/EFIN",
+          "source": "pyramos",
+          "from": "MEF_EFIN"
+        },
+        {
+          "element": "OriginatorGrp/OriginatorTypeCd",
+          "source": "generated",
+          "from": "always ReportingAgent"
+        },
+        {
+          "element": "ReportingAgentPINGrp/PIN",
+          "source": "pyramos",
+          "from": "MEF_RA_PIN"
+        },
+        {
+          "element": "ReportingAgentPINGrp/RAPINEnteredByCd",
+          "source": "generated",
+          "from": "always REPORTING AGENT"
+        },
+        {
+          "element": "ReportingAgentPINGrp/JuratDisclosureCd",
+          "source": "generated",
+          "from": "always REPORTING AGENT PIN"
+        },
+        {
+          "element": "IRSResponsiblePrtyInfoCurrInd, DiscussWithThirdPartyNoInd",
+          "source": "generated",
+          "from": "constants true and X"
+        },
+        {
+          "element": "ReportingAgent94XFilerGrp",
+          "source": "pyramos",
+          "from": "MEF_RA_EIN, MEF_RA_NAME, MEF_RA_NAME_CONTROL, MEF_RA_ADDRESS_LINE1, MEF_RA_CITY, MEF_RA_STATE, MEF_RA_ZIP"
+        },
+        {
+          "element": "ReturnData",
+          "source": "client",
+          "from": "the client body ReturnData, copied as is"
+        }
+      ]
     },
     {
       "id": "manifest",
@@ -323,18 +420,21 @@
   ],
   "legacy": [
     {
+      "id": "onewell-941-return",
       "path": "test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml",
       "kind": "xml",
       "title": "Orchid 941, OneWell-era full Return",
       "description": "A complete Return with its own ReturnHeader, filed as OnlineFiler with an OnlineFilerPINGrp. This is the format the OneWell self-filer build sent. ClientReturnBody.load refuses a Return root, so this file cannot enter the Reporting Agent path. Form941XmlGenerationTest and the gated Form941SubmissionTest still read it."
     },
     {
+      "id": "onewell-941-config",
       "path": "mef-spring-boot-integration/src/test/resources/test-scenarios/941-scenario-1/scenario-config.yml",
       "kind": "text",
       "title": "Orchid 941 scenario config (unused)",
       "description": "A YAML restatement of the OneWell-era Orchid values. No test loads it."
     },
     {
+      "id": "form-940-pdf",
       "path": "test-scenarios/940-test-scenario-1-ty2025.pdf",
       "kind": "pdf",
       "title": "Form 940 scenario 1, TY2025 (source PDF only)",

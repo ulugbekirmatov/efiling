@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClientReturnBody xmlns="http://www.irs.gov/efile" returnTypeCd="941"
+               returnVersion="2026Q1v4.0"
+               taxPeriodBegin="2026-01-01"
+               taxPeriodEnd="2026-03-31"
+               quarterEndingDt="2026-03">
+  <Filer>
+    <EIN>003222220</EIN>
+    <BusinessName>
+      <BusinessNameLine1Txt>Daffodil Accounting</BusinessNameLine1Txt>
+    </BusinessName>
+    <BusinessNameControlTxt>DAFF</BusinessNameControlTxt>
+    <USAddress>
+      <AddressLine1Txt>222 6th Street</AddressLine1Txt>
+      <CityNm>Kansas City</CityNm>
+      <StateAbbreviationCd>MO</StateAbbreviationCd>
+      <ZIPCd>64131</ZIPCd>
+    </USAddress>
+  </Filer>
+  <ReturnData documentCnt="3">
+    <IRS941 documentId="IRS941">
+      <!-- Aggregate Return Filers Only: Type of filer - Certified Professional Employer Organization (CPEO) -->
+      <CPEOInd>X</CPEOInd>
+      <!-- Line 1: Number of employees who received wages, tips, or other compensation -->
+      <EmployeeCnt>10</EmployeeCnt>
+      <!-- Line 2: Wages, tips, and other compensation -->
+      <WagesAmt>10200.00</WagesAmt>
+      <!-- Line 3: Federal income tax withheld from wages, tips, and other compensation -->
+      <FederalIncomeTaxWithheldAmt>1200.00</FederalIncomeTaxWithheldAmt>
+      <!-- Line 5a: Taxable social security wages -->
+      <SocialSecurityWageAndTaxGrp>
+        <SocialSecurityTaxCashWagesAmt>10200.00</SocialSecurityTaxCashWagesAmt>
+        <SocialSecurityTaxAmt>1264.80</SocialSecurityTaxAmt>
+      </SocialSecurityWageAndTaxGrp>
+      <!-- Line 5c: Taxable Medicare wages and tips -->
+      <MedicareWageTipsAndTaxGrp>
+        <TaxableMedicareWagesTipsAmt>10200.00</TaxableMedicareWagesTipsAmt>
+        <TaxOnMedicareWagesTipsAmt>295.80</TaxOnMedicareWagesTipsAmt>
+      </MedicareWageTipsAndTaxGrp>
+      <!-- Line 5e: Total social security and Medicare taxes -->
+      <TotalSSMdcrTaxAmt>1560.60</TotalSSMdcrTaxAmt>
+      <!-- Line 6: Total taxes before adjustments -->
+      <TotalTaxBeforeAdjustmentAmt>2760.60</TotalTaxBeforeAdjustmentAmt>
+      <!-- Line 10: Total taxes after adjustments (lines 7-9 blank) -->
+      <TotalTaxAfterAdjustmentAmt>2760.60</TotalTaxAfterAdjustmentAmt>
+      <!-- Line 11: Qualified small business payroll tax credit for increasing research activities, attached Form 8974 -->
+      <PayrollTaxCreditAmt referenceDocumentId="IRS8974" referenceDocumentName="IRS8974">390.15</PayrollTaxCreditAmt>
+      <!-- Line 12: Total taxes after adjustments and nonrefundable credits -->
+      <TotalTaxAmt>2370.45</TotalTaxAmt>
+      <!-- Line 13: Total deposits for this quarter -->
+      <TotalTaxDepositAmt>2760.60</TotalTaxDepositAmt>
+      <!-- Line 15a/15b: Overpayment, Send a refund checked -->
+      <OverpaymentGrp>
+        <OverpaidAmt>390.15</OverpaidAmt>
+        <RefundOverpaymentInd>X</RefundOverpaymentInd>
+      </OverpaymentGrp>
+      <!-- Line 16: Total taxes (line 12) less than $2,500 -->
+      <TotalTaxLessThanLimitAmtInd>X</TotalTaxLessThanLimitAmtInd>
+    </IRS941>
+    <IRS941ScheduleR documentId="IRS941ScheduleR">
+      <!-- Type of filer - CPEO (same as Form 941) -->
+      <CPEOInd>X</CPEOInd>
+      <!-- Line 1: client allocation -->
+      <ClientInformationGrp>
+        <EIN>003333336</EIN>
+        <WagesTypeCd>A</WagesTypeCd>
+        <ClientAllocationInformationGrp>
+          <EmployeeCnt>5</EmployeeCnt>
+          <WagesAmt>5100.00</WagesAmt>
+          <FederalIncomeTaxWithheldAmt>600.00</FederalIncomeTaxWithheldAmt>
+          <TotalSocialSecurityTaxTipAmt>632.40</TotalSocialSecurityTaxTipAmt>
+          <TaxOnMedicareWagesTipsAmt>147.90</TaxOnMedicareWagesTipsAmt>
+          <TotalSSMdcrTaxAmt>780.30</TotalSSMdcrTaxAmt>
+          <PayrollTaxCreditAmt>390.15</PayrollTaxCreditAmt>
+          <TotalTaxAmt>990.15</TotalTaxAmt>
+          <TotalTaxDepositAmt>1380.30</TotalTaxDepositAmt>
+        </ClientAllocationInformationGrp>
+      </ClientInformationGrp>
+      <!-- Line 6: Subtotals for clients -->
+      <SubtotalForClientGrp>
+        <EmployeeCnt>5</EmployeeCnt>
+        <WagesAmt>5100.00</WagesAmt>
+        <FederalIncomeTaxWithheldAmt>600.00</FederalIncomeTaxWithheldAmt>
+        <TotalSocialSecurityTaxTipAmt>632.40</TotalSocialSecurityTaxTipAmt>
+        <TaxOnMedicareWagesTipsAmt>147.90</TaxOnMedicareWagesTipsAmt>
+        <TotalSSMdcrTaxAmt>780.30</TotalSSMdcrTaxAmt>
+        <PayrollTaxCreditAmt>390.15</PayrollTaxCreditAmt>
+        <TotalTaxAmt>990.15</TotalTaxAmt>
+        <TotalTaxDepositAmt>1380.30</TotalTaxDepositAmt>
+      </SubtotalForClientGrp>
+      <!-- Line 8: Form 941 amounts for your employees -->
+      <AggregateEmployeeInfoGrp>
+        <EmployeeCnt>5</EmployeeCnt>
+        <WagesAmt>5100.00</WagesAmt>
+        <FederalIncomeTaxWithheldAmt>600.00</FederalIncomeTaxWithheldAmt>
+        <TotalSocialSecurityTaxTipAmt>632.40</TotalSocialSecurityTaxTipAmt>
+        <TaxOnMedicareWagesTipsAmt>147.90</TaxOnMedicareWagesTipsAmt>
+        <TotalSSMdcrTaxAmt>780.30</TotalSSMdcrTaxAmt>
+        <TotalTaxAmt>1380.30</TotalTaxAmt>
+        <TotalTaxDepositAmt>1380.30</TotalTaxDepositAmt>
+      </AggregateEmployeeInfoGrp>
+      <!-- Line 9: Totals -->
+      <TotalAggregateAndClientInfoGrp>
+        <EmployeeCnt>10</EmployeeCnt>
+        <WagesAmt>10200.00</WagesAmt>
+        <FederalIncomeTaxWithheldAmt>1200.00</FederalIncomeTaxWithheldAmt>
+        <TotalSocialSecurityTaxTipAmt>1264.80</TotalSocialSecurityTaxTipAmt>
+        <TaxOnMedicareWagesTipsAmt>295.80</TaxOnMedicareWagesTipsAmt>
+        <TotalSSMdcrTaxAmt>1560.60</TotalSSMdcrTaxAmt>
+        <PayrollTaxCreditAmt>390.15</PayrollTaxCreditAmt>
+        <TotalTaxAmt>2370.45</TotalTaxAmt>
+        <TotalTaxDepositAmt>2760.60</TotalTaxDepositAmt>
+      </TotalAggregateAndClientInfoGrp>
+    </IRS941ScheduleR>
+    <IRS8974 documentId="IRS8974">
+      <!-- Client EIN and name for this Form 8974 (Daffodil Accounting's aggregated client, Marty Azalea) -->
+      <EIN>003333336</EIN>
+      <BusinessName>
+        <BusinessNameLine1Txt>Marty Azalea</BusinessNameLine1Txt>
+      </BusinessName>
+      <!-- Part 1, line 1: income tax return that included Form 6765 -->
+      <EmployerPayrollTaxElectionGrp>
+        <TaxYearEndDt>2025-12-31</TaxYearEndDt>
+        <ReturnTypeCd>1040</ReturnTypeCd>
+        <ReturnFiledDt>2026-04-15</ReturnFiledDt>
+        <PayrollTaxCreditAllocatedAmt>600.00</PayrollTaxCreditAllocatedAmt>
+        <PriorPeriodPayrollTaxCreditAmt>99.96</PriorPeriodPayrollTaxCreditAmt>
+        <RemainingCreditAmt>500.04</RemainingCreditAmt>
+      </EmployerPayrollTaxElectionGrp>
+      <!-- Line 6: total remaining credit -->
+      <MaxAllwblPayrollTaxCreditAmt>500.04</MaxAllwblPayrollTaxCreditAmt>
+      <!-- Line 8: Form 941, line 5a, column 2 -->
+      <SocialSecurityTaxAmt>632.40</SocialSecurityTaxAmt>
+      <!-- Line 10: add lines 8 and 9 -->
+      <TotalSocialSecurityTaxTipAmt>632.40</TotalSocialSecurityTaxTipAmt>
+      <!-- Line 11: line 10 x 50% -->
+      <AdjSocialSecurityTaxTipAmt>316.20</AdjSocialSecurityTaxTipAmt>
+      <!-- Line 12: credit against employer share of social security tax -->
+      <CrAgnstEmplrShrSSTAmt>316.20</CrAgnstEmplrShrSSTAmt>
+      <!-- Line 13: subtract line 12 from line 7 -->
+      <CalcCrRdcngAgnstEmplrShrSSTAmt>183.84</CalcCrRdcngAgnstEmplrShrSSTAmt>
+      <!-- Line 14: Form 941, line 5c, column 2 -->
+      <TaxOnMedicareWagesTipsAmt>147.90</TaxOnMedicareWagesTipsAmt>
+      <!-- Line 15: line 14 x 50% -->
+      <CalcEmplrShareMedcrTaxAmt>73.95</CalcEmplrShareMedcrTaxAmt>
+      <!-- Line 16: credit against employer share of Medicare tax -->
+      <CreditForEmployerSSMedcrTxAmt>73.95</CreditForEmployerSSMedcrTxAmt>
+      <!-- Line 17: total credit -->
+      <PayrollTaxCreditAmt>390.15</PayrollTaxCreditAmt>
+    </IRS8974>
+  </ReturnData>
+</ClientReturnBody>

@@ -1,0 +1,82 @@
+document	form line	element path	value	pdf page
+Filer	header	Filer/EIN	003222220	2
+Filer	header	Filer/BusinessName/BusinessNameLine1Txt	Daffodil Accounting	2
+Filer	header	Filer/BusinessNameControlTxt	DAFF	2
+Filer	header	Filer/USAddress/AddressLine1Txt	222 6th Street	2
+Filer	header	Filer/USAddress/CityNm	Kansas City	2
+Filer	header	Filer/USAddress/StateAbbreviationCd	MO	2
+Filer	header	Filer/USAddress/ZIPCd	64131	2
+ClientReturnBody	Report for this Quarter, box 1	@quarterEndingDt=2026-03, @taxPeriodBegin=2026-01-01, @taxPeriodEnd=2026-03-31	2026-03 / 2026-01-01 / 2026-03-31	2
+IRS941	Aggregate Return Filers Only - Type of filer	IRS941/CPEOInd	X	2
+IRS941	Line 1	IRS941/EmployeeCnt	10	2
+IRS941	Line 2	IRS941/WagesAmt	10200.00	2
+IRS941	Line 3	IRS941/FederalIncomeTaxWithheldAmt	1200.00	2
+IRS941	Line 5a col 1	IRS941/SocialSecurityWageAndTaxGrp/SocialSecurityTaxCashWagesAmt	10200.00	2
+IRS941	Line 5a col 2	IRS941/SocialSecurityWageAndTaxGrp/SocialSecurityTaxAmt	1264.80	2
+IRS941	Line 5c col 1	IRS941/MedicareWageTipsAndTaxGrp/TaxableMedicareWagesTipsAmt	10200.00	2
+IRS941	Line 5c col 2	IRS941/MedicareWageTipsAndTaxGrp/TaxOnMedicareWagesTipsAmt	295.80	2
+IRS941	Line 5e	IRS941/TotalSSMdcrTaxAmt	1560.60	2
+IRS941	Line 6	IRS941/TotalTaxBeforeAdjustmentAmt	2760.60	2
+IRS941	Line 10	IRS941/TotalTaxAfterAdjustmentAmt	2760.60	2
+IRS941	Line 11	IRS941/PayrollTaxCreditAmt (@referenceDocumentId=IRS8974)	390.15	2
+IRS941	Line 12	IRS941/TotalTaxAmt	2370.45	2
+IRS941	Line 13	IRS941/TotalTaxDepositAmt	2760.60	2
+IRS941	Line 15a	IRS941/OverpaymentGrp/OverpaidAmt	390.15	2
+IRS941	Line 15b (Send a refund)	IRS941/OverpaymentGrp/RefundOverpaymentInd	X	2
+IRS941	Line 16 (less than $2,500)	IRS941/TotalTaxLessThanLimitAmtInd	X	3
+IRS941ScheduleR	Type of filer - CPEO	IRS941ScheduleR/CPEOInd	X	4
+IRS941ScheduleR	Line 1 col a	IRS941ScheduleR/ClientInformationGrp/EIN	003333336	4
+IRS941ScheduleR	Line 1 col b	IRS941ScheduleR/ClientInformationGrp/WagesTypeCd	A	4
+IRS941ScheduleR	Line 1 col c	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/EmployeeCnt	5	4
+IRS941ScheduleR	Line 1 col d	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/WagesAmt	5100.00	4
+IRS941ScheduleR	Line 1 col e	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/FederalIncomeTaxWithheldAmt	600.00	4
+IRS941ScheduleR	Line 1 col g	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/TotalSocialSecurityTaxTipAmt	632.40	4
+IRS941ScheduleR	Line 1 col h	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/TaxOnMedicareWagesTipsAmt	147.90	4
+IRS941ScheduleR	Line 1 col i	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/TotalSSMdcrTaxAmt	780.30	4
+IRS941ScheduleR	Line 1 col k	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/PayrollTaxCreditAmt	390.15	4
+IRS941ScheduleR	Line 1 col q	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/TotalTaxAmt	990.15	4
+IRS941ScheduleR	Line 1 col r	IRS941ScheduleR/ClientInformationGrp/ClientAllocationInformationGrp/TotalTaxDepositAmt	1380.30	4
+IRS941ScheduleR	Line 6 col c	IRS941ScheduleR/SubtotalForClientGrp/EmployeeCnt	5	4
+IRS941ScheduleR	Line 6 col d	IRS941ScheduleR/SubtotalForClientGrp/WagesAmt	5100.00	4
+IRS941ScheduleR	Line 6 col e	IRS941ScheduleR/SubtotalForClientGrp/FederalIncomeTaxWithheldAmt	600.00	4
+IRS941ScheduleR	Line 6 col g	IRS941ScheduleR/SubtotalForClientGrp/TotalSocialSecurityTaxTipAmt	632.40	4
+IRS941ScheduleR	Line 6 col h	IRS941ScheduleR/SubtotalForClientGrp/TaxOnMedicareWagesTipsAmt	147.90	4
+IRS941ScheduleR	Line 6 col i	IRS941ScheduleR/SubtotalForClientGrp/TotalSSMdcrTaxAmt	780.30	4
+IRS941ScheduleR	Line 6 col k	IRS941ScheduleR/SubtotalForClientGrp/PayrollTaxCreditAmt	390.15	4
+IRS941ScheduleR	Line 6 col q	IRS941ScheduleR/SubtotalForClientGrp/TotalTaxAmt	990.15	4
+IRS941ScheduleR	Line 6 col r	IRS941ScheduleR/SubtotalForClientGrp/TotalTaxDepositAmt	1380.30	4
+IRS941ScheduleR	Line 8 col c	IRS941ScheduleR/AggregateEmployeeInfoGrp/EmployeeCnt	5	4
+IRS941ScheduleR	Line 8 col d	IRS941ScheduleR/AggregateEmployeeInfoGrp/WagesAmt	5100.00	4
+IRS941ScheduleR	Line 8 col e	IRS941ScheduleR/AggregateEmployeeInfoGrp/FederalIncomeTaxWithheldAmt	600.00	4
+IRS941ScheduleR	Line 8 col g	IRS941ScheduleR/AggregateEmployeeInfoGrp/TotalSocialSecurityTaxTipAmt	632.40	4
+IRS941ScheduleR	Line 8 col h	IRS941ScheduleR/AggregateEmployeeInfoGrp/TaxOnMedicareWagesTipsAmt	147.90	4
+IRS941ScheduleR	Line 8 col i	IRS941ScheduleR/AggregateEmployeeInfoGrp/TotalSSMdcrTaxAmt	780.30	4
+IRS941ScheduleR	Line 8 col q	IRS941ScheduleR/AggregateEmployeeInfoGrp/TotalTaxAmt	1380.30	4
+IRS941ScheduleR	Line 8 col r	IRS941ScheduleR/AggregateEmployeeInfoGrp/TotalTaxDepositAmt	1380.30	4
+IRS941ScheduleR	Line 9 col c	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/EmployeeCnt	10	4
+IRS941ScheduleR	Line 9 col d	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/WagesAmt	10200.00	4
+IRS941ScheduleR	Line 9 col e	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/FederalIncomeTaxWithheldAmt	1200.00	4
+IRS941ScheduleR	Line 9 col g	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/TotalSocialSecurityTaxTipAmt	1264.80	4
+IRS941ScheduleR	Line 9 col h	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/TaxOnMedicareWagesTipsAmt	295.80	4
+IRS941ScheduleR	Line 9 col i	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/TotalSSMdcrTaxAmt	1560.60	4
+IRS941ScheduleR	Line 9 col k	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/PayrollTaxCreditAmt	390.15	4
+IRS941ScheduleR	Line 9 col q	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/TotalTaxAmt	2370.45	4
+IRS941ScheduleR	Line 9 col r	IRS941ScheduleR/TotalAggregateAndClientInfoGrp/TotalTaxDepositAmt	2760.60	4
+IRS8974	Employer identification number	IRS8974/EIN	003333336	5
+IRS8974	Name (not your trade name)	IRS8974/BusinessName/BusinessNameLine1Txt	Marty Azalea	5
+IRS8974	Line 1 col a	IRS8974/EmployerPayrollTaxElectionGrp/TaxYearEndDt	2025-12-31	5
+IRS8974	Line 1 col b	IRS8974/EmployerPayrollTaxElectionGrp/ReturnTypeCd	1040	5
+IRS8974	Line 1 col c	IRS8974/EmployerPayrollTaxElectionGrp/ReturnFiledDt	2026-04-15	5
+IRS8974	Line 1 col e	IRS8974/EmployerPayrollTaxElectionGrp/PayrollTaxCreditAllocatedAmt	600.00	5
+IRS8974	Line 1 col f	IRS8974/EmployerPayrollTaxElectionGrp/PriorPeriodPayrollTaxCreditAmt	99.96	5
+IRS8974	Line 1 col g	IRS8974/EmployerPayrollTaxElectionGrp/RemainingCreditAmt	500.04	5
+IRS8974	Line 6	IRS8974/MaxAllwblPayrollTaxCreditAmt	500.04	5
+IRS8974	Line 8	IRS8974/SocialSecurityTaxAmt	632.40	5
+IRS8974	Line 10	IRS8974/TotalSocialSecurityTaxTipAmt	632.40	5
+IRS8974	Line 11	IRS8974/AdjSocialSecurityTaxTipAmt	316.20	5
+IRS8974	Line 12	IRS8974/CrAgnstEmplrShrSSTAmt	316.20	5
+IRS8974	Line 13	IRS8974/CalcCrRdcngAgnstEmplrShrSSTAmt	183.84	5
+IRS8974	Line 14	IRS8974/TaxOnMedicareWagesTipsAmt	147.90	5
+IRS8974	Line 15	IRS8974/CalcEmplrShareMedcrTaxAmt	73.95	5
+IRS8974	Line 16	IRS8974/CreditForEmployerSSMedcrTxAmt	73.95	5
+IRS8974	Line 17	IRS8974/PayrollTaxCreditAmt	390.15	5

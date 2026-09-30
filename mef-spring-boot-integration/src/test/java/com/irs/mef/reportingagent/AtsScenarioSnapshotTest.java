@@ -18,10 +18,6 @@ import java.time.ZoneOffset;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * Golden snapshots of each ATS scenario's composed Return and manifest.
- * The c2s-web scenario pages display these files; this test keeps them in step with the composer.
- */
 class AtsScenarioSnapshotTest {
 
     private static final Clock FIXED = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);

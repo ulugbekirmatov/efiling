@@ -54,7 +54,7 @@
           "from": "schema-required constants"
         },
         {
-          "element": "FilingSecurityInformation/IPv4AddressTxt",
+          "element": "FilingSecurityInformation/IPAddress/IPv4AddressTxt",
           "source": "pyramos",
           "from": "MEF_RA_FILING_IP"
         },
@@ -66,7 +66,7 @@
         {
           "element": "AtSubmissionCreationDeviceId / AtSubmissionFilingDeviceId",
           "source": "generated",
-          "from": "hash of filer EIN"
+          "from": "SHA-1 of \"pyramos-ats\" plus the filer EIN"
         },
         {
           "element": "QuarterEndingDt",
@@ -268,7 +268,7 @@
         }
       ],
       "notes": [
-        "The city is spelled 'Philadelephia' on both 941 pages. The client body keeps the typo on purpose, because it is IRS test data.",
+        "The city is spelled 'Philadelephia' on page 1 of the Form 941. The client body keeps the typo on purpose, because it is IRS test data.",
         "Lines 5b, 5d, 7-9 and 11 are blank on the form and absent from the XML.",
         "The Schedule B quarter checkbox (Quarter 1) matches the 941 quarter."
       ]
@@ -344,7 +344,7 @@
       ],
       "notes": [
         "Form 8974 is filed under the client's identity (EIN 003333336, Marty Azalea), not the CPEO's EIN, because the research credit belongs to the client's own income tax return.",
-        "Schedule R line 8 (the CPEO's own employees) mirrors the client subtotal on line 6, so the line 9 totals are exactly double the client allocation. This looks like deliberately simple test data.",
+        "On Schedule R, line 8 (the CPEO's own employees) repeats the client's wage, withholding, social security and Medicare figures from line 6. Only the client takes the $390.15 credit, so line 8 total tax is $1,380.30 against the client's $990.15, and line 9 totals $2,370.45.",
         "Form 8974 Part 1 column (d), 'EIN used on Form 6765', is blank on the PDF."
       ]
     },
@@ -369,7 +369,7 @@
         "state": "ready",
         "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file 941-X corrections in production (Pub 5078 section 2.5.1)."
       },
-      "summary": "A Form 941-X that corrects Orchid's Q1 2026 Form 941 from scenario 1. The original return underreported wages, withholding, and social security and Medicare wages by $1,500 each. It uses the adjusted-return process (line 1), not the claim process, and $379.50 of additional tax is owed.",
+      "summary": "A Form 941-X that corrects Orchid's Q1 2026 Form 941 from scenario 1. The original return underreported wages, social security wages and Medicare wages by $1,500 each, and federal income tax withheld by $150. It uses the adjusted-return process (line 1), not the claim process, and $379.50 of additional tax is owed.",
       "tests": [
         "Return being corrected: Form 941, quarter 1, calendar year 2026, errors discovered 05/21/2026",
         "Part 1 line 1, the adjusted employment tax return process (underreported tax). Line 2, the claim, is unchecked.",

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Client941Body xmlns="http://www.irs.gov/efile"
-               returnVersion="2026Q1v4.0"
-               taxPeriodBegin="2026-01-01"
-               taxPeriodEnd="2026-03-31"
-               quarterEndingDt="2026-03">
+<ClientReturnBody xmlns="http://www.irs.gov/efile"
+                  returnTypeCd="941"
+                  returnVersion="2026Q1v4.0"
+                  taxPeriodBegin="2026-01-01"
+                  taxPeriodEnd="2026-03-31"
+                  quarterEndingDt="2026-03">
   <Filer>
     <EIN>003000004</EIN>
     <BusinessName>
@@ -55,4 +56,4 @@
       <TotalTaxLessThanLimitAmtInd>X</TotalTaxLessThanLimitAmtInd>
     </IRS941>
   </ReturnData>
-</Client941Body>
+</ClientReturnBody>

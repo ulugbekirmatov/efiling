@@ -13,7 +13,7 @@ final class ReportingAgentReturnXml {
 
     static final String NS = "http://www.irs.gov/efile";
 
-    /** TY2026 rules R0000-248/249 require these even on a 941 with no refund. */
+    /** TY2026 rules R0000-248/249 (941 and 941X) require these even on a return with no refund. */
     private static final String REFUND_PRODUCT_ELECTED = "false";
     private static final String REFUND_DISBURSEMENT_CD = "0";
 
@@ -21,7 +21,7 @@ final class ReportingAgentReturnXml {
 
     private ReportingAgentReturnXml() {}
 
-    static String render(ReportingAgentOriginator originator, Client941Body client, OffsetDateTime returnTs) {
+    static String render(ReportingAgentOriginator originator, ClientReturnBody client, OffsetDateTime returnTs) {
         OffsetDateTime truncated = returnTs.withNano(0);
         StringBuilder xml = new StringBuilder(4096);
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -30,7 +30,7 @@ final class ReportingAgentReturnXml {
                 .append("\" returnVersion=\"")
                 .append(escape(client.returnVersion())).append("\">\n");
         xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
-        element(xml, 2, "ReturnTypeCd", "941");
+        element(xml, 2, "ReturnTypeCd", client.returnType().returnTypeCd());
         element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
         element(xml, 2, "SoftwareId", originator.softwareId().value());
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
@@ -78,7 +78,7 @@ final class ReportingAgentReturnXml {
     }
 
     private static void filingSecurity(
-            StringBuilder xml, ReportingAgentOriginator originator, Client941Body client, OffsetDateTime returnTs) {
+            StringBuilder xml, ReportingAgentOriginator originator, ClientReturnBody client, OffsetDateTime returnTs) {
         Objects.requireNonNull(returnTs, "returnTs");
         String deviceId = sha1HexUpper("pyramos-ats" + client.filerEin().value());
         xml.append("    <FilingSecurityInformation>\n");
@@ -109,7 +109,7 @@ final class ReportingAgentReturnXml {
         xml.append("    </ReportingAgent94XFilerGrp>\n");
     }
 
-    private static String vendorControl(Client941Body client) {
+    private static String vendorControl(ClientReturnBody client) {
         String seed = client.filerEin().value()
                 + client.taxPeriod().begin()
                 + client.taxPeriod().end();

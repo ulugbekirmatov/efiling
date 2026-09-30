@@ -19,7 +19,7 @@ class ReportingAgentReturnTest {
 
     @Test
     void composedReturnIsSchemaValidReportingAgent() {
-        Client941Body orchid = Client941Body.load(OrchidQ1_2026.CLIENT_BODY);
+        ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
         ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
 
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
@@ -54,7 +54,7 @@ class ReportingAgentReturnTest {
     void loadRejectsScenario1ReturnRoot() {
         ReportingAgentValidationException ex = assertThrows(
                 ReportingAgentValidationException.class,
-                () -> Client941Body.load(OrchidQ1_2026.SCENARIO_1_RETURN));
+                () -> ClientReturnBody.load(AtsScenario.repoPath("test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml")));
         assertEquals("xml", ex.field());
     }
 
@@ -71,7 +71,7 @@ class ReportingAgentReturnTest {
 
     @Test
     void agentEinDiffersFromFilerEin() {
-        Client941Body orchid = Client941Body.load(OrchidQ1_2026.CLIENT_BODY);
+        ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
         ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
         assertEquals("003000004", orchid.filerEin().value());
         assertNotEquals(orchid.filerEin(), standIn.identity().ein());

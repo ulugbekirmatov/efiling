@@ -57,7 +57,7 @@ class ReportingAgentForm941AtsTest {
         ReportingAgentOriginator pyramos = originators.fromEnvironment();
         ReportingAgentAtsGate.open(sdk, pyramos);
 
-        Client941Body orchid = Client941Body.load(OrchidQ1_2026.CLIENT_BODY);
+        ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
                 pyramos, orchid, Clock.system(ZoneId.of("America/New_York")));
         ReportingAgentReturn.Structure header = ret.structure();

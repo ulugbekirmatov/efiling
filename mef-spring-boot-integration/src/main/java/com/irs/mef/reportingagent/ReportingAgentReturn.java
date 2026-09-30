@@ -2,7 +2,6 @@ package com.irs.mef.reportingagent;
 
 import com.irs.mef.newsend.domain.Efin;
 import com.irs.mef.newsend.domain.Ein;
-import com.irs.mef.newsend.domain.FormType;
 import com.irs.mef.newsend.domain.NewSendSubmitCommand;
 import com.irs.mef.newsend.domain.TaxPeriod;
 import org.w3c.dom.Document;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A complete schema-shaped 941 Return whose originator is a Reporting Agent.
+ * A complete schema-shaped 94x Return (941 or 941X) whose originator is a Reporting Agent.
  * Constructed only by {@link #compose}. Callers cannot pass OriginatorTypeCd.
  *
  * Hidden: header element order, PIN-group enumerations, FilingSecurityInformation
@@ -46,10 +45,10 @@ public final class ReportingAgentReturn {
     private static final ZoneId PROCESSING_ZONE = ZoneId.of("America/New_York");
 
     private final ReportingAgentOriginator originator;
-    private final Client941Body client;
+    private final ClientReturnBody client;
     private final String xml;
 
-    private ReportingAgentReturn(ReportingAgentOriginator originator, Client941Body client, String xml) {
+    private ReportingAgentReturn(ReportingAgentOriginator originator, ClientReturnBody client, String xml) {
         this.originator = originator;
         this.client = client;
         this.xml = xml;
@@ -57,14 +56,14 @@ public final class ReportingAgentReturn {
 
     public static ReportingAgentReturn compose(
             ReportingAgentOriginator originator,
-            Client941Body client,
+            ClientReturnBody client,
             Clock clock) {
         Objects.requireNonNull(originator);
         Objects.requireNonNull(client);
         Objects.requireNonNull(clock);
-        if (!Client941Body.RETURN_VERSION.equals(client.returnVersion())) {
+        if (!ClientReturnBody.RETURN_VERSION.equals(client.returnVersion())) {
             throw new ReportingAgentValidationException("returnVersion",
-                    "locked to " + Client941Body.RETURN_VERSION);
+                    "locked to " + ClientReturnBody.RETURN_VERSION);
         }
         OffsetDateTime returnTs = OffsetDateTime.now(clock.withZone(PROCESSING_ZONE));
         String xml = ReportingAgentReturnXml.render(originator, client, returnTs);
@@ -85,7 +84,7 @@ public final class ReportingAgentReturn {
 
     /**
      * EIN, form, period, and XML come from this object — they cannot disagree.
-     * Form type is always 941. Submission id is still minted by NewSend.
+     * Form type comes from the client body's return type. Submission id is still minted by NewSend.
      */
     public NewSendSubmitCommand toSubmitCommand(
             String idempotencyKey,
@@ -95,7 +94,7 @@ public final class ReportingAgentReturn {
                 idempotencyKey,
                 clientId,
                 client.filerEin(),
-                FormType.F941,
+                client.returnType().formType(),
                 client.taxPeriod(),
                 xml,
                 allowDuplicatePeriod);
@@ -108,6 +107,7 @@ public final class ReportingAgentReturn {
             xpath.setNamespaceContext(new EfileNamespace());
             return new Structure(
                     attribute(xpath, document, "/efile:Return/@returnVersion"),
+                    text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:ReturnTypeCd"),
                     text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:OriginatorGrp/efile:OriginatorTypeCd"),
                     new Efin(text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:OriginatorGrp/efile:EFIN")),
                     exists(xpath, document, "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp"),
@@ -167,6 +167,7 @@ public final class ReportingAgentReturn {
 
     public record Structure(
             String returnVersion,
+            String returnTypeCd,
             String originatorTypeCd,
             Efin originatorEfin,
             boolean hasReportingAgentPinGrp,

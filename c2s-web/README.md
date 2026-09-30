@@ -36,3 +36,18 @@ These are the page files (the rest is Next.js shell):
 - `next.config.js` (the `/backend` rewrite)
 
 C2S QID/DID wiring is intentionally absent. Do not invent platform IDs here.
+
+## ATS test scenarios
+
+Open http://localhost:3000/scenarios
+
+The pages read `test-scenarios/ats-ty2026/` on disk: `scenarios.json` and each scenario's XML, TSV, and PDF. The Spring Boot backend is not needed.
+
+Set `MEF_REPO_ROOT` when `next dev` or `next build` does not run from `c2s-web`. The default repo root is the parent of `c2s-web`.
+
+`composed-return.xml` and `manifest.xml` are regenerated with:
+
+```bash
+cd mef-spring-boot-integration
+mvn test -Dtest=AtsScenarioSnapshotTest -Dats.snapshots.update=true
+```

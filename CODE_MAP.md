@@ -267,7 +267,7 @@ Every `MefException` maps to 500, including `NOT_LOGGED_IN` and `FILE_NOT_FOUND`
 | `CertificateTestResponse` | 18-48 | success, timestamp, 3 nested results, errorMessage |
 | ↳ `KeystoreLoadResult` / `CertificateDetailsResult` / `CertificateInfo` / `AuthenticationTestResult` | 54 / 66 / 79 / 94 | |
 
-`SubmitResponse.errorMessage` and `AckResponse.errorCodes`/`errorMessages` are declared but never populated (`AcknowledgementService.java:544-545` sets them to `null` with a TODO).
+`SubmitResponse.errorMessage` is declared but never populated. `AckResponse.errorCodes`/`errorMessages` carry the rule numbers and `[severity] message` lines of a rejected ack (empty lists when accepted). Every ack the backend retrieves is persisted to `data/ack-store/<submissionId>.json` (`com.irs.mef.ack`) and served with its captured send by `GET /api/inspector/sends/{id}`.
 
 ---
 

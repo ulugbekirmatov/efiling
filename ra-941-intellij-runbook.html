@@ -164,13 +164,13 @@ sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk \
     <div>
       <div class="step-loc">Terminal · repo root</div>
       <h3>Install the IRS SDK jar into the local Maven repository</h3>
-      <p>The pom depends on <code>gov.irs.mef:mef-client-sdk:16.0</code>, which no public repository serves. Without this step IntelliJ's Maven import shows the dependency in red and nothing compiles.</p>
+      <p>The pom depends on <code>gov.irs.mef:mef-client-sdk:17.0</code>, which no public repository serves. Without this step IntelliJ's Maven import shows the dependency in red and nothing compiles.</p>
       <div class="code"><pre><span class="kw">cd</span> /Users/ulugbekirmatov/Documents/MeF
-unzip -o <span class="str">"Version_16/A2A_Toolkit_Version16.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip"</span> -d /tmp/mef_sdk
+unzip -o <span class="str">"Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip"</span> -d /tmp/mef_sdk
 mvn install:install-file \
   -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/mef_client_sdk.jar \
-  -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=16.0 -Dpackaging=jar</pre></div>
-      <div class="check"><span class="k">Checkpoint</span><span class="body"><code>ls ~/.m2/repository/gov/irs/mef/mef-client-sdk/16.0/</code> lists the jar and a pom.</span></div>
+  -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=17.0 -Dpackaging=jar</pre></div>
+      <div class="check"><span class="k">Checkpoint</span><span class="body"><code>ls ~/.m2/repository/gov/irs/mef/mef-client-sdk/17.0/</code> lists the jar and a pom.</span></div>
     </div>
   </article>
 
@@ -198,7 +198,7 @@ git branch --show-current</pre></div>
         <li><span class="ui">Settings<span class="sep">→</span>Build, Execution, Deployment<span class="sep">→</span>Compiler<span class="sep">→</span>Annotation Processors</span>: tick <span class="ui">Enable annotation processing</span>. The reporting-agent classes use Lombok's <code>@Data</code>; the Lombok plugin is bundled with IntelliJ, but processing must be on.</li>
         <li>Open the <span class="ui">Maven</span> tool window (right edge) and click <span class="ui">Reload All Maven Projects</span>. Wait for indexing to finish.</li>
       </ol>
-      <div class="check"><span class="k">Checkpoint</span><span class="body">In the Maven tool window, <span class="ui">Dependencies</span> shows <code>gov.irs.mef:mef-client-sdk:16.0</code> without red underline, and <span class="ui">Build<span class="sep">→</span>Build Project</span> finishes with no errors.</span></div>
+      <div class="check"><span class="k">Checkpoint</span><span class="body">In the Maven tool window, <span class="ui">Dependencies</span> shows <code>gov.irs.mef:mef-client-sdk:17.0</code> without red underline, and <span class="ui">Build<span class="sep">→</span>Build Project</span> finishes with no errors.</span></div>
     </div>
   </article>
 </section>

@@ -111,7 +111,7 @@ Environment selection: `mef.sdk.environment` = `ATS` (test, `la.alt.www4.irs.gov
 
 Consult before implementing any SDK operation — never guess SDK APIs:
 - `mef-spring-boot-integration/sdk-reference/docs/` — `SDK_API_REFERENCE.md`, `SDK_QUICK_REF.md`, `SDK_WSDL_GUIDE.md`
-- `sdk-reference/extracted/META-INF/wsdl/` — authoritative WSDLs (`MeFTransmitterServicesMTOM.wsdl`, `MeFMSIServices.wsdl`)
+- `sdk-reference/extracted/META-INF/wsdl/` — WSDLs (`MeFTransmitterServicesMTOM.wsdl`, `MeFMSIServices.wsdl`). Extracted from an older SDK: v17's WSDLs are byte-identical, but its `MeFHeader.xsd` pins `WSDLVersionNum` to 10.A, not 10.9
 - `javap -classpath <path-to-mef_client_sdk.jar> -public gov.irs.mef.services.transmitter.SendSubmissionsClient` for exact signatures
 
 Key packages: `gov.irs.mef.services.msi.*` (Login/Logout), `gov.irs.mef.services.transmitter.*` (Submit/Status/Ack), `gov.irs.mef.services.data.*`, `gov.irs.a2a.mef.mefheader.*`.

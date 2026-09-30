@@ -1,6 +1,6 @@
 # MeF Integration Code Map
 
-Spring Boot 3.2.0 / Java 17 application wrapping the IRS Modernized e-File (MeF) Client SDK v16 for A2A communication. Project root: `mef-spring-boot-integration/` inside the `MeF` repo.
+Spring Boot 3.2.0 / Java 17 application wrapping the IRS Modernized e-File (MeF) Client SDK v17 (WSDL 10.A) for A2A communication. Project root: `mef-spring-boot-integration/` inside the `MeF` repo.
 
 All paths below are relative to `/Users/ulugbekirmatov/Documents/MeF/` unless prefixed. Line numbers verified against the files as they exist on disk (2026-08-28).
 
@@ -13,6 +13,7 @@ All paths below are relative to `/Users/ulugbekirmatov/Documents/MeF/` unless pr
 | Path | Purpose |
 |---|---|
 | `mef-spring-boot-integration/` | The Spring Boot application (everything below) |
+| `Version_17/A2A_Toolkit_Version17.0/` | IRS A2A Toolkit v17 (WSDL 10.A), what the pom builds against since 2026-09-30. Only the Java SDK zip and release notes are tracked. The Java SDK differs from v16 only in the WSDL/toolkit version constants and `MeFHeader.xsd` `WSDLVersionNum` |
 | `Version_16/A2A_Toolkit_Version16.0/` | Vendor drop of the IRS A2A Toolkit v16. `MeF_Client_SDK/Java/dist/mef_client_sdk.zip` (17 MB) holds the six SDK jars; they are **not** unpacked and `*.jar` is gitignored |
 | `Version_15/` | Previous toolkit version, unused by the build |
 | `test-scenarios/941-scenario-1-orchid-q1-2026/` | `Return941-Scenario1.xml` + supporting files consumed by the Form 941 tests |
@@ -444,14 +445,14 @@ The SDK appends `/config` to the toolkit home, so `A2A_TOOLKIT_HOME` must point 
 | Parent | 9-12 | `spring-boot-starter-parent` 3.2.0 |
 | `java.version` / compiler source-target | 22 / 137-138 | 17 |
 | `mef.sdk.home` property | 24 | `${project.basedir}/src/main/resources/mef_config` (declared, unreferenced elsewhere) |
-| SDK dependency | 53-57 | `gov.irs.mef:mef-client-sdk:16.0` — **compile scope from the local repo, not `system` scope with a `lib/` path** |
+| SDK dependency | 53-57 | `gov.irs.mef:mef-client-sdk:17.0` — **compile scope from the local repo, not `system` scope with a `lib/` path** |
 | Metro/JAX-WS | 59-81 | `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` |
 | XML security | 83-87 | `org.apache.santuario:xmlsec:4.0.2` |
 | Other | 96-107 | `spring-retry` (version-managed), `io.github.cdimascio:dotenv-java:3.0.0` |
 | JVM args for `spring-boot:run` | 123-128 | `--add-opens java.base/java.lang=ALL-UNNAMED`; `--add-exports` for `java.xml/…xerces.internal.dom`, `java.xml.crypto/…xml.internal.security`, `java.xml.crypto/org.jcp.xml.dsig.internal.dom` |
 | Resource copy | 150-171 | copies `src/main/resources/mef_config` → `target/classes/mef_config` at the `validate` phase |
 
-The five jars other than `mef_client_sdk.jar` carry real public coordinates and resolve from Maven Central. Only `gov.irs.mef:mef-client-sdk:16.0` must be installed by hand — and it is **not currently in `~/.m2/repository`** (`~/.m2` does not exist on this machine).
+The five jars other than `mef_client_sdk.jar` carry real public coordinates and resolve from Maven Central. Only `gov.irs.mef:mef-client-sdk:17.0` must be installed by hand — and it is **not currently in `~/.m2/repository`** (`~/.m2` does not exist on this machine).
 
 ---
 
@@ -468,17 +469,17 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 
 ### One-time: install the MeF SDK jar into the local repo
 
-`pom.xml` expects `gov.irs.mef:mef-client-sdk:16.0` in `~/.m2`. The jar ships inside the toolkit zip and is gitignored, so it must be extracted and installed:
+`pom.xml` expects `gov.irs.mef:mef-client-sdk:17.0` in `~/.m2`. The jar ships inside the toolkit zip and is gitignored, so it must be extracted and installed:
 
 ```bash
 cd /Users/ulugbekirmatov/Documents/MeF
-unzip -o "Version_16/A2A_Toolkit_Version16.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip" \
+unzip -o "Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip" \
   -d /tmp/mef_sdk
 
 mvn install:install-file \
   -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/mef_client_sdk.jar \
   -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk \
-  -Dversion=16.0 -Dpackaging=jar
+  -Dversion=17.0 -Dpackaging=jar
 ```
 
 The zip also contains `webservices-{api,extra,rt,tools}-4.0.4.jar` and `xmlsec-4.0.2.jar`, which match the declared coordinates and will resolve from Central without manual installation.

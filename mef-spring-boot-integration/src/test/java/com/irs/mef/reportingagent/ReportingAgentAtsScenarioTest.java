@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -105,6 +106,8 @@ class ReportingAgentAtsScenarioTest {
         System.out.println("RA ATS ackType=" + ack.getAckType()
                 + " details=" + ack.getDetails()
                 + " errorCodes=" + ack.getErrorCodes());
+        assertEquals("Accepted", ack.getAckType(),
+                "IRS did not accept submissionId " + submissionId + ": " + ack.getErrorCodes());
     }
 
     /**

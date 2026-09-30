@@ -1,0 +1,47 @@
+                *                                                      *
+                *   What's new for MeF Client SDK Release 2026v17.0    *
+                *                                                      *
+                ********************************************************
+
+
+General Changes for Java SDK
+____________________________
+
+Version number change for WSDL (ver. 10.A) and Toolkit (v17.0)
+ 
+
+General Changes for .NET SDK
+____________________________
+
+Version number change for WSDL (ver. 10.A) and Toolkit (v17.0)
+
+Signature Validation and Certification Verification by the server. Below src code file changed to preserve the <saml:assertion> 
+inside security element. 
+
+### Core Session/cookie Management Changes  (4 files)
+1. **LoginClient.cs** - Modified to handle SAML as object type instead of string
+2. **SessionInfo.cs** - Updated to store SAML without type conversion
+3. **ServiceContext.cs** - Changed to pass SAML between components without serialization
+4. **Login encoder** - Updated to extract and store SAML while preserving exact structure
+
+### Service Request Encoders (3 files)
+5. **Logout encoder** - Fixed to include SAML in requests without reformatting 
+6. **Services encoder** - Fixed to preserve SAML structure for all standard service calls
+7. **Services MTOM encoder** - Fixed to preserve SAML structure for large binary transfers (e.g., SendSubmissions)
+
+### Technical Changes
+All fixes implement the following pattern:
+- **Store SAML as XElement** instead of converting to string
+- **Preserve XML whitespace** when loading SAML from responses
+- **Disable XML formatting** when adding SAML to requests
+- **Avoid re-parsing** SAML from string representations
+
+
+
+
+General Changes for Transmitter and State Gateway applications
+____________________________
+
+ 
+
+

@@ -234,6 +234,7 @@ public final class FileSendSnapshotRing implements SendSnapshotRing {
         return new SnapshotSummary(
                 new SnapshotId(meta.submissionId()),
                 Instant.parse(meta.capturedAt()),
+                meta.environment(),
                 meta.einMasked(),
                 meta.formType(),
                 meta.taxPeriodBegin() + " to " + meta.taxPeriodEnd(),

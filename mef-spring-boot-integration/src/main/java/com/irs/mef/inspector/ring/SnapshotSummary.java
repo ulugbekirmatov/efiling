@@ -5,6 +5,7 @@ import java.time.Instant;
 public record SnapshotSummary(
         SnapshotId submissionId,
         Instant capturedAt,
+        String environment,
         String einMasked,
         String formCode,
         String periodLabel,

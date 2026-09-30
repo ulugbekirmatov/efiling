@@ -3,20 +3,20 @@
 
 	<xsd:annotation>
 		<xsd:documentation>
-			<Description>IRS e-file Schema - Return Schema for 941 return</Description>
+			<Description>IRS e-file Schema - Return Schema for 941-X return</Description>
 			<TaxYear>2026</TaxYear>
 			<MaturityLevel>Final Schema Version RL109 Drop 5</MaturityLevel>
 			<ReleaseDate>Nov 6 2025</ReleaseDate>
 		</xsd:documentation>
 	</xsd:annotation>
 
-	<xsd:include schemaLocation="ReturnHeader94x.xsd" />
-	<xsd:include schemaLocation="ReturnData941.xsd" />
+	<xsd:include schemaLocation="../Common/ReturnHeader94x.xsd" />
+	<xsd:include schemaLocation="ReturnData941X.xsd" />
 
-	<!--  Employer's QUARTERLY Federal Tax Return - 941 -->
+	<!-- Adjusted Employer's QUARTERLY Federal Tax Return or Claim for Refund - 941-X -->
 	<xsd:element name="Return">
 		<xsd:annotation>
-			<xsd:documentation>941 Return - wraps around Return Header and Return Data</xsd:documentation>
+			<xsd:documentation>941-X Return - wraps around Return Header and Return Data</xsd:documentation>
 		</xsd:annotation>
 
 		<xsd:complexType>

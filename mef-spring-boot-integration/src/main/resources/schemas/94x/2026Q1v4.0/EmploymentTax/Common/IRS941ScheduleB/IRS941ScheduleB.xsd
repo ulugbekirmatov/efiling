@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - IRS Form 941 Schedule B Report of Tax Liability for Semiweekly Schedule Depositors</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Final Schema Version RL109 Drop 5</MaturityLevel>
+			<ReleaseDate>Nov 6 2025</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ==================================================================== -->
+	<!-- ================= IRS Form 941 Schedule B ========================== -->
+	<!-- ==================================================================== -->
+
+	<xsd:element name="IRS941ScheduleB">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 941 Schedule B</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS941ScheduleBType">
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS941ScheduleB">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentId" type="IdListType">
+						<xsd:annotation>
+							<xsd:documentation>List of document ID's of forms, schedules, supporting info. etc. attached to this form</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentName" type="StringType" fixed="GeneralDependencySmall">
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS941ScheduleBType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 941 Schedule B</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+
+			<xsd:element name="TaxLiabilityQtrMonthlyDetail" maxOccurs="3">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Month Of Quarter Code -->
+						<xsd:element name="MonthOfQuarterCd">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Month Of Quarter Code</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:enumeration value="1"/>
+									<xsd:enumeration value="2"/>
+									<xsd:enumeration value="3"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="DailyTaxLiabilityDetail" maxOccurs="31">
+							<xsd:complexType>
+								<xsd:sequence>
+
+									<!-- Day Number -->
+									<xsd:element name="DayNum">
+										<xsd:annotation>
+											<xsd:documentation>
+												<Description>Day Number</Description>
+											</xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction base="IntegerNNType">
+												<xsd:minInclusive value="1"/>
+											   	<xsd:maxInclusive value="31"/>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<!-- Tax Liability Amount -->
+									<xsd:element name="TaxLiabilityAmt" type="USDecimalAmountNNType">
+										<xsd:annotation>
+											<xsd:documentation>
+												<Description>Tax Liability Amount</Description>
+											</xsd:documentation>
+										</xsd:annotation>
+									</xsd:element>
+
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+
+						<!-- Total Tax Liability Amount -->
+						<xsd:element name="TotalTaxLiabilityAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Total Tax Liability Amount</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Total Quarter Tax Liability Amount -->
+			<xsd:element name="TotalQuarterTaxLiabilityAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Quarter Tax Liability Amount</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+						
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

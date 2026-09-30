@@ -1,23 +1,27 @@
 package com.irs.mef.reportingagent;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import com.irs.mef.newsend.domain.FormType;
 
-/** Test helper → src/main/resources/schemas/94x/941/Return941.xsd — not test-scenarios/schemas/941. */
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+/** Test helper: the bundled root XSD the app validates a form against, not test-scenarios/schemas/941. */
 final class ClasspathSchemas {
 
     private ClasspathSchemas() {}
 
-    static File return941() {
-        Path cwd = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        Path module = cwd.endsWith("mef-spring-boot-integration")
-                ? cwd
-                : cwd.resolve("mef-spring-boot-integration");
-        Path schema = module.resolve("src/main/resources/schemas/94x/941/Return941.xsd");
-        if (!Files.exists(schema)) {
-            throw new IllegalStateException("Return941.xsd not found at " + schema);
+    static File root(FormType formType) {
+        String resource = formType.schemaRoot()
+                .orElseThrow(() -> new IllegalStateException("No schema bundled for " + formType.code()));
+        URL url = ClasspathSchemas.class.getClassLoader().getResource(resource);
+        if (url == null) {
+            throw new IllegalStateException("Bundled schema missing from classpath: " + resource);
         }
-        return schema.toFile();
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Bad schema URL " + url, e);
+        }
     }
 }

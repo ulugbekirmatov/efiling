@@ -10,7 +10,7 @@
 		</xsd:documentation>
 	</xsd:annotation>
 
-	<xsd:include schemaLocation="efileTypes.xsd"/>
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
 
 	<!-- ================================================================== -->
 	<!-- ========================= IRS Form 941 =========================== -->

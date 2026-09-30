@@ -12,7 +12,7 @@ elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
 		</xsd:documentation>
 	</xsd:annotation>
 
-	<xsd:include schemaLocation="efileTypes.xsd"/>
+	<xsd:include schemaLocation="../../Common/efileTypes.xsd"/>
 
 	<xsd:element name="ReturnHeader" type="ReturnHeaderType"/>
 

@@ -1,6 +1,7 @@
 package com.irs.mef.reportingagent;
 
 import com.irs.mef.config.MefSdkConfig;
+import com.irs.mef.newsend.domain.FormType;
 import com.irs.mef.xml.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ class ReportingAgentReturnTest {
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
                 standIn, orchid, Clock.system(ZoneId.of("America/New_York")));
 
-        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.return941());
+        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.root(FormType.F941));
         assertTrue(xsd.isValid(), xsd::report);
 
         ReportingAgentReturn.Structure s = ret.structure();

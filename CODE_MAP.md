@@ -505,7 +505,7 @@ mvn test -Dtest=Form941SubmissionTest                 # @SpringBootTest, live AT
 
 Gating (historical, file deleted 2026-09-16): `MefLoginIntegrationTest` guarded its live methods with `@EnabledIfSystemProperty(named="mef.integration.test.enabled", matches="true")` (lines 92, 314, 369, ~397); its offline methods (`testKeystoreExists` :66, `testLoadSdkClasses` :77, `testCreateLoginClient` :121, `testLoginClientInvokeMethods` :131, `testSdkKeystoreAccess` :183, `testKeystoreLoadingForSdk` :246) run unconditionally and expect `./irs_cert/IRS_test_keystore.p12` with password `test123`, alias `irs_test_cert` — hardcoded at lines 32-34; the file is not in the repo.
 
-**`Form941SubmissionTest` is gated** behind `-Dmef.integration.test.enabled=true` (same switch as `ReportingAgentForm941AtsTest`). Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. Never set the property without `-Dtest=<one class>`.
+**`Form941SubmissionTest` is gated** behind `-Dmef.integration.test.enabled=true` (same switch as `ReportingAgentAtsScenarioTest`). Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. Never set the property without `-Dtest=<one class>`.
 
 `Form941XmlGenerationTest` resolves its XML as `user.dir/../test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml` (lines 35-37), correct relative to the repo layout.
 

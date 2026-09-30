@@ -26,9 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+/** Sends the ATS scenario named by -Dmef.ats.scenario (default 1). Run through run-ra-ats-test.sh. */
 @SpringBootTest
 @EnabledIfSystemProperty(named = "mef.integration.test.enabled", matches = "true")
-class ReportingAgentForm941AtsTest {
+class ReportingAgentAtsScenarioTest {
+
+    static final String SCENARIO_PROPERTY = "mef.ats.scenario";
 
     static {
         String existing = System.getProperty("A2A_TOOLKIT_HOME");
@@ -53,15 +56,18 @@ class ReportingAgentForm941AtsTest {
     AcknowledgementService acknowledgements;
 
     @Test
-    void submitsOneReportingAgent941ToAts() throws InterruptedException {
+    void submitsOneReportingAgentScenarioToAts() throws InterruptedException {
+        AtsScenario scenario = AtsScenario.byNumber(System.getProperty(SCENARIO_PROPERTY, "1"));
         ReportingAgentOriginator pyramos = originators.fromEnvironment();
         ReportingAgentAtsGate.open(sdk, pyramos);
 
-        ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
+        ClientReturnBody client = ClientReturnBody.load(scenario.clientBody());
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
-                pyramos, orchid, Clock.system(ZoneId.of("America/New_York")));
+                pyramos, client, Clock.system(ZoneId.of("America/New_York")));
         ReportingAgentReturn.Structure header = ret.structure();
-        System.out.println("RA ATS originatorType=" + header.originatorTypeCd()
+        System.out.println("RA ATS scenario=" + scenario.number() + " " + scenario.shortName()
+                + " returnType=" + header.returnTypeCd()
+                + " originatorType=" + header.originatorTypeCd()
                 + " efin=" + header.originatorEfin().value()
                 + " softwareId=" + header.softwareId()
                 + " filerEin=" + header.filerEin().value()
@@ -71,8 +77,8 @@ class ReportingAgentForm941AtsTest {
         assertTrue(session.isSuccess());
 
         NewSendSubmitResult result = newSend.submit(ret.toSubmitCommand(
-                "ra-ats-orchid-q1-" + UUID.randomUUID(),
-                "orchid-ats-scenario-1",
+                "ra-ats-scenario-" + scenario.number() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
+                scenario.clientId(),
                 true));
         assertFalse(result.replay());
 

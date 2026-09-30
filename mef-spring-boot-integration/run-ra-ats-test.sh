@@ -1,10 +1,21 @@
 #!/bin/bash
-# Send one Form 941 to IRS ATS as a Reporting Agent (ReportingAgentForm941AtsTest).
-# Reads identifiers from .env in this module directory; MEF_SOFTWARE_ID must be 8 digits
-# from the process environment or .env. This script never writes .env.
+# Send one TY2026 94x ATS scenario to IRS ATS as a Reporting Agent (ReportingAgentAtsScenarioTest).
+# Scenarios: 1 Orchid 941, 2 Marigold 941 + Schedule B, 3 Daffodil 941 + Schedule R + 8974,
+# 4 Orchid 941-X. Reads identifiers from .env in this module directory; MEF_SOFTWARE_ID must be
+# 8 digits from the process environment or .env. This script never writes .env.
 #
-# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh
+# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <scenario 1-4>
 set -euo pipefail
+
+TEST_CLASS=ReportingAgentAtsScenarioTest
+SCENARIO="${1:-}"
+case "$SCENARIO" in
+  1|2|3|4) ;;
+  *)
+    echo "Usage: $0 <scenario 1-4> (got '${SCENARIO}')" >&2
+    exit 1
+    ;;
+esac
 
 MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
@@ -34,8 +45,8 @@ case "${MEF_SOFTWARE_ID:-}" in
 esac
 export MEF_SOFTWARE_ID
 
-if pgrep -f ReportingAgentForm941AtsTest >/dev/null 2>&1; then
-  echo "ReportingAgentForm941AtsTest is already running; a leftover IRS session would collide with concurrent-session limits" >&2
+if pgrep -f "$TEST_CLASS" >/dev/null 2>&1; then
+  echo "$TEST_CLASS is already running; a leftover IRS session would collide with concurrent-session limits" >&2
   exit 1
 fi
 if lsof -nP -iTCP:8080 -sTCP:LISTEN >/dev/null 2>&1; then
@@ -50,10 +61,10 @@ if [ -f "$JOURNAL" ]; then
 fi
 
 MVN_EXIT=0
-mvn -q test -Dtest=ReportingAgentForm941AtsTest -Dmef.integration.test.enabled=true -Dsurefire.failIfNoSpecifiedTests=false || MVN_EXIT=$?
+mvn -q test -Dtest="$TEST_CLASS" -Dmef.ats.scenario="$SCENARIO" -Dmef.integration.test.enabled=true -Dsurefire.failIfNoSpecifiedTests=false || MVN_EXIT=$?
 
-REPORT=target/surefire-reports/com.irs.mef.reportingagent.ReportingAgentForm941AtsTest.txt
-OUTPUT=target/surefire-reports/com.irs.mef.reportingagent.ReportingAgentForm941AtsTest-output.txt
+REPORT=target/surefire-reports/com.irs.mef.reportingagent.$TEST_CLASS.txt
+OUTPUT=target/surefire-reports/com.irs.mef.reportingagent.$TEST_CLASS-output.txt
 
 echo
 echo "== surefire report =="

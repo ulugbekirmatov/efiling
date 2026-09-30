@@ -2,6 +2,8 @@ import Link from "next/link";
 import { loadRegistry, loadScenario } from "./scenarioData";
 import { CHIP, MUTED_CHIP, StatusBadge, SourceBadge, formatEin } from "./ui";
 
+export const dynamic = "force-dynamic";
+
 const styles = {
   page: {
     maxWidth: 1280,
@@ -202,7 +204,7 @@ export default function ScenariosIndexPage() {
           ReturnHeader fields
         </h2>
         <div style={styles.tableWrap}>
-          <table style={styles.table}>
+          <table style={{ ...styles.table, minWidth: 560 }}>
             <thead>
               <tr>
                 <th style={styles.th}>Element</th>

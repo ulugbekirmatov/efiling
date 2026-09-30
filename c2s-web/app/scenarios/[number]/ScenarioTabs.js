@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { prettyXml } from "../../send-inspector/prettyXml";
 
@@ -62,16 +62,18 @@ const styles = {
     verticalAlign: "top",
     wordBreak: "break-word",
   },
+  nowrap: { whiteSpace: "nowrap" },
   value: {
     textAlign: "right",
     fontVariantNumeric: "tabular-nums",
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
     whiteSpace: "nowrap",
   },
-  mono: {
+  pathCell: {
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
     fontSize: 12,
-    wordBreak: "break-word",
+    wordBreak: "normal",
+    overflowWrap: "anywhere",
   },
   callout: {
     background: "#eef4f8",
@@ -141,10 +143,30 @@ function formatById(formats, id) {
   return formats.find((format) => format.id === id) || null;
 }
 
+function ElementPathCell({ path }) {
+  const segments = String(path).split("/");
+  return (
+    <td style={{ ...styles.td, ...styles.pathCell }}>
+      {segments.map((segment, index) => (
+        <Fragment key={index}>
+          {index > 0 ? (
+            <>
+              /
+              <wbr />
+            </>
+          ) : null}
+          {segment}
+        </Fragment>
+      ))}
+    </td>
+  );
+}
+
 export default function ScenarioTabs({ number, scenario, formats, documentGroups, hasPdf }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tabListRef = useRef(null);
   const requested = searchParams.get("tab");
   const active = TABS.some((tab) => tab.id === requested) ? requested : "overview";
   const [copied, setCopied] = useState(false);
@@ -153,6 +175,31 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", id);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }
+
+  function onTabListKeyDown(event) {
+    if (
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight" &&
+      event.key !== "Home" &&
+      event.key !== "End"
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const currentIndex = TABS.findIndex((tab) => tab.id === active);
+    let nextIndex = currentIndex < 0 ? 0 : currentIndex;
+    if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = TABS.length - 1;
+    else if (event.key === "ArrowLeft") {
+      nextIndex = (nextIndex - 1 + TABS.length) % TABS.length;
+    } else {
+      nextIndex = (nextIndex + 1) % TABS.length;
+    }
+    const nextId = TABS[nextIndex].id;
+    selectTab(nextId);
+    const button = tabListRef.current && tabListRef.current.querySelector(`#tab-${nextId}`);
+    if (button) button.focus();
   }
 
   async function copyText(text) {
@@ -178,7 +225,7 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
         </ul>
         <h2 style={styles.heading}>Key figures</h2>
         <div style={styles.tableWrap}>
-          <table style={styles.table}>
+          <table style={{ ...styles.table, minWidth: 480 }}>
             <thead>
               <tr>
                 <th style={styles.th}>Label</th>
@@ -187,8 +234,8 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
               </tr>
             </thead>
             <tbody>
-              {scenario.keyFigures.map((row) => (
-                <tr key={`${row.line}-${row.label}`}>
+              {scenario.keyFigures.map((row, index) => (
+                <tr key={`${index}-${row.label}`}>
                   <td style={styles.td}>{row.label}</td>
                   <td style={styles.td}>{row.line}</td>
                   <td style={{ ...styles.td, ...styles.value }}>{row.value}</td>
@@ -198,45 +245,59 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
           </table>
         </div>
         <h2 style={styles.heading}>Notes</h2>
-        {scenario.notes.map((note) => (
-          <p key={note} style={styles.callout}>
+        {scenario.notes.map((note, index) => (
+          <p key={`${index}-${note}`} style={styles.callout}>
             {note}
           </p>
         ))}
       </>
     );
   } else if (active === "lineMapping") {
+    const format = formatById(formats, "lineMapping");
     body =
       documentGroups.length === 0 ? (
         <p style={styles.missing}>Not prepared for this scenario</p>
       ) : (
-        documentGroups.map((group) => (
-          <section key={group.document} style={{ marginBottom: 22 }}>
-            <h2 style={styles.groupTitle}>{group.document}</h2>
-            <div style={styles.tableWrap}>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Form line</th>
-                    <th style={styles.th}>Element path</th>
-                    <th style={{ ...styles.th, textAlign: "right" }}>Value</th>
-                    <th style={styles.th}>PDF page</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {group.rows.map((row, index) => (
-                    <tr key={`${row.elementPath}-${index}`}>
-                      <td style={styles.td}>{row.formLine}</td>
-                      <td style={{ ...styles.td, ...styles.mono }}>{row.elementPath}</td>
-                      <td style={{ ...styles.td, ...styles.value }}>{row.value}</td>
-                      <td style={styles.td}>{row.pdfPage}</td>
+        <>
+          {format ? (
+            <>
+              <p style={styles.description}>{format.description}</p>
+              <p style={styles.producedBy}>{format.producedBy}</p>
+            </>
+          ) : null}
+          <div style={styles.actions}>
+            <a href={`/scenarios/${number}/files/lineMapping?download=1`} style={styles.toggle}>
+              Download file
+            </a>
+          </div>
+          {documentGroups.map((group) => (
+            <section key={group.document} style={{ marginBottom: 22 }}>
+              <h2 style={styles.groupTitle}>{group.document}</h2>
+              <div style={styles.tableWrap}>
+                <table style={{ ...styles.table, minWidth: 640 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...styles.th, ...styles.nowrap }}>Form line</th>
+                      <th style={styles.th}>Element path</th>
+                      <th style={{ ...styles.th, textAlign: "right" }}>Value</th>
+                      <th style={{ ...styles.th, ...styles.nowrap }}>PDF page</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ))
+                  </thead>
+                  <tbody>
+                    {group.rows.map((row, index) => (
+                      <tr key={`${row.elementPath}-${index}`}>
+                        <td style={{ ...styles.td, ...styles.nowrap }}>{row.formLine}</td>
+                        <ElementPathCell path={row.elementPath} />
+                        <td style={{ ...styles.td, ...styles.value }}>{row.value}</td>
+                        <td style={{ ...styles.td, ...styles.nowrap }}>{row.pdfPage}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
+        </>
       );
   } else if (XML_TABS.has(active)) {
     const format = formatById(formats, active);
@@ -256,10 +317,10 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
           ) : null}
           <div style={styles.actions}>
             <button type="button" style={styles.toggle} onClick={() => copyText(pretty)}>
-              {copied ? "Copied" : "Copy"}
+              {copied ? "Copied" : "Copy formatted"}
             </button>
             <a href={`/scenarios/${number}/files/${active}?download=1`} style={styles.toggle}>
-              Download
+              Download file
             </a>
           </div>
           <pre style={styles.pre}>{pretty}</pre>
@@ -283,15 +344,23 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
 
   return (
     <div>
-      <div style={styles.tabBar} role="tablist">
+      <div
+        ref={tabListRef}
+        style={styles.tabBar}
+        role="tablist"
+        onKeyDown={onTabListKeyDown}
+      >
         {TABS.map((tab) => {
           const selected = tab.id === active;
           return (
             <button
               key={tab.id}
+              id={`tab-${tab.id}`}
               type="button"
               role="tab"
               aria-selected={selected}
+              aria-controls={`panel-${tab.id}`}
+              tabIndex={selected ? 0 : -1}
               onClick={() => selectTab(tab.id)}
               style={{
                 ...styles.tab,
@@ -305,7 +374,15 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
           );
         })}
       </div>
-      <div style={styles.panel}>{body}</div>
+      <div
+        style={styles.panel}
+        role="tabpanel"
+        id={`panel-${active}`}
+        aria-labelledby={`tab-${active}`}
+        tabIndex={0}
+      >
+        {body}
+      </div>
     </div>
   );
 }

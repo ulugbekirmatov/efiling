@@ -51,7 +51,18 @@ function validateRegistry(registry) {
 }
 
 export function loadRegistry() {
-  const raw = fs.readFileSync(registryPath(), "utf8");
+  const filePath = registryPath();
+  let raw;
+  try {
+    raw = fs.readFileSync(filePath, "utf8");
+  } catch (err) {
+    if (err && err.code === "ENOENT") {
+      throw new Error(
+        `${filePath} not found. Run from c2s-web or set MEF_REPO_ROOT.`
+      );
+    }
+    throw err;
+  }
   return validateRegistry(JSON.parse(raw));
 }
 
@@ -100,10 +111,17 @@ function readUtf8IfPresent(absPath) {
   }
 }
 
-function asScenarioNumber(number) {
-  const num = typeof number === "number" ? number : Number(number);
-  if (!Number.isInteger(num)) return null;
-  return num;
+function asScenarioNumber(value) {
+  if (typeof value === "number") {
+    if (!Number.isInteger(value) || value < 1) return null;
+    return value;
+  }
+  if (typeof value !== "string" || !/^[1-9][0-9]*$/.test(value)) return null;
+  return parseInt(value, 10);
+}
+
+export function sendClientId(scenario) {
+  return `ats-scenario-${scenario.number}-${scenario.slug}`;
 }
 
 export function loadScenario(number) {

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prettyXml } from "../../../send-inspector/prettyXml";
-import { loadLegacy, loadRegistry } from "../../scenarioData";
+import { loadLegacy } from "../../scenarioData";
+
+export const dynamic = "force-dynamic";
 
 const styles = {
   page: {
@@ -64,10 +66,6 @@ const styles = {
     display: "inline-block",
   },
 };
-
-export function generateStaticParams() {
-  return loadRegistry().legacy.map((item) => ({ id: item.id }));
-}
 
 export default function LegacyItemPage({ params }) {
   const loaded = loadLegacy(params.id);

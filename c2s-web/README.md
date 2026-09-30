@@ -51,3 +51,5 @@ Set `MEF_REPO_ROOT` when `next dev` or `next build` does not run from `c2s-web`.
 cd mef-spring-boot-integration
 mvn test -Dtest=AtsScenarioSnapshotTest -Dats.snapshots.update=true
 ```
+
+Scenario pages render per request, so regenerated snapshots show up on reload with no rebuild.

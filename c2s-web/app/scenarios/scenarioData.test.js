@@ -70,6 +70,20 @@ test("loadScenario(9) is null", async () => {
   assert.equal(loadScenario(9), null);
 });
 
+test("loadScenario accepts only canonical scenario number strings", async () => {
+  const { loadScenario } = await import("./scenarioData.js");
+  assert.equal(loadScenario("1.0"), null);
+  assert.equal(loadScenario("01"), null);
+  assert.equal(loadScenario(" 1"), null);
+  assert.ok(loadScenario("1"));
+});
+
+test("sendClientId for scenario 1 is ats-scenario-1-orchid-941", async () => {
+  const { loadRegistry, sendClientId } = await import("./scenarioData.js");
+  const scenario = loadRegistry().scenarios.find((item) => item.number === 1);
+  assert.equal(sendClientId(scenario), "ats-scenario-1-orchid-941");
+});
+
 test("resolveScenarioFile maps through the registry and rejects unknown kinds", async () => {
   const { resolveScenarioFile } = await import("./scenarioData.js");
   assert.equal(resolveScenarioFile(1, "../../etc/passwd"), null);

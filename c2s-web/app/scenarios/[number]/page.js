@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { groupByDocument, loadRegistry, loadScenario } from "../scenarioData";
+import { groupByDocument, loadScenario, sendClientId } from "../scenarioData";
 import { CHIP, StatusBadge, formatEin } from "../ui";
 import ScenarioTabs from "./ScenarioTabs";
+
+export const dynamic = "force-dynamic";
 
 const styles = {
   page: {
@@ -44,12 +46,13 @@ const styles = {
   meta: { margin: "0 0 8px", fontSize: 14 },
   chips: { display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0" },
   note: { margin: "10px 0 0", fontSize: 14, color: "#5b677a" },
+  journal: { margin: "10px 0 0", fontSize: 14 },
+  mono: {
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+    fontSize: 13,
+  },
   fallback: { padding: "12px 0", color: "#5b677a" },
 };
-
-export function generateStaticParams() {
-  return loadRegistry().scenarios.map((scenario) => ({ number: String(scenario.number) }));
-}
 
 export default function ScenarioDetailPage({ params }) {
   const loaded = loadScenario(params.number);
@@ -84,6 +87,12 @@ export default function ScenarioDetailPage({ params }) {
         </div>
         <StatusBadge status={scenario.status} />
         {scenario.status.note ? <p style={styles.note}>{scenario.status.note}</p> : null}
+        <p style={styles.journal}>
+          Send journal client id{" "}
+          <span style={styles.mono}>{sendClientId(scenario)}</span>
+          {" · "}
+          <Link href="/send-inspector">Open send inspector</Link>
+        </p>
       </section>
       <Suspense fallback={<p style={styles.fallback}>Loading…</p>}>
         <ScenarioTabs

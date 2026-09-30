@@ -13,6 +13,10 @@ final class ReportingAgentReturnXml {
 
     static final String NS = "http://www.irs.gov/efile";
 
+    /** TY2026 rules R0000-248/249 require these even on a 941 with no refund. */
+    private static final String REFUND_PRODUCT_ELECTED = "false";
+    private static final String REFUND_DISBURSEMENT_CD = "0";
+
     private static final DateTimeFormatter RETURN_TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     private ReportingAgentReturnXml() {}
@@ -30,7 +34,8 @@ final class ReportingAgentReturnXml {
         element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
         element(xml, 2, "SoftwareId", originator.softwareId().value());
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
-        filingSecurity(xml, client, truncated);
+        additionalFilerInformation(xml);
+        filingSecurity(xml, originator, client, truncated);
         element(xml, 2, "QuarterEndingDt", client.quarterEnding().toString());
         xml.append("    ").append(inDefaultNs(client.filerXml())).append('\n');
         xml.append("    <OriginatorGrp>\n");
@@ -61,12 +66,24 @@ final class ReportingAgentReturnXml {
      * IPAddress is the complex IPv4AddressTxt wrapper, not a bare text node.
      * VendorControlNum is 16 alphanumeric, derived from filer EIN + period (not a secret).
      */
-    private static void filingSecurity(StringBuilder xml, Client941Body client, OffsetDateTime returnTs) {
+    private static void additionalFilerInformation(StringBuilder xml) {
+        xml.append("    <AdditionalFilerInformation>\n");
+        xml.append("      <AtSubmissionFilingGrp>\n");
+        element(xml, 4, "RefundProductElectionInd", REFUND_PRODUCT_ELECTED);
+        xml.append("        <RefundDisbursementGrp>\n");
+        element(xml, 5, "RefundDisbursementCd", REFUND_DISBURSEMENT_CD);
+        xml.append("        </RefundDisbursementGrp>\n");
+        xml.append("      </AtSubmissionFilingGrp>\n");
+        xml.append("    </AdditionalFilerInformation>\n");
+    }
+
+    private static void filingSecurity(
+            StringBuilder xml, ReportingAgentOriginator originator, Client941Body client, OffsetDateTime returnTs) {
         Objects.requireNonNull(returnTs, "returnTs");
         String deviceId = sha1HexUpper("pyramos-ats" + client.filerEin().value());
         xml.append("    <FilingSecurityInformation>\n");
         xml.append("      <IPAddress>\n");
-        element(xml, 4, "IPv4AddressTxt", "127.0.0.1");
+        element(xml, 4, "IPv4AddressTxt", originator.filingIpv4Address());
         xml.append("      </IPAddress>\n");
         element(xml, 3, "TotActiveTimePrepSubmissionTs", "1");
         element(xml, 3, "VendorControlNum", vendorControl(client));

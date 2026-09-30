@@ -126,6 +126,7 @@ class ReportingAgentReturnTest {
         ReportingAgentProperties properties = new ReportingAgentProperties();
         properties.setPin("11111");
         properties.setSoftwareId("11111111");
+        properties.setFilingIp("192.0.2.1");
         properties.setEin("111111111");
         properties.setBusinessName("PYRAMOS SOFTWARE LLC");
         properties.setNameControl("PYRA");

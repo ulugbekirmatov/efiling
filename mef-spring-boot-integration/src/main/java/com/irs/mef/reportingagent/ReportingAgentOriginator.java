@@ -12,11 +12,13 @@ public record ReportingAgentOriginator(
         Efin efin,
         ReportingAgentPin pin,
         SoftwareId softwareId,
+        String filingIpv4Address,
         ReportingAgentIdentity identity) {
     public ReportingAgentOriginator {
         Objects.requireNonNull(efin);
         Objects.requireNonNull(pin);
         Objects.requireNonNull(softwareId);
+        ReportingAgentChecks.requireText("filingIpv4Address", filingIpv4Address);
         Objects.requireNonNull(identity);
         if (efin.value().equals(identity.ein().value())) {
             // EFIN is 6 digits, EIN is 9 — this cannot be equal. Left as a comment invariant.

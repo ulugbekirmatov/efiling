@@ -46,6 +46,7 @@ public class ReportingAgentOriginatorFactory {
                 new Efin(efinValue),
                 new ReportingAgentPin(requireConfigured("MEF_RA_PIN", properties.getPin())),
                 new SoftwareId(requireConfigured("MEF_SOFTWARE_ID", properties.getSoftwareId())),
+                requireConfigured("MEF_RA_FILING_IP", properties.getFilingIp()),
                 new ReportingAgentIdentity(
                         new Ein(einRaw),
                         requireConfigured("MEF_RA_NAME", properties.getBusinessName()),

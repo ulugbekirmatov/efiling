@@ -11,6 +11,8 @@ public class ReportingAgentProperties {
     /** MEF_RA_PIN. Empty at boot is allowed; compose-from-env fails closed. */
     private String pin = "";
     private String softwareId = "";
+    /** MEF_RA_FILING_IP. Public IPv4 of the transmitting host; R0000-244 rejects loopback. */
+    private String filingIp = "";
     private String ein = "";
     private String businessName = "";
     private String nameControl = "";

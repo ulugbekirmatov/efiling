@@ -16,7 +16,7 @@
     <artifactId>mef-spring-boot-integration</artifactId>
     <version>1.0.0</version>
     <name>MeF Spring Boot Integration</name>
-    <description>Spring Boot application integrating IRS MeF Client SDK v16 for A2A communication</description>
+    <description>Spring Boot application integrating IRS MeF Client SDK v17 for A2A communication</description>
 
     <properties>
         <java.version>17</java.version>
@@ -49,11 +49,11 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- MeF Client SDK v16 JARs (Installed in Local Maven Repository) -->
+        <!-- MeF Client SDK v17 JARs (Installed in Local Maven Repository) -->
         <dependency>
             <groupId>gov.irs.mef</groupId>
             <artifactId>mef-client-sdk</artifactId>
-            <version>16.0</version>
+            <version>17.0</version>
         </dependency>
 
         <dependency>

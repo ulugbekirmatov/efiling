@@ -41,12 +41,12 @@ mvn test -Dtest=Form941XmlGenerationTest          # single test class (offline)
 
 **⚠️ One switch arms two live tests:** `ReportingAgentForm941AtsTest` and `Form941SubmissionTest` are both gated behind the same `-Dmef.integration.test.enabled=true` (`MefLoginIntegrationTest` was deleted 2026-09-16; the login probe is `test-mef-login.sh`). Note the pom has **no surefire block**, so under `mvn test` neither `A2A_TOOLKIT_HOME` nor the `--add-opens` flags are set — these two tests cannot reach the SDK until that is added. Never set that property without a `-Dtest=<one class>` filter, or every one of them contacts IRS ATS in the same run. A plain `mvn test` without the property is offline-safe.
 
-**⚠️ Build prerequisites (installed 2026-09-16 via `brew install openjdk@17 maven`; `JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`):** the pom declares the SDK and Metro stack as ordinary Maven coordinates, but **five of them are not on Maven Central**: `gov.irs.mef:mef-client-sdk:16.0` and the four `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` jars. All five ship inside the SDK zip and must be installed into `~/.m2` by hand on a fresh machine (`org.apache.santuario:xmlsec:4.0.2` does resolve from Central). There is **no `lib/` directory** in the repo:
+**⚠️ Build prerequisites (installed 2026-09-16 via `brew install openjdk@17 maven`; `JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`):** the pom declares the SDK and Metro stack as ordinary Maven coordinates, but **five of them are not on Maven Central**: `gov.irs.mef:mef-client-sdk:17.0` and the four `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` jars. All five ship inside the SDK zip and must be installed into `~/.m2` by hand on a fresh machine (`org.apache.santuario:xmlsec:4.0.2` does resolve from Central). There is **no `lib/` directory** in the repo:
 
 ```bash
-unzip -o "Version_16/A2A_Toolkit_Version16.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip" -d /tmp/mef_sdk
+unzip -o "Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip" -d /tmp/mef_sdk
 mvn install:install-file -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/mef_client_sdk.jar \
-  -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=16.0 -Dpackaging=jar
+  -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=17.0 -Dpackaging=jar
 for a in api rt extra tools; do
   mvn install:install-file -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/webservices-$a-4.0.4.jar \
     -DgroupId=com.sun.xml.ws -DartifactId=webservices-$a -Dversion=4.0.4 -Dpackaging=jar

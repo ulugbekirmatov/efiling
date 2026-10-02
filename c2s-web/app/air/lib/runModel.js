@@ -1,14 +1,10 @@
-// Pure AIR run model shared by the server store and the client pages.
-// A run is one directory of artifacts; its state is derived from which artifacts exist.
-
 export const RUN_ID_RE = /^[0-9]{8}T[0-9]{6}Z-[a-z0-9-]{1,40}-[0-9a-f]{6}$/;
 
 export function isRunId(value) {
   return typeof value === "string" && RUN_ID_RE.test(value);
 }
 
-// Every file a run directory may hold. The key is the only name callers use.
-// `download` marks the files an operator may fetch byte-exact (the AATS UI upload takes form + manifest).
+// The AATS UI upload takes form + manifest, so these two are served byte-exact.
 export const RUN_FILES = {
   form: { path: "form.xml", label: "Form data", kind: "xml", download: true },
   manifest: { path: "manifest.xml", label: "Manifest", kind: "xml", download: true },
@@ -23,7 +19,6 @@ export const RUN_FILES = {
 
 export const STATUS_CHECK_RE = /^status-[0-9]{8}T[0-9]{9}Z-[0-9a-f]{4}\.json$/;
 
-// stamp: yyyymmddThhmmssmmmZ, suffix: 4 hex chars, so two checks in one second never collide.
 export function statusCheckFiles(stamp, suffix) {
   const base = `status-${stamp}-${suffix}`;
   return { record: `${base}.json`, response: `${base}.response.xml` };
@@ -32,7 +27,7 @@ export function statusCheckFiles(stamp, suffix) {
 // Java CLI exit codes (redesign/air-a2a/java/README.md).
 export const EXIT = { TOOK: 0, CHANNEL_FAILURE: 1, LOCAL_GUARD: 2, REJECTED_OR_NOT_FOUND: 3 };
 
-// One row per state a run can be in. `sent` means the bytes may have reached IRS, so the UTID is spent.
+// One row per state a run can be in. `sent`: the bytes may have reached IRS, so the UTID is spent.
 export const STAGES = {
   composed: { label: "Composed, not sent", tone: "waiting", sent: false, next: "Validate, preview, then submit to AATS." },
   blocked: { label: "Blocked before send", tone: "attention", sent: false, next: "A local guard stopped the send. Read the message, fix the setup, submit again." },
@@ -53,7 +48,7 @@ export function stageInfo(stage) {
   return STAGES[stage] || STAGES.composed;
 }
 
-// A CLI record is { exitCode, result, stderr, at } or the pre-spawn marker { pending: true, at }.
+// A pre-spawn { pending: true, at } marker stands in for the record until the CLI exits.
 // An IRS answer is a record whose exit code says IRS replied and whose status is one we know.
 export function irsAnswer(record) {
   if (!record || record.pending) return null;
@@ -73,15 +68,12 @@ function byTime(a, b) {
   return (Date.parse(a.at) || 0) - (Date.parse(b.at) || 0);
 }
 
-// files: { session, compose, validate, submit, statusChecks: [record...] } parsed JSON, missing = null.
-// present: Set of RUN_FILES keys that exist on disk.
 export function deriveRun(id, files, present) {
   const session = files.session || {};
   const compose = files.compose || {};
   const submit = files.submit || null;
   const statusChecks = [...(files.statusChecks || [])].sort(byTime);
 
-  // Only an IRS answer moves the stage; a failed or blocked check stays in history and changes nothing.
   let stage = submitStage(submit);
   let answer = irsAnswer(submit) ? submit : null;
   for (const check of statusChecks) {
@@ -128,7 +120,6 @@ export function canSubmit(run) {
     && !STAGES[run.stage].sent;
 }
 
-// The operator types the last 6 characters of the UTID's UUID part to arm a live submit.
 export const CONFIRM_LENGTH = 6;
 
 export function confirmCode(run) {
@@ -142,7 +133,7 @@ export function confirmMatches(run, typed) {
   return typeof typed === "string" && code != null && typed.trim().toLowerCase() === code.toLowerCase();
 }
 
-// TESTING.md: ask again only while PROCESSING, and only 10 minutes after the last IRS answer.
+// TESTING.md: wait 10 minutes after the last IRS answer.
 export const STATUS_WAIT_MS = 10 * 60 * 1000;
 
 export function statusCheckOpensAt(run) {

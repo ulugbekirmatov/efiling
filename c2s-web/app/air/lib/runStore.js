@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { airConfig } from "./airConfig.js";
-import { redactDocument, redactSecrets } from "./redact.js";
+import { redactDocument, redactMessage, redactSecrets } from "./redact.js";
 import {
   EXIT,
   RUN_FILES,
@@ -16,8 +16,8 @@ const STAGING_DIR_NAME = ".staging";
 const RUNS_DIR_MODE = 0o700;
 const MISSING_REASON = "Not created yet.";
 const MAX_SLUG_LENGTH = 40;
+const SUBMIT_LOCK_NAME = "submit.lock";
 
-// Run ids whose submit is in flight in this process; the wx marker on disk covers other processes.
 const submitting = new Set();
 
 function runsDir() {
@@ -48,6 +48,61 @@ function runFilePath(id, key) {
   const file = path.join(dir, RUN_FILES[key].path);
   if (!isInside(dir, file)) throw invalidRunId();
   return file;
+}
+
+function secretValues() {
+  const { passwordEnv, pkcs12 } = airConfig();
+  return [process.env[passwordEnv], pkcs12];
+}
+
+function redactDeep(value, secrets) {
+  if (typeof value === "string") return redactMessage(value, secrets);
+  if (Array.isArray(value)) return value.map((item) => redactDeep(item, secrets));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, redactDeep(item, secrets)]));
+  }
+  return value;
+}
+
+function redactErrorList(errors, secrets) {
+  if (!Array.isArray(errors)) return errors;
+  return errors.map((error) => (error && typeof error === "object"
+    ? { ...error, text: redactMessage(error.text, secrets), xpath: redactMessage(error.xpath, secrets) }
+    : redactMessage(error, secrets)));
+}
+
+// A CLI record is { exitCode, result, stderr, at }; result.errors carry IRS text and xpaths.
+function redactCliRecord(record, secrets) {
+  if (!record || typeof record !== "object") return record;
+  const redacted = { ...record, stderr: redactMessage(record.stderr, secrets) };
+  if (record.result && typeof record.result === "object") {
+    redacted.result = { ...record.result, errors: redactErrorList(record.result.errors, secrets) };
+  }
+  return redacted;
+}
+
+function redactValidation(record, secrets) {
+  if (!record || !Array.isArray(record.files)) return record;
+  return {
+    ...record,
+    files: record.files.map((file) => ({ ...file, errors: redactErrorList(file.errors, secrets) })),
+  };
+}
+
+// Every CLI-derived JSON record the browser can see goes through here, keyed like RUN_FILES.
+const RECORD_REDACTORS = {
+  compose: redactDeep,
+  validate: redactValidation,
+  submit: redactCliRecord,
+};
+
+function redactRecord(key, record, secrets) {
+  const redactor = RECORD_REDACTORS[key];
+  return redactor && record ? redactor(record, secrets) : record;
+}
+
+function exists(file) {
+  return fs.access(file).then(() => true, () => false);
 }
 
 function isMissing(error) {
@@ -99,17 +154,22 @@ export async function readRun(id) {
     readJson(path.join(dir, RUN_FILES.submit.path)),
     listStatusRecordNames(dir),
   ]);
-  const statusChecks = (await Promise.all(statusNames.map((name) => readJson(path.join(dir, name))))).filter(Boolean);
+  const secrets = secretValues();
+  const statusChecks = (await Promise.all(statusNames.map((name) => readJson(path.join(dir, name)))))
+    .filter(Boolean)
+    .map((record) => redactCliRecord(record, secrets));
   const present = new Set();
   for (const [key, entry] of Object.entries(RUN_FILES)) {
-    try {
-      await fs.access(path.join(dir, entry.path));
-      present.add(key);
-    } catch {
-      // absent
-    }
+    if (await exists(path.join(dir, entry.path))) present.add(key);
   }
-  return deriveRun(id, { session, compose, validate, submit, statusChecks }, present);
+  const files = {
+    session,
+    compose: redactRecord("compose", compose, secrets),
+    validate: redactRecord("validate", validate, secrets),
+    submit: redactRecord("submit", submit, secrets),
+    statusChecks,
+  };
+  return deriveRun(id, files, present);
 }
 
 export async function listRuns() {
@@ -125,7 +185,7 @@ export async function listRuns() {
   return runs.filter(Boolean).sort((a, b) => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
 }
 
-function prettyJsonOrText(text, kind) {
+function prettyJsonOrText(text, key, kind, secrets) {
   if (kind !== "json") return text;
   let parsed;
   try {
@@ -133,25 +193,30 @@ function prettyJsonOrText(text, kind) {
   } catch {
     return text;
   }
-  if (parsed && typeof parsed.stderr === "string") parsed.stderr = redactDocument(parsed.stderr);
-  return JSON.stringify(parsed, null, 2);
+  return JSON.stringify(redactRecord(key, parsed, secrets), null, 2);
 }
 
 export async function readDocuments(id) {
   const dir = runDir(id);
+  const secrets = secretValues();
   const documents = {};
   for (const [key, entry] of Object.entries(RUN_FILES)) {
     const raw = await readText(path.join(dir, entry.path));
     documents[key] = raw == null
       ? { text: null, missingReason: MISSING_REASON }
-      : { text: redactDocument(prettyJsonOrText(raw, entry.kind)), missingReason: null };
+      : { text: redactDocument(prettyJsonOrText(raw, key, entry.kind, secrets)), missingReason: null };
   }
   const statusResponses = [];
   for (const name of await listStatusRecordNames(dir)) {
     const record = await readJson(path.join(dir, name));
+    if (!record) continue;
     const response = await readText(path.join(dir, name.replace(/\.json$/, ".response.xml")));
-    if (response == null) continue;
-    statusResponses.push({ at: (record && record.at) || null, text: redactDocument(response) });
+    statusResponses.push({
+      at: record.at || null,
+      exitCode: record.exitCode ?? null,
+      text: response == null ? null : redactDocument(response),
+      stderr: redactMessage(record.stderr || "", secrets),
+    });
   }
   statusResponses.sort((a, b) => (Date.parse(a.at) || 0) - (Date.parse(b.at) || 0));
   return { documents, statusResponses };
@@ -195,9 +260,25 @@ export async function writeValidate(id, record) {
   await writeJson(runFilePath(id, "validate"), record);
 }
 
-async function replaceableAfterGuardBlock(file) {
-  const existing = await readJson(file);
-  return Boolean(existing) && existing.exitCode === EXIT.LOCAL_GUARD;
+// The exclusive lock makes read-check-write atomic across processes; a crash mid-replace leaves
+// submit.lock behind, which refuses further submits until an operator removes it.
+async function replaceGuardBlock(file, marker) {
+  let lock;
+  try {
+    lock = await fs.open(path.join(path.dirname(file), SUBMIT_LOCK_NAME), "wx", 0o600);
+  } catch (error) {
+    if (error.code === "EEXIST") return false;
+    throw error;
+  }
+  try {
+    const existing = await readJson(file);
+    if (!existing || existing.exitCode !== EXIT.LOCAL_GUARD) return false;
+    await writeJson(file, marker);
+    return true;
+  } finally {
+    await lock.close();
+    await fs.rm(path.join(path.dirname(file), SUBMIT_LOCK_NAME), { force: true });
+  }
 }
 
 export async function beginSubmit(id) {
@@ -211,11 +292,10 @@ export async function beginSubmit(id) {
       handle = await fs.open(file, "wx", 0o600);
     } catch (error) {
       if (error.code !== "EEXIST") throw error;
-      if (!(await replaceableAfterGuardBlock(file))) {
+      if (!(await replaceGuardBlock(file, marker))) {
         submitting.delete(id);
         return false;
       }
-      await writeJson(file, marker);
       return true;
     }
     try {
@@ -232,8 +312,7 @@ export async function beginSubmit(id) {
 
 function withRedactedStderr(record) {
   if (typeof record.stderr !== "string") return record;
-  const { passwordEnv } = airConfig();
-  return { ...record, stderr: redactSecrets(record.stderr, [process.env[passwordEnv]]) };
+  return { ...record, stderr: redactSecrets(record.stderr, secretValues()) };
 }
 
 export async function finishSubmit(id, record) {

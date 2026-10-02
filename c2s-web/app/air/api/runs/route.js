@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 import { compose } from "../../lib/airTools.js";
 import { json, apiError, requireSameOrigin } from "../../lib/http.js";
-import { redactDocument } from "../../lib/redact.js";
+import { redactMessage } from "../../lib/redact.js";
 import { commitComposedRun, listRuns, newRunId, readRun, stagingDir } from "../../lib/runStore.js";
 import { scenarioFile } from "../../lib/scenarioCatalog.js";
 
@@ -33,7 +33,7 @@ export async function POST(request) {
     const composed = await compose({ scenarioPath, outDir: staging });
     if (composed.exitCode !== 0) {
       await rm(staging, { recursive: true, force: true });
-      return apiError(422, "COMPOSE_FAILED", redactDocument(composed.stderr || ""));
+      return apiError(422, "COMPOSE_FAILED", redactMessage(composed.stderr || ""));
     }
     const now = new Date();
     const id = await newRunId(scenarioId, now);

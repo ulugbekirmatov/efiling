@@ -12,7 +12,7 @@ function fromEnv(name) {
   return value ? value : null;
 }
 
-// Read on every call so a test or an operator can change the environment without a restart.
+// Read per call so tests can vary the environment.
 export function airConfig() {
   const repoRoot = path.resolve(fromEnv("AIR_REPO_ROOT") || path.join(os.homedir(), "Documents", "aca"));
   const airRoot = path.join(repoRoot, "redesign", "air-a2a");
@@ -49,7 +49,6 @@ function onPath(binary) {
   return dirs.some((dir) => dir && exists(path.join(dir, binary), fs.constants.X_OK));
 }
 
-// Booleans and variable names only. A secret value or the p12 path never leaves this function.
 export function readiness() {
   const config = airConfig();
   return {

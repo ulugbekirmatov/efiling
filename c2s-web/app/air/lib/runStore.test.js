@@ -83,9 +83,96 @@ test("readDocuments returns status responses oldest first and redacted", async (
   fs.writeFileSync(path.join(dir, `${first}.response.xml`), "<SSN>111223333</SSN>");
   const { statusResponses } = await store.readDocuments(id);
   assert.deepEqual(statusResponses, [
-    { at: "2026-11-02T10:00:00.000Z", text: "<SSN>*****3333</SSN>" },
-    { at: "2026-11-02T10:11:00.000Z", text: "<r>second</r>" },
+    { at: "2026-11-02T10:00:00.000Z", exitCode: 0, text: "<SSN>*****3333</SSN>", stderr: "" },
+    { at: "2026-11-02T10:11:00.000Z", exitCode: 0, text: "<r>second</r>", stderr: "" },
   ]);
+});
+
+test("readDocuments keeps a status check without a response file, with null text and masked stderr", async () => {
+  const { store, id } = await createRun();
+  const dir = store.runDir(id);
+  fs.writeFileSync(
+    path.join(dir, "status-20261102T100000000Z-cccc.json"),
+    JSON.stringify({ exitCode: 1, at: "2026-11-02T10:00:00.000Z", stderr: "bad tin 123456789" }),
+  );
+  const { statusResponses } = await store.readDocuments(id);
+  assert.deepEqual(statusResponses, [
+    { at: "2026-11-02T10:00:00.000Z", exitCode: 1, text: null, stderr: "bad tin *****6789" },
+  ]);
+});
+
+test("readRun and listRuns mask CLI text in stderr, errors, validation, and compose records", async () => {
+  const { store, id } = await createRun("scenario-mask");
+  const dir = store.runDir(id);
+  const write = (name, value) => fs.writeFileSync(path.join(dir, name), JSON.stringify(value));
+  write("compose.json", { scenarioId: "scenario-mask", result: { note: "tin 123-45-6789" } });
+  write("validate.json", { ok: false, files: [{ path: "form.xml", ok: false, errors: ["ssn 123456789 bad"] }] });
+  write("submit.json", {
+    exitCode: 3,
+    stderr: "rejected 123456789",
+    at: "2026-11-02T10:00:00.000Z",
+    result: { status: "REJECTED", errors: [{ text: "SSN 123456789 invalid", xpath: "/a[.='123456789']" }] },
+  });
+  write("status-20261102T101000000Z-dddd.json", { exitCode: 1, stderr: "again 987654321", at: "2026-11-02T10:10:00.000Z" });
+  const expectMasked = (run) => {
+    assert.equal(run.submit.stderr, "rejected *****6789");
+    assert.deepEqual(run.errors, [{ text: "SSN *****6789 invalid", xpath: "/a[.='*****6789']" }]);
+    assert.equal(run.statusChecks[0].stderr, "again *****4321");
+    assert.deepEqual(run.validation.files[0].errors, ["ssn *****6789 bad"]);
+  };
+  expectMasked(await store.readRun(id));
+  expectMasked((await store.listRuns()).find((run) => run.id === id));
+  const { documents } = await store.readDocuments(id);
+  assert.equal(documents.compose.text.includes("*****6789"), true);
+  assert.equal(documents.compose.text.includes("123-45-6789"), false);
+  assert.equal(documents.submit.text.includes("123456789"), false);
+});
+
+test("beginSubmit lets exactly one of several processes replace an exit-2 record", async () => {
+  const { spawn } = require("node:child_process");
+  const { pathToFileURL } = require("node:url");
+  const storeUrl = pathToFileURL(path.join(__dirname, "runStore.js")).href;
+  const script = `
+    const store = await import(${JSON.stringify(storeUrl)});
+    const start = Number(process.env.RACE_START);
+    while (Date.now() < start) {}
+    process.stdout.write(String(await store.beginSubmit(process.env.RACE_RUN)));
+  `;
+  const runOnce = (id, start) => new Promise((resolve) => {
+    const child = spawn(process.execPath, ["--input-type=module", "-e", script], {
+      env: { ...process.env, RACE_RUN: id, RACE_START: String(start) },
+    });
+    let out = "";
+    child.stdout.on("data", (chunk) => { out += chunk; });
+    child.on("close", () => resolve(out));
+  });
+  for (let round = 0; round < 5; round += 1) {
+    const { store, id } = await createRun(`scenario-race-${round}`, NOW + round * 1000);
+    fs.writeFileSync(path.join(store.runDir(id), "submit.json"), JSON.stringify({ exitCode: 2, stderr: "guard" }));
+    const outputs = await Promise.all([1, 2, 3, 4].map(() => runOnce(id, Date.now() + 1500)));
+    assert.equal(outputs.filter((out) => out === "true").length, 1, outputs.join(","));
+    assert.equal(fs.existsSync(path.join(store.runDir(id), "submit.lock")), false);
+  }
+});
+
+test("beginSubmit refuses a replace while another process holds submit.lock", async () => {
+  const { store, id } = await createRun("scenario-locked");
+  fs.writeFileSync(path.join(store.runDir(id), "submit.json"), JSON.stringify({ exitCode: 2 }));
+  fs.writeFileSync(path.join(store.runDir(id), "submit.lock"), "");
+  assert.equal(await store.beginSubmit(id), false);
+});
+
+test("stderr redaction also hides the pkcs12 path", async () => {
+  const { store, id } = await createRun("scenario-p12");
+  process.env.AIR_PKCS12 = "/secret/keys/air-fake.p12";
+  try {
+    assert.equal(await store.beginSubmit(id), true);
+    await store.finishSubmit(id, { exitCode: 1, stderr: "cannot open /secret/keys/air-fake.p12", at: "2026-11-02T10:00:01.000Z" });
+  } finally {
+    delete process.env.AIR_PKCS12;
+  }
+  const onDisk = JSON.parse(fs.readFileSync(path.join(store.runDir(id), "submit.json"), "utf8"));
+  assert.equal(onDisk.stderr, "cannot open [redacted]");
 });
 
 test("traversal ids and ids with a trailing newline are rejected", async () => {

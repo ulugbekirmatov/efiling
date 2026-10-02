@@ -52,7 +52,13 @@ function summarize(id, scenario, pdfs) {
 }
 
 async function scenarioIds(scenariosDir) {
-  const names = await readdir(scenariosDir);
+  let names;
+  try {
+    names = await readdir(scenariosDir);
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
   return names
     .map((name) => SCENARIO_FILE_RE.exec(name))
     .filter(Boolean)

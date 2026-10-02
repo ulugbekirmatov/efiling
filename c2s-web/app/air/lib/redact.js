@@ -1,9 +1,9 @@
-// Pure text redaction for anything an AIR run shows to the browser or writes to disk.
-
 const REDACTED = "[redacted]";
 const SSN_MASK = "*****";
 const SSN_VISIBLE_DIGITS = 4;
 const CREDENTIAL_ELEMENTS = ["SignatureValue", "X509Certificate", "BinarySecurityToken", "Assertion", "UsernameToken"];
+
+const NINE_DIGIT_RUN = /(?<!\d)(?:\d{9}|\d{3}-\d{2}-\d{4})(?!\d)/g;
 
 const SSN_ELEMENT = /(<(?:[\w.-]+:)?SSN(?:\s[^>]*)?(?<!\/)>)([^<]*)(<\/(?:[\w.-]+:)?SSN\s*>)/g;
 
@@ -38,4 +38,12 @@ export function redactSecrets(text, secretValues) {
 
 export function redactDocument(text) {
   return redactCredentials(maskSsn(text));
+}
+
+// For stderr and error strings, which can quote an SSN outside any element. Not for XML documents,
+// where a bare nine-digit run is usually an EIN that must stay intact.
+export function redactMessage(text, secretValues) {
+  if (typeof text !== "string") return text;
+  const withoutSecrets = redactDocument(redactSecrets(text, secretValues));
+  return withoutSecrets.replace(NINE_DIGIT_RUN, (run) => maskedDigits(run));
 }

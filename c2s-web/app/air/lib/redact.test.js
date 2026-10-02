@@ -67,3 +67,17 @@ test("redactDocument masks SSNs and credentials together", async () => {
   const xml = "<SSN>123456789</SSN><ds:SignatureValue>zzz</ds:SignatureValue>";
   assert.equal(redactDocument(xml), "<SSN>*****6789</SSN><ds:SignatureValue>[redacted]</ds:SignatureValue>");
 });
+
+test("redactMessage masks standalone nine-digit runs, SSN elements, and secrets", async () => {
+  const { redactMessage } = await import("./redact.js");
+  const text = "tin 123456789 and 987-65-4321 in <SSN>111223333</SSN> pw hunter2 id 1234567890 code a123456789b";
+  assert.equal(
+    redactMessage(text, ["hunter2"]),
+    "tin *****6789 and *****4321 in <SSN>*****3333</SSN> pw [redacted] id 1234567890 code a*****6789b",
+  );
+});
+
+test("redactMessage passes non-strings through", async () => {
+  const { redactMessage } = await import("./redact.js");
+  assert.equal(redactMessage(undefined, []), undefined);
+});

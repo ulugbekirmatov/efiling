@@ -70,3 +70,20 @@ test("readScenarioPdf serves a listed entry and rejects one outside the list", a
   assert.equal(await readScenarioPdf("scenario-3", "ty2026 scenario 2-0 f1094c.pdf"), null);
   assert.equal(await readScenarioPdf("scenario-3", "../../etc/passwd"), null);
 });
+
+test("listScenarios returns an empty list when the scenarios directory is missing", async () => {
+  const fs = require("node:fs");
+  const os = require("node:os");
+  const path = require("node:path");
+  const emptyRoot = fs.mkdtempSync(path.join(os.tmpdir(), "air-empty-"));
+  const previous = process.env.AIR_REPO_ROOT;
+  process.env.AIR_REPO_ROOT = emptyRoot;
+  try {
+    const { listScenarios } = await import("./scenarioCatalog.js");
+    assert.deepEqual(await listScenarios(), []);
+  } finally {
+    if (previous === undefined) delete process.env.AIR_REPO_ROOT;
+    else process.env.AIR_REPO_ROOT = previous;
+    fs.rmSync(emptyRoot, { recursive: true, force: true });
+  }
+});

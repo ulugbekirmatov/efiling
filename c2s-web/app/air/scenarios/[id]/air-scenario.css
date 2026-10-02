@@ -12,3 +12,4 @@
 .air-scenario-note { margin: 0 0 12px; font-size: 13px; }
 .air-scenario-pdf-list { margin: 0 0 12px; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
 .air-scenario-pdf-idle { opacity: 0.7; }
+.air-scenario-pdf-open { margin-bottom: 12px; }

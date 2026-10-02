@@ -31,6 +31,10 @@ const READINESS_FLAGS = [
   "asid",
 ];
 
+export const JAVA_READY_FLAGS = ["repoRoot", "jar", "java", "pkcs12", "passwordEnvSet", "asid"];
+export const VALIDATE_READY_FLAGS = ["repoRoot", "xmllint"];
+export const STDERR_PREVIEW_LIMIT = 400;
+
 export const ACTION_NOTICES = {
   NOT_SUBMITTABLE: "This run cannot be submitted to AATS.",
   CONFIRM_MISMATCH: "That confirmation code does not match this UTID.",
@@ -83,7 +87,19 @@ export function statusHistoryRows(run) {
     at: record.at || null,
     exitCode: record.pending || record.exitCode == null ? "—" : record.exitCode,
     status: irsAnswer(record) || "no answer",
+    stderr: typeof record.stderr === "string" ? record.stderr : "",
   }));
+}
+
+export function previewStderr(text) {
+  if (text == null || text === "") return { preview: "", full: "", truncated: false };
+  const full = String(text);
+  const truncated = full.length > STDERR_PREVIEW_LIMIT;
+  return {
+    preview: truncated ? full.slice(0, STDERR_PREVIEW_LIMIT) : full,
+    full,
+    truncated,
+  };
 }
 
 export function validationRows(validation) {
@@ -98,6 +114,17 @@ export function validationRows(validation) {
 
 export function isReady(readiness) {
   return Boolean(readiness && READINESS_FLAGS.every((key) => readiness[key]));
+}
+
+export function missingReadyReason(readiness, flags) {
+  const items = readinessItems(readiness);
+  const byKey = Object.fromEntries(items.map((item) => [item.key, item]));
+  for (const key of flags) {
+    const item = byKey[key];
+    if (!item || item.ok) continue;
+    return item.envVar ? `Set ${item.envVar}.` : `${item.label} is not available.`;
+  }
+  return null;
 }
 
 export function readinessItems(readiness) {
@@ -151,23 +178,28 @@ function statusDisabledReason(run, nowMs) {
 
 export function actionState(run, readiness, nowMs) {
   const composed = Boolean(run);
-  const ready = isReady(readiness);
+  const validateReason = composed ? missingReadyReason(readiness, VALIDATE_READY_FLAGS) : "No run selected.";
+  const previewReason = composed ? missingReadyReason(readiness, JAVA_READY_FLAGS) : "No run selected.";
+  const submitReadyReason = missingReadyReason(readiness, JAVA_READY_FLAGS);
+  const statusReadyReason = missingReadyReason(readiness, JAVA_READY_FLAGS);
+  const submitDomainReason = submitDisabledReason(run);
+  const statusDomainReason = statusDisabledReason(run, nowMs);
   return {
     validate: {
-      enabled: composed,
-      reason: composed ? null : "No run selected.",
+      enabled: composed && !validateReason,
+      reason: validateReason,
     },
     preview: {
-      enabled: composed && ready,
-      reason: !composed ? "No run selected." : ready ? null : "Preview needs AIR readiness.",
+      enabled: composed && !previewReason,
+      reason: previewReason,
     },
     submit: {
-      enabled: composed && canSubmit(run),
-      reason: submitDisabledReason(run),
+      enabled: composed && canSubmit(run) && !submitReadyReason,
+      reason: submitDomainReason || submitReadyReason,
     },
     checkStatus: {
-      enabled: composed && canCheckStatus(run, nowMs),
-      reason: statusDisabledReason(run, nowMs),
+      enabled: composed && canCheckStatus(run, nowMs) && !statusReadyReason,
+      reason: statusDomainReason || statusReadyReason,
       opensAt: composed ? statusCheckOpensAt(run) : null,
     },
   };
@@ -186,6 +218,11 @@ export function runStage(run) {
   return stageInfo(run && run.stage);
 }
 
+export function displayStage(run, busyKind) {
+  if (busyKind === "submit") return stageInfo("sending");
+  return runStage(run);
+}
+
 export function xmlForDisplay(xml, packed) {
   if (!xml) return "";
   return packed ? xml : prettyXml(xml);
@@ -199,14 +236,16 @@ export function latestStatusResponse(statusResponses) {
 export function displayDoc(tab, documents, statusResponses) {
   if (tab && tab.fromStatusResponses) {
     const latest = latestStatusResponse(statusResponses);
-    if (latest && latest.text) return { text: latest.text, missingReason: null };
-    return { text: null, missingReason: "Not produced yet." };
+    if (!latest) return { text: null, missingReason: "Not produced yet.", stderr: null };
+    if (latest.text) return { text: latest.text, missingReason: null, stderr: null };
+    if (latest.stderr) return { text: null, missingReason: null, stderr: latest.stderr };
+    return { text: null, missingReason: "Not produced yet.", stderr: null };
   }
   const doc = documents && tab && documents[tab.docKey];
-  if (!doc) return { text: null, missingReason: "Not produced yet." };
-  if (doc.missingReason) return { text: null, missingReason: doc.missingReason };
-  if (doc.text) return { text: doc.text, missingReason: null };
-  return { text: null, missingReason: "Not produced yet." };
+  if (!doc) return { text: null, missingReason: "Not produced yet.", stderr: null };
+  if (doc.missingReason) return { text: null, missingReason: doc.missingReason, stderr: null };
+  if (doc.text) return { text: doc.text, missingReason: null, stderr: null };
+  return { text: null, missingReason: "Not produced yet.", stderr: null };
 }
 
 export function downloadHref(runId, key) {
@@ -215,8 +254,8 @@ export function downloadHref(runId, key) {
 
 export function noticeText(err) {
   if (!err) return "Request failed.";
-  if (err.code === "AIR_NOT_CONFIGURED") {
-    return err.message || ACTION_NOTICES.AIR_NOT_CONFIGURED;
+  if (err.code === "AIR_NOT_CONFIGURED" || err.code === "STATUS_NOT_OPEN") {
+    return err.message || ACTION_NOTICES[err.code];
   }
   return ACTION_NOTICES[err.code] || err.message || "Request failed.";
 }

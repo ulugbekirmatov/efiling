@@ -30,6 +30,15 @@
 
 .air-transmissions-actions { margin-top: 12px; }
 
+.air-transmissions-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.air-transmissions-action-reason { font-size: 13px; }
+
 .air-transmissions-gap { margin-top: 12px; }
 
 .air-transmissions-readiness { margin-top: 12px; }
@@ -60,6 +69,12 @@
   border: 1.5px solid var(--g300);
   border-radius: var(--radius-row);
 }
+
+.air-transmissions-tabpanel { min-width: 0; }
+
+.air-transmissions-stderr { max-width: 36rem; }
+
+.air-transmissions-stderr-full { margin-top: 8px; }
 
 @media (max-width: 900px) {
   .air-transmissions-layout { grid-template-columns: 1fr; }

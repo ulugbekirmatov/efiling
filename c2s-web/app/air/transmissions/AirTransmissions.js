@@ -20,6 +20,7 @@ import {
 import {
   actionState,
   displayDoc,
+  displayStage,
   downloadHref,
   errorRows,
   formatBytes,
@@ -27,11 +28,11 @@ import {
   formatPriorYear,
   formatValue,
   noticeFrom,
+  previewStderr,
   readinessItems,
   runStage,
   SENT_TABS,
   statusHistoryRows,
-  statusOpensLabel,
   submitArmed,
   validationRows,
   xmlForDisplay,
@@ -49,6 +50,31 @@ function Field({ label, value, mono = false, breakAll = false }) {
   );
 }
 
+function ActionReason({ action }) {
+  if (action.enabled || !action.reason) return null;
+  return <span className="muted air-transmissions-action-reason">{action.reason}</span>;
+}
+
+function StderrBlock({ text }) {
+  const shown = previewStderr(text);
+  if (!shown.full) return <span className="muted">—</span>;
+  return (
+    <div className="air-transmissions-stderr">
+      <div className="code wrap">
+        <pre>{shown.preview}</pre>
+      </div>
+      {shown.truncated ? (
+        <details className="air-transmissions-stderr-full">
+          <summary>Full stderr</summary>
+          <div className="code wrap">
+            <pre>{shown.full}</pre>
+          </div>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
 export default function AirTransmissions() {
   const router = useRouter();
   const pathname = usePathname();
@@ -56,6 +82,8 @@ export default function AirTransmissions() {
   const selectedId = searchParams.get("id") || "";
   const currentIdRef = useRef(selectedId);
   currentIdRef.current = selectedId;
+  const requestGenRef = useRef(0);
+  const tabListRef = useRef(null);
 
   const [runs, setRuns] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -77,6 +105,10 @@ export default function AirTransmissions() {
     else params.delete("id");
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
+
+  function isLatestForId(id, gen) {
+    return requestGenRef.current === gen && currentIdRef.current === id;
   }
 
   async function loadListAndReadiness() {
@@ -110,6 +142,7 @@ export default function AirTransmissions() {
   }
 
   async function reloadAfterAction(id) {
+    const gen = ++requestGenRef.current;
     const [detail, list, ready] = await Promise.all([
       getRun(id),
       listRuns(),
@@ -120,7 +153,7 @@ export default function AirTransmissions() {
     ]);
     setRuns(Array.isArray(list) ? list : []);
     setReadiness(ready);
-    if (currentIdRef.current !== id) return;
+    if (!isLatestForId(id, gen)) return;
     setSelected(detail);
   }
 
@@ -148,20 +181,23 @@ export default function AirTransmissions() {
   useEffect(() => {
     if (phase !== "ready") return undefined;
     if (!selectedId) {
+      requestGenRef.current += 1;
       setSelected(null);
       setDetailError(null);
       return undefined;
     }
+    const id = selectedId;
+    const gen = ++requestGenRef.current;
     let cancelled = false;
     setDetailError(null);
     setNotice(null);
-    getRun(selectedId)
+    getRun(id)
       .then((data) => {
-        if (cancelled) return;
+        if (cancelled || !isLatestForId(id, gen)) return;
         setSelected(data);
       })
       .catch((err) => {
-        if (cancelled) return;
+        if (cancelled || !isLatestForId(id, gen)) return;
         setSelected(null);
         if (isUnreachableError(err)) {
           setPhase("unreachable");
@@ -218,6 +254,31 @@ export default function AirTransmissions() {
     void runAction(id, "status", () => checkRunStatus(id));
   }
 
+  function onTabListKeyDown(event) {
+    if (
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight" &&
+      event.key !== "Home" &&
+      event.key !== "End"
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const currentIndex = SENT_TABS.findIndex((item) => item.id === tab);
+    let nextIndex = currentIndex < 0 ? 0 : currentIndex;
+    if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = SENT_TABS.length - 1;
+    else if (event.key === "ArrowLeft") {
+      nextIndex = (nextIndex - 1 + SENT_TABS.length) % SENT_TABS.length;
+    } else {
+      nextIndex = (nextIndex + 1) % SENT_TABS.length;
+    }
+    const nextId = SENT_TABS[nextIndex].id;
+    setTab(nextId);
+    const button = tabListRef.current && tabListRef.current.querySelector(`#tab-${nextId}`);
+    if (button) button.focus();
+  }
+
   async function copyText(text) {
     try {
       await navigator.clipboard.writeText(text);
@@ -229,7 +290,7 @@ export default function AirTransmissions() {
   }
 
   const actions = actionState(selected, readiness, nowMs);
-  const stage = runStage(selected);
+  const stage = displayStage(selected, busy);
   const docs = (selected && selected.documents) || {};
   const statusResponses = (selected && selected.statusResponses) || [];
   const activeTab = SENT_TABS.find((item) => item.id === tab) || SENT_TABS[0];
@@ -238,7 +299,6 @@ export default function AirTransmissions() {
   const history = statusHistoryRows(selected);
   const validations = validationRows(selected && selected.validation);
   const working = Boolean(busy);
-  const opensLabel = statusOpensLabel(actions.checkStatus.opensAt, nowMs);
 
   let body = null;
   if (phase === "loading") {
@@ -258,6 +318,9 @@ export default function AirTransmissions() {
         <p>
           No runs yet. Compose one from <Link href="/air/scenarios">AATS scenarios</Link>.
         </p>
+        <button type="button" className="btn btn-primary" onClick={loadListAndReadiness}>
+          Retry
+        </button>
       </div>
     );
   } else {
@@ -365,6 +428,7 @@ export default function AirTransmissions() {
                           <th>At</th>
                           <th>Exit code</th>
                           <th>Status</th>
+                          <th>Stderr</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -373,6 +437,9 @@ export default function AirTransmissions() {
                             <td className="nowrap">{formatLocalTime(row.at)}</td>
                             <td className="num">{row.exitCode}</td>
                             <td>{row.status}</td>
+                            <td>
+                              <StderrBlock text={row.stderr} />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -417,43 +484,50 @@ export default function AirTransmissions() {
                 ) : null}
 
                 <div className="row air-transmissions-actions">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={onValidate}
-                    disabled={working || !actions.validate.enabled}
-                    title={actions.validate.reason || undefined}
-                  >
-                    {busy === "validate" ? "Validating…" : "Validate"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={onPreview}
-                    disabled={working || !actions.preview.enabled}
-                    title={actions.preview.reason || undefined}
-                  >
-                    {busy === "preview" ? "Previewing…" : "Preview"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => setConfirmOpen(true)}
-                    disabled={working || !actions.submit.enabled}
-                    title={actions.submit.reason || undefined}
-                  >
-                    Submit to AATS
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={onCheckStatus}
-                    disabled={working || !actions.checkStatus.enabled}
-                    title={actions.checkStatus.reason || undefined}
-                  >
-                    {busy === "status" ? "Checking…" : "Check status"}
-                  </button>
-                  {opensLabel ? <span className="muted">{opensLabel}</span> : null}
+                  <div className="air-transmissions-action">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={onValidate}
+                      disabled={working || !actions.validate.enabled}
+                    >
+                      {busy === "validate" ? "Validating…" : "Validate"}
+                    </button>
+                    <ActionReason action={actions.validate} />
+                  </div>
+                  <div className="air-transmissions-action">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={onPreview}
+                      disabled={working || !actions.preview.enabled}
+                    >
+                      {busy === "preview" ? "Previewing…" : "Preview"}
+                    </button>
+                    <ActionReason action={actions.preview} />
+                  </div>
+                  <div className="air-transmissions-action">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => setConfirmOpen(true)}
+                      disabled={working || !actions.submit.enabled}
+                    >
+                      {busy === "submit" ? "Sending…" : "Submit to AATS"}
+                    </button>
+                    <ActionReason action={actions.submit} />
+                  </div>
+                  <div className="air-transmissions-action">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={onCheckStatus}
+                      disabled={working || !actions.checkStatus.enabled}
+                    >
+                      {busy === "status" ? "Checking…" : "Check status"}
+                    </button>
+                    <ActionReason action={actions.checkStatus} />
+                  </div>
                 </div>
 
                 {confirmOpen ? (
@@ -464,17 +538,20 @@ export default function AirTransmissions() {
                       if (!working && submitArmed(selected, confirmTyped)) onSubmit();
                     }}
                   >
-                    <p className="air-transmissions-confirm-prompt">
+                    <label
+                      htmlFor="air-transmissions-confirm"
+                      className="air-transmissions-confirm-prompt"
+                    >
                       Type <code>{confirmCode(selected)}</code> to send this UTID to IRS AATS
-                    </p>
+                    </label>
                     <input
+                      id="air-transmissions-confirm"
                       className="air-transmissions-confirm-input"
                       type="text"
                       name="confirm"
                       autoComplete="off"
                       spellCheck={false}
                       autoFocus
-                      aria-label="Confirmation code"
                       value={confirmTyped}
                       onChange={(event) => setConfirmTyped(event.target.value)}
                     />
@@ -509,16 +586,24 @@ export default function AirTransmissions() {
                     </button>
                   ) : null}
                 </div>
-                <div className="tabs" role="tablist">
+                <div
+                  ref={tabListRef}
+                  className="tabs"
+                  role="tablist"
+                  onKeyDown={onTabListKeyDown}
+                >
                   {SENT_TABS.map((item) => {
                     const active = item.id === tab;
                     return (
                       <button
                         key={item.id}
+                        id={`tab-${item.id}`}
                         type="button"
                         role="tab"
                         className="tab"
                         aria-selected={active}
+                        aria-controls={`panel-${item.id}`}
+                        tabIndex={active ? 0 : -1}
                         onClick={() => setTab(item.id)}
                       >
                         {item.label}
@@ -526,59 +611,69 @@ export default function AirTransmissions() {
                     );
                   })}
                 </div>
-                {activeDoc.missingReason ? (
-                  <p className="callout waiting">{activeDoc.missingReason}</p>
-                ) : activeDoc.text && activeTab.kind === "xml" ? (
-                  <>
-                    <div className="actions end">
-                      {activeTab.download ? (
-                        <a
-                          href={downloadHref(selected.id, activeTab.download)}
+                <div
+                  className="air-transmissions-tabpanel"
+                  role="tabpanel"
+                  id={`panel-${activeTab.id}`}
+                  aria-labelledby={`tab-${activeTab.id}`}
+                  tabIndex={0}
+                >
+                  {activeDoc.missingReason ? (
+                    <p className="callout waiting">{activeDoc.missingReason}</p>
+                  ) : activeDoc.stderr ? (
+                    <p className="callout attention">{activeDoc.stderr}</p>
+                  ) : activeDoc.text && activeTab.kind === "xml" ? (
+                    <>
+                      <div className="actions end">
+                        {activeTab.download ? (
+                          <a
+                            href={downloadHref(selected.id, activeTab.download)}
+                            className="btn-mini"
+                          >
+                            Download exact bytes
+                          </a>
+                        ) : null}
+                        <button
+                          type="button"
                           className="btn-mini"
+                          onClick={() => copyText(xmlForDisplay(activeDoc.text, packed))}
                         >
-                          Download exact bytes
-                        </a>
-                      ) : null}
-                      <button
-                        type="button"
-                        className="btn-mini"
-                        onClick={() => copyText(xmlForDisplay(activeDoc.text, packed))}
-                      >
-                        {copied ? "Copied" : "Copy"}
-                      </button>
-                    </div>
-                    <XmlCode
-                      text={xmlForDisplay(activeDoc.text, packed)}
-                      className="tall"
-                      label={activeTab.label}
-                    />
-                  </>
-                ) : activeDoc.text ? (
-                  <>
-                    <div className="actions end">
-                      {activeTab.download ? (
-                        <a
-                          href={downloadHref(selected.id, activeTab.download)}
+                          {copied ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                      <XmlCode
+                        text={xmlForDisplay(activeDoc.text, packed)}
+                        className="tall"
+                        label={activeTab.label}
+                      />
+                    </>
+                  ) : activeDoc.text ? (
+                    <>
+                      <div className="actions end">
+                        {activeTab.download ? (
+                          <a
+                            href={downloadHref(selected.id, activeTab.download)}
+                            className="btn-mini"
+                          >
+                            Download exact bytes
+                          </a>
+                        ) : null}
+                        <button
+                          type="button"
                           className="btn-mini"
+                          onClick={() => copyText(activeDoc.text)}
                         >
-                          Download exact bytes
-                        </a>
-                      ) : null}
-                      <button
-                        type="button"
-                        className="btn-mini"
-                        onClick={() => copyText(activeDoc.text)}
-                      >
-                        {copied ? "Copied" : "Copy"}
-                      </button>
-                    </div>
-                    <div className="code tall">
-                      <pre>{activeDoc.text}</pre>
-                    </div>
-                  </>
-                ) : (
-                  <p className="callout waiting">Not produced yet.</p>
-                )}
+                          {copied ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                      <div className="code tall">
+                        <pre>{activeDoc.text}</pre>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="callout waiting">Not produced yet.</p>
+                  )}
+                </div>
               </section>
             </>
           )}

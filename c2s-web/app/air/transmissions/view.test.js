@@ -122,14 +122,16 @@ test("displayDoc uses missingReason or Not produced yet", async () => {
   assert.deepEqual(displayDoc(form, {}, []), {
     text: null,
     missingReason: "Not produced yet.",
+    stderr: null,
   });
   assert.deepEqual(
     displayDoc(form, { form: { missingReason: "form.xml is not in this run." } }, []),
-    { text: null, missingReason: "form.xml is not in this run." }
+    { text: null, missingReason: "form.xml is not in this run.", stderr: null }
   );
   assert.deepEqual(displayDoc(form, { form: { text: "<Form/>" } }, []), {
     text: "<Form/>",
     missingReason: null,
+    stderr: null,
   });
 });
 
@@ -139,6 +141,7 @@ test("displayDoc picks the latest status response by at", async () => {
   assert.deepEqual(displayDoc(tab, {}, []), {
     text: null,
     missingReason: "Not produced yet.",
+    stderr: null,
   });
   assert.deepEqual(
     displayDoc(
@@ -149,7 +152,30 @@ test("displayDoc picks the latest status response by at", async () => {
         { at: "2026-01-15T12:00:00.000Z", text: "<old/>" },
       ]
     ),
-    { text: "<new/>", missingReason: null }
+    { text: "<new/>", missingReason: null, stderr: null }
+  );
+  assert.deepEqual(
+    displayDoc(
+      tab,
+      {},
+      [
+        {
+          at: "2026-01-15T13:00:00.000Z",
+          text: null,
+          stderr: "Status check failed: connection refused",
+          exitCode: 1,
+        },
+      ]
+    ),
+    {
+      text: null,
+      missingReason: null,
+      stderr: "Status check failed: connection refused",
+    }
+  );
+  assert.deepEqual(
+    displayDoc(tab, {}, [{ at: "2026-01-15T13:00:00.000Z", text: null, exitCode: 1 }]),
+    { text: null, missingReason: "Not produced yet.", stderr: null }
   );
 });
 
@@ -203,27 +229,43 @@ test("isReady is true only when every flag is true", async () => {
   assert.equal(isReady({ ...READY, asid: false }), false);
 });
 
-test("actionState enables validate on a composed run", async () => {
+test("actionState enables validate when repoRoot and xmllint are ready", async () => {
   const { actionState } = await import("./view.js");
   const none = actionState(null, null, 0);
   assert.equal(none.validate.enabled, false);
   assert.equal(none.validate.reason, "No run selected.");
-  const composed = actionState(run(), null, 0);
+  const missingRoot = actionState(run(), null, 0);
+  assert.equal(missingRoot.validate.enabled, false);
+  assert.equal(missingRoot.validate.reason, "Set AIR_REPO_ROOT.");
+  const missingLint = actionState(run(), { ...READY, xmllint: false }, 0);
+  assert.equal(missingLint.validate.enabled, false);
+  assert.equal(missingLint.validate.reason, "xmllint is not available.");
+  const composed = actionState(run(), READY, 0);
   assert.equal(composed.validate.enabled, true);
   assert.equal(composed.validate.reason, null);
 });
 
-test("actionState enables preview only when AIR is ready", async () => {
+test("actionState enables preview only when Java readiness is set, not xmllint", async () => {
   const { actionState } = await import("./view.js");
   const waiting = actionState(run(), { ...READY, pkcs12: false }, 0);
   assert.equal(waiting.preview.enabled, false);
-  assert.equal(waiting.preview.reason, "Preview needs AIR readiness.");
+  assert.equal(waiting.preview.reason, "Set AIR_PKCS12.");
+  const noLint = actionState(run(), { ...READY, xmllint: false }, 0);
+  assert.equal(noLint.preview.enabled, true);
+  assert.equal(noLint.preview.reason, null);
   const ready = actionState(run(), READY, 0);
   assert.equal(ready.preview.enabled, true);
   assert.equal(ready.preview.reason, null);
+  const missingRoot = actionState(run(), null, 0);
+  assert.equal(missingRoot.preview.enabled, false);
+  assert.equal(missingRoot.preview.reason, "Set AIR_REPO_ROOT.");
+  const noJar = actionState(run(), { ...READY, jar: false }, 0);
+  assert.equal(noJar.preview.reason, "Set AIR_JAR.");
+  const noPass = actionState(run(), { ...READY, passwordEnvSet: false }, 0);
+  assert.equal(noPass.preview.reason, "Set AIR_P12_PASSWORD.");
 });
 
-test("actionState enables submit only when canSubmit is true", async () => {
+test("actionState enables submit only when canSubmit is true and Java is ready", async () => {
   const { actionState } = await import("./view.js");
   const composed = actionState(run(), READY, 0);
   assert.equal(composed.submit.enabled, true);
@@ -242,6 +284,19 @@ test("actionState enables submit only when canSubmit is true", async () => {
   );
   assert.equal(sent.submit.enabled, false);
   assert.equal(sent.submit.reason, "This run was already sent.");
+  const noAsid = actionState(run(), { ...READY, asid: false }, 0);
+  assert.equal(noAsid.submit.enabled, false);
+  assert.equal(noAsid.submit.reason, "Set AIR_ASID.");
+  const noPass = actionState(
+    run(),
+    { ...READY, passwordEnvSet: false, env: { ...READY.env, passwordEnv: "MY_P12" } },
+    0
+  );
+  assert.equal(noPass.submit.enabled, false);
+  assert.equal(noPass.submit.reason, "Set MY_P12.");
+  const noLint = actionState(run(), { ...READY, xmllint: false }, 0);
+  assert.equal(noLint.submit.enabled, true);
+  assert.equal(noLint.submit.reason, null);
 });
 
 test("actionState enables check status after the 10 minute wait while PROCESSING", async () => {
@@ -267,6 +322,12 @@ test("actionState enables check status after the 10 minute wait while PROCESSING
   const open = actionState(processing, READY, opensAt);
   assert.equal(open.checkStatus.enabled, true);
   assert.equal(open.checkStatus.reason, null);
+  const noJava = actionState(processing, { ...READY, java: false }, opensAt);
+  assert.equal(noJava.checkStatus.enabled, false);
+  assert.equal(noJava.checkStatus.reason, "Set AIR_JAVA_HOME.");
+  const noLint = actionState(processing, { ...READY, xmllint: false }, opensAt);
+  assert.equal(noLint.checkStatus.enabled, true);
+  assert.equal(noLint.checkStatus.reason, null);
   const composed = actionState(run(), READY, opensAt);
   assert.equal(composed.checkStatus.enabled, false);
   assert.equal(composed.checkStatus.reason, "Status can be checked only while IRS is processing.");
@@ -298,6 +359,10 @@ test("noticeText maps AIR action error codes", async () => {
     "A submit is already in progress for this run."
   );
   assert.equal(noticeText({ code: "STATUS_NOT_OPEN" }), "Status check is not open yet.");
+  assert.equal(
+    noticeText({ code: "STATUS_NOT_OPEN", message: "Status check opens at 2026-01-15T12:10:00.000Z." }),
+    "Status check opens at 2026-01-15T12:10:00.000Z."
+  );
   assert.equal(noticeText({ code: "COMPOSE_FAILED" }), "Compose failed.");
   assert.equal(noticeText({ code: "AIR_NOT_CONFIGURED" }), "AIR is not configured.");
   assert.equal(
@@ -321,7 +386,7 @@ test("statusHistoryRows uses no answer when IRS did not reply", async () => {
         submit: { pending: true, at: "2026-01-15T12:00:00.000Z" },
       })
     ),
-    [{ at: "2026-01-15T12:00:00.000Z", exitCode: "—", status: "no answer" }]
+    [{ at: "2026-01-15T12:00:00.000Z", exitCode: "—", status: "no answer", stderr: "" }]
   );
   assert.deepEqual(
     statusHistoryRows(
@@ -330,9 +395,10 @@ test("statusHistoryRows uses no answer when IRS did not reply", async () => {
           exitCode: 0,
           at: "2026-01-15T12:00:00.000Z",
           result: { status: "PROCESSING", receiptId: "REC1" },
+          stderr: "",
         },
         statusChecks: [
-          { exitCode: 1, at: "2026-01-15T12:20:00.000Z", result: null },
+          { exitCode: 1, at: "2026-01-15T12:20:00.000Z", result: null, stderr: "channel down" },
           {
             exitCode: 0,
             at: "2026-01-15T12:30:00.000Z",
@@ -342,11 +408,37 @@ test("statusHistoryRows uses no answer when IRS did not reply", async () => {
       })
     ),
     [
-      { at: "2026-01-15T12:00:00.000Z", exitCode: 0, status: "PROCESSING" },
-      { at: "2026-01-15T12:20:00.000Z", exitCode: 1, status: "no answer" },
-      { at: "2026-01-15T12:30:00.000Z", exitCode: 0, status: "ACCEPTED" },
+      { at: "2026-01-15T12:00:00.000Z", exitCode: 0, status: "PROCESSING", stderr: "" },
+      { at: "2026-01-15T12:20:00.000Z", exitCode: 1, status: "no answer", stderr: "channel down" },
+      { at: "2026-01-15T12:30:00.000Z", exitCode: 0, status: "ACCEPTED", stderr: "" },
     ]
   );
+});
+
+test("previewStderr truncates at 400 characters", async () => {
+  const { previewStderr, STDERR_PREVIEW_LIMIT } = await import("./view.js");
+  assert.equal(STDERR_PREVIEW_LIMIT, 400);
+  assert.deepEqual(previewStderr(""), { preview: "", full: "", truncated: false });
+  assert.deepEqual(previewStderr(null), { preview: "", full: "", truncated: false });
+  assert.deepEqual(previewStderr("short"), { preview: "short", full: "short", truncated: false });
+  const long = "x".repeat(401);
+  assert.deepEqual(previewStderr(long), {
+    preview: "x".repeat(400),
+    full: long,
+    truncated: true,
+  });
+});
+
+test("displayStage is Sending while a submit is in flight", async () => {
+  const { displayStage } = await import("./view.js");
+  assert.deepEqual(displayStage(run(), "submit"), {
+    label: "Sending",
+    tone: "waiting",
+    sent: true,
+    next: "A submit is running. If it never finishes, compose a new run; this UTID may have reached IRS.",
+  });
+  assert.equal(displayStage(run(), "validate").label, "Composed, not sent");
+  assert.equal(displayStage(run(), null).label, "Composed, not sent");
 });
 
 test("validationRows maps PASS and FAIL per file", async () => {

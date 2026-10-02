@@ -18,6 +18,10 @@ function pdfLabel(entryName) {
   return entryName.replace(/\.pdf$/, "");
 }
 
+function pdfHref(scenarioId, entryName) {
+  return `/air/scenarios/${scenarioId}/pdf?entry=${encodeURIComponent(entryName)}`;
+}
+
 export default function AirScenarioTabs({ summary, formXml, manifestXml }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -26,6 +30,7 @@ export default function AirScenarioTabs({ summary, formXml, manifestXml }) {
   const requested = searchParams.get("tab");
   const active = TABS.some((tab) => tab.id === requested) ? requested : "overview";
   const [selectedPdf, setSelectedPdf] = useState(summary.pdfs[0] || null);
+  const [copied, setCopied] = useState(false);
 
   function selectTab(id) {
     const params = new URLSearchParams(searchParams.toString());
@@ -58,6 +63,16 @@ export default function AirScenarioTabs({ summary, formXml, manifestXml }) {
     if (button) button.focus();
   }
 
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   let body = null;
   if (active === "overview") {
     body = (
@@ -81,13 +96,19 @@ export default function AirScenarioTabs({ summary, formXml, manifestXml }) {
     );
   } else if (XML_TABS.has(active)) {
     const label = TABS.find((tab) => tab.id === active).label;
+    const pretty = prettyXml(active === "form" ? formXml : manifestXml);
     body = (
       <>
         <p className="muted air-scenario-note">
           Composed in memory per render, so the UTID and timestamp change on reload. SSNs are
           masked to the last four digits.
         </p>
-        <XmlCode text={prettyXml(active === "form" ? formXml : manifestXml)} className="tall" label={label} />
+        <div className="actions end">
+          <button type="button" className="btn-mini" onClick={() => copyText(pretty)}>
+            {copied ? "Copied" : "Copy formatted"}
+          </button>
+        </div>
+        <XmlCode text={pretty} className="tall" label={label} />
       </>
     );
   } else if (active === "pdfs") {
@@ -111,11 +132,23 @@ export default function AirScenarioTabs({ summary, formXml, manifestXml }) {
             ))}
           </ul>
           {selectedPdf ? (
-            <iframe
-              title={pdfLabel(selectedPdf)}
-              src={`/air/scenarios/${summary.id}/pdf?entry=${encodeURIComponent(selectedPdf)}`}
-              className="frame"
-            />
+            <>
+              <div className="actions air-scenario-pdf-open">
+                <a
+                  href={pdfHref(summary.id, selectedPdf)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-mini"
+                >
+                  Open in new tab
+                </a>
+              </div>
+              <iframe
+                title={pdfLabel(selectedPdf)}
+                src={pdfHref(summary.id, selectedPdf)}
+                className="frame"
+              />
+            </>
           ) : null}
         </>
       );

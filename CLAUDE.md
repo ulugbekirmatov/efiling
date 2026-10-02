@@ -133,3 +133,10 @@ What must change relative to the OneWell build:
 - `STATUS_AND_ACK_SERVICES_DOCUMENTATION.md` — SOAP request/response specs for status/ack services.
 - `EFIN_ETIN_USAGE.md` — the EFIN/ETIN placement map.
 - `PROJECT_SUMMARY.md` and `SETUP-COMPLETE.md` — stale historical snapshots (OneWell-era, wrong paths); do not follow them.
+
+## Environment & Artifacts
+
+- Set JAVA_HOME before running the A2A/AATS Java dry runs (e.g. `export JAVA_HOME=$(/usr/libexec/java_home)`).
+- Save patches, SQL files and reports to the repo root or `reports/`, never only to the session scratchpad. Always print the absolute path.
+- Before writing a migration or phase script, confirm which rollout phases have actually run (DDL, shadow, reconcile, etc.) and whether the target tables hold data.
+- Basecamp close-out: check for an existing todo before creating one to avoid duplicates. If DNS or the API fails, output the todo text so it can be added manually.

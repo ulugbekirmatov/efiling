@@ -1,7 +1,7 @@
 const REDACTED = "[redacted]";
 const SSN_MASK = "*****";
 const SSN_VISIBLE_DIGITS = 4;
-const CREDENTIAL_ELEMENTS = ["SignatureValue", "X509Certificate", "BinarySecurityToken", "Assertion", "UsernameToken"];
+const CREDENTIAL_ELEMENTS = ["SignatureValue", "X509Certificate", "KeyIdentifier", "BinarySecurityToken", "Assertion", "UsernameToken"];
 
 const NINE_DIGIT_RUN = /(?<!\d)(?:\d{9}|\d{3}-\d{2}-\d{4})(?!\d)/g;
 

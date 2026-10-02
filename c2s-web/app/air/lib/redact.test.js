@@ -26,6 +26,7 @@ test("redactCredentials replaces signature, certificate, token, assertion, and u
   const xml = [
     "<ds:SignatureValue Id=\"s\">abc==</ds:SignatureValue>",
     "<ds:X509Certificate>MIIC</ds:X509Certificate>",
+    "<wsse:KeyIdentifier ValueType=\"x509v3\">MIID</wsse:KeyIdentifier>",
     "<wsse:BinarySecurityToken ValueType=\"x\">tok</wsse:BinarySecurityToken>",
     "<saml2:Assertion ID=\"a\"><saml2:Subject>who</saml2:Subject></saml2:Assertion>",
     "<wsse:UsernameToken><wsse:Username>u</wsse:Username><wsse:Password>p</wsse:Password></wsse:UsernameToken>",
@@ -36,6 +37,7 @@ test("redactCredentials replaces signature, certificate, token, assertion, and u
     [
       "<ds:SignatureValue Id=\"s\">[redacted]</ds:SignatureValue>",
       "<ds:X509Certificate>[redacted]</ds:X509Certificate>",
+      "<wsse:KeyIdentifier ValueType=\"x509v3\">[redacted]</wsse:KeyIdentifier>",
       "<wsse:BinarySecurityToken ValueType=\"x\">[redacted]</wsse:BinarySecurityToken>",
       "<saml2:Assertion ID=\"a\">[redacted]</saml2:Assertion>",
       "<wsse:UsernameToken>[redacted]</wsse:UsernameToken>",

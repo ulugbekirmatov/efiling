@@ -7,7 +7,10 @@ import { airConfig } from "./airConfig.js";
 import { redactDocument } from "./redact.js";
 
 const execFileAsync = promisify(execFile);
-const requireFromHere = createRequire(import.meta.url);
+// webpack rewrites createRequire into its bundle require, which cannot load the AIR package by absolute path.
+const requireFromHere = typeof __non_webpack_require__ === "function"
+  ? __non_webpack_require__
+  : createRequire(import.meta.url);
 
 const SCENARIO_FILE_RE = /^(scenario-[0-9]+[a-z]?)\.json$/;
 const SCENARIO_ID_RE = /^scenario-[0-9]+[a-z]?$/;

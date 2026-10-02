@@ -448,7 +448,7 @@ test("validationRows maps PASS and FAIL per file", async () => {
     validationRows({
       ok: false,
       files: [
-        { path: "form.xml", kind: "form", ok: true, errors: [] },
+        { path: "/Users/op/.air-operator/runs/r1/form.xml", kind: "form", ok: true, errors: [] },
         { path: "manifest.xml", kind: "manifest", ok: false, errors: ["missing TCC"] },
       ],
     }),

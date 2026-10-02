@@ -50,7 +50,7 @@ function runFilePath(id, key) {
   return file;
 }
 
-function secretValues() {
+export function secretValues() {
   const { passwordEnv, pkcs12 } = airConfig();
   return [process.env[passwordEnv], pkcs12];
 }

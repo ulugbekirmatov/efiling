@@ -105,7 +105,7 @@ export function previewStderr(text) {
 export function validationRows(validation) {
   if (!validation || !Array.isArray(validation.files)) return [];
   return validation.files.map((file) => ({
-    path: file.path || "",
+    path: String(file.path || "").split(/[\\/]/).pop(),
     kind: file.kind || "",
     result: file.ok ? "PASS" : "FAIL",
     errors: Array.isArray(file.errors) ? file.errors : [],

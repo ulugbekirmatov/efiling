@@ -166,7 +166,8 @@ export async function readRun(id) {
     session,
     compose: redactRecord("compose", compose, secrets),
     validate: redactRecord("validate", validate, secrets),
-    submit: redactRecord("submit", submit, secrets),
+    // beginSubmit creates submit.json before writing the marker, so an unreadable file is an in-flight submit.
+    submit: submit == null && present.has("submit") ? { pending: true, at: null } : redactRecord("submit", submit, secrets),
     statusChecks,
   };
   return deriveRun(id, files, present);

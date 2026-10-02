@@ -83,3 +83,11 @@ test("redactMessage passes non-strings through", async () => {
   const { redactMessage } = await import("./redact.js");
   assert.equal(redactMessage(undefined, []), undefined);
 });
+
+test("maskSsn masks every element whose local name ends in SSN", async () => {
+  const { maskSsn } = await import("./redact.js");
+  assert.equal(
+    maskSsn("<irs:EmployeeSSN>111223333</irs:EmployeeSSN><SSNType>1</SSNType><irs:SSN/>"),
+    "<irs:EmployeeSSN>*****3333</irs:EmployeeSSN><SSNType>1</SSNType><irs:SSN/>",
+  );
+});

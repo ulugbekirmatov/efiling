@@ -35,10 +35,13 @@ export const JAVA_READY_FLAGS = ["repoRoot", "jar", "java", "pkcs12", "passwordE
 export const VALIDATE_READY_FLAGS = ["repoRoot", "xmllint"];
 export const STDERR_PREVIEW_LIMIT = 400;
 
+const ISO_INSTANT = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g;
+
 export const ACTION_NOTICES = {
   NOT_SUBMITTABLE: "This run cannot be submitted to AATS.",
   CONFIRM_MISMATCH: "That confirmation code does not match this UTID.",
   SUBMIT_IN_PROGRESS: "A submit is already in progress for this run.",
+  STATUS_IN_PROGRESS: "A status check is already running for this run.",
   STATUS_NOT_OPEN: "Status check is not open yet.",
   AIR_NOT_CONFIGURED: "AIR is not configured.",
   COMPOSE_FAILED: "Compose failed.",
@@ -254,7 +257,10 @@ export function downloadHref(runId, key) {
 
 export function noticeText(err) {
   if (!err) return "Request failed.";
-  if (err.code === "AIR_NOT_CONFIGURED" || err.code === "STATUS_NOT_OPEN") {
+  if (err.code === "STATUS_NOT_OPEN" && err.message) {
+    return err.message.replace(ISO_INSTANT, (iso) => new Date(iso).toLocaleString());
+  }
+  if (err.code === "AIR_NOT_CONFIGURED") {
     return err.message || ACTION_NOTICES[err.code];
   }
   return ACTION_NOTICES[err.code] || err.message || "Request failed.";

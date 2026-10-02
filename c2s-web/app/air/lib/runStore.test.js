@@ -268,3 +268,10 @@ test("commitComposedRun refuses a staging directory outside the run store", asyn
     fs.rmSync(outside, { recursive: true, force: true });
   }
 });
+
+test("an unreadable submit.json reads as an in-flight submit", async () => {
+  const { store, id } = await createRun("scenario-7");
+  fs.writeFileSync(path.join(runsDir, id, "submit.json"), "");
+  const run = await store.readRun(id);
+  assert.equal(run.stage, "sending");
+});

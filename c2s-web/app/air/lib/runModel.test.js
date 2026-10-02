@@ -172,3 +172,12 @@ test("isRunId accepts generated ids and rejects traversal and trailing newlines"
   assert.equal(isRunId("../x"), false);
   assert.equal(isRunId(null), false);
 });
+
+test("a failed status check restarts the wait and a guard-blocked one does not", async () => {
+  const model = await import("./runModel.js");
+  const failedAt = "2026-11-02T10:12:00.000Z";
+  const failed = derive(model, { submit: answer("PROCESSING", SUBMITTED_AT), statusChecks: [{ exitCode: 1, result: null, stderr: "", at: failedAt }] });
+  const blocked = derive(model, { submit: answer("PROCESSING", SUBMITTED_AT), statusChecks: [{ exitCode: 2, result: null, stderr: "", at: failedAt }] });
+  assert.equal(model.statusCheckOpensAt(failed), Date.parse("2026-11-02T10:22:00.000Z"));
+  assert.equal(model.statusCheckOpensAt(blocked), Date.parse("2026-11-02T10:10:00.000Z"));
+});

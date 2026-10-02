@@ -361,7 +361,7 @@ test("noticeText maps AIR action error codes", async () => {
   assert.equal(noticeText({ code: "STATUS_NOT_OPEN" }), "Status check is not open yet.");
   assert.equal(
     noticeText({ code: "STATUS_NOT_OPEN", message: "Status check opens at 2026-01-15T12:10:00.000Z." }),
-    "Status check opens at 2026-01-15T12:10:00.000Z."
+    `Status check opens at ${new Date("2026-01-15T12:10:00.000Z").toLocaleString()}.`
   );
   assert.equal(noticeText({ code: "COMPOSE_FAILED" }), "Compose failed.");
   assert.equal(noticeText({ code: "AIR_NOT_CONFIGURED" }), "AIR is not configured.");
@@ -476,4 +476,10 @@ test("statusOpensLabel is null once the wait has elapsed", async () => {
   assert.equal(statusOpensLabel(null, 0), null);
   assert.equal(statusOpensLabel(100, 100), null);
   assert.equal(statusOpensLabel(100, 99).startsWith("opens at "), true);
+});
+
+test("noticeText shows the STATUS_NOT_OPEN time in local time", async () => {
+  const { noticeText } = await import("./view.js");
+  const iso = "2026-11-02T10:10:00.000Z";
+  assert.equal(noticeText({ code: "STATUS_NOT_OPEN", message: `Status check opens at ${iso}` }), `Status check opens at ${new Date(iso).toLocaleString()}`);
 });

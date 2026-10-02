@@ -5,7 +5,7 @@ const CREDENTIAL_ELEMENTS = ["SignatureValue", "X509Certificate", "KeyIdentifier
 
 const NINE_DIGIT_RUN = /(?<!\d)(?:\d{9}|\d{3}-\d{2}-\d{4})(?!\d)/g;
 
-const SSN_ELEMENT = /(<(?:[\w.-]+:)?SSN(?:\s[^>]*)?(?<!\/)>)([^<]*)(<\/(?:[\w.-]+:)?SSN\s*>)/g;
+const SSN_ELEMENT = /(<((?:[\w.-]+:)?[\w.-]*SSN)(?:\s[^>]*)?(?<!\/)>)([^<]*)(<\/\2\s*>)/g;
 
 // The lookbehind skips self-closing tags so `<ds:Assertion/>` cannot swallow a later closing tag.
 const CREDENTIAL_ELEMENT = new RegExp(
@@ -20,7 +20,7 @@ function maskedDigits(value) {
 
 export function maskSsn(text) {
   if (typeof text !== "string") return text;
-  return text.replace(SSN_ELEMENT, (match, open, value, close) => (value === "" ? match : open + maskedDigits(value) + close));
+  return text.replace(SSN_ELEMENT, (match, open, name, value, close) => (value === "" ? match : open + maskedDigits(value) + close));
 }
 
 export function redactCredentials(text) {

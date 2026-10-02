@@ -137,9 +137,11 @@ export function confirmMatches(run, typed) {
 export const STATUS_WAIT_MS = 10 * 60 * 1000;
 
 export function statusCheckOpensAt(run) {
-  const at = run.answerAt || (run.submit && run.submit.at) || null;
-  const last = at ? Date.parse(at) : NaN;
-  return Number.isNaN(last) ? null : last + STATUS_WAIT_MS;
+  const contacts = [run.submit && run.submit.at]
+    .concat(run.statusChecks.filter((check) => check.exitCode !== EXIT.LOCAL_GUARD).map((check) => check.at))
+    .map((at) => Date.parse(at))
+    .filter((ms) => !Number.isNaN(ms));
+  return contacts.length ? Math.max(...contacts) + STATUS_WAIT_MS : null;
 }
 
 export function canCheckStatus(run, nowMs) {

@@ -8,6 +8,8 @@ import { readRun, runDir, statusCheckPaths, writeStatusCheck } from "../../../..
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const checkingRunIds = new Set();
+
 export async function POST(request, { params }) {
   const denied = requireSameOrigin(request);
   if (denied) return denied;
@@ -31,6 +33,18 @@ export async function POST(request, { params }) {
   const missing = airNotConfigured(await readiness());
   if (missing) return missing;
 
+  if (checkingRunIds.has(id)) {
+    return apiError(409, "STATUS_IN_PROGRESS", "A status check is already running for this run");
+  }
+  checkingRunIds.add(id);
+  try {
+    return await checkStatus(id, run, now);
+  } finally {
+    checkingRunIds.delete(id);
+  }
+}
+
+async function checkStatus(id, run, now) {
   const dir = await runDir(id);
   const paths = await statusCheckPaths(id, now);
   const out = await runJava("status", {

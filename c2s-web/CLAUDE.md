@@ -14,4 +14,4 @@ Leave the contrast choices as they are: muted text on `--g600`, the primary butt
 
 From this directory, finish with `npm test` and `npx next build`. Never run `next build` while `next dev` is running. They share `.next`.
 
-AIR pages live under `app/air/`. The pure state model is `app/air/lib/runModel.js`, and every stage, tone, and next action comes from `STAGES` there. Server modules under `app/air/lib/` are imported only by route handlers and server pages. Never run a live submit or status from a test.
+AIR pages live under `app/air/`. The pure state model is `app/air/lib/runModel.js`. Every stage, tone, and next action comes from `STAGES` there. Client modules may import `runModel.js`. Import `airConfig.js`, `runStore.js`, `airTools.js`, `scenarioCatalog.js`, `redact.js`, and `http.js` only from route handlers and server pages. Readiness reports `jar` when the file exists and does not verify it. `npm test` covers the model, store, redaction, and views. Nothing in `npm test` contacts IRS. Never run a live submit or status from a test.

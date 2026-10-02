@@ -76,24 +76,48 @@ Scenario pages render per request, so regenerated snapshots show up on reload wi
 
 ## AIR operator
 
-The AIR operator is the page for the IRS AIR 1094-C/1095-C AATS session described in `TESTING.md` of the AIR package. It composes a transmission from an AATS fixture, validates and previews it, submits it to AATS, and checks status, keeping one directory per run.
-
-Open http://localhost:3000/air/transmissions and http://localhost:3000/air/scenarios
+The AIR operator pages are for the IRS AIR 1094-C/1095-C AATS session described in `TESTING.md` of the AIR package. They compose a transmission from an AATS fixture, validate and preview it, submit it to AATS, and check status. Each run is one directory under `AIR_RUNS_DIR`. The MeF Spring Boot backend is not needed.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `AIR_REPO_ROOT` | `$HOME/Documents/aca` | Root of the ACA checkout. The AIR package is `<AIR_REPO_ROOT>/redesign/air-a2a`. |
 | `AIR_RUNS_DIR` | `$HOME/.air-operator/runs` | Directory for live run files. |
 | `AIR_JAVA_HOME` | unset, then `JAVA_HOME`, then `/opt/homebrew/Cellar/openjdk/26.0.2.1/libexec/openjdk.jdk/Contents/Home` | JDK used to run the AIR jar. |
-| `AIR_JAR` | `<airRoot>/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` | Built AIR A2A channel jar. |
+| `AIR_JAR` | `<AIR_REPO_ROOT>/redesign/air-a2a/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` | Built AIR A2A channel jar. |
 | `AIR_PKCS12` | unset | Path to the enrolled AATS PKCS12. |
 | `AIR_P12_PASSWORD_ENV` | `AIR_P12_PASSWORD` | Name of the env var that holds the PKCS12 password, not the password itself. |
 | `AIR_ASID` | unset | AIR System ID enrolled for AATS. |
 
 Live runs are written under `AIR_RUNS_DIR`. The default sits outside both the c2s-web and AIR repos because those files hold SSN-shaped data.
 
-The action flow is Compose from a scenario, Validate, Preview, Submit to AATS with the typed confirmation code, then Check status after 10 minutes.
+**Build the AIR jar first.** The default `AIR_JAR` is `redesign/air-a2a/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` under `AIR_REPO_ROOT`. A stale jar fails with `Invalid signature file digest for Manifest main attributes`. Readiness only checks that the jar file exists.
 
-Submit is AATS only. The operator types a confirmation code and the server checks it. One submit is allowed per UTID. Every POST must be same-origin. Form XML and responses are SSN-masked on the server before they reach the browser. The PKCS12 password is passed by env var name only.
+From `AIR_REPO_ROOT`, rebuild with the `mvn package` command in `redesign/air-a2a/java/README.md` and the `JAVA_HOME` it names.
 
-Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID.
+```bash
+export JAVA_HOME=/opt/homebrew/Cellar/openjdk/26.0.2.1/libexec/openjdk.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+mvn -o -q -f redesign/air-a2a/java/pom.xml package
+```
+
+From `c2s-web`, start the app if it is not running.
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000/air/transmissions
+
+The page lists live runs from `AIR_RUNS_DIR`. Pick a run to read the form, manifest, what we sent, and the IRS answer.
+
+Open http://localhost:3000/air/scenarios
+
+The page lists AATS fixtures from `<AIR_REPO_ROOT>/redesign/air-a2a/fixtures/aats`. Pick a scenario and compose a run. Compose writes one directory under `AIR_RUNS_DIR` and opens it on the transmissions page.
+
+On a composed run, Validate (needs `xmllint` on PATH), then Preview, then Submit to AATS. Submit is AATS only (`testFileCd` must be `T`). Type the confirmation code. The server checks it. A run blocked by a local guard can submit again. After a submit that may have reached IRS, that UTID is spent. Compose a new run to get a new UTID.
+
+Check status only while the stage is PROCESSING, a Receipt ID exists, and 10 minutes have passed since the last IRS answer. Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID. Preview uses the same PKCS12, ASID, and jar. It does not POST.
+
+Every POST must be same-origin. The pages show SSN-masked form XML, redacted credentials, and redacted CLI records. Downloads of `form.xml` and `manifest.xml` are the exact bytes. The PKCS12 password is passed by env var name only.
+
+**Check it offline.** From `c2s-web`, run `npm test`. The AIR tests cover the model, store, redaction, and views. Nothing in `npm test` contacts IRS.

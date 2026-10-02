@@ -138,6 +138,8 @@ test("canCheckStatus opens only from PROCESSING and only after the wait", async 
   const processing = derive(model, { submit: answer("PROCESSING", SUBMITTED_AT) });
   assert.equal(model.canCheckStatus(processing, opensAt - 1), false);
   assert.equal(model.canCheckStatus(processing, opensAt), true);
+  const undated = derive(model, { submit: { exitCode: 0, result: { status: "PROCESSING", receiptId: "R1", errors: [] } } });
+  assert.equal(model.canCheckStatus(undated, opensAt), false);
 
   const accepted = derive(model, { submit: answer("ACCEPTED", SUBMITTED_AT) });
   assert.equal(model.canCheckStatus(accepted, opensAt + 1), false);

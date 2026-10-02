@@ -154,5 +154,5 @@ export function statusCheckOpensAt(run) {
 export function canCheckStatus(run, nowMs) {
   if (run.stage !== "PROCESSING" || !run.receiptId) return false;
   const opensAt = statusCheckOpensAt(run);
-  return opensAt == null || nowMs >= opensAt;
+  return opensAt != null && nowMs >= opensAt;
 }

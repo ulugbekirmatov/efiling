@@ -67,3 +67,12 @@ test("runJava returns exitCode null when the process is killed", async () => {
   assert.equal(result.exitCode, null);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test("validateErrors keeps every line of a multi-line xmllint error", async () => {
+  const { validateErrors } = await import("./airTools.js");
+  const stdout = "FAIL /runs/r1/form.xml\n  schema: form.xml:3: element Foo: not expected\nform.xml fails to validate\n  empty tag: Bar\n";
+  assert.deepEqual(validateErrors(stdout, "", 1), [
+    "schema: form.xml:3: element Foo: not expected\nform.xml fails to validate",
+    "empty tag: Bar",
+  ]);
+});

@@ -36,3 +36,13 @@ test("requireSameOrigin rejects a different host", async () => {
     message: "Origin host must match Host",
   });
 });
+
+test("airNotConfigured names the first missing variable in a 503 body", async () => {
+  const { airNotConfigured } = await import("./http.js");
+  const env = { passwordEnv: "AIR_P12_PASSWORD", pkcs12Var: "AIR_PKCS12", asidVar: "AIR_ASID" };
+  const ready = { repoRoot: true, java: true, jar: true, pkcs12: true, passwordEnvSet: true, asid: false, env };
+  const response = airNotConfigured(ready);
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { code: "AIR_NOT_CONFIGURED", message: "Set AIR_ASID" });
+  assert.equal(airNotConfigured({ ...ready, asid: true }), null);
+});

@@ -275,3 +275,13 @@ test("an unreadable submit.json reads as an in-flight submit", async () => {
   const run = await store.readRun(id);
   assert.equal(run.stage, "sending");
 });
+
+test("readDocuments masks prose SSNs in IRS responses but keeps them in the manifest", async () => {
+  const { store, id } = await createRun("scenario-8");
+  const errorXml = "<irs:ErrorMessageTxt>TIN 123-45-6789 is invalid</irs:ErrorMessageTxt>";
+  fs.writeFileSync(path.join(runsDir, id, "submit.response.xml"), errorXml);
+  fs.writeFileSync(path.join(runsDir, id, "manifest.xml"), "<EIN>000000710</EIN>");
+  const { documents } = await store.readDocuments(id);
+  assert.equal(documents.submitResponse.text, "<irs:ErrorMessageTxt>TIN *****6789 is invalid</irs:ErrorMessageTxt>");
+  assert.equal(documents.manifest.text, "<EIN>000000710</EIN>");
+});

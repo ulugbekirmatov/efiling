@@ -109,10 +109,12 @@ export async function compose({ scenarioPath, outDir }, options = {}) {
   return { exitCode: ran.exitCode, json: parseJson(ran.stdout), stderr: ran.stderr };
 }
 
-function validateErrors(stdout, stderr, exitCode) {
+// validate-air.js prefixes each error with two spaces, but an xmllint error carries its own newlines.
+export function validateErrors(stdout, stderr, exitCode) {
   const errors = [];
   for (const line of String(stdout || "").split("\n")) {
     if (line.startsWith("  ")) errors.push(line.slice(2));
+    else if (errors.length && line.trim() && !/^(PASS|FAIL) /.test(line)) errors[errors.length - 1] += `\n${line}`;
   }
   if (exitCode !== 0 && errors.length === 0) {
     const fallback = String(stderr || stdout || "validation failed").trim();

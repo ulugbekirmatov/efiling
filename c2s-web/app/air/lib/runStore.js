@@ -197,6 +197,12 @@ function prettyJsonOrText(text, key, kind, secrets) {
   return JSON.stringify(redactRecord(key, parsed, secrets), null, 2);
 }
 
+// IRS error text quotes payload values as prose, so responses also get the standalone 9-digit mask.
+// Form, manifest, and MIME keep element-level masking so EINs stay readable.
+function redactShown(key, text, secrets) {
+  return key === "submitResponse" ? redactMessage(text, secrets) : redactDocument(text);
+}
+
 export async function readDocuments(id) {
   const dir = runDir(id);
   const secrets = secretValues();
@@ -205,7 +211,7 @@ export async function readDocuments(id) {
     const raw = await readText(path.join(dir, entry.path));
     documents[key] = raw == null
       ? { text: null, missingReason: MISSING_REASON }
-      : { text: redactDocument(prettyJsonOrText(raw, key, entry.kind, secrets)), missingReason: null };
+      : { text: redactShown(key, prettyJsonOrText(raw, key, entry.kind, secrets), secrets), missingReason: null };
   }
   const statusResponses = [];
   for (const name of await listStatusRecordNames(dir)) {
@@ -215,7 +221,7 @@ export async function readDocuments(id) {
     statusResponses.push({
       at: record.at || null,
       exitCode: record.exitCode ?? null,
-      text: response == null ? null : redactDocument(response),
+      text: response == null ? null : redactMessage(response, secrets),
       stderr: redactMessage(record.stderr || "", secrets),
     });
   }

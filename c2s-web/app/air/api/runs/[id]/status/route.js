@@ -23,6 +23,12 @@ export async function POST(request, { params }) {
     return apiError(404, "RUN_NOT_FOUND", "Run not found");
   }
 
+  if (run.stage !== "PROCESSING") {
+    return apiError(409, "NOT_PROCESSING", `Status checks run only while IRS is processing; this run is ${run.stage}`);
+  }
+  if (!run.receiptId) {
+    return apiError(409, "NO_RECEIPT", "This run has no Receipt ID to check");
+  }
   const now = Date.now();
   if (!canCheckStatus(run, now)) {
     const opensAt = statusCheckOpensAt(run);

@@ -68,7 +68,15 @@ td, th { word-break: normal; overflow-wrap: break-word; }
   border-radius: 2px;
   background: var(--clay);
 }
-.topnav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.topnav-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.topnav-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.topnav-group-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g600);
+}
 .topnav-links a {
   font-size: 14px;
   color: var(--g700);

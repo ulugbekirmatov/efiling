@@ -73,3 +73,27 @@ mvn test -Dtest=AtsScenarioSnapshotTest -Dats.snapshots.update=true
 ```
 
 Scenario pages render per request, so regenerated snapshots show up on reload with no rebuild.
+
+## AIR operator
+
+The AIR operator is the page for the IRS AIR 1094-C/1095-C AATS session described in `TESTING.md` of the AIR package. It composes a transmission from an AATS fixture, validates and previews it, submits it to AATS, and checks status, keeping one directory per run.
+
+Open http://localhost:3000/air/transmissions and http://localhost:3000/air/scenarios
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `AIR_REPO_ROOT` | `$HOME/Documents/aca` | Root of the ACA checkout. The AIR package is `<AIR_REPO_ROOT>/redesign/air-a2a`. |
+| `AIR_RUNS_DIR` | `$HOME/.air-operator/runs` | Directory for live run files. |
+| `AIR_JAVA_HOME` | unset, then `JAVA_HOME`, then `/opt/homebrew/Cellar/openjdk/26.0.2.1/libexec/openjdk.jdk/Contents/Home` | JDK used to run the AIR jar. |
+| `AIR_JAR` | `<airRoot>/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` | Built AIR A2A channel jar. |
+| `AIR_PKCS12` | unset | Path to the enrolled AATS PKCS12. |
+| `AIR_P12_PASSWORD_ENV` | `AIR_P12_PASSWORD` | Name of the env var that holds the PKCS12 password, not the password itself. |
+| `AIR_ASID` | unset | AIR System ID enrolled for AATS. |
+
+Live runs are written under `AIR_RUNS_DIR`. The default sits outside both the c2s-web and AIR repos because those files hold SSN-shaped data.
+
+The action flow is Compose from a scenario, Validate, Preview, Submit to AATS with the typed confirmation code, then Check status after 10 minutes.
+
+Submit is AATS only. The operator types a confirmation code and the server checks it. One submit is allowed per UTID. Every POST must be same-origin. Form XML and responses are SSN-masked on the server before they reach the browser. The PKCS12 password is passed by env var name only.
+
+Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID.

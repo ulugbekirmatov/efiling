@@ -13,3 +13,5 @@ Write app code as ES modules in plain `.js` files. Do not add TypeScript.
 Leave the contrast choices as they are: muted text on `--g600`, the primary button on `--clay-d`, links in slate with a clay underline. `README.md` records the ratios.
 
 From this directory, finish with `npm test` and `npx next build`. Never run `next build` while `next dev` is running. They share `.next`.
+
+AIR pages live under `app/air/`. The pure state model is `app/air/lib/runModel.js`, and every stage, tone, and next action comes from `STAGES` there. Server modules under `app/air/lib/` are imported only by route handlers and server pages. Never run a live submit or status from a test.

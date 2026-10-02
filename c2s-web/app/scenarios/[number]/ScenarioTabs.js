@@ -3,6 +3,7 @@
 import { Fragment, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { prettyXml } from "../../send-inspector/prettyXml";
+import XmlCode from "../../design-system/XmlCode";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -15,130 +16,6 @@ const TABS = [
 
 const XML_TABS = new Set(["clientBody", "composedReturn", "manifest"]);
 
-const styles = {
-  tabBar: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 },
-  tab: {
-    border: "1px solid #d8dee8",
-    background: "#fff",
-    borderRadius: 6,
-    padding: "4px 10px",
-    font: "inherit",
-    fontSize: 13,
-    cursor: "pointer",
-  },
-  panel: {
-    background: "#fff",
-    border: "1px solid #d8dee8",
-    borderRadius: 10,
-    padding: 16,
-    minWidth: 0,
-  },
-  summary: { margin: "0 0 16px", fontSize: 15 },
-  heading: {
-    margin: "0 0 10px",
-    fontSize: 12,
-    fontWeight: 650,
-    letterSpacing: "0.06em",
-    textTransform: "uppercase",
-    color: "#5b677a",
-  },
-  list: { margin: "0 0 18px", paddingLeft: 18, fontSize: 14 },
-  tableWrap: { overflow: "auto", maxWidth: "100%", marginBottom: 18 },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: 13,
-  },
-  th: {
-    textAlign: "left",
-    borderBottom: "1px solid #d8dee8",
-    padding: "6px 8px",
-    color: "#5b677a",
-    fontWeight: 650,
-  },
-  td: {
-    borderBottom: "1px solid #eef1f5",
-    padding: "6px 8px",
-    verticalAlign: "top",
-    wordBreak: "break-word",
-  },
-  nowrap: { whiteSpace: "nowrap" },
-  value: {
-    textAlign: "right",
-    fontVariantNumeric: "tabular-nums",
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-    whiteSpace: "nowrap",
-  },
-  pathCell: {
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-    fontSize: 12,
-    wordBreak: "normal",
-    overflowWrap: "anywhere",
-  },
-  callout: {
-    background: "#eef4f8",
-    border: "1px solid #d8dee8",
-    borderLeft: "4px solid #274869",
-    borderRadius: 8,
-    padding: "10px 12px",
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  missing: {
-    background: "#fff8e8",
-    border: "1px solid #f0d9a0",
-    color: "#9a6700",
-    borderRadius: 8,
-    padding: "10px 12px",
-    fontSize: 13,
-    margin: 0,
-  },
-  notice: {
-    background: "#fff8e8",
-    border: "1px solid #f0d9a0",
-    color: "#9a6700",
-    borderRadius: 8,
-    padding: "10px 12px",
-    fontSize: 13,
-    margin: "0 0 12px",
-  },
-  producedBy: { margin: "0 0 8px", fontSize: 13, color: "#5b677a" },
-  description: { margin: "0 0 12px", fontSize: 14 },
-  actions: { display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "flex-end", marginBottom: 8 },
-  toggle: {
-    border: "1px solid #d8dee8",
-    background: "#fff",
-    borderRadius: 6,
-    padding: "4px 10px",
-    font: "inherit",
-    fontSize: 13,
-    cursor: "pointer",
-    color: "inherit",
-    textDecoration: "none",
-    display: "inline-block",
-  },
-  pre: {
-    margin: 0,
-    padding: 12,
-    background: "#0f1724",
-    color: "#e8eef7",
-    borderRadius: 8,
-    fontSize: 12,
-    lineHeight: 1.45,
-    overflow: "auto",
-    maxHeight: "70vh",
-    whiteSpace: "pre",
-  },
-  groupTitle: { margin: "0 0 8px", fontSize: 15, fontWeight: 600 },
-  iframe: {
-    width: "100%",
-    height: "80vh",
-    border: "1px solid #d8dee8",
-    borderRadius: 8,
-    background: "#fff",
-  },
-};
-
 function formatById(formats, id) {
   return formats.find((format) => format.id === id) || null;
 }
@@ -146,7 +23,7 @@ function formatById(formats, id) {
 function ElementPathCell({ path }) {
   const segments = String(path).split("/");
   return (
-    <td style={{ ...styles.td, ...styles.pathCell }}>
+    <td className="scenario-path">
       {segments.map((segment, index) => (
         <Fragment key={index}>
           {index > 0 ? (
@@ -216,37 +93,37 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
   if (active === "overview") {
     body = (
       <>
-        <p style={styles.summary}>{scenario.summary}</p>
-        <h2 style={styles.heading}>What this scenario exercises</h2>
-        <ul style={styles.list}>
+        <p className="scenario-summary">{scenario.summary}</p>
+        <h2 className="section-label">What this scenario exercises</h2>
+        <ul className="scenario-list">
           {scenario.tests.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
-        <h2 style={styles.heading}>Key figures</h2>
-        <div style={styles.tableWrap}>
-          <table style={{ ...styles.table, minWidth: 480 }}>
+        <h2 className="section-label">Key figures</h2>
+        <div className="table-wrap">
+          <table className="data">
             <thead>
               <tr>
-                <th style={styles.th}>Label</th>
-                <th style={styles.th}>Line</th>
-                <th style={{ ...styles.th, textAlign: "right" }}>Value</th>
+                <th>Label</th>
+                <th>Line</th>
+                <th className="num">Value</th>
               </tr>
             </thead>
             <tbody>
               {scenario.keyFigures.map((row, index) => (
                 <tr key={`${index}-${row.label}`}>
-                  <td style={styles.td}>{row.label}</td>
-                  <td style={styles.td}>{row.line}</td>
-                  <td style={{ ...styles.td, ...styles.value }}>{row.value}</td>
+                  <td>{row.label}</td>
+                  <td>{row.line}</td>
+                  <td className="num">{row.value}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <h2 style={styles.heading}>Notes</h2>
+        <h2 className="section-label">Notes</h2>
         {scenario.notes.map((note, index) => (
-          <p key={`${index}-${note}`} style={styles.callout}>
+          <p key={`${index}-${note}`} className="callout">
             {note}
           </p>
         ))}
@@ -256,40 +133,40 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
     const format = formatById(formats, "lineMapping");
     body =
       documentGroups.length === 0 ? (
-        <p style={styles.missing}>Not prepared for this scenario</p>
+        <p className="callout waiting">Not prepared for this scenario</p>
       ) : (
         <>
           {format ? (
             <>
-              <p style={styles.description}>{format.description}</p>
-              <p style={styles.producedBy}>{format.producedBy}</p>
+              <p className="scenario-description">{format.description}</p>
+              <p className="scenario-produced muted">{format.producedBy}</p>
             </>
           ) : null}
-          <div style={styles.actions}>
-            <a href={`/scenarios/${number}/files/lineMapping?download=1`} style={styles.toggle}>
+          <div className="actions end">
+            <a href={`/scenarios/${number}/files/lineMapping?download=1`} className="btn-mini">
               Download file
             </a>
           </div>
           {documentGroups.map((group) => (
-            <section key={group.document} style={{ marginBottom: 22 }}>
-              <h2 style={styles.groupTitle}>{group.document}</h2>
-              <div style={styles.tableWrap}>
-                <table style={{ ...styles.table, minWidth: 640 }}>
+            <section key={group.document} className="scenario-doc">
+              <h2>{group.document}</h2>
+              <div className="table-wrap">
+                <table className="data wide">
                   <thead>
                     <tr>
-                      <th style={{ ...styles.th, ...styles.nowrap }}>Form line</th>
-                      <th style={styles.th}>Element path</th>
-                      <th style={{ ...styles.th, textAlign: "right" }}>Value</th>
-                      <th style={{ ...styles.th, ...styles.nowrap }}>PDF page</th>
+                      <th className="nowrap">Form line</th>
+                      <th>Element path</th>
+                      <th className="num">Value</th>
+                      <th className="nowrap">PDF page</th>
                     </tr>
                   </thead>
                   <tbody>
                     {group.rows.map((row, index) => (
                       <tr key={`${row.elementPath}-${index}`}>
-                        <td style={{ ...styles.td, ...styles.nowrap }}>{row.formLine}</td>
+                        <td className="nowrap">{row.formLine}</td>
                         <ElementPathCell path={row.elementPath} />
-                        <td style={{ ...styles.td, ...styles.value }}>{row.value}</td>
-                        <td style={{ ...styles.td, ...styles.nowrap }}>{row.pdfPage}</td>
+                        <td className="num">{row.value}</td>
+                        <td className="nowrap">{row.pdfPage}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -302,43 +179,47 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
   } else if (XML_TABS.has(active)) {
     const format = formatById(formats, active);
     if (!format || format.content == null) {
-      body = <p style={styles.missing}>Not prepared for this scenario</p>;
+      body = <p className="callout waiting">Not prepared for this scenario</p>;
     } else {
       const pretty = prettyXml(format.content);
       body = (
         <>
-          <p style={styles.description}>{format.description}</p>
-          <p style={styles.producedBy}>{format.producedBy}</p>
+          <p className="scenario-description">{format.description}</p>
+          <p className="scenario-produced muted">{format.producedBy}</p>
           {active === "composedReturn" ? (
-            <p style={styles.notice}>
+            <p className="callout attention">
               Originator values in this snapshot are schema-valid stand-ins, not Pyramos
               enrollment values.
             </p>
           ) : null}
-          <div style={styles.actions}>
-            <button type="button" style={styles.toggle} onClick={() => copyText(pretty)}>
+          <div className="actions end">
+            <button type="button" className="btn-mini" onClick={() => copyText(pretty)}>
               {copied ? "Copied" : "Copy formatted"}
             </button>
-            <a href={`/scenarios/${number}/files/${active}?download=1`} style={styles.toggle}>
+            <a href={`/scenarios/${number}/files/${active}?download=1`} className="btn-mini">
               Download file
             </a>
           </div>
-          <pre style={styles.pre}>{pretty}</pre>
+          <XmlCode
+            text={pretty}
+            className="tall"
+            label={TABS.find((tab) => tab.id === active).label}
+          />
         </>
       );
     }
   } else if (active === "pdf") {
     body = hasPdf ? (
       <>
-        <div style={{ ...styles.actions, justifyContent: "flex-start" }}>
-          <a href={`/scenarios/${number}/files/pdf`} target="_blank" rel="noreferrer" style={styles.toggle}>
+        <div className="actions">
+          <a href={`/scenarios/${number}/files/pdf`} target="_blank" rel="noreferrer" className="btn-mini">
             Open in new tab
           </a>
         </div>
-        <iframe title="Source PDF" src={`/scenarios/${number}/files/pdf`} style={styles.iframe} />
+        <iframe title="Source PDF" src={`/scenarios/${number}/files/pdf`} className="frame" />
       </>
     ) : (
-      <p style={styles.missing}>Not prepared for this scenario</p>
+      <p className="callout waiting">Not prepared for this scenario</p>
     );
   }
 
@@ -346,7 +227,7 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
     <div>
       <div
         ref={tabListRef}
-        style={styles.tabBar}
+        className="tabs"
         role="tablist"
         onKeyDown={onTabListKeyDown}
       >
@@ -362,12 +243,7 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
               aria-controls={`panel-${tab.id}`}
               tabIndex={selected ? 0 : -1}
               onClick={() => selectTab(tab.id)}
-              style={{
-                ...styles.tab,
-                background: selected ? "#eef4f8" : "#fff",
-                borderColor: selected ? "#274869" : "#d8dee8",
-                color: selected ? "#274869" : "inherit",
-              }}
+              className="tab"
             >
               {tab.label}
             </button>
@@ -375,7 +251,7 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
         })}
       </div>
       <div
-        style={styles.panel}
+        className="card scenario-panel"
         role="tabpanel"
         id={`panel-${active}`}
         aria-labelledby={`tab-${active}`}

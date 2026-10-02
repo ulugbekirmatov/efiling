@@ -1,0 +1,41 @@
+/* Anthropic design system tokens, verbatim from the /html skill (~/.claude/skills/html/SKILL.md).
+   This is the only file in app/ allowed to hold color literals; design-system.test.js enforces it. */
+:root {
+  /* Surfaces */
+  --ivory: #FAF9F5;
+  --paper: #FFFFFF;
+  --g100: #F0EEE6;
+  --g200: #E6E3DA;
+  --g300: #D1CFC5;
+  /* Text */
+  --slate: #141413;
+  --g700: #3D3D3A;
+  --g500: #87867F;
+  --g600: #6B6A64;   /* not in the skill: --g500 is 3.5:1 on ivory, this is the AA-safe muted text */
+  /* Accents */
+  --clay: #D97757;
+  --clay-d: #B85C3E;
+  --oat: #E3DACC;
+  --olive: #788C5D;
+  --rust: #B04A3F;
+  /* Typography */
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Derived values from components.md */
+  --on-accent: #FFFFFF;
+  --code-text: #E8E6DE;
+  --code-fn: #C9B98A;
+  --clay-tint: rgba(217, 119, 87, 0.14);
+  --olive-tint: rgba(120, 140, 93, 0.16);
+  --oat-tint: rgba(227, 218, 204, 0.35);
+  --clay-ring: rgba(217, 119, 87, 0.15);
+  --olive-ink: #4B5C39;
+  --rust-ink: #8A3B1E;
+  --shadow-lift: 0 10px 30px rgba(20, 20, 19, 0.10);
+  --border: 1.5px solid var(--g300);
+  --radius-row: 8px;
+  --radius-panel: 12px;
+  --radius-card: 14px;
+}

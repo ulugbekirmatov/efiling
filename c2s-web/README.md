@@ -116,7 +116,7 @@ The page lists AATS fixtures from `<AIR_REPO_ROOT>/redesign/air-a2a/fixtures/aat
 
 On a composed run, Validate (needs `xmllint` on PATH), then Preview, then Submit to AATS. Submit is AATS only (`testFileCd` must be `T`). Type the confirmation code. The server checks it. A run blocked by a local guard can submit again. After a submit that may have reached IRS, that UTID is spent. Compose a new run to get a new UTID.
 
-Check status only while the stage is PROCESSING, a Receipt ID exists, and 10 minutes have passed since the last IRS answer. Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID. Preview uses the same PKCS12, ASID, and jar. It does not POST.
+Check status only while the stage is PROCESSING, a Receipt ID exists, and 10 minutes have passed since the last submit or status call that may have reached IRS. Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID. Preview uses the same PKCS12, ASID, and jar. It does not POST.
 
 Every POST must be same-origin. The pages show SSN-masked form XML, redacted credentials, and redacted CLI records. Downloads of `form.xml` and `manifest.xml` are the exact bytes. The PKCS12 password is passed by env var name only.
 

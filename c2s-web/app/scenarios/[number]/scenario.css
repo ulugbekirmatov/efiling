@@ -1,0 +1,18 @@
+/* Page-specific layout for the scenario detail page. Colors come only from tokens. */
+.scenario-employer { margin-bottom: 20px; }
+.scenario-employer-name { font-family: var(--serif); font-size: 20px; margin: 0 0 4px; }
+.scenario-employer .row { margin: 10px 0; }
+.scenario-loading { padding: 12px 0; }
+
+.scenario-panel { min-width: 0; }
+.scenario-panel .section-label { margin-top: 20px; }
+.scenario-panel > .section-label:first-child { margin-top: 0; }
+.scenario-summary { font-size: 15px; margin: 0 0 4px; }
+.scenario-list { margin: 0 0 4px; padding-left: 20px; font-size: 14px; }
+.scenario-panel .table-wrap { margin-bottom: 18px; }
+.scenario-panel .callout { margin-bottom: 8px; }
+.scenario-doc { margin-bottom: 22px; }
+.scenario-doc h2 { font-size: 18px; margin: 0 0 8px; }
+.scenario-path { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.scenario-description { margin: 0 0 12px; font-size: 14px; }
+.scenario-produced { margin: 0 0 8px; font-size: 13px; }

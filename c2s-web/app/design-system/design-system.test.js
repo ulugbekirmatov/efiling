@@ -82,3 +82,18 @@ test("tokenizeXml handles single quotes, spaced equals, and CDATA", async () => 
     ["punct", ">"],
   ]);
 });
+
+test("every static className used in app/ is defined in an app stylesheet", () => {
+  const files = sourceFiles(APP_DIR);
+  const css = files.filter((file) => file.endsWith(".css")).map((file) => fs.readFileSync(file, "utf8"));
+  const defined = new Set(css.join("\n").match(/\.[a-zA-Z][\w-]*/g).map((name) => name.slice(1)));
+  const undefinedClasses = files
+    .filter((file) => file.endsWith(".js"))
+    .flatMap((file) =>
+      [...fs.readFileSync(file, "utf8").matchAll(/className=(?:"([^"]+)"|\{`([^`]+)`\})/g)]
+        .flatMap((match) => (match[1] || match[2]).replace(/\$\{[^}]*\}/g, " ").split(/\s+/))
+        .filter((name) => name && !defined.has(name))
+        .map((name) => `${path.relative(APP_DIR, file)}  ${name}`),
+    );
+  assert.deepEqual(undefinedClasses, []);
+});

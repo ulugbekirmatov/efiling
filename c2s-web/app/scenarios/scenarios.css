@@ -1,0 +1,50 @@
+/* Layout the design system does not ship: the card grid, section rhythm, and the
+   whole-card link. Colors stay on tokens; these rules are spacing and display. */
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+/* A card that is itself the link. The global anchor hover would paint every
+   inherited line clay; the card lift already marks hover. */
+.scenario-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.scenario-card:hover {
+  color: inherit;
+}
+
+.scenario-section {
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+.scenario-section > h2 {
+  margin-bottom: 12px;
+}
+
+.scenario-pipeline {
+  margin: 0 0 16px;
+  font-size: 13px;
+}
+
+.scenario-status {
+  margin-top: 10px;
+}
+.scenario-chips {
+  margin-top: 8px;
+}
+
+.scenario-grid > .card > :last-child {
+  margin-bottom: 0;
+}
+
+
+/* Three columns, so not table.data.wide (that floor is for 4+). */
+table.data.header-fields {
+  min-width: 560px;
+}

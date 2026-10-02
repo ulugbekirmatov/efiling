@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Badge } from "../design-system/Badge";
+import { TONES, toneClass } from "../design-system/tones";
+import XmlCode from "../design-system/XmlCode";
 import {
   fetchAck,
   getSend,
@@ -21,200 +24,6 @@ const TABS = [
   { id: "mime", label: "MIME attachments" },
 ];
 
-const styles = {
-  page: {
-    maxWidth: 1280,
-    margin: "0 auto",
-    padding: "28px 20px 64px",
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-  },
-  banner: {
-    background: "#eef4f8",
-    border: "1px solid #d8dee8",
-    borderRadius: 10,
-    padding: "12px 16px",
-    fontSize: 14,
-    color: "#274869",
-    marginBottom: 20,
-  },
-  header: { margin: "0 0 6px", fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em" },
-  lead: { margin: "0 0 18px", color: "#5b677a", maxWidth: 720 },
-  layout: {
-    display: "grid",
-    gridTemplateColumns: "minmax(240px, 300px) 1fr",
-    gap: 16,
-    alignItems: "start",
-  },
-  list: {
-    background: "#fff",
-    border: "1px solid #d8dee8",
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  listHead: {
-    padding: "10px 14px",
-    fontSize: 12,
-    letterSpacing: "0.06em",
-    textTransform: "uppercase",
-    color: "#5b677a",
-    borderBottom: "1px solid #d8dee8",
-    background: "#f6f8fb",
-  },
-  sendBtn: {
-    display: "block",
-    width: "100%",
-    textAlign: "left",
-    border: 0,
-    borderBottom: "1px solid #eef1f5",
-    background: "transparent",
-    padding: "12px 14px",
-    cursor: "pointer",
-    font: "inherit",
-  },
-  sendId: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 },
-  meta: { fontSize: 12, color: "#5b677a", marginTop: 4 },
-  badges: { display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" },
-  detail: {
-    background: "#fff",
-    border: "1px solid #d8dee8",
-    borderRadius: 10,
-    minWidth: 0,
-  },
-  card: {
-    padding: "14px 16px",
-    borderBottom: "1px solid #d8dee8",
-  },
-  ackCard: {
-    padding: "16px",
-    borderBottom: "1px solid #d8dee8",
-    background: "#f6f8fb",
-  },
-  cardTitle: {
-    margin: "0 0 10px",
-    fontSize: 12,
-    fontWeight: 650,
-    letterSpacing: "0.06em",
-    textTransform: "uppercase",
-    color: "#5b677a",
-  },
-  dl: {
-    display: "grid",
-    gridTemplateColumns: "180px 1fr",
-    gap: "6px 12px",
-    fontSize: 13,
-    margin: 0,
-  },
-  dt: { color: "#5b677a" },
-  dd: { margin: 0, minWidth: 0, wordBreak: "break-word" },
-  pre: {
-    margin: 0,
-    padding: 12,
-    background: "#0f1724",
-    color: "#e8eef7",
-    borderRadius: 8,
-    fontSize: 12,
-    lineHeight: 1.45,
-    overflow: "auto",
-    maxHeight: 520,
-    whiteSpace: "pre",
-  },
-  missing: {
-    background: "#fff8e8",
-    border: "1px solid #f0d9a0",
-    color: "#9a6700",
-    borderRadius: 8,
-    padding: "10px 12px",
-    fontSize: 13,
-  },
-  fault: {
-    background: "#fdecec",
-    border: "1px solid #f2b8b5",
-    color: "#b42318",
-    borderRadius: 8,
-    padding: "10px 12px",
-    fontSize: 13,
-    marginTop: 10,
-  },
-  toggle: {
-    border: "1px solid #d8dee8",
-    background: "#fff",
-    borderRadius: 6,
-    padding: "4px 10px",
-    font: "inherit",
-    fontSize: 13,
-    cursor: "pointer",
-  },
-  primary: {
-    border: "1px solid #274869",
-    background: "#274869",
-    color: "#fff",
-    borderRadius: 6,
-    padding: "8px 14px",
-    font: "inherit",
-    fontSize: 14,
-    cursor: "pointer",
-  },
-  empty: { padding: 28, color: "#5b677a" },
-  tabBar: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 },
-  tab: {
-    border: "1px solid #d8dee8",
-    background: "#fff",
-    borderRadius: 6,
-    padding: "4px 10px",
-    font: "inherit",
-    fontSize: 13,
-    cursor: "pointer",
-  },
-  sentHead: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 12,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  actions: { display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 12 },
-  ackHero: {
-    display: "inline-block",
-    fontSize: 22,
-    fontWeight: 650,
-    letterSpacing: "0.02em",
-    borderRadius: 8,
-    padding: "8px 16px",
-    marginBottom: 12,
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: 12,
-    marginTop: 10,
-  },
-  th: {
-    textAlign: "left",
-    borderBottom: "1px solid #d8dee8",
-    padding: "6px 8px",
-    color: "#5b677a",
-    fontWeight: 650,
-  },
-  td: {
-    borderBottom: "1px solid #eef1f5",
-    padding: "6px 8px",
-    verticalAlign: "top",
-    wordBreak: "break-all",
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  },
-  mimeLine: {
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-    fontSize: 12,
-    background: "#fff",
-    border: "1px solid #e6ebf2",
-    borderRadius: 8,
-    padding: "8px 10px",
-    marginBottom: 10,
-  },
-  session: { fontSize: 13, color: "#274869" },
-};
-
 function formatLocalTime(iso) {
   if (!iso) return "—";
   const date = new Date(iso);
@@ -222,27 +31,16 @@ function formatLocalTime(iso) {
   return date.toLocaleString();
 }
 
-function badgeStyle(kind) {
-  const base = {
-    display: "inline-block",
-    fontSize: 11,
-    fontWeight: 650,
-    letterSpacing: "0.04em",
-    textTransform: "uppercase",
-    borderRadius: 999,
-    padding: "2px 8px",
-    lineHeight: 1.4,
-  };
-  if (/^accept/i.test(kind || "")) return { ...base, background: "#e6f6ec", color: "#1f7a4d" };
-  if (/^reject/i.test(kind || "")) return { ...base, background: "#fdecec", color: "#b42318" };
-  if (kind === "state") return { ...base, background: "#eef4f8", color: "#274869" };
-  return { ...base, background: "#eef1f5", color: "#5b677a" };
+function stateTone(state) {
+  if (!state) return TONES.waiting;
+  if (/fault/i.test(state)) return TONES.attention;
+  return TONES.neutral;
 }
 
-function ackHeroStyle(ackType) {
-  if (/^accept/i.test(ackType || "")) return { ...styles.ackHero, background: "#e6f6ec", color: "#1f7a4d" };
-  if (/^reject/i.test(ackType || "")) return { ...styles.ackHero, background: "#fdecec", color: "#b42318" };
-  return { ...styles.ackHero, background: "#eef1f5", color: "#5b677a" };
+function ackTone(ackType) {
+  if (/^accept/i.test(ackType || "")) return TONES.safe;
+  if (/^reject/i.test(ackType || "")) return TONES.attention;
+  return TONES.waiting;
 }
 
 function errorRows(ack) {
@@ -261,11 +59,13 @@ function xmlForDisplay(xml, packed) {
   return packed ? redacted : prettyXml(redacted);
 }
 
-function Field({ label, value }) {
+function Field({ label, value, mono = false }) {
   return (
     <>
-      <dt style={styles.dt}>{label}</dt>
-      <dd style={styles.dd}>{value == null || value === "" ? "—" : value}</dd>
+      <dt>{label}</dt>
+      <dd className={mono ? "mono" : undefined}>
+        {value == null || value === "" ? "—" : value}
+      </dd>
     </>
   );
 }
@@ -490,84 +290,83 @@ export default function SendInspector() {
 
   let body = null;
   if (phase === "loading") {
-    body = <p style={styles.empty}>Loading captured sends…</p>;
+    body = <p className="empty">Loading captured sends…</p>;
   } else if (phase === "unreachable") {
     body = (
-      <div style={styles.empty}>
-        <p style={{ marginTop: 0 }}>Cannot reach the MeF backend.</p>
+      <div className="empty">
+        <p>Cannot reach the MeF backend.</p>
         <p>Start it on :8080, then retry.</p>
-        <button type="button" style={styles.primary} onClick={loadListAndSession}>
+        <button type="button" className="btn btn-primary" onClick={loadListAndSession}>
           Retry
         </button>
       </div>
     );
   } else if (phase === "empty") {
     body = (
-      <div style={styles.empty}>
-        <p style={{ marginTop: 0 }}>No sends captured yet.</p>
+      <div className="empty">
+        <p>No sends captured yet.</p>
         <p>
           The backend must be running on :8080 via{" "}
           <code>cd ../mef-spring-boot-integration && mvn spring-boot:run</code>.
         </p>
-        <button type="button" style={styles.primary} onClick={loadListAndSession}>
+        <button type="button" className="btn btn-primary" onClick={loadListAndSession}>
           Retry
         </button>
       </div>
     );
   } else {
     body = (
-      <div style={styles.layout} className="inspector-layout">
-        <aside style={styles.list} aria-label="Captured sends">
-          <div style={styles.listHead}>Captured sends</div>
-          {sends.map((send) => {
-            const active = send.submissionId === selectedId;
-            return (
-              <button
-                key={send.submissionId}
-                type="button"
-                onClick={() => selectId(send.submissionId)}
-                style={{
-                  ...styles.sendBtn,
-                  background: active ? "#eef4f8" : "transparent",
-                }}
-                aria-current={active ? "true" : undefined}
-              >
-                <div style={styles.sendId}>{send.submissionId}</div>
-                <div style={styles.meta}>
-                  {send.formCode} {send.periodLabel}
-                  <br />
-                  {formatLocalTime(send.capturedAt)}
-                </div>
-                <div style={styles.badges}>
-                  <span style={badgeStyle("state")}>{send.state || "no state"}</span>
-                  <span style={badgeStyle(send.ackType)}>
-                    {send.ackType || "no ack"}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+      <div className="inspector-layout">
+        <aside className="panel" aria-label="Captured sends">
+          <div className="panel-head">Captured sends</div>
+          <div className="select-list inspector-sends">
+            {sends.map((send) => {
+              const active = send.submissionId === selectedId;
+              return (
+                <button
+                  key={send.submissionId}
+                  type="button"
+                  className="select-item"
+                  onClick={() => selectId(send.submissionId)}
+                  aria-current={active ? "true" : undefined}
+                >
+                  <div className="mono">{send.submissionId}</div>
+                  <div className="muted inspector-meta">
+                    {send.formCode} {send.periodLabel}
+                    <br />
+                    {formatLocalTime(send.capturedAt)}
+                  </div>
+                  <div className="row inspector-badges">
+                    <Badge tone={stateTone(send.state)}>
+                      {send.state || "no state"}
+                    </Badge>
+                    <Badge tone={ackTone(send.ackType)}>{send.ackType || "no ack"}</Badge>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </aside>
 
-        <article style={styles.detail}>
+        <article className="panel">
           {detailError ? (
-            <p style={styles.empty}>
+            <p className="panel-section muted">
               {detailError.code === "SEND_NOT_FOUND"
                 ? "That send is not in the capture ring."
                 : detailError.message || "Could not load this send."}
             </p>
           ) : !selectedId ? (
-            <p style={styles.empty}>Select a send from the list.</p>
+            <p className="panel-section muted">Select a send from the list.</p>
           ) : !selected || selected.submissionId !== selectedId ? (
-            <p style={styles.empty}>Loading this send…</p>
+            <p className="panel-section muted">Loading this send…</p>
           ) : (
             <>
-              <section style={styles.card} aria-label="Send summary">
-                <h2 style={styles.cardTitle}>Summary</h2>
-                <dl style={styles.dl}>
-                  <Field label="Submission ID" value={selected.submissionId} />
+              <section className="panel-section" aria-label="Send summary">
+                <h2 className="section-label">Summary</h2>
+                <dl className="kv">
+                  <Field label="Submission ID" value={selected.submissionId} mono />
                   <Field label="Environment" value={selected.environment} />
-                  <Field label="EIN" value={selected.einMasked} />
+                  <Field label="EIN" value={selected.einMasked} mono />
                   <Field label="Form" value={selected.formType} />
                   <Field
                     label="Tax period"
@@ -577,8 +376,8 @@ export default function SendInspector() {
                         : null
                     }
                   />
-                  <Field label="Client request ID" value={selected.clientRequestId} />
-                  <Field label="Deposit ID" value={transmission && transmission.depositId} />
+                  <Field label="Client request ID" value={selected.clientRequestId} mono />
+                  <Field label="Deposit ID" value={transmission && transmission.depositId} mono />
                   <Field
                     label="Receipt timestamp"
                     value={formatLocalTime(transmission && transmission.receiptTimestamp)}
@@ -586,19 +385,21 @@ export default function SendInspector() {
                   <Field label="State" value={transmission && transmission.state} />
                 </dl>
                 {transmission && (transmission.faultCode || transmission.faultMessage) ? (
-                  <p style={styles.fault}>
+                  <p className="callout attention inspector-gap">
                     {transmission.faultCode ? `${transmission.faultCode}: ` : ""}
                     {transmission.faultMessage || ""}
                   </p>
                 ) : null}
               </section>
 
-              <section style={styles.ackCard} aria-label="IRS acknowledgment">
-                <h2 style={styles.cardTitle}>IRS acknowledgment</h2>
+              <section className="panel-section tinted" aria-label="IRS acknowledgment">
+                <h2 className="section-label">IRS acknowledgment</h2>
                 {ack ? (
                   <>
-                    <div style={ackHeroStyle(ack.ackType)}>{ack.ackType || "unknown"}</div>
-                    <dl style={styles.dl}>
+                    <span className={`badge lg inspector-hero ${toneClass(ackTone(ack.ackType))}`}>
+                      {ack.ackType || "unknown"}
+                    </span>
+                    <dl className="kv">
                       <Field label="Retrieved at" value={formatLocalTime(ack.retrievedAt)} />
                       <Field label="Source" value={ack.source} />
                       <Field
@@ -606,58 +407,71 @@ export default function SendInspector() {
                         value={formatLocalTime(ack.electronicPostmarkTs)}
                       />
                       <Field label="IRS received date" value={ack.irsReceivedDate} />
-                      <Field label="Receipt ID" value={ack.receiptId} />
+                      <Field label="Receipt ID" value={ack.receiptId} mono />
                       <Field label="Tax year" value={ack.taxYear} />
                       <Field label="Submission type" value={ack.submissionType} />
                       <Field label="Validation errors" value={yesNo(ack.hasValidationErrors)} />
                       <Field label="Validation alerts" value={yesNo(ack.hasValidationAlerts)} />
                     </dl>
                     {errorRows(ack).length > 0 ? (
-                      <table style={styles.table}>
-                        <thead>
-                          <tr>
-                            <th style={styles.th}>Code</th>
-                            <th style={styles.th}>Message</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {errorRows(ack).map((row, index) => (
-                            <tr key={`${row.code}-${index}`}>
-                              <td style={{ ...styles.td, whiteSpace: "nowrap" }}>{row.code}</td>
-                              <td style={{ ...styles.td, fontFamily: "inherit" }}>{row.message}</td>
+                      <div className="table-wrap inspector-gap">
+                        <table className="data">
+                          <thead>
+                            <tr>
+                              <th>Code</th>
+                              <th>Message</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {errorRows(ack).map((row, index) => (
+                              <tr key={`${row.code}-${index}`}>
+                                <td className="nowrap mono">{row.code}</td>
+                                <td>{row.message}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     ) : null}
                     {ack.hasValidationErrors && ack.details ? (
-                      <pre style={{ ...styles.pre, whiteSpace: "pre-wrap", marginTop: 10 }}>
-                        {ack.details}
-                      </pre>
+                      <div className="code wrap tall inspector-gap">
+                        <pre>{ack.details}</pre>
+                      </div>
                     ) : null}
                   </>
                 ) : (
-                  <p style={{ marginTop: 0, fontSize: 14 }}>
+                  <p>
                     No acknowledgment is stored for this send yet. Fetch it from IRS after the
                     return has had time to process.
                   </p>
                 )}
                 {ackNotice ? (
-                  <p role="alert" style={ackNotice.kind === "error" ? styles.fault : styles.missing}>
+                  <p
+                    role="alert"
+                    className={`callout inspector-gap ${ackNotice.kind === "error" ? "attention" : "waiting"}`}
+                  >
                     {ackNotice.text}
                   </p>
                 ) : null}
-                <div style={styles.actions}>
-                  <span style={styles.session}>
-                    IRS session: {loggedIn ? "logged in" : "not logged in"}
+                <div className="row inspector-actions">
+                  <span>
+                    IRS session:{" "}
+                    <Badge tone={loggedIn ? TONES.safe : TONES.waiting}>
+                      {loggedIn ? "logged in" : "not logged in"}
+                    </Badge>
                     {session && session.message ? ` — ${session.message}` : ""}
                   </span>
-                  <button type="button" style={styles.primary} onClick={onFetchAck} disabled={ackBusy || authBusy}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={onFetchAck}
+                    disabled={ackBusy || authBusy}
+                  >
                     {ackBusy ? "Fetching…" : ack ? "Refresh ack" : "Fetch ack from IRS"}
                   </button>
                   <button
                     type="button"
-                    style={styles.toggle}
+                    className="btn btn-secondary"
                     onClick={onLogin}
                     disabled={authBusy || ackBusy || loggedIn}
                   >
@@ -665,7 +479,7 @@ export default function SendInspector() {
                   </button>
                   <button
                     type="button"
-                    style={styles.toggle}
+                    className="btn btn-secondary"
                     onClick={onLogout}
                     disabled={authBusy || ackBusy || !loggedIn}
                   >
@@ -674,16 +488,16 @@ export default function SendInspector() {
                 </div>
               </section>
 
-              <section style={styles.card} aria-label="What we sent">
-                <div style={styles.sentHead}>
-                  <h2 style={{ ...styles.cardTitle, margin: 0 }}>What we sent</h2>
+              <section className="panel-section" aria-label="What we sent">
+                <div className="inspector-sent-head">
+                  <h2 className="section-label">What we sent</h2>
                   {tab !== "mime" ? (
-                    <button type="button" style={styles.toggle} onClick={() => setPacked((v) => !v)}>
+                    <button type="button" className="btn-mini" onClick={() => setPacked((v) => !v)}>
                       {packed ? "Show pretty XML" : "Show as packed"}
                     </button>
                   ) : null}
                 </div>
-                <div style={styles.tabBar} role="tablist">
+                <div className="tabs" role="tablist">
                   {TABS.map((item) => {
                     const active = item.id === tab;
                     return (
@@ -691,14 +505,9 @@ export default function SendInspector() {
                         key={item.id}
                         type="button"
                         role="tab"
+                        className="tab"
                         aria-selected={active}
                         onClick={() => setTab(item.id)}
-                        style={{
-                          ...styles.tab,
-                          background: active ? "#eef4f8" : "#fff",
-                          borderColor: active ? "#274869" : "#d8dee8",
-                          color: active ? "#274869" : "inherit",
-                        }}
                       >
                         {item.label}
                       </button>
@@ -708,50 +517,56 @@ export default function SendInspector() {
                 {tab === "mime" ? (
                   <>
                     {mime.contentType ? (
-                      <div style={styles.mimeLine}>Content-Type: {mime.contentType}</div>
+                      <div className="chip inspector-mime">Content-Type: {mime.contentType}</div>
                     ) : null}
                     {(mime.attachments || []).length === 0 ? (
-                      <p style={styles.missing}>No MIME attachments captured.</p>
+                      <p className="callout waiting">No MIME attachments captured.</p>
                     ) : (
-                      <table style={styles.table}>
-                        <thead>
-                          <tr>
-                            <th style={styles.th}>contentId</th>
-                            <th style={styles.th}>contentType</th>
-                            <th style={styles.th}>byteLength</th>
-                            <th style={styles.th}>sha256</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(mime.attachments || []).map((part, index) => (
-                            <tr key={part.contentId || index}>
-                              <td style={styles.td}>{part.contentId}</td>
-                              <td style={styles.td}>{part.contentType}</td>
-                              <td style={styles.td}>{part.byteLength}</td>
-                              <td style={styles.td}>{part.sha256}</td>
+                      <div className="table-wrap">
+                        <table className="data wide">
+                          <thead>
+                            <tr>
+                              <th>contentId</th>
+                              <th>contentType</th>
+                              <th className="num">byteLength</th>
+                              <th>sha256</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {(mime.attachments || []).map((part, index) => (
+                              <tr key={part.contentId || index}>
+                                <td className="mono">{part.contentId}</td>
+                                <td className="mono">{part.contentType}</td>
+                                <td className="num">{part.byteLength}</td>
+                                <td className="mono inspector-hash">{part.sha256}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     )}
                   </>
                 ) : activeDoc && activeDoc.missingReason ? (
-                  <p style={styles.missing}>{activeDoc.missingReason}</p>
+                  <p className="callout waiting">{activeDoc.missingReason}</p>
                 ) : activeDoc && activeDoc.text ? (
                   <>
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                    <div className="actions end">
                       <button
                         type="button"
-                        style={styles.toggle}
+                        className="btn-mini"
                         onClick={() => copyText(xmlForDisplay(activeDoc.text, packed))}
                       >
                         {copied ? "Copied" : "Copy"}
                       </button>
                     </div>
-                    <pre style={styles.pre}>{xmlForDisplay(activeDoc.text, packed)}</pre>
+                    <XmlCode
+                      text={xmlForDisplay(activeDoc.text, packed)}
+                      className="tall"
+                      label={activeTab.label}
+                    />
                   </>
                 ) : (
-                  <p style={styles.missing}>Not captured.</p>
+                  <p className="callout waiting">Not captured.</p>
                 )}
               </section>
             </>
@@ -762,22 +577,20 @@ export default function SendInspector() {
   }
 
   return (
-    <div style={styles.page}>
-      <p style={styles.banner}>
-        Live captures from this backend — what we sent to IRS, and the acknowledgment IRS
-        returned. SAML / UsernameToken are redacted if present.
-      </p>
-      <h1 style={styles.header}>MeF send inspector</h1>
-      <p style={styles.lead}>
-        Pick a send to read the Return XML, manifest, SOAP, MIME attachments, and IRS
-        acknowledgment.
-      </p>
+    <div className="page">
+      <header className="page-head">
+        <p className="eyebrow">Live captures</p>
+        <h1>MeF send inspector</h1>
+        <p className="intro">
+          Pick a send to read the Return XML, manifest, SOAP, MIME attachments, and IRS
+          acknowledgment.
+        </p>
+        <p className="callout inspector-banner">
+          Live captures from this backend — what we sent to IRS, and the acknowledgment IRS
+          returned. SAML / UsernameToken are redacted if present.
+        </p>
+      </header>
       {body}
-      <style>{`
-        @media (max-width: 900px) {
-          .inspector-layout { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   );
 }

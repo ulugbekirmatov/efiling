@@ -1,0 +1,86 @@
+.air-transmissions-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* Grid items default to min-width: auto, so one long MIME line would widen the page. */
+.air-transmissions-layout > * { min-width: 0; }
+
+.air-transmissions-meta {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.air-transmissions-badges { margin-top: 6px; }
+
+.air-transmissions-hero { margin: 0 0 12px; }
+
+.air-transmissions-sent-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.air-transmissions-sent-head .section-label { margin: 0; }
+
+.air-transmissions-actions { margin-top: 12px; }
+
+.air-transmissions-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.air-transmissions-action-reason { font-size: 13px; }
+
+.air-transmissions-gap { margin-top: 12px; }
+
+.air-transmissions-readiness { margin-top: 12px; }
+
+.air-transmissions-next { margin: 0 0 12px; }
+
+.air-transmissions-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.air-transmissions-confirm-prompt {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.air-transmissions-confirm-input {
+  min-height: 36px;
+  width: 12ch;
+  padding: 0 10px;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--slate);
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-radius: var(--radius-row);
+}
+
+.air-transmissions-tabpanel { min-width: 0; }
+
+.air-transmissions-stderr { max-width: 36rem; }
+
+.air-transmissions-stderr-full { margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .air-transmissions-layout { grid-template-columns: 1fr; }
+}
+
+.air-transmissions-runs { padding: 8px; }
+
+/* Checksums and xpaths have no break opportunity, so they would push the table past its panel. */
+.air-transmissions-break { word-break: break-all; }

@@ -1,0 +1,23 @@
+.air-scenarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+/* The card is itself the link; the global anchor hover would paint every
+   inherited line clay, and the card lift already marks hover. */
+.air-scenarios-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.air-scenarios-card:hover {
+  color: inherit;
+}
+.air-scenarios-card > :last-child {
+  margin-bottom: 0;
+}
+.air-scenarios-chips {
+  margin-top: 10px;
+}

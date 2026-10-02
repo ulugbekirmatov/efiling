@@ -1,0 +1,15 @@
+.air-scenario-summary { margin-bottom: 20px; }
+.air-scenario-summary .row { margin: 10px 0; }
+.air-scenario-loading { padding: 12px 0; }
+.air-scenario-compose { margin-top: 12px; }
+.air-scenario-compose .callout { margin: 12px 0 0; }
+
+.air-scenario-panel { min-width: 0; }
+.air-scenario-panel .section-label { margin-top: 20px; }
+.air-scenario-panel > .section-label:first-child { margin-top: 0; }
+.air-scenario-panel .callout { margin-bottom: 12px; }
+.air-scenario-facts { margin: 0 0 4px; padding-left: 20px; font-size: 14px; }
+.air-scenario-note { margin: 0 0 12px; font-size: 13px; }
+.air-scenario-pdf-list { margin: 0 0 12px; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.air-scenario-pdf-idle { opacity: 0.7; }
+.air-scenario-pdf-open { margin-bottom: 12px; }

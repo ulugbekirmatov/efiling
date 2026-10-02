@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loadRegistry, loadScenario } from "./scenarioData";
-import { CHIP, MUTED_CHIP, StatusBadge, SourceBadge, formatEin } from "./ui";
+import { Chip } from "../design-system/Badge";
+import { StatusBadge, SourceBadge, formatEin } from "./ui";
 
 export const dynamic = "force-dynamic";
 
@@ -157,9 +158,9 @@ export default function ScenariosIndexPage() {
               </p>
               <div style={styles.chips}>
                 {scenario.documents.map((doc) => (
-                  <span key={doc} style={CHIP}>
+                  <Chip key={doc}>
                     {doc}
-                  </span>
+                  </Chip>
                 ))}
               </div>
               <div style={{ marginTop: 10 }}>
@@ -169,12 +170,12 @@ export default function ScenariosIndexPage() {
                 {registry.formats.map((format) => {
                   const ready = kinds.some((kind) => kind.id === format.id);
                   return (
-                    <span key={format.id} style={ready ? CHIP : MUTED_CHIP}>
+                    <Chip key={format.id} tone={ready ? undefined : "waiting"}>
                       {format.title}
-                    </span>
+                    </Chip>
                   );
                 })}
-                <span style={loaded && loaded.hasPdf ? CHIP : MUTED_CHIP}>Source PDF</span>
+                <Chip tone={loaded && loaded.hasPdf ? undefined : "waiting"}>Source PDF</Chip>
               </div>
             </Link>
           );

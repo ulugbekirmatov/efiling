@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { groupByDocument, loadScenario, sendClientId } from "../scenarioData";
-import { CHIP, StatusBadge, formatEin } from "../ui";
+import { Chip } from "../../design-system/Badge";
+import { StatusBadge, formatEin } from "../ui";
 import ScenarioTabs from "./ScenarioTabs";
 
 export const dynamic = "force-dynamic";
@@ -80,9 +81,9 @@ export default function ScenarioDetailPage({ params }) {
         </p>
         <div style={styles.chips}>
           {scenario.documents.map((doc) => (
-            <span key={doc} style={CHIP}>
+            <Chip key={doc}>
               {doc}
-            </span>
+            </Chip>
           ))}
         </div>
         <StatusBadge status={scenario.status} />

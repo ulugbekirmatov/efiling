@@ -5,7 +5,7 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
-    "test": "node --test app/send-inspector/helpers.test.js app/scenarios/scenarioData.test.js"
+    "test": "node --test app/design-system/design-system.test.js app/send-inspector/helpers.test.js app/scenarios/scenarioData.test.js"
   },
   "dependencies": {
     "next": "^14.2.15",

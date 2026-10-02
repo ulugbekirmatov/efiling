@@ -8,7 +8,13 @@ export const metadata = {
 
 export default function SendInspectorPage() {
   return (
-    <Suspense fallback={<p className="page muted">Loading…</p>}>
+    <Suspense
+      fallback={
+        <div className="page">
+          <p className="muted">Loading…</p>
+        </div>
+      }
+    >
       <SendInspector />
     </Suspense>
   );

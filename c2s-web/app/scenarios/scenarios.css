@@ -1,6 +1,3 @@
-/* Layout the design system does not ship: the card grid, section rhythm, and the
-   whole-card link. Colors stay on tokens; these rules are spacing and display. */
-
 .scenario-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));

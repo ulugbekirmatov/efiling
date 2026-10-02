@@ -1,5 +1,3 @@
-/* Page layout for the send inspector. Colors, type, and controls come from the design system. */
-
 .inspector-layout {
   display: grid;
   grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);

@@ -2,7 +2,6 @@
    ~/.claude/skills/html/components.md (sections 1, 2, 3, 4, 5, 7, 8) and sized down for an operator app.
    Colors come only from tokens.css. */
 
-/* ---------- Base ---------- */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
@@ -30,7 +29,7 @@ a {
   text-decoration-color: var(--clay);
   text-underline-offset: 3px;
 }
-a:hover { color: var(--clay-d); }
+a:hover { color: var(--rust-ink); }
 :focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
 :not(pre) > code {
   font-family: var(--mono);
@@ -44,7 +43,6 @@ a:hover { color: var(--clay-d); }
 .card, .callout, .kv > *, [class*="col"], [class*="grid"] > * { min-width: 0; }
 td, th { word-break: normal; overflow-wrap: break-word; }
 
-/* ---------- Page shell ---------- */
 .topnav {
   display: flex;
   flex-wrap: wrap;
@@ -100,7 +98,6 @@ td, th { word-break: normal; overflow-wrap: break-word; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
 .actions.end { justify-content: flex-end; }
 
-/* ---------- Cards & callouts ---------- */
 .card {
   background: var(--paper);
   border: var(--border);
@@ -145,7 +142,6 @@ td, th { word-break: normal; overflow-wrap: break-word; }
   border-radius: var(--radius-card);
 }
 
-/* ---------- Definition list ---------- */
 .kv {
   display: grid;
   grid-template-columns: minmax(120px, max-content) minmax(0, 1fr);
@@ -156,7 +152,6 @@ td, th { word-break: normal; overflow-wrap: break-word; }
 .kv dt { color: var(--g600); }
 .kv dd { margin: 0; color: var(--slate); }
 
-/* ---------- Tables ---------- */
 .table-wrap { overflow-x: auto; }
 table.data {
   width: 100%;
@@ -191,7 +186,6 @@ table.data tbody td {
 table.data tbody tr:last-child td { border-bottom: none; }
 table.data tbody tr:hover { background: var(--ivory); }
 
-/* ---------- Code panels ---------- */
 .code {
   background: var(--slate);
   border-radius: var(--radius-panel);
@@ -213,7 +207,6 @@ table.data tbody tr:hover { background: var(--ivory); }
 .code .cm { color: var(--g500); }
 .code .fn { color: var(--code-fn); }
 
-/* ---------- Badges & chips (tone = the /html skill's color-semantic code) ---------- */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -243,7 +236,6 @@ table.data tbody tr:hover { background: var(--ivory); }
 /* Chips list what exists; a dashed outline marks the ones that are not prepared yet. */
 .chip.tone-waiting { background: transparent; border: 1.5px dashed var(--g300); color: var(--g600); }
 
-/* ---------- Buttons ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -279,7 +271,6 @@ table.data tbody tr:hover { background: var(--ivory); }
 }
 .btn-mini:hover { background: var(--oat); color: var(--slate); }
 
-/* ---------- Tabs ---------- */
 /* Pills, not underlines: six scenario tabs wrap on narrow screens and a shared rule would break. */
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
 .tab {
@@ -295,7 +286,6 @@ table.data tbody tr:hover { background: var(--ivory); }
 .tab:hover { color: var(--slate); border-color: var(--g500); }
 .tab[aria-selected="true"] { color: var(--slate); background: var(--g100); border-color: var(--slate); font-weight: 600; }
 
-/* ---------- Selectable list ---------- */
 .select-list { display: flex; flex-direction: column; gap: 6px; }
 .select-item {
   display: block;
@@ -312,7 +302,6 @@ table.data tbody tr:hover { background: var(--ivory); }
 .select-item:hover { border-color: var(--g500); }
 .select-item[aria-current="true"] { border-color: var(--clay); box-shadow: 0 0 0 3px var(--clay-ring); }
 
-/* ---------- Small helpers seen on several pages ---------- */
 .badge.lg { font-family: var(--serif); font-size: 22px; padding: 6px 16px; border-radius: 10px; }
 .code.tall { max-height: 70vh; }
 .code.wrap pre { white-space: pre-wrap; word-break: break-word; }
@@ -327,6 +316,11 @@ table.data tbody tr:hover { background: var(--ivory); }
   text-transform: uppercase;
   color: var(--g600);
   margin: 0 0 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.lift { transition: none; }
+  .card.lift:hover { transform: none; }
 }
 
 @media print {

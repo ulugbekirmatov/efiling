@@ -4,7 +4,6 @@ import { Fragment, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { prettyXml } from "../../send-inspector/prettyXml";
 import XmlCode from "../../design-system/XmlCode";
-import "./scenario.css";
 
 const TABS = [
   { id: "overview", label: "Overview" },

@@ -1,4 +1,3 @@
-/* Page-specific layout for the scenario detail page. Colors come only from tokens. */
 .scenario-employer { margin-bottom: 20px; }
 .scenario-employer-name { font-family: var(--serif); font-size: 20px; margin: 0 0 4px; }
 .scenario-employer .row { margin: 10px 0; }

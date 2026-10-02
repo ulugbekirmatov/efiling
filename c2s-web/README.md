@@ -2,6 +2,26 @@
 
 Operator page that reads captured MeF sends from the Spring Boot backend: what we sent to IRS and the acknowledgment IRS returned.
 
+## Design system
+
+Build a new page with `app/design-system/`. `app/layout.js` imports `tokens.css` and `components.css` and renders `TopNav`, so the page imports no design-system CSS. Wrap the page in `page`. Put the title block in `page-head`.
+
+Page shell: `page`, `page-head`, `eyebrow`, `intro`, `row`, `actions`, `actions end`, `muted`, `mono`, `crumbs`.
+
+Surfaces: `card`, `card lift`, `card-title`, `callout`, `callout attention`, `callout safe`, `callout waiting`, `panel`, `panel-head`, `panel-section`, `panel-section tinted`, `empty`.
+
+Data: `kv`, `table-wrap`, `data` (add `wide` at four columns or more), `nowrap`, `num`, `section-label`, `file-path`, `frame`. Render XML with `XmlCode` from `app/design-system/XmlCode.js`. Pass `tall` or `wrap` through its `className`.
+
+Status: `Badge` and `Chip` from `app/design-system/Badge.js`. Map each domain state to a tone in `app/design-system/tones.js`, then pass that tone in. The tones are `attention` (needs a human: rejected, fault, risk), `safe` (accepted, confirmed, correct), `neutral` (a highlight with no judgment), and `waiting` (not sent yet, missing, deprioritized). `app/scenarios/ui.js` maps `accepted` to `safe` and `ready` to `waiting`. `toneClass` returns `tone-attention`, `tone-safe`, `tone-neutral`, or `tone-waiting`. An unknown tone becomes `tone-waiting`.
+
+Controls: `btn btn-primary`, `btn btn-secondary`, `btn-mini`, `tabs` and `tab` (`aria-selected="true"` on the open tab), `select-list` and `select-item` (`aria-current="true"` on the open row).
+
+A page that needs layout the shared classes do not cover adds one stylesheet beside `page.js` and imports it there (`send-inspector.css`, `scenarios.css`, `scenario.css`). That file sets layout: grid, flex, gap, margin. Color and font family stay `var(--token)` from `tokens.css`. Prefix every class with the page name (`inspector-layout`, `scenario-grid`). Imported CSS in the App Router is global and stays loaded after a client navigation, so an unprefixed name on one page restyles the other page.
+
+`npm test` (from `c2s-web`) runs `app/design-system/design-system.test.js`. The test fails when a color literal sits outside `tokens.css`, and when a static `className` in `app/` matches no class in an `app/` stylesheet. Literals are `#` hex, `rgb`, `hsl`, `oklch`, and `color-mix`.
+
+Muted text uses `--g600`. The `/html` skill uses `--g500` for muted text, and that pair is 3.5:1 on ivory. The primary button uses `--clay-d`. White on the skill's `--clay` is 3.1:1. Links are slate with a clay underline. Clay text on ivory is 3:1.
+
 ## Run both
 
 Backend (from this folder):

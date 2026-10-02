@@ -31,6 +31,9 @@ function formatLocalTime(iso) {
   return date.toLocaleString();
 }
 
+// A warn asks the operator to do something next (log in, wait); an error is a failed call.
+const NOTICE_CLASS = { error: "attention", warn: "" };
+
 function stateTone(state) {
   if (!state) return TONES.waiting;
   if (/fault/i.test(state)) return TONES.attention;
@@ -448,7 +451,7 @@ export default function SendInspector() {
                 {ackNotice ? (
                   <p
                     role="alert"
-                    className={`callout inspector-gap ${ackNotice.kind === "error" ? "attention" : "waiting"}`}
+                    className={`callout inspector-gap ${NOTICE_CLASS[ackNotice.kind] || ""}`}
                   >
                     {ackNotice.text}
                   </p>

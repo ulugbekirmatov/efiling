@@ -1,0 +1,53 @@
+.inspector-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* Grid items default to min-width: auto, so one long SOAP line would widen the page. */
+.inspector-layout > * { min-width: 0; }
+
+.inspector-banner { margin: 16px 0 0; }
+
+.inspector-meta {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.inspector-badges { margin-top: 6px; }
+
+.inspector-hero { margin: 0 0 12px; }
+
+.inspector-sent-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.inspector-sent-head .section-label { margin: 0; }
+
+
+.inspector-actions { margin-top: 12px; }
+
+.inspector-gap { margin-top: 12px; }
+
+/* Content-Type values are long; the chip's nowrap would run out of the panel. */
+.inspector-mime {
+  display: block;
+  white-space: normal;
+  margin-bottom: 10px;
+}
+
+
+@media (max-width: 900px) {
+  .inspector-layout { grid-template-columns: 1fr; }
+}
+
+.inspector-sends { padding: 8px; }
+
+/* A 64-character hash has no break opportunity, so it would push the table past its panel. */
+.inspector-hash { word-break: break-all; }

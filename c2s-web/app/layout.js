@@ -1,14 +1,19 @@
-import "./globals.css";
+import "./design-system/tokens.css";
+import "./design-system/components.css";
+import TopNav from "./design-system/TopNav";
 
 export const metadata = {
-  title: "MeF Send Inspector",
-  description: "Read Return XML and SendSubmissions MIME for a captured send",
+  title: "MeF operator",
+  description: "Operator pages for MeF sends and ATS test scenarios",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <TopNav />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }

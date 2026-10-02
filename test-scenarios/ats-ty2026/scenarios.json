@@ -1,0 +1,444 @@
+{
+  "taxYear": "2026",
+  "returnVersion": "2026Q1v4.0",
+  "formats": [
+    {
+      "id": "clientBody",
+      "file": "client-return-body.xml",
+      "title": "Client return body",
+      "producedBy": "Hand-built from the IRS scenario PDF",
+      "description": "What one client company files: its Filer block (EIN, name, name control, address), the tax period, and ReturnData with the form and any schedules. It carries no Pyramos values. ClientReturnBody.load parses it, locks returnVersion to 2026Q1v4.0, and checks that ReturnData opens with the main document for the returnTypeCd."
+    },
+    {
+      "id": "lineMapping",
+      "file": "line-mapping.tsv",
+      "title": "Line mapping",
+      "producedBy": "Hand-built while reading the PDF",
+      "description": "One row per value in the client body: which form line it comes from, the XML element path, the value, and the PDF page. It is the audit trail from the IRS scenario to the XML."
+    },
+    {
+      "id": "composedReturn",
+      "file": "composed-return.xml",
+      "title": "Composed Return",
+      "producedBy": "ReportingAgentReturn.compose (snapshot kept by AtsScenarioSnapshotTest)",
+      "description": "The full Return IRS receives. The composer wraps the client body in a ReturnHeader with OriginatorTypeCd ReportingAgent, a ReportingAgentPINGrp, and a ReportingAgent94XFilerGrp naming Pyramos. This snapshot uses schema-valid stand-in originator values (EFIN 000000, PIN 00000, agent EIN 000000000) and a fixed clock of 2026-10-13T14:00Z. A live send fills those from MEF_EFIN, MEF_RA_PIN, MEF_SOFTWARE_ID and the other MEF_RA_* settings.",
+      "headerFields": [
+        {
+          "element": "Return/@returnVersion",
+          "source": "client",
+          "from": "returnVersion attribute of the client body"
+        },
+        {
+          "element": "ReturnTypeCd",
+          "source": "client",
+          "from": "returnTypeCd attribute (941 or 941X)"
+        },
+        {
+          "element": "ReturnTs",
+          "source": "generated",
+          "from": "composer clock, America/New_York, to the second"
+        },
+        {
+          "element": "SoftwareId",
+          "source": "pyramos",
+          "from": "MEF_SOFTWARE_ID"
+        },
+        {
+          "element": "MultSoftwarePackagesUsedInd",
+          "source": "generated",
+          "from": "always false"
+        },
+        {
+          "element": "AdditionalFilerInformation (refund product block)",
+          "source": "generated",
+          "from": "schema-required constants"
+        },
+        {
+          "element": "FilingSecurityInformation/IPAddress/IPv4AddressTxt",
+          "source": "pyramos",
+          "from": "MEF_RA_FILING_IP"
+        },
+        {
+          "element": "VendorControlNum",
+          "source": "generated",
+          "from": "hash of filer EIN and tax period"
+        },
+        {
+          "element": "AtSubmissionCreationDeviceId / AtSubmissionFilingDeviceId",
+          "source": "generated",
+          "from": "SHA-1 of \"pyramos-ats\" plus the filer EIN"
+        },
+        {
+          "element": "QuarterEndingDt",
+          "source": "client",
+          "from": "quarterEndingDt attribute"
+        },
+        {
+          "element": "Filer",
+          "source": "client",
+          "from": "the client body Filer block, copied as is"
+        },
+        {
+          "element": "OriginatorGrp/EFIN",
+          "source": "pyramos",
+          "from": "MEF_EFIN"
+        },
+        {
+          "element": "OriginatorGrp/OriginatorTypeCd",
+          "source": "generated",
+          "from": "always ReportingAgent"
+        },
+        {
+          "element": "ReportingAgentPINGrp/PIN",
+          "source": "pyramos",
+          "from": "MEF_RA_PIN"
+        },
+        {
+          "element": "ReportingAgentPINGrp/RAPINEnteredByCd",
+          "source": "generated",
+          "from": "always REPORTING AGENT"
+        },
+        {
+          "element": "ReportingAgentPINGrp/JuratDisclosureCd",
+          "source": "generated",
+          "from": "always REPORTING AGENT PIN"
+        },
+        {
+          "element": "IRSResponsiblePrtyInfoCurrInd, DiscussWithThirdPartyNoInd",
+          "source": "generated",
+          "from": "constants true and X"
+        },
+        {
+          "element": "ReportingAgent94XFilerGrp",
+          "source": "pyramos",
+          "from": "MEF_RA_EIN, MEF_RA_NAME, MEF_RA_NAME_CONTROL, MEF_RA_ADDRESS_LINE1, MEF_RA_CITY, MEF_RA_STATE, MEF_RA_ZIP"
+        },
+        {
+          "element": "ReturnData",
+          "source": "client",
+          "from": "the client body ReturnData, copied as is"
+        }
+      ]
+    },
+    {
+      "id": "manifest",
+      "file": "manifest.xml",
+      "title": "Manifest",
+      "producedBy": "NewSendManifestXml.render (snapshot kept by AtsScenarioSnapshotTest)",
+      "description": "The IRS submission manifest that travels next to the Return in the submission archive: SubmissionId, EFIN, TaxYr, GovernmentCd, FederalSubmissionTypeCd, the tax period, and the client TIN. The snapshot uses the fixed submission id 0000002026286abc1234. A live send mints EFIN + yyyyDDD + 7 random characters."
+    }
+  ],
+  "scenarios": [
+    {
+      "number": 1,
+      "dir": "scenario-1-orchid-941",
+      "slug": "orchid-941",
+      "title": "Orchid Incorporated, baseline Form 941",
+      "employer": {
+        "name": "Orchid Incorporated",
+        "ein": "003000004",
+        "nameControl": "ORCH",
+        "address": "1st Test Street, Willow Grove, PA 19090"
+      },
+      "returnTypeCd": "941",
+      "quarter": "2026Q1",
+      "documents": [
+        "IRS941"
+      ],
+      "pdf": "941-test-scenario-1-ty2026.pdf",
+      "status": {
+        "state": "accepted",
+        "date": "2026-09-25",
+        "submissionId": "2378612026268yagqidh",
+        "note": "Accepted by IRS ATS. One passed 941 scenario earns the 94x quarterly pass (Pub 5078 section 3.5.1)."
+      },
+      "summary": "The simplest scenario in the set. A standalone Form 941 for Q1 2026 with 3 employees and $1,000 in wages, no adjustments, no credits, and no Schedule B. Deposits equal total tax, so the balance due is $0.00.",
+      "tests": [
+        "Baseline 941 computation: 3 employees, $1,000.00 wages, $100.00 federal income tax withheld (PDF p.2)",
+        "Line 5a social security ($1,000.00 x 0.124 = $124.00) and line 5c Medicare ($1,000.00 x 0.029 = $29.00)",
+        "Lines 6, 10 and 12 carry the total straight through, with no adjustments (lines 7-9) and no line 11 credit",
+        "Line 13 deposits equal line 12, so line 14 reports a $0.00 balance due and line 15 stays blank",
+        "Line 16 'less than $2,500' checkbox, so no Schedule B and documentCnt 1 (PDF p.3)",
+        "Parts 3 and 4 blank: no business closure, no seasonal employer, no third-party designee"
+      ],
+      "keyFigures": [
+        {
+          "label": "Wages, tips, and other compensation",
+          "line": "941 line 2",
+          "value": "1000.00"
+        },
+        {
+          "label": "Federal income tax withheld",
+          "line": "941 line 3",
+          "value": "100.00"
+        },
+        {
+          "label": "Total social security and Medicare taxes",
+          "line": "941 line 5e",
+          "value": "153.00"
+        },
+        {
+          "label": "Total tax after adjustments and credits",
+          "line": "941 line 12",
+          "value": "253.00"
+        },
+        {
+          "label": "Total deposits for the quarter",
+          "line": "941 line 13",
+          "value": "253.00"
+        },
+        {
+          "label": "Balance due",
+          "line": "941 line 14",
+          "value": "0.00"
+        }
+      ],
+      "notes": [
+        "The PDF cover page prints the EIN as 00-30000004, with an extra 0. The form itself on page 2 and the client body use 00-3000004.",
+        "Lines 5b and 5d (tips, Additional Medicare Tax wages) are blank and absent from the XML.",
+        "Scenario 4 corrects this return with a Form 941-X."
+      ]
+    },
+    {
+      "number": 2,
+      "dir": "scenario-2-marigold-941-schedule-b",
+      "slug": "marigold-941-schedule-b",
+      "title": "Marigold Corporation, semiweekly depositor with Schedule B",
+      "employer": {
+        "name": "Marigold Corporation",
+        "ein": "003333330",
+        "nameControl": "MARI",
+        "address": "2nd Test Street, Philadelephia, PA 19040"
+      },
+      "returnTypeCd": "941",
+      "quarter": "2026Q1",
+      "documents": [
+        "IRS941",
+        "IRS941ScheduleB"
+      ],
+      "pdf": "941-test-scenario-2-ty2026.pdf",
+      "status": {
+        "state": "ready",
+        "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file Schedule B returns in production (Pub 5078 section 2.5.1)."
+      },
+      "summary": "A Q1 2026 Form 941 for a semiweekly schedule depositor, so it carries a Schedule B with daily tax liabilities. It has 10 employees and $33,594 in wages. Deposits exceed the tax, and the employer asks for the overpayment as a refund.",
+      "tests": [
+        "Line 16 semiweekly depositor checkbox, which requires a Schedule B attachment",
+        "Schedule B daily liabilities across all three months (days 11 and 20, 1 and 18, 10 and 19)",
+        "Schedule B monthly and quarterly totals reconcile to 941 line 12 (8,715.89)",
+        "Social security (12.4%) and Medicare (2.9%) flowing into lines 5e, 6, 10 and 12",
+        "Overpayment of $284.11 on line 15a with 'Send a refund' checked on line 15b",
+        "Two-document ReturnData (IRS941 + IRS941ScheduleB) linked by documentId"
+      ],
+      "keyFigures": [
+        {
+          "label": "Wages, tips, and other compensation",
+          "line": "941 line 2",
+          "value": "33594.00"
+        },
+        {
+          "label": "Federal income tax withheld",
+          "line": "941 line 3",
+          "value": "3576.00"
+        },
+        {
+          "label": "Total social security and Medicare taxes",
+          "line": "941 line 5e",
+          "value": "5139.89"
+        },
+        {
+          "label": "Total tax after adjustments",
+          "line": "941 line 12",
+          "value": "8715.89"
+        },
+        {
+          "label": "Total deposits for the quarter",
+          "line": "941 line 13",
+          "value": "9000.00"
+        },
+        {
+          "label": "Overpayment (refund requested)",
+          "line": "941 line 15a",
+          "value": "284.11"
+        },
+        {
+          "label": "Total quarter tax liability",
+          "line": "Schedule B total",
+          "value": "8715.89"
+        }
+      ],
+      "notes": [
+        "The city is spelled 'Philadelephia' on page 1 of the Form 941. The client body keeps the typo on purpose, because it is IRS test data.",
+        "Lines 5b, 5d, 7-9 and 11 are blank on the form and absent from the XML.",
+        "The Schedule B quarter checkbox (Quarter 1) matches the 941 quarter."
+      ]
+    },
+    {
+      "number": 3,
+      "dir": "scenario-3-daffodil-941-schedule-r-8974",
+      "slug": "daffodil-941-schedule-r-8974",
+      "title": "Daffodil Accounting, CPEO aggregate 941 with Schedule R and Form 8974",
+      "employer": {
+        "name": "Daffodil Accounting",
+        "ein": "003222220",
+        "nameControl": "DAFF",
+        "address": "222 6th Street, Kansas City, MO 64131"
+      },
+      "returnTypeCd": "941",
+      "quarter": "2026Q1",
+      "documents": [
+        "IRS941",
+        "IRS941ScheduleR",
+        "IRS8974"
+      ],
+      "pdf": "941-test-scenario-3-ty2026.pdf",
+      "status": {
+        "state": "ready",
+        "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file CPEO aggregate returns in production (Pub 5078 section 2.5.1)."
+      },
+      "summary": "A Certified Professional Employer Organization (CPEO) files an aggregate Q1 2026 Form 941 covering its own employees and one client. Schedule R splits the totals between the client and the CPEO. Form 8974 computes the client's small business payroll tax credit for research, which lowers the 941 tax and produces a refund.",
+      "tests": [
+        "CPEO aggregate filer checkbox, marked on both the 941 and Schedule R",
+        "Schedule R allocation for one client, rolling up through line 6 (client subtotal), line 8 (CPEO's own employees) and line 9 (totals that tie to the 941)",
+        "Form 8974 Part 1: a 2025 Form 1040 with Form 6765, $99.96 of credit already used, $500.04 remaining",
+        "Form 8974 Part 2: the social security and Medicare caps both bind, giving the $390.15 credit on 941 line 11",
+        "Line 16 'less than $2,500' checkbox",
+        "Overpayment of $390.15 with 'Send a refund' checked"
+      ],
+      "keyFigures": [
+        {
+          "label": "Wages, tips, and other compensation",
+          "line": "941 line 2",
+          "value": "10200.00"
+        },
+        {
+          "label": "Total social security and Medicare taxes",
+          "line": "941 line 5e",
+          "value": "1560.60"
+        },
+        {
+          "label": "Total taxes before adjustments",
+          "line": "941 line 6",
+          "value": "2760.60"
+        },
+        {
+          "label": "Payroll tax credit for research (Form 8974)",
+          "line": "941 line 11",
+          "value": "390.15"
+        },
+        {
+          "label": "Total taxes after adjustments and credits",
+          "line": "941 line 12",
+          "value": "2370.45"
+        },
+        {
+          "label": "Total deposits for the quarter",
+          "line": "941 line 13",
+          "value": "2760.60"
+        },
+        {
+          "label": "Overpayment (refund requested)",
+          "line": "941 line 15a",
+          "value": "390.15"
+        }
+      ],
+      "notes": [
+        "Form 8974 is filed under the client's identity (EIN 003333336, Marty Azalea), not the CPEO's EIN, because the research credit belongs to the client's own income tax return.",
+        "On Schedule R, line 8 (the CPEO's own employees) repeats the client's wage, withholding, social security and Medicare figures from line 6. Only the client takes the $390.15 credit, so line 8 total tax is $1,380.30 against the client's $990.15, and line 9 totals $2,370.45.",
+        "Form 8974 Part 1 column (d), 'EIN used on Form 6765', is blank on the PDF."
+      ]
+    },
+    {
+      "number": 4,
+      "dir": "scenario-4-orchid-941x",
+      "slug": "orchid-941x",
+      "title": "Orchid Incorporated, Form 941-X correcting scenario 1",
+      "employer": {
+        "name": "Orchid Incorporated",
+        "ein": "003000004",
+        "nameControl": "ORCH",
+        "address": "1st Test St, Willow Grove, PA 19090"
+      },
+      "returnTypeCd": "941X",
+      "quarter": "2026Q1",
+      "documents": [
+        "IRS941X"
+      ],
+      "pdf": "ty-2026-f941x-ats-scenario-4.pdf",
+      "status": {
+        "state": "ready",
+        "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file 941-X corrections in production (Pub 5078 section 2.5.1)."
+      },
+      "summary": "A Form 941-X that corrects Orchid's Q1 2026 Form 941 from scenario 1. The original return underreported wages, social security wages and Medicare wages by $1,500 each, and federal income tax withheld by $150. It uses the adjusted-return process (line 1), not the claim process, and $379.50 of additional tax is owed.",
+      "tests": [
+        "Return being corrected: Form 941, quarter 1, calendar year 2026, errors discovered 05/21/2026",
+        "Part 1 line 1, the adjusted employment tax return process (underreported tax). Line 2, the claim, is unchecked.",
+        "Part 2 line 3 (W-2/W-2c filed) and line 4a (employees repaid) certifications",
+        "Correction columns: 1 corrected, 2 originally reported, 3 difference, 4 tax correction",
+        "Line 8 social security correction at 0.124 ($186.00) and line 12 Medicare correction at 0.029 ($43.50)",
+        "Line 23 sum of column 4 ($379.50) and line 27 total amount owed ($379.50)"
+      ],
+      "keyFigures": [
+        {
+          "label": "Wages: corrected / original / difference",
+          "line": "941-X line 6",
+          "value": "2500.00 / 1000.00 / 1500.00"
+        },
+        {
+          "label": "Federal income tax withheld correction",
+          "line": "941-X line 7",
+          "value": "150.00"
+        },
+        {
+          "label": "Social security tax correction",
+          "line": "941-X line 8",
+          "value": "186.00"
+        },
+        {
+          "label": "Medicare tax correction",
+          "line": "941-X line 12",
+          "value": "43.50"
+        },
+        {
+          "label": "Combined tax correction",
+          "line": "941-X line 23",
+          "value": "379.50"
+        },
+        {
+          "label": "Total amount owed",
+          "line": "941-X line 27",
+          "value": "379.50"
+        }
+      ],
+      "notes": [
+        "Column 2 (originally reported) matches scenario 1's 941 exactly: $1,000 wages, $100 withheld, $1,000 social security and Medicare wages.",
+        "The IRS PDF has 4 pages, although page 1 says to complete all five. Page 5 (Part 4 explanation, Part 5 signature) is missing, so CorrectionsExplanationTxt is written by us and cannot be checked against the PDF.",
+        "Page 1 of the PDF enters calendar year 2026, but the running header on pages 2-4 shows 2025. The client body uses 2026, which matches the tax period.",
+        "The address here is '1st Test St', while scenario 1 uses '1st Test Street'. Each fixture follows its own PDF."
+      ]
+    }
+  ],
+  "legacy": [
+    {
+      "id": "onewell-941-return",
+      "path": "test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml",
+      "kind": "xml",
+      "title": "Orchid 941, OneWell-era full Return",
+      "description": "A complete Return with its own ReturnHeader, filed as OnlineFiler with an OnlineFilerPINGrp. This is the format the OneWell self-filer build sent. ClientReturnBody.load refuses a Return root, so this file cannot enter the Reporting Agent path. Form941XmlGenerationTest and the gated Form941SubmissionTest still read it."
+    },
+    {
+      "id": "onewell-941-config",
+      "path": "mef-spring-boot-integration/src/test/resources/test-scenarios/941-scenario-1/scenario-config.yml",
+      "kind": "text",
+      "title": "Orchid 941 scenario config (unused)",
+      "description": "A YAML restatement of the OneWell-era Orchid values. No test loads it."
+    },
+    {
+      "id": "form-940-pdf",
+      "path": "test-scenarios/940-test-scenario-1-ty2025.pdf",
+      "kind": "pdf",
+      "title": "Form 940 scenario 1, TY2025 (source PDF only)",
+      "description": "The IRS PDF for a Form 940 scenario. Nothing is prepared for it: no client body, no mapping, no test."
+    }
+  ]
+}

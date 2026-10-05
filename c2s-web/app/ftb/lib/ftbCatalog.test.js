@@ -8,7 +8,7 @@ const OPERATOR_PAGE = path.join(os.homedir(), "Documents", "aca", "ftb-fx", "scr
 function rawSsns(id) {
   const model = require(OPERATOR_PAGE).buildModel({ previewRoot: path.join(os.tmpdir(), "c2s-web-ftb-test") });
   const scenario = model.scenarios.find((s) => s.id === id);
-  const ssns = scenario.summary.returns.flatMap((r) => r.people).filter((p) => p.idLabel === "SSN").map((p) => String(p.id));
+  const ssns = scenario.summary.returns.flatMap((r) => r.people).filter((p) => p.id && p.idLabel !== "EIN").map((p) => String(p.id));
   assert.ok(ssns.length > 0 || id === "5C", `scenario ${id} has SSNs to check`);
   return ssns.flatMap((ssn) => [ssn, `${ssn.slice(0, 3)}-${ssn.slice(3, 5)}-${ssn.slice(5)}`]);
 }
@@ -35,16 +35,16 @@ test("loadScenario returns null for unknown and traversal ids", async () => {
   assert.equal(loadScenario("../1"), null);
 });
 
-test("loadScenario masks every SSN in people, XML and narrative to the last four digits", async () => {
+test("loadScenario masks every personal TIN and SSN anywhere in the scenario payload", async () => {
   const { loadScenario } = await import("./ftbCatalog.js");
   for (const id of ["1", "2", "2C", "5", "5C"]) {
     const { scenario } = loadScenario(id);
-    const ssnPeople = scenario.summary.returns.flatMap((r) => r.people).filter((p) => p.idLabel === "SSN");
+    const ssnPeople = scenario.summary.returns.flatMap((r) => r.people).filter((p) => p.id && p.idLabel !== "EIN");
     for (const person of ssnPeople) assert.match(person.id, /^\*{5}\d{4}$/, `scenario ${id} person id`);
     const xml = [scenario.preview.formXml, scenario.preview.answerKeyXml].join("");
     const ssnTexts = [...xml.matchAll(/<(?:\w+:)?SSN>([^<]*)<\/(?:\w+:)?SSN>/g)].map((m) => m[1]);
     for (const value of ssnTexts) assert.match(value, /^\*{5}\d{4}$/, `scenario ${id} XML SSN`);
-    const narrative = scenario.narrative.map((line) => line.text).join("\n");
-    for (const ssn of rawSsns(id)) assert.equal(narrative.includes(ssn), false, `scenario ${id} narrative`);
+    const browserPayload = JSON.stringify(scenario);
+    for (const ssn of rawSsns(id)) assert.equal(browserPayload.includes(ssn), false, `scenario ${id} payload`);
   }
 });

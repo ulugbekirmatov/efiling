@@ -15,9 +15,14 @@ function maskedDigits(value) {
   return SSN_MASK + String(value).replace(/\D/g, "").slice(-SSN_VISIBLE_DIGITS);
 }
 
+// A person's TIN is their SSN or ITIN. Only an EIN names a business and stays readable.
+function isPersonalId(person) {
+  return Boolean(person.id) && person.idLabel !== "EIN";
+}
+
 function scenarioSsns(scenario) {
   const fromPeople = scenario.summary.returns.flatMap((r) =>
-    r.people.filter((p) => p.idLabel === "SSN").map((p) => String(p.id)),
+    r.people.filter(isPersonalId).map((p) => String(p.id).replace(/\D/g, "")),
   );
   const xml = [scenario.preview.formXml, scenario.preview.answerKeyXml].filter(Boolean).join("");
   const fromXml = [...xml.matchAll(/<(?:[\w.-]+:)?SSN>(\d{9})<\/(?:[\w.-]+:)?SSN>/g)].map((m) => m[1]);
@@ -45,7 +50,7 @@ function redactScenario(scenario) {
       transmittal: scenario.summary.transmittal,
       returns: scenario.summary.returns.map((r) => ({
         ...r,
-        people: r.people.map((p) => (p.idLabel === "SSN" ? { ...p, id: maskedDigits(p.id) } : p)),
+        people: r.people.map((p) => (isPersonalId(p) ? { ...p, id: maskedDigits(p.id) } : p)),
       })),
     },
     checks: scenario.checks.map((check) => ({ ...check, details: check.details.map(text) })),

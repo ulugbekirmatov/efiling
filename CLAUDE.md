@@ -43,17 +43,7 @@ mvn test -Dtest=AtsScenarioComposeTest            # single test class (offline)
 
 **Live IRS tests:** a class that logs in to IRS carries `@LiveIrsTest` (`src/test/java/com/irs/mef/live/`) and runs only when `-Dmef.live.test=<its simple class name>`, so one flag arms one class. `LiveIrsTestGuardTest` fails `mvn test` if a test calls `.login(` without the annotation or uses the retired `mef.integration.test.enabled` switch. Send one ATS scenario with `./run-ra-ats-test.sh <1-4>` (it passes `-Dmef.ats.scenario=<n>`; the test has no default and fails without it). The pom's surefire block sets the `--add-opens` flags; the live test sets `A2A_TOOLKIT_HOME` itself. The login probe is `test-mef-login.sh`. A plain `mvn test` is offline-safe.
 
-**⚠️ Build prerequisites (installed 2026-09-16 via `brew install openjdk@17 maven`; `JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`):** the pom declares the SDK and Metro stack as ordinary Maven coordinates, but **five of them are not on Maven Central**: `gov.irs.mef:mef-client-sdk:17.0` and the four `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` jars. All five ship inside the SDK zip and must be installed into `~/.m2` by hand on a fresh machine (`org.apache.santuario:xmlsec:4.0.2` does resolve from Central). There is **no `lib/` directory** in the repo:
-
-```bash
-unzip -o "Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/Java/dist/mef_client_sdk.zip" -d /tmp/mef_sdk
-mvn install:install-file -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/mef_client_sdk.jar \
-  -DgroupId=gov.irs.mef -DartifactId=mef-client-sdk -Dversion=17.0 -Dpackaging=jar
-for a in api rt extra tools; do
-  mvn install:install-file -Dfile=/tmp/mef_sdk/mef_client_sdk/lib/webservices-$a-4.0.4.jar \
-    -DgroupId=com.sun.xml.ws -DartifactId=webservices-$a -Dversion=4.0.4 -Dpackaging=jar
-done
-```
+**⚠️ Build prerequisites (installed 2026-09-16 via `brew install openjdk@17 maven`; `JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`):** the pom declares the SDK and Metro stack as ordinary Maven coordinates, but **five of them are not on Maven Central**: `gov.irs.mef:mef-client-sdk:17.0` and the four `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` jars. All five ship inside the SDK zip; install them into `~/.m2` once per machine with `mef-spring-boot-integration/install-sdk-jars.sh` (CI runs the same script, `.github/workflows/test.yml`). `org.apache.santuario:xmlsec:4.0.2` does resolve from Central. There is **no `lib/` directory** in the repo.
 
 When running a packaged JAR manually, these JVM args are mandatory for Java 17 + Metro/JAX-WS:
 

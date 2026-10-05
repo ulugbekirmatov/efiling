@@ -110,7 +110,7 @@ Key packages: `gov.irs.mef.services.msi.*` (Login/Logout), `gov.irs.mef.services
 
 What must change relative to the OneWell build:
 
-1. **New IRS identifiers** — issued (2026-09): EFIN 102192, ETINs 44753 (Transmitter, Production type), 44754 (Software Developer, Test — use this one for ATS), 44762 (Online Provider); ASID 10219201 (active, both ETINs attached); Reporting Agent PIN issued; TY2026 94x quarterly Software ID 26996214 (on the accepted 2026-09-25 send; TY2027 needs a new `2799NNNN` ID, Pub 5078 §2.4). Values live in `mef-spring-boot-integration/.env` (gitignored). ⚠️ **EFIN 102192 starts with 10**, and rule R0000-118-01 forces `OriginatorTypeCd=OnlineFiler` for EFINs starting 10/21/32/44/53 — a `ReportingAgent` return under this EFIN is rejected; resolution pending with e-Help. OneWell values (97661 / 238689 / 23868900) purged from `test-mef-login.sh`, `Form941SubmissionTest.java` and `SubmissionController.java` on 2026-09-16; `MefLoginIntegrationTest.java` (OneWell values, nonexistent keystore path, direct SDK imports) was deleted the same day; the live login probe is `test-mef-login.sh` against the running app, green against ATS on 2026-09-16 (SAML for ASID 10219201). EIN 003000004 is Orchid, the IRS ATS scenario-1 employer, not a OneWell value; it stays.
+1. **New IRS identifiers** — issued (2026-09): EFIN 102192, ETINs 44753 (Transmitter, Production type), 44754 (Software Developer, Test — use this one for ATS), 44762 (Online Provider); ASID 10219201 (active, both ETINs attached); Reporting Agent PIN issued; TY2026 94x quarterly Software ID 26996214 (on the accepted 2026-09-25 send; TY2027 needs a new `2799NNNN` ID, Pub 5078 §2.4). Values live in `mef-spring-boot-integration/.env` (gitignored). ⚠️ **EFIN 102192 starts with 10**, and rule R0000-118-01 forces `OriginatorTypeCd=OnlineFiler` for EFINs starting 10/21/32/44/53 — a `ReportingAgent` return under this EFIN is rejected, so `ReportingAgentOriginator` refuses these prefixes; sends use the non-online EFIN 237861. OneWell values (97661 / 238689 / 23868900) purged from `test-mef-login.sh`, `Form941SubmissionTest.java` and `SubmissionController.java` on 2026-09-16; `MefLoginIntegrationTest.java` (OneWell values, nonexistent keystore path, direct SDK imports) was deleted the same day; the live login probe is `test-mef-login.sh` against the running app, green against ATS on 2026-09-16 (SAML for ASID 10219201). EIN 003000004 is Orchid, the IRS ATS scenario-1 employer, not a OneWell value; it stays.
    **ATS status (2026-09-30):** scenario 1 (Orchid 941) **Accepted** 2026-09-25 as submission 2378612026268yagqidh, sent under EFIN 237861 (the non-online EFIN in `.env`). Pub 5078 §3.5.1: one passed 941 scenario earns 94x quarterly Pass; e-Help (866-255-0654) records it. Scenarios 2 (Marigold, 941 + Schedule B), 3 (Daffodil, CPEO 941 + Schedule R + Form 8974) and 4 (Orchid 941-X) are composed and schema-valid offline (`AtsScenarioComposeTest`); they are needed only if Pyramos will file those shapes in production (Pub 5078 §2.5.1). ATS is closed until 2026-10-13 09:00 ET and reopens on WSDL 10.A for TY2026 testing; 2026Q1v4.0 has no ATS end date.
 2. **Return header changes** (see `94x-2026/.../ReturnHeader94x.xsd`): `OriginatorTypeCd` = `ReportingAgent` (currently `OnlineFiler`), replace `OnlineFilerPINGrp` with `ReportingAgentPINGrp` (`PIN`, `RAPINEnteredByCd=REPORTING AGENT`, `JuratDisclosureCd=REPORTING AGENT PIN`), add `ReportingAgent94XFilerGrp` identifying Pyramos alongside the per-client `<Filer>`.
 3. **Multi-tenancy**: per-client EIN/name/address/tax period in submissions, a client model with Form 8655 authorization status, and persistence of submission ↔ deposit ID ↔ status ↔ acknowledgment per client (IRS retention requirement). Today there is no persistence and `SubmitRequest` has no tenant field.
@@ -121,3 +121,29 @@ What must change relative to the OneWell build:
 
 - `SUBMISSION_ID_FORMAT.md` — correct (day-of-year format). Overrides the submission-ID section of `FORM_941_SUBMISSION_IMPLEMENTATION.md`.
 - `STATUS_AND_ACK_SERVICES_DOCUMENTATION.md` — SOAP request/response specs for status/ack services.
+
+## Environment & Artifacts
+
+- Save patches, SQL files, and reports to the repo root or `reports/`, never only to the session scratchpad. Always print the absolute path.
+- Before writing a migration or phase script, confirm which rollout phases have actually run (DDL, shadow, reconcile, and so on) and whether the target tables hold data.
+- Basecamp close-out: check for an existing todo before creating one, to avoid duplicates. If DNS or the API fails, output the todo text so it can be added manually.
+- Before debugging an IRS reject or SDK error, search the repo for its code (`git grep R0000-118`, `X0000-008`) first. Past fixes live in `x0000-008-investigation-2026-09-16.html`, `test-scenarios/README.md` (Namespace Issues), and `.audit/`.
+
+## Rules and what enforces them
+
+When the operator corrects you, fix the mistake and add a row here. If the row already exists and nothing enforces it, that is a repeat: move it up a level (architecture, type, check) in the same change. Drop a row once its mistake cannot happen.
+
+| Rule | Enforced by |
+|---|---|
+| A test that logs in to IRS runs only alone, armed by its own class name | `@LiveIrsTest` + `LiveIrsTestGuardTest` (fails on `.login(` without the annotation, or on the retired `mef.integration.test.enabled`) |
+| `mvn test` stays green and offline | `.github/workflows/test.yml` runs it on every push and PR |
+| Build and test on Java 17 only | `maven-enforcer-plugin` in `pom.xml` (`[17,18)`) |
+| Text files use LF; vendor drops and captures stay byte-exact | `.gitattributes` |
+| No OneWell identifiers (97661 / 238689 / 23868900) in new code or scripts | `RepoGuardTest.oneWellIdentifiersDoNotSpread` (per-file ratchet; line exceptions need `reason`, `expires`, `approved-by`) |
+| Superseded docs stay deleted | `RepoGuardTest.retiredDocsStayDeleted` |
+| Reporting Agent EFIN must not start 10/21/32/44/53 (R0000-118-01); filing IP must be a routable IPv4 (R0000-244) | `ReportingAgentOriginator` constructor + `ReportingAgentOriginatorTest` |
+| One EFIN in submission ID, manifest, and `OriginatorGrp` (R0000-054-01) | `ReportingAgentAtsGate.open` + `NewSendManifestXmlTest` |
+| Submission ID is `EFIN + yyyyDDD + 7 [a-z0-9]` | `NewSendSubmissionId` on the newsend path. **Not enforced** on the legacy `SubmissionController` path, which builds it inline |
+| Search the repo for a reject code before debugging it | Docs only (judgment) |
+| Reports go to the repo root or `reports/`; migrations check rollout phases first; Basecamp todos are deduped | Docs only (judgment) |
+

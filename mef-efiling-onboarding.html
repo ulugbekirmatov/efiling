@@ -255,7 +255,7 @@ ul.plain li { margin-bottom: 6px; }
 <div class="callout done"><span class="ico">✓</span>
   <div>
     <p><span class="found">Found in code —</span> this repo has already cleared phases 1–5: it authenticates against ATS with ETIN <code>97661</code>, submits Form 941 (Deposit ID received), and pulls status and acknowledgments. The IdenTrust chain and keystore tooling are checked in:</p>
-    <p><span class="path-chip">Root.txt</span> <span class="path-chip">SubCA1.txt</span> <span class="path-chip">create-pkcs12.sh</span> <span class="path-chip">mef-spring-boot-integration/EFIN_ETIN_USAGE.md</span> <span class="path-chip">src/main/resources/mef_config/ats_endpoints.properties</span></p>
+    <p><span class="path-chip">Root.txt</span> <span class="path-chip">SubCA1.txt</span> <span class="path-chip">create-pkcs12.sh</span> <span class="path-chip">src/main/resources/mef_config/ats_endpoints.properties</span></p>
     <p>What remains for production: finish the ATS scenario set for the forms you'll file (phase 6) and the cutover in phase 7.</p>
   </div>
 </div>
@@ -281,12 +281,12 @@ ul.plain li { margin-bottom: 6px; }
 
   <div class="ledger">
     <div class="lg-row"><div class="lk">Login / authentication</div><div class="lv">ETIN <code>97661</code> — the transmitter account opening the A2A session</div></div>
-    <div class="lg-row"><div class="lk">Manifest &lt;EFIN&gt; field</div><div class="lv">ETIN <code>97661</code> — despite the tag name, the manifest identifies who is <em>transmitting</em></div></div>
+    <div class="lg-row"><div class="lk">Manifest &lt;EFIN&gt; field</div><div class="lv">EFIN <code>238689</code> — the originator EFIN; R0000-054-01 rejects a manifest EFIN that differs from OriginatorGrp</div></div>
     <div class="lg-row"><div class="lk">Submission ID prefix</div><div class="lv">EFIN <code>238689</code> — e.g. <code>2386892025331test941</code> (6-digit EFIN + date + suffix)</div></div>
     <div class="lg-row"><div class="lk">Return XML OriginatorGrp</div><div class="lv">EFIN <code>238689</code> — who prepared the return</div></div>
-    <div class="lg-row punch"><div class="lk">The rule</div><div class="lv">Transmitter 97661 sends on behalf of originator 238689 — mixing them up is rejected at validation.</div></div>
+    <div class="lg-row punch"><div class="lk">The rule</div><div class="lv">The ETIN only opens the A2A session. Every EFIN slot in the submission carries the same originator EFIN.</div></div>
   </div>
-  <p><span class="found">Found in code —</span> <span class="path-chip">mef-spring-boot-integration/EFIN_ETIN_USAGE.md</span> documents this exact mapping.</p>
+  <p><span class="found">Found in code —</span> <span class="path-chip">ReportingAgentAtsGate.java</span> refuses an originator EFIN that differs from <code>MEF_EFIN</code>.</p>
 </section>
 
 <!-- ============ TIMELINE ============ -->
@@ -509,7 +509,7 @@ openssl pkcs12 -info -in <span class="str">irs-mef-test.p12</span> -noout -nodes
     <li><strong>Automated Enrollment (AE) External User Guide</strong> — the ASID + certificate registration flow (phase 4).</li>
     <li><strong>identrust.com</strong> — IGC certificates for IRS programs (phase 3).</li>
     <li><strong>e-help Desk: 866-255-0654</strong> — ATS review and ETIN production activation.</li>
-    <li>In-repo: <span class="path-chip">mef-spring-boot-integration/README.md</span> <span class="path-chip">EFIN_ETIN_USAGE.md</span> <span class="path-chip">FORM_941_SUBMISSION_IMPLEMENTATION.md</span> <span class="path-chip">SUBMISSION_ID_FORMAT.md</span></li>
+    <li>In-repo: <span class="path-chip">mef-spring-boot-integration/README.md</span> <span class="path-chip">FORM_941_SUBMISSION_IMPLEMENTATION.md</span> <span class="path-chip">SUBMISSION_ID_FORMAT.md</span></li>
   </ul>
   <p style="margin-top:28px; font-family: var(--mono); font-size: 11px; color: var(--g500);">Generated 2026-08-21 from the MeF repo state · IRS process details reflect published IRS guidance — verify current-year specifics in Pub 3112 / Pub 4164 before relying on dates or fees.</p>
 </section>

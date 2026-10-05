@@ -9,7 +9,7 @@ import static com.irs.mef.reportingagent.ReportingAgentChecks.requireConfigured;
 
 @Component
 public class ReportingAgentOriginatorFactory {
-    private static final String ONEWELL_EFIN = "238689";
+    private static final String ONEWELL_EFIN = "238689"; // repo-guard:allow onewell-id reason="refuses a stale .env that still has the OneWell EFIN" expires=2027-08-21 approved-by=ulugbekirmatov
     private static final String STAND_IN_EFIN = "000000";
     private static final String ORCHID_EIN = "003000004";
 
@@ -31,7 +31,7 @@ public class ReportingAgentOriginatorFactory {
         String efinValue = requireConfigured("MEF_EFIN", efinRaw);
         if (ONEWELL_EFIN.equals(efinValue)) {
             throw new ReportingAgentValidationException("efin",
-                    "MEF_EFIN 238689 is the OneWell originator; refuse");
+                    "MEF_EFIN " + ONEWELL_EFIN + " is the OneWell originator; refuse");
         }
         if (STAND_IN_EFIN.equals(efinValue)) {
             throw new ReportingAgentValidationException("efin",

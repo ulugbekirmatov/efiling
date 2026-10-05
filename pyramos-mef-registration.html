@@ -245,7 +245,7 @@
 
     <div class="callout danger">
       <h4>3 · The repo's EFIN/ETIN model is wrong and will reject</h4>
-      <p><code>EFIN_ETIN_USAGE.md</code> puts the ETIN in the manifest <code>&lt;EFIN&gt;</code> and the EFIN in
+      <p>The deleted <code>EFIN_ETIN_USAGE.md</code> put the ETIN in the manifest <code>&lt;EFIN&gt;</code> and the EFIN in
          <code>OriginatorGrp</code>. Rule <span class="rule">R0000-054-01</span> (Reject and Stop) requires the
          manifest EFIN to <em>match</em> the OriginatorGrp EFIN, and the schema defines the manifest field as the
          <em>originator's</em> identifier. For Pyramos: <strong>one EFIN in both places</strong>; the ETIN is used
@@ -511,8 +511,8 @@
           <code>RAPINEnteredByCd = REPORTING AGENT</code>, <code>JuratDisclosureCd = REPORTING AGENT PIN</code>.</li>
       <li><strong>Identifier fix:</strong> Pyramos's EFIN in <em>both</em> the manifest <code>EFIN</code> and
           <code>OriginatorGrp</code> (<span class="rule">R0000-054-01</span>); manifest <code>TIN</code> = the
-          <em>client's</em> EIN per submission (<span class="rule">R0000-079</span>). Rewrite
-          <code>EFIN_ETIN_USAGE.md</code> accordingly.</li>
+          <em>client's</em> EIN per submission (<span class="rule">R0000-079</span>). The wrong
+          <code>EFIN_ETIN_USAGE.md</code> was deleted on 2026-10-05.</li>
       <li><strong>Real Software ID:</strong> replace the placeholder <span class="mono">12345678</span> in the
           return XML with the issued <span class="mono">2699NNNN</span> (<span class="rule">R0000-904-03</span>).</li>
       <li><strong>Multi-tenancy:</strong> a client model (EIN, name, name control, address, tax period, 8655

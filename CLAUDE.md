@@ -94,7 +94,7 @@ Other traps: `RetryConfig` retries **every** `Exception` (including `MefExceptio
 1. **Submission ID:** exactly 20 chars, `[0-9]{13}[a-z0-9]{7}` = 6-digit EFIN + **`yyyyDDD` (year + day-of-year)** + 7 lowercase alphanumerics. The date must be the **current processing year**, not the tax-period year (`MEF00004` otherwise). `SUBMISSION_ID_FORMAT.md` is the authority; `FORM_941_SUBMISSION_IMPLEMENTATION.md` still teaches a superseded `YYYYmDD` format — ignore that part. Correct live code: `SubmissionController.java:206-211`.
 2. **In-memory SDK objects only:** file-based `SubmissionXML`/`SubmissionManifest` constructors break serialization (`InMemoryMethodOnFileBasedInstanceException`). Always `new SubmissionXML(filename, contentString)`.
 3. **Manifest is mandatory** (`MeFClientSDK000004` if null): SubmissionId, EFIN, GovernmentCd, FederalSubmissionTypeCd, TaxPeriodBeginDt/EndDt, TIN. `FederalSubmissionTypeCd` is currently hardcoded to `941` (`SubmissionService.java:288`).
-4. **EFIN ≠ ETIN** and one submission uses both: ETIN authenticates the A2A session *and* fills the manifest `<EFIN>` tag (despite the name); EFIN prefixes the submission ID and goes in the return XML `OriginatorGrp`. See `EFIN_ETIN_USAGE.md`.
+4. **One EFIN, three places; the ETIN only logs in.** The originator EFIN prefixes the submission ID, fills the manifest `<EFIN>`, and goes in `OriginatorGrp`. R0000-054-01 rejects a manifest EFIN that differs from `OriginatorGrp`, and `ReportingAgentAtsGate` refuses the mismatch. The ETIN authenticates the A2A session and nothing else. The old two-number model (ETIN in the manifest) was wrong, and its doc is deleted.
 5. **Status/ack payloads arrive as MTOM ZIP attachments**, not in the SOAP body — the SDK unpacks them.
 6. **IRS needs ~2–5 minutes** after submission before status/acks exist; earlier queries return `NO_STATUS_FOUND`/empty.
 7. **Debugging:** IRS errors surface as generic `ErrorExceptionDetail`; the real SOAP fault is only in `a2a_sdk.log.*` (project root, rotating, level FINEST). App log: `logs/mef-spring-boot.log`.
@@ -131,5 +131,3 @@ What must change relative to the OneWell build:
 
 - `SUBMISSION_ID_FORMAT.md` — correct (day-of-year format). Overrides the submission-ID section of `FORM_941_SUBMISSION_IMPLEMENTATION.md`.
 - `STATUS_AND_ACK_SERVICES_DOCUMENTATION.md` — SOAP request/response specs for status/ack services.
-- `EFIN_ETIN_USAGE.md` — the EFIN/ETIN placement map.
-- `PROJECT_SUMMARY.md` and `SETUP-COMPLETE.md` — stale historical snapshots (OneWell-era, wrong paths); do not follow them.

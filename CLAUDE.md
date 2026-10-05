@@ -37,7 +37,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # Java 17 required; 8 too old
 mvn clean package               # build
 mvn clean package -DskipTests   # build without tests
 mvn spring-boot:run             # run (JVM flags + A2A_TOOLKIT_HOME are preconfigured in pom.xml)
-mvn test -Dtest=Form941XmlGenerationTest          # single test class (offline)
+mvn test -Dtest=AtsScenarioComposeTest            # single test class (offline)
 ./test-mef-login.sh                               # live ATS login probe (runs the app, GET /mef/auth/login; green 2026-09-16)
 ```
 

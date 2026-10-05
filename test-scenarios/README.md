@@ -49,11 +49,8 @@ The Spring Boot project includes automated validation tests:
 ```bash
 cd mef-spring-boot-integration
 
-# Run Form 941 XML validation tests
-mvn test -Dtest=Form941XmlGenerationTest
-
-# Run all scenario tests
-mvn test -Dtest=*XmlGenerationTest
+# Compose every TY2026 ATS scenario as a Reporting Agent return and validate it against the XSDs
+mvn test -Dtest=AtsScenarioComposeTest
 ```
 
 ### Using xmllint (Command Line)
@@ -96,7 +93,7 @@ Create a YAML config file in the Spring Boot test resources:
 
 ### Step 5: Create Test Class
 
-Copy and adapt an existing test class (e.g., `Form941XmlGenerationTest.java`) for the new scenario.
+Add the scenario to the `AtsScenario` enum, which `AtsScenarioComposeTest` and `AtsScenarioSnapshotTest` iterate, and to `test-scenarios/ats-ty2026/scenarios.json`, the c2s-web registry. Do not start from the OneWell-era `Return941-Scenario1.xml`.
 
 ### Step 6: Validate
 

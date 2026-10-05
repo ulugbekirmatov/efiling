@@ -53,9 +53,7 @@ mef-spring-boot-integration/
 │   ├── META-INF/spring.factories            registers DotenvEnvironmentPostProcessor
 │   └── mef_config/config/                   A2A_TOOLKIT_HOME contents (see §5)
 ├── src/test/java/com/irs/mef/
-│   ├── config/CertificateLoadingTest.java   pure-JCE keystore tests
 │   ├── scenarios/Form941SubmissionTest.java @SpringBootTest end-to-end vs. ATS
-│   ├── scenarios/Form941XmlGenerationTest.java  XSD + field validation, offline
 │   └── xml/{ReturnXmlGenerator,XmlValidator}.java  test-only helpers
 ├── src/test/resources/
 │   ├── schemas/941/*.xsd                    IRS941, Return941, ReturnData941, ReturnHeader94x, efileTypes
@@ -498,8 +496,7 @@ mvn clean package                 # with tests
 
 ```bash
 mvn test                                              # offline tests only (see gating caveat below)
-mvn test -Dtest=Form941XmlGenerationTest              # XSD/field validation, no network
-mvn test -Dtest=CertificateLoadingTest                # needs ./irs_cert/IRS_test_keystore.p12
+mvn test -Dtest=AtsScenarioComposeTest                # compose + XSD validation, no network
 ./test-mef-login.sh                                   # live IRS ATS login probe (runs the app; MefLoginIntegrationTest deleted 2026-09-16)
 mvn test -Dtest=Form941SubmissionTest                 # @SpringBootTest, live ATS submit
 ```
@@ -508,7 +505,6 @@ Gating (historical, file deleted 2026-09-16): `MefLoginIntegrationTest` guarded 
 
 **`Form941SubmissionTest` is gated** behind `-Dmef.integration.test.enabled=true` (same switch as `ReportingAgentAtsScenarioTest`). Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. Never set the property without `-Dtest=<one class>`.
 
-`Form941XmlGenerationTest` resolves its XML as `user.dir/../test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml` (lines 35-37), correct relative to the repo layout.
 
 ### Run
 

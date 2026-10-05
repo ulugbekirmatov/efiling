@@ -5,7 +5,7 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
-    "test": "node --test app/design-system/design-system.test.js app/send-inspector/helpers.test.js app/scenarios/scenarioData.test.js"
+    "test": "node --test app/design-system/design-system.test.js app/send-inspector/helpers.test.js app/scenarios/scenarioData.test.js app/air/lib/runModel.test.js app/air/lib/redact.test.js app/air/lib/runStore.test.js app/air/lib/airTools.test.js app/air/lib/http.test.js app/air/lib/scenarioCatalog.test.js app/air/transmissions/view.test.js"
   },
   "dependencies": {
     "next": "^14.2.15",

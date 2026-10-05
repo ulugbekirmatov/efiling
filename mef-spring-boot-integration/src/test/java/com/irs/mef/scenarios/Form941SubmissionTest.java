@@ -3,13 +3,13 @@ package com.irs.mef.scenarios;
 import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.dto.*;
 import com.irs.mef.exception.MefException;
+import com.irs.mef.live.LiveIrsTest;
 import com.irs.mef.service.AcknowledgementService;
 import com.irs.mef.service.MefClientService;
 import com.irs.mef.service.StatusService;
 import com.irs.mef.service.SubmissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@EnabledIfSystemProperty(named = "mef.integration.test.enabled", matches = "true")
+@LiveIrsTest
 public class Form941SubmissionTest {
 
     @Autowired

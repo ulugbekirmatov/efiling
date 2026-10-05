@@ -61,7 +61,7 @@ if [ -f "$JOURNAL" ]; then
 fi
 
 MVN_EXIT=0
-mvn -q test -Dtest="$TEST_CLASS" -Dmef.ats.scenario="$SCENARIO" -Dmef.integration.test.enabled=true -Dsurefire.failIfNoSpecifiedTests=false || MVN_EXIT=$?
+mvn -q test -Dtest="$TEST_CLASS" -Dmef.ats.scenario="$SCENARIO" -Dmef.live.test="$TEST_CLASS" -Dsurefire.failIfNoSpecifiedTests=false || MVN_EXIT=$?
 
 REPORT=target/surefire-reports/com.irs.mef.reportingagent.$TEST_CLASS.txt
 OUTPUT=target/surefire-reports/com.irs.mef.reportingagent.$TEST_CLASS-output.txt

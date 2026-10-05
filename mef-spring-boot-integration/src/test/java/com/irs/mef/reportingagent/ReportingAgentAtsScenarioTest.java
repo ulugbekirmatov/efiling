@@ -4,13 +4,13 @@ import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.dto.AckResponse;
 import com.irs.mef.dto.LoginResponse;
 import com.irs.mef.exception.MefException;
+import com.irs.mef.live.LiveIrsTest;
 import com.irs.mef.newsend.NewSendSubmissionService;
 import com.irs.mef.newsend.NewSendSubmitResult;
 import com.irs.mef.newsend.domain.NewSendOutcome;
 import com.irs.mef.service.AcknowledgementService;
 import com.irs.mef.service.MefClientService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * No default: a forgotten flag would re-file scenario 1, which ATS already accepted.
  */
 @SpringBootTest
-@EnabledIfSystemProperty(named = "mef.integration.test.enabled", matches = "true")
+@LiveIrsTest
 class ReportingAgentAtsScenarioTest {
 
     static final String SCENARIO_PROPERTY = "mef.ats.scenario";

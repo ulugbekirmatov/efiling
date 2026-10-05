@@ -73,16 +73,22 @@ export function scenarioState(scenario) {
 }
 
 export function listScenarios() {
-  return loadModel().scenarios.map((scenario) => ({
-    id: scenario.id,
-    formKind: scenario.formKind,
-    correctionOf: scenario.correctionOf,
-    purpose: scenario.purpose,
-    recordCount: scenario.recordIds.length,
-    state: scenarioState(scenario),
-    checksPassed: scenario.checks.filter((check) => check.ok).length,
-    checksTotal: scenario.checks.length,
-  }));
+  const { scenarios, ...meta } = loadModel();
+  return {
+    meta,
+    scenarios: scenarios.map((scenario) => ({
+      id: scenario.id,
+      formKind: scenario.formKind,
+      correctionOf: scenario.correctionOf,
+      purpose: scenario.purpose,
+      recordCount: scenario.recordIds.length,
+      state: scenarioState(scenario),
+      blocked: scenario.blocked,
+      nextAction: scenario.nextAction,
+      checksPassed: scenario.checks.filter((check) => check.ok).length,
+      checksTotal: scenario.checks.length,
+    })),
+  };
 }
 
 export function loadScenario(id) {

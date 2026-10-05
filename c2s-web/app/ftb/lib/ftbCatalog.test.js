@@ -15,7 +15,9 @@ function rawSsns(id) {
 
 test("listScenarios returns the five FTB scenarios in testing order with every check passing", async () => {
   const { listScenarios } = await import("./ftbCatalog.js");
-  const rows = listScenarios().map(({ id, formKind, correctionOf, recordCount, checksPassed, checksTotal }) => ({
+  const { meta, scenarios } = listScenarios();
+  assert.equal(meta.knownDifferences.length, 4);
+  const rows = scenarios.map(({ id, formKind, correctionOf, recordCount, checksPassed, checksTotal }) => ({
     id, formKind, correctionOf, recordCount, checksPassed, checksTotal,
   }));
   assert.deepEqual(rows, [

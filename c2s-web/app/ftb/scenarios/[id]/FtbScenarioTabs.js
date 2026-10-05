@@ -65,7 +65,8 @@ function Coverage({ months }) {
   if (Array.isArray(months) && months.length === 12) {
     return <MonthGrid values={months} kind="flags" label="Coverage by month" />;
   }
-  return <span className="muted">Not reported</span>;
+  // The holder row of a 1095-B or 1095-C carries no coverage months; covered individuals do.
+  return null;
 }
 
 function personId(person) {
@@ -95,7 +96,7 @@ function ReturnBlock({ record }) {
         </>
       ) : null}
       <div className="table-wrap">
-        <table className="data wide">
+        <table className="data">
           <thead>
             <tr>
               <th>Role</th>

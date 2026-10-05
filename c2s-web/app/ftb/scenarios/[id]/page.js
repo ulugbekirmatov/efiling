@@ -48,6 +48,7 @@ export default function FtbScenarioPage({ params }) {
           {scenario.correctionOf ? <Chip>Corrects {scenario.correctionOf}</Chip> : null}
         </div>
         <p className={calloutClass}>{scenario.nextAction}</p>
+        {meta.ledgerNote ? <p className="callout attention">{meta.ledgerNote}</p> : null}
         {scenario.ledger ? (
           <p className="muted">{ledgerLine(scenario.ledger)}</p>
         ) : (

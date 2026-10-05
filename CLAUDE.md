@@ -32,7 +32,7 @@ Spring Boot application (Java 17, Spring Boot 3.2.0, Maven) integrating the IRS 
 
 ```bash
 cd mef-spring-boot-integration
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # Java 17 required; 8 too old, 21+/25 incompatible
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home   # maven-enforcer fails the build on any other JDK
 
 mvn clean package               # build
 mvn clean package -DskipTests   # build without tests

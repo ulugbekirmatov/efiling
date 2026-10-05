@@ -1,0 +1,29 @@
+# Every text file is stored and checked out with LF. Mixed CRLF/LF files made agent
+# edits rewrite whole files (b5ecdf8, undone by b2b5eaf).
+* text=auto eol=lf
+
+# Byte-exact captures and vendor drops: never touch their line endings.
+# MIME bodies need CRLF on the wire; IRS/IdenTrust files stay identical to what they shipped.
+*.mime -text
+*.bin -text
+*.diff -text
+.audit/** -text
+94x-2026/** -text
+Version_*/** -text
+Root.txt -text
+SubCA1.txt -text
+Certificates/** -text
+Pyramos[[:space:]]Software[[:space:]]Certificates/** -text
+mef-spring-boot-integration/sdk-reference/extracted/** -text
+mef-spring-boot-integration/src/main/resources/schemas/** -text
+mef-spring-boot-integration/src/test/resources/schemas/** -text
+test-scenarios/schemas/** -text
+
+*.zip binary
+*.pdf binary
+*.doc binary
+*.ppt binary
+*.xlsm binary
+*.png binary
+*.jpg binary
+*.ico binary

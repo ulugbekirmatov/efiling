@@ -130,7 +130,7 @@ details .body p { margin: 6px 0; }
   <div class="tldr-dark">
     <div class="label">The two-sentence version</div>
     <p><strong>Offline first:</strong> open <code>ReportingAgentReturnTest</code>, click the green gutter arrow, done. It uses no Spring, no network, and no credentials.</p>
-    <p><strong>Live second:</strong> <code>ReportingAgentAtsScenarioTest</code> stays silently <em>disabled</em> until you add <code>-Dmef.integration.test.enabled=true</code> to the run configuration's <strong>VM options</strong> (not environment variables) and put Pyramos enrollment values in a <code>.env</code> file inside <code>mef-spring-boot-integration/</code>. When it runs, it files a return to IRS ATS.</p>
+    <p><strong>Live second:</strong> <code>ReportingAgentAtsScenarioTest</code> stays silently <em>disabled</em> until you add <code>-Dmef.live.test=ReportingAgentAtsScenarioTest</code> to the run configuration's <strong>VM options</strong> (not environment variables) and put Pyramos enrollment values in a <code>.env</code> file inside <code>mef-spring-boot-integration/</code>. When it runs, it files a return to IRS ATS.</p>
   </div>
 
   <div class="summary">
@@ -266,14 +266,14 @@ git branch --show-current</pre></div>
     <div>
       <div class="step-loc">Run → Edit Configurations…</div>
       <h3>Create the JUnit run configuration with the gate property in VM options</h3>
-      <p>The test class carries <code>@EnabledIfSystemProperty(named = "mef.integration.test.enabled", matches = "true")</code>. JUnit reads a <em>JVM system property</em>, so the switch goes in the VM options field. Putting it in the Environment variables field does nothing and the test reports as skipped.</p>
+      <p>The test class carries <code>@LiveIrsTest</code>, which enables it only when <code>mef.live.test</code> equals its class name. JUnit reads a <em>JVM system property</em>, so the switch goes in the VM options field. Putting it in the Environment variables field does nothing and the test reports as skipped.</p>
       <ol>
         <li><span class="ui">Run<span class="sep">→</span>Edit Configurations…<span class="sep">→</span>+<span class="sep">→</span>JUnit</span>. Name it <span class="ui">RA 941 ATS (LIVE)</span> so the name warns you.</li>
         <li><span class="ui">Test kind</span>: Class. <span class="ui">Class</span>: <code>com.irs.mef.reportingagent.ReportingAgentAtsScenarioTest</code>.</li>
         <li><span class="ui">Use classpath of module</span>: <code>mef-spring-boot-integration</code>. <span class="ui">JRE</span>: 17.</li>
         <li>Click <span class="ui">Modify options<span class="sep">→</span>Add VM options</span> and paste:</li>
       </ol>
-      <div class="code"><pre>-Dmef.integration.test.enabled=<span class="str">true</span>
+      <div class="code"><pre>-Dmef.live.test=<span class="str">ReportingAgentAtsScenarioTest</span>
 -Dmef.ats.scenario=<span class="str">1</span>
 --add-opens java.base/java.lang=ALL-UNNAMED
 --add-exports java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED
@@ -326,14 +326,14 @@ git branch --show-current</pre></div>
       <p>When you want to prove it outside the IDE, the equivalent is one command from the module directory. The <code>-Dtest</code> filter is what keeps the other two gated live tests from running alongside it.</p>
       <div class="code"><pre><span class="kw">cd</span> mef-spring-boot-integration
 <span class="kw">export</span> JAVA_HOME=$(/usr/libexec/java_home -v 17)
-mvn test -Dtest=ReportingAgentAtsScenarioTest -Dmef.integration.test.enabled=<span class="str">true</span> -Dmef.ats.scenario=<span class="str">2</span></pre></div>
+mvn test -Dtest=ReportingAgentAtsScenarioTest -Dmef.live.test=<span class="str">ReportingAgentAtsScenarioTest</span> -Dmef.ats.scenario=<span class="str">2</span></pre></div>
     </div>
   </article>
 
   <div class="gotchas">
     <h3>Gotchas that cost time</h3>
     <ul>
-      <li><strong>VM options, not environment variables.</strong> <code>@EnabledIfSystemProperty</code> reads <code>System.getProperty</code>. An env var named <code>mef.integration.test.enabled</code> is ignored and the test shows as skipped.</li>
+      <li><strong>VM options, not environment variables.</strong> <code>@LiveIrsTest</code> reads <code>System.getProperty</code>. An env var named <code>mef.live.test</code> is ignored and the test shows as skipped.</li>
       <li><strong>Never run the test folder or a bare <code>mvn test</code> with the gate property set.</strong> <code>Form941SubmissionTest</code> (OnlineFiler) uses the same property and would also hit ATS.</li>
       <li><strong><code>.env</code> location is the working directory.</strong> If you change the run configuration's working directory to the repo root, move the file too. The fixture helper tolerates either directory; the dotenv loader does not.</li>
       <li><strong>ASID is fixed at <code>10219201</code>.</strong> The gate throws on anything else. It is compared against the session config only and must never appear in the Return XML; the offline test asserts that.</li>
@@ -354,7 +354,7 @@ mvn test -Dtest=ReportingAgentAtsScenarioTest -Dmef.integration.test.enabled=<sp
   </details>
   <details>
     <summary><code>Tests ignored</code> / class shows grey with no assertions<span class="where">JUnit</span></summary>
-    <div class="body"><p>The gate property is missing. Open the run configuration, click <span class="ui">Modify options<span class="sep">→</span>Add VM options</span>, and confirm <code>-Dmef.integration.test.enabled=true</code> is in <em>that</em> field.</p></div>
+    <div class="body"><p>The gate property is missing. Open the run configuration, click <span class="ui">Modify options<span class="sep">→</span>Add VM options</span>, and confirm <code>-Dmef.live.test=ReportingAgentAtsScenarioTest</code> is in <em>that</em> field.</p></div>
   </details>
   <details>
     <summary><code>ReportingAgentValidationException: MEF_RA_PIN is required</code> (or any <code>MEF_*</code>)<span class="where">step 1 of the flow</span></summary>

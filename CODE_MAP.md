@@ -503,7 +503,7 @@ mvn test -Dtest=Form941SubmissionTest                 # @SpringBootTest, live AT
 
 Gating (historical, file deleted 2026-09-16): `MefLoginIntegrationTest` guarded its live methods with `@EnabledIfSystemProperty(named="mef.integration.test.enabled", matches="true")` (lines 92, 314, 369, ~397); its offline methods (`testKeystoreExists` :66, `testLoadSdkClasses` :77, `testCreateLoginClient` :121, `testLoginClientInvokeMethods` :131, `testSdkKeystoreAccess` :183, `testKeystoreLoadingForSdk` :246) run unconditionally and expect `./irs_cert/IRS_test_keystore.p12` with password `test123`, alias `irs_test_cert` — hardcoded at lines 32-34; the file is not in the repo.
 
-**`Form941SubmissionTest` is gated** behind `-Dmef.integration.test.enabled=true` (same switch as `ReportingAgentAtsScenarioTest`). Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. Never set the property without `-Dtest=<one class>`.
+**`Form941SubmissionTest` is gated** by `@LiveIrsTest`: it runs only with `-Dmef.live.test=Form941SubmissionTest`. Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. 
 
 
 ### Run
@@ -560,7 +560,7 @@ Defects worth acting on, roughly by severity:
 7. **The retry policy retries everything.** `RetryConfig.java:53-60` classifies `Exception.class` as retryable, so the `catch (MefException e) { throw e; }` "don't retry" blocks in `StatusService:111` and `AcknowledgementService:136/242/363` don't have their intended effect — `NOT_LOGGED_IN` and `ACK_NOT_FOUND` are retried three times across ~20 s of backoff.
 8. **Session state is unguarded shared mutable state** on a singleton (`MefClientService.java:34-37`). Concurrent requests share one `ServiceContext`; a second login silently swaps the context out from under in-flight calls. No expiry tracking or re-login on IRS session timeout.
 9. **`getAcknowledgmentsBySubmission` drains the ack queue.** GetNewAcks marks acknowledgments retrieved IRS-side; filtering client-side (`AcknowledgementService.java:341-343`) discards every non-matching ack permanently.
-10. **`Form941SubmissionTest` is gated** (`@EnabledIfSystemProperty mef.integration.test.enabled=true`, same switch as the RA ATS test). A plain `mvn test` is offline-safe; setting the property without `-Dtest=<one class>` still arms both live tests.
+10. **`Form941SubmissionTest` is gated** by `@LiveIrsTest` (`-Dmef.live.test=Form941SubmissionTest`; each live class has its own value). A plain `mvn test` is offline-safe.
 11. Stubs presented as working endpoints: `StatusService.getNewSubmissionsStatus()` :149 always returns `[]`; `SubmissionService.createSubmissionArchive()` :197 returns a path to a file it never creates. Both reachable over HTTP.
 12. Dead code: `getCertificateFile()` duplicated and unused in `SubmissionService:241`, `StatusService:206`, `AcknowledgementService:594`. `LoginRequest` bound by nothing. `MefSdkConfig.Authentication.username`/`password` and the entire `endpoints`/`security` trees never read at call time.
 13. `buildAckResponseReflection`'s `getField` lambda (`AcknowledgementService.java:424-431`) swallows all reflection errors into `null` — an SDK getter rename degrades to silently-empty response fields.

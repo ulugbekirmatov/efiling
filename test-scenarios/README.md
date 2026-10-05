@@ -150,10 +150,10 @@ The test scenarios integrate with the Spring Boot MeF application:
 Integration tests that actually submit to IRS ATS require:
 - Valid ETIN and credentials
 - IRS-approved certificates
-- Enable with system property: `-Dmef.integration.test.enabled=true`
+- Enable one class at a time with `-Dmef.live.test=<simple class name>` (see `@LiveIrsTest`)
 
 ```bash
-mvn test -Dtest=Form941SubmissionTest -Dmef.integration.test.enabled=true
+mvn test -Dtest=Form941SubmissionTest -Dmef.live.test=Form941SubmissionTest
 ```
 
 ## Best Practices

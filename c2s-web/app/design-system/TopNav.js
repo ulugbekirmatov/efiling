@@ -20,7 +20,10 @@ const LINKS = [
   },
   {
     label: "FTB",
-    links: [{ href: "/ftb/operator-page", label: "Operator page PR" }],
+    links: [
+      { href: "/ftb/scenarios", label: "Test scenarios" },
+      { href: "/ftb/operator-page", label: "Operator page PR" },
+    ],
   },
 ];
 

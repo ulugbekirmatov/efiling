@@ -69,7 +69,7 @@ export default function FtbScenariosPage() {
         <div className="ftb-scenarios-stats-row">
           <div>
             <p className="section-label">Accepted</p>
-            <p className="mono">{accepted} of 5</p>
+            <p className="mono">{accepted} of {scenarios.length}</p>
           </div>
           <div>
             <p className="section-label">Checks passing</p>

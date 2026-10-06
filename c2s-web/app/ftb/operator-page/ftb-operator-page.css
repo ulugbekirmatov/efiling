@@ -1,0 +1,153 @@
+.ftb-op-section {
+  margin-top: 40px;
+}
+.ftb-op-section > h2 {
+  margin-bottom: 8px;
+}
+.ftb-op-note {
+  color: var(--g700);
+  max-width: 720px;
+}
+.ftb-op-badges {
+  margin-top: 18px;
+}
+.ftb-op-tldr {
+  max-width: 780px;
+  margin-top: 24px;
+}
+.ftb-op-tldr > :last-child {
+  margin-bottom: 0;
+}
+
+.ftb-op-two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.ftb-op-after {
+  border-color: var(--olive);
+}
+.ftb-op-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+}
+.ftb-op-list li + li {
+  margin-top: 6px;
+}
+
+.ftb-op-story {
+  margin-top: 16px;
+}
+.ftb-op-story > h3 {
+  margin-bottom: 8px;
+}
+.ftb-op-example {
+  margin: 12px 0;
+}
+.ftb-op-paths {
+  margin: 12px 0;
+}
+
+/* Diff lines inside the shared .code block. */
+.ftb-op-add {
+  display: inline-block;
+  width: 100%;
+  background: var(--olive-tint);
+}
+.ftb-op-del {
+  display: inline-block;
+  width: 100%;
+  background: var(--clay-tint);
+  text-decoration: line-through;
+}
+
+.ftb-op-files {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+.ftb-op-file-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 18px;
+  cursor: pointer;
+  background: var(--g100);
+}
+.ftb-op-file[open] > .ftb-op-file-summary {
+  border-bottom: 1px solid var(--g300);
+}
+
+.ftb-op-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 780px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ftb-op-step {
+  display: flex;
+  gap: 14px;
+  padding: 16px 20px;
+}
+/* White on --clay is 3.1:1, so the number disc uses --clay-d like the primary button. */
+.ftb-op-step-n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on-accent);
+  background: var(--clay-d);
+}
+.ftb-op-step-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.ftb-op-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 780px;
+  margin-top: 16px;
+}
+.ftb-op-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+
+.ftb-op-rollout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ftb-op-rollout > .card {
+  padding: 16px 18px;
+  font-size: 13.5px;
+}
+.ftb-op-rollout-n {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--clay-d);
+  margin-bottom: 4px;
+}

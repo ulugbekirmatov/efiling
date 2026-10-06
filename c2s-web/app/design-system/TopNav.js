@@ -18,6 +18,13 @@ const LINKS = [
       { href: "/air/scenarios", label: "AATS scenarios" },
     ],
   },
+  {
+    label: "FTB",
+    links: [
+      { href: "/ftb/scenarios", label: "Test scenarios" },
+      { href: "/ftb/operator-page", label: "Operator page PR" },
+    ],
+  },
 ];
 
 function isCurrent(pathname, href) {

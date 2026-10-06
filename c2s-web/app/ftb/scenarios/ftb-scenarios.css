@@ -1,0 +1,73 @@
+.ftb-scenarios-meta {
+  margin-bottom: 16px;
+}
+
+.ftb-scenarios-note,
+.ftb-scenarios-next,
+.ftb-scenarios-stats {
+  margin-bottom: 16px;
+}
+
+.ftb-scenarios-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.ftb-scenarios-stats .section-label {
+  margin-bottom: 4px;
+}
+.ftb-scenarios-stats .mono {
+  margin: 0;
+}
+
+.ftb-scenarios-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.ftb-scenarios-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.ftb-scenarios-then {
+  align-self: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The card is itself the link; the global anchor hover would paint every
+   inherited line clay, and the card lift already marks hover. */
+.ftb-scenarios-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.ftb-scenarios-card:hover {
+  color: inherit;
+}
+.ftb-scenarios-card > :last-child {
+  margin-bottom: 0;
+}
+
+.ftb-scenarios-chips {
+  margin-top: 10px;
+}
+
+@media (max-width: 720px) {
+  .ftb-scenarios-stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ftb-scenarios-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ftb-scenarios-then {
+    justify-self: center;
+  }
+}

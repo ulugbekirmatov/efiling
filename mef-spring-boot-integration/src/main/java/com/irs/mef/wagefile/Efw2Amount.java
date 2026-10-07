@@ -55,19 +55,19 @@ public enum Efw2Amount {
         return label;
     }
 
-    int rwStart() {
+    public int rwStart() {
         return rwStart;
     }
 
-    int rwEnd() {
+    public int rwEnd() {
         return rwEnd;
     }
 
-    int rtStart() {
+    public int rtStart() {
         return rtStart;
     }
 
-    int rtEnd() {
+    public int rtEnd() {
         return rtEnd;
     }
 }

@@ -68,6 +68,13 @@ public final class Efw2Writer {
         record.put(161, 162, submitter.state());
         record.put(163, 167, FixedWidth.left(submitter.zip(), 5));
         record.put(217, 273, FixedWidth.left(submitter.submitterName(), 57));
+        record.put(274, 295, FixedWidth.left(submitter.locationAddress(), 22));
+        record.put(296, 317, FixedWidth.left(submitter.deliveryAddress(), 22));
+        record.put(318, 339, FixedWidth.left(submitter.city(), 22));
+        record.put(340, 341, submitter.state());
+        record.put(342, 346, FixedWidth.left(submitter.zip(), 5));
+        record.put(396, 422, FixedWidth.left(submitter.contactName(), 27));
+        record.put(423, 437, FixedWidth.leftRaw(submitter.contactPhone(), 15));
         record.put(446, 485, FixedWidth.leftRaw(submitter.contactEmail(), 40));
         record.put(500, 500, "S");
         return record.text();

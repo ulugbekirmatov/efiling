@@ -26,6 +26,8 @@ public final class FixtureWageYearSource implements WageYearSource {
                 "TX",
                 "78701",
                 "PYRAMOS SOFTWARE LLC",
+                "PAYROLL CONTACT",
+                "5125550100",
                 "payroll@example.com");
         EmployeeWage employee = new EmployeeWage(
                 "000000000",

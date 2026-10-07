@@ -20,6 +20,8 @@ final class WageFileSamples {
                 "TX",
                 "78701",
                 "Pyramos Software LLC",
+                "Payroll Contact",
+                "5125550100",
                 "Pyramos@Example.com");
         EmployeeWage employee = new EmployeeWage(
                 "000000000",

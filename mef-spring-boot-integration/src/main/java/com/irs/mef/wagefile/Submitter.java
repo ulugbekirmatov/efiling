@@ -1,6 +1,9 @@
 package com.irs.mef.wagefile;
 
-/** RA submitter. The BSO user id is exactly 8 characters and is not read from the environment. */
+/**
+ * RA submitter. The BSO user id is exactly 8 characters and is not read from the environment.
+ * The submitter is the company itself, so its address fills both the company and submitter blocks.
+ */
 public record Submitter(
         String ein,
         String bsoUserId,
@@ -11,6 +14,8 @@ public record Submitter(
         String state,
         String zip,
         String submitterName,
+        String contactName,
+        String contactPhone,
         String contactEmail) {
 
     public Submitter {
@@ -25,7 +30,12 @@ public record Submitter(
         city = FieldRules.required(city, 22, "city");
         state = FieldRules.state(state);
         zip = FieldRules.digits(zip, 5, "ZIP");
-        submitterName = FieldRules.bounded(submitterName, 57, "submitter name");
+        submitterName = FieldRules.required(submitterName, 57, "submitter name");
+        contactName = FieldRules.required(contactName, 27, "submitter contact name");
+        contactPhone = FieldRules.phone(contactPhone);
+        if (contactPhone.isEmpty()) {
+            throw new IllegalArgumentException("submitter contact phone is required");
+        }
         contactEmail = FieldRules.email(contactEmail);
     }
 }

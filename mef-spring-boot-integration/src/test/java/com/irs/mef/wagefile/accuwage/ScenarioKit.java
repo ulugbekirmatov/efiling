@@ -39,6 +39,8 @@ final class ScenarioKit {
                 "PA",
                 "17101",
                 "PYRAMOS SOFTWARE LLC",
+                "W2 CONTACT",
+                "7175550199",
                 "w2@pyramos.example.com");
     }
 

@@ -21,6 +21,7 @@ function ScenarioCard({ scenario }) {
         <Chip>{scenario.recordCount} records</Chip>
         {scenario.correctionOf ? <Chip>Corrects {scenario.correctionOf}</Chip> : null}
       </div>
+      <p className="muted">{scenario.nextAction}</p>
     </Link>
   );
 }
@@ -94,7 +95,7 @@ export default function FtbScenariosPage() {
         </p>
       ) : (
         <p className="callout safe ftb-scenarios-next">
-          All five accepted. Submit the ReceiptIds on the FX Portal.
+          All five scenarios are accepted. Record each ReceiptId for the portal evaluation form.
         </p>
       )}
 

@@ -51,7 +51,7 @@ function MonthGrid({ values, kind, label }) {
           return (
             <span key={month} className={`ftb-scenario-month${on ? " ftb-scenario-month-on" : ""}`}>
               <b>{month}</b>
-              {kind === "codes" ? <span>{value || ""}</span> : null}
+              <span>{kind === "codes" ? value || "" : on ? "yes" : ""}</span>
             </span>
           );
         })}
@@ -80,7 +80,7 @@ function ReturnBlock({ record }) {
         <h2 className="ftb-scenario-return-title">
           Record {record.recordId} · {record.testScenarioId}
         </h2>
-        {record.correctedInd == 1 ? <Chip>Corrected</Chip> : null}
+        <Chip>CorrectedInd {record.correctedInd}</Chip>
       </div>
       {record.original ? (
         <>

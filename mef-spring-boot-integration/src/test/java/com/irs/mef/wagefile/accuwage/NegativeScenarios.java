@@ -66,12 +66,13 @@ final class NegativeScenarios {
                         patchMoney(base, SECOND_RW, Efw2Amount.SOCIAL_SECURITY_TAX_WITHHELD,
                                 ScenarioKit.SOCIAL_SECURITY_TAX_MAXIMUM_CENTS + 1)),
                 negative("93-medicare-wages-below-social-security-wages.txt",
-                        "RW 1 Medicare wages are $47,000.00, below its $48,000.00 Social Security wages.",
+                        "RW 1 Medicare wages are $47,000.00 (Medicare tax 1.45% of that), below its $48,000.00 Social Security wages.",
                         "Error on RW 1 Medicare Wages and Tips: " + PUB_42_007 + " RW 232-242 \"this amount must"
                                 + " equal or exceed the sum of the Social Security Wages and Social Security Tips\";"
                                 + " SSA condition \"Medicare Wages & Tips Less Than Social Security Wages/Social"
                                 + " Security Tips\" " + ERROR_REFERENCE,
-                        patchMoney(base, FIRST_RW, Efw2Amount.MEDICARE_WAGES_AND_TIPS, 47_000_00L)),
+                        patchMoney(patchMoney(base, FIRST_RW, Efw2Amount.MEDICARE_WAGES_AND_TIPS, 47_000_00L),
+                                FIRST_RW, Efw2Amount.MEDICARE_TAX_WITHHELD, ScenarioKit.percentOf(47_000_00L, 145, 10000))),
                 negative("94-rt-wages-out-of-balance.txt",
                         "RT Total Wages, Tips and Other Compensation is $100.00 more than the sum of the RW records.",
                         "Error on RT Total Wages, Tips and Other Compensation: " + PUB_42_007 + " RT 10-24 \"Enter"

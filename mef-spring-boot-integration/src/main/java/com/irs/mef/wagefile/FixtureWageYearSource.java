@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Checked-in Orchid quarter. Social Security tax is 2500.00 * 0.124 and Medicare tax is 2500.00 * 0.029
- * so the wage file is internally consistent. The reconciler does not compare those tax amounts.
+ * Checked-in Orchid quarter. W-2 Boxes 4 and 6 hold the employee share only: Social Security tax is
+ * 2500.00 * 0.062 and Medicare tax is 2500.00 * 0.0145. AccuWage rejects the 941 combined rates here.
  */
 @Component
 public final class FixtureWageYearSource implements WageYearSource {
@@ -39,9 +39,9 @@ public final class FixtureWageYearSource implements WageYearSource {
                 250_000L,
                 25_000L,
                 250_000L,
-                31_000L,
+                15_500L,
                 250_000L,
-                7_250L);
+                3_625L);
         EmployerWage employer = new EmployerWage(
                 2026,
                 "003000004",

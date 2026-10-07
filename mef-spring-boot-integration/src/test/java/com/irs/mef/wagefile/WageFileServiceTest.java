@@ -58,9 +58,9 @@ class WageFileServiceTest {
         assertEquals("00000250000", FixedWidth.parse(records[2]).get(188, 198));
         assertEquals("00000025000", FixedWidth.parse(records[2]).get(199, 209));
         assertEquals("00000250000", FixedWidth.parse(records[2]).get(210, 220));
-        assertEquals("00000031000", FixedWidth.parse(records[2]).get(221, 231));
+        assertEquals("00000015500", FixedWidth.parse(records[2]).get(221, 231));
         assertEquals("00000250000", FixedWidth.parse(records[2]).get(232, 242));
-        assertEquals("00000007250", FixedWidth.parse(records[2]).get(243, 253));
+        assertEquals("00000003625", FixedWidth.parse(records[2]).get(243, 253));
     }
 
     @Test

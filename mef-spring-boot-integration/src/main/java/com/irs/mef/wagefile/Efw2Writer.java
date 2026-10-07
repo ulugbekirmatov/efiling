@@ -17,12 +17,11 @@ public final class Efw2Writer {
         int totalEmployees = 0;
         for (EmployerWage employer : year.employers()) {
             file.append(employerRecord(employer)).append("\r\n");
-            long[] totals = new long[Efw2MoneyFields.COLUMNS.size()];
+            long[] totals = new long[Efw2Amount.values().length];
             for (EmployeeWage employee : employer.employees()) {
-                long[] amounts = amounts(employee);
-                file.append(employeeRecord(employee, amounts)).append("\r\n");
-                for (int i = 0; i < amounts.length; i++) {
-                    totals[i] += amounts[i];
+                file.append(employeeRecord(employee)).append("\r\n");
+                for (Efw2Amount amount : Efw2Amount.values()) {
+                    totals[amount.ordinal()] += employee.cents(amount);
                 }
                 totalEmployees++;
             }
@@ -94,7 +93,7 @@ public final class Efw2Writer {
         return record.text();
     }
 
-    private static String employeeRecord(EmployeeWage employee, long[] amounts) {
+    private static String employeeRecord(EmployeeWage employee) {
         FixedWidth record = new FixedWidth();
         record.put(1, 2, "RW");
         record.put(3, 11, employee.ssn());
@@ -105,12 +104,11 @@ public final class Efw2Writer {
         record.put(110, 131, FixedWidth.left(employee.city(), 22));
         record.put(132, 133, employee.state());
         record.put(134, 138, FixedWidth.left(employee.zip(), 5));
-        for (int i = 0; i < Efw2MoneyFields.COLUMNS.size(); i++) {
-            Efw2MoneyFields.Column column = Efw2MoneyFields.COLUMNS.get(i);
-            record.put(column.rwStart(), column.rwEnd(), FixedWidth.zeroFill(amounts[i], 11));
+        for (Efw2Amount amount : Efw2Amount.values()) {
+            record.put(amount.rwStart(), amount.rwEnd(), FixedWidth.zeroFill(employee.cents(amount), 11));
         }
         record.put(486, 486, "0");
-        record.put(488, 488, "0");
+        record.put(488, 488, employee.retirementPlan() ? "1" : "0");
         record.put(489, 489, "0");
         return record.text();
     }
@@ -119,11 +117,10 @@ public final class Efw2Writer {
         FixedWidth record = new FixedWidth();
         record.put(1, 2, "RT");
         record.put(3, 9, FixedWidth.zeroFill(employeeCount, 7));
-        for (int i = 0; i < Efw2MoneyFields.COLUMNS.size(); i++) {
-            Efw2MoneyFields.Column column = Efw2MoneyFields.COLUMNS.get(i);
-            record.put(column.rtStart(), column.rtEnd(), FixedWidth.zeroFill(totals[i], 15));
+        for (Efw2Amount amount : Efw2Amount.values()) {
+            record.put(amount.rtStart(), amount.rtEnd(), FixedWidth.zeroFill(totals[amount.ordinal()], 15));
         }
-        record.put(Efw2MoneyFields.THIRD_PARTY_SICK_PAY_TAX_START, Efw2MoneyFields.THIRD_PARTY_SICK_PAY_TAX_END,
+        record.put(Efw2Amount.THIRD_PARTY_SICK_PAY_TAX_START, Efw2Amount.THIRD_PARTY_SICK_PAY_TAX_END,
                 FixedWidth.zeroFill(0, 15));
         return record.text();
     }
@@ -133,25 +130,5 @@ public final class Efw2Writer {
         record.put(1, 2, "RF");
         record.put(8, 16, FixedWidth.zeroFill(totalEmployees, 9));
         return record.text();
-    }
-
-    private static long[] amounts(EmployeeWage employee) {
-        long[] amounts = new long[Efw2MoneyFields.COLUMNS.size()];
-        for (int i = 0; i < amounts.length; i++) {
-            amounts[i] = cents(employee, Efw2MoneyFields.COLUMNS.get(i).name());
-        }
-        return amounts;
-    }
-
-    private static long cents(EmployeeWage employee, String name) {
-        return switch (name) {
-            case "wages" -> employee.wagesCents();
-            case "federal income tax withheld" -> employee.federalIncomeTaxWithheldCents();
-            case "social security wages" -> employee.socialSecurityWagesCents();
-            case "social security tax withheld" -> employee.socialSecurityTaxWithheldCents();
-            case "medicare wages and tips" -> employee.medicareWagesCents();
-            case "medicare tax withheld" -> employee.medicareTaxWithheldCents();
-            default -> 0L;
-        };
     }
 }

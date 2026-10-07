@@ -68,14 +68,13 @@ public final class Efw2Validator {
             if (index >= records.size() - 1 || !id(records.get(index)).equals("RW")) {
                 return List.of("RE " + ein + " has no RW record");
             }
-            long[] sums = new long[Efw2MoneyFields.COLUMNS.size()];
+            long[] sums = new long[Efw2Amount.values().length];
             int rwCount = 0;
             while (index < records.size() - 1 && id(records.get(index)).equals("RW")) {
                 FixedWidth employee = FixedWidth.parse(records.get(index));
-                for (int column = 0; column < Efw2MoneyFields.COLUMNS.size(); column++) {
-                    Efw2MoneyFields.Column money = Efw2MoneyFields.COLUMNS.get(column);
-                    sums[column] += cents(employee.get(money.rwStart(), money.rwEnd()),
-                            "RE " + ein + " " + money.name() + " RW");
+                for (Efw2Amount money : Efw2Amount.values()) {
+                    sums[money.ordinal()] += cents(employee.get(money.rwStart(), money.rwEnd()),
+                            "RE " + ein + " " + money.label() + " RW");
                 }
                 rwCount++;
                 index++;
@@ -88,13 +87,12 @@ public final class Efw2Validator {
             if (reportedCount != rwCount) {
                 findings.add("RE " + ein + " RT count " + reportedCount + ", RW records " + rwCount);
             }
-            for (int column = 0; column < Efw2MoneyFields.COLUMNS.size(); column++) {
-                Efw2MoneyFields.Column money = Efw2MoneyFields.COLUMNS.get(column);
+            for (Efw2Amount money : Efw2Amount.values()) {
                 long reported = cents(total.get(money.rtStart(), money.rtEnd()),
-                        "RE " + ein + " " + money.name() + " RT");
-                if (reported != sums[column]) {
-                    findings.add("RE " + ein + " " + money.name() + " RT " + reported
-                            + " cents, RW " + sums[column] + " cents");
+                        "RE " + ein + " " + money.label() + " RT");
+                if (reported != sums[money.ordinal()]) {
+                    findings.add("RE " + ein + " " + money.label() + " RT " + reported
+                            + " cents, RW " + sums[money.ordinal()] + " cents");
                 }
             }
             totalEmployees += rwCount;

@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -22,6 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * target/accuwage-ty&lt;year&gt;; generate-accuwage-files.sh points it at reports/accuwage-ty&lt;year&gt;.
  */
 class AccuWageFilesTest {
+
+    private static final Set<String> STRUCTURAL_DEFECTS = Set.of(
+            "94-rt-wages-out-of-balance.txt",
+            "95-rf-employee-count-wrong.txt",
+            "96-missing-rf-record.txt",
+            "97-record-511-bytes.txt");
 
     private static final Path OUTPUT = Path.of(
             System.getProperty("accuwage.out", "target/accuwage-ty" + ScenarioKit.TAX_YEAR));
@@ -36,6 +44,25 @@ class AccuWageFilesTest {
             }
         }
         assertEquals(Map.of(), findings);
+    }
+
+    @Test
+    void everyNegativeFileDiffersFromItsCleanBase() {
+        String base = NegativeScenarios.baseFile();
+        assertEquals(List.of(), new Efw2Validator().validate(base));
+        for (AccuWageScenario scenario : NegativeScenarios.scenarios()) {
+            assertEquals(AccuWageScenario.AccuWageOutcome.ERRORS, scenario.expected(), scenario.fileName());
+            assertNotEquals(base, scenario.fileText(), scenario.fileName() + " carries no defect");
+        }
+    }
+
+    @Test
+    void structuralDefectsFailTheJavaValidator() {
+        for (AccuWageScenario scenario : NegativeScenarios.scenarios()) {
+            if (STRUCTURAL_DEFECTS.contains(scenario.fileName())) {
+                assertFalse(new Efw2Validator().validate(scenario.fileText()).isEmpty(), scenario.fileName());
+            }
+        }
     }
 
     @Test
@@ -61,6 +88,9 @@ class AccuWageFilesTest {
                     .append(scenario.purpose()).append('\t').append(scenario.expectedResult()).append('\n');
         }
         Files.writeString(OUTPUT.resolve("MANIFEST.tsv"), manifest, StandardCharsets.US_ASCII);
-        assertEquals(AccuWageScenarios.all().size() + 1L, Files.list(OUTPUT).count());
+        for (AccuWageScenario scenario : AccuWageScenarios.all()) {
+            assertEquals(scenario.fileText(), Files.readString(OUTPUT.resolve(scenario.fileName()),
+                    StandardCharsets.US_ASCII), scenario.fileName());
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.irs.mef.wagefile.WageYear;
 
 import java.util.List;
 
+import static com.irs.mef.wagefile.accuwage.ScenarioKit.SOCIAL_SECURITY_WAGE_BASE_CENTS;
 import static com.irs.mef.wagefile.accuwage.ScenarioKit.employer;
 import static com.irs.mef.wagefile.accuwage.ScenarioKit.pay;
 import static com.irs.mef.wagefile.accuwage.ScenarioKit.person;
@@ -17,8 +18,8 @@ final class Scenario03HighEarners {
 
     static AccuWageScenario scenario() {
         List<EmployeeWage> employees = List.of(
-                pay(184_500_00L).federalIncomeTax(34_132_50L).w2(person(20, "PHILADELPHIA", "PA", "19103")),
-                pay(184_500_01L).federalIncomeTax(36_900_00L).w2(person(21, "BRYN MAWR", "PA", "19010")),
+                pay(SOCIAL_SECURITY_WAGE_BASE_CENTS).federalIncomeTax(34_132_50L).w2(person(20, "PHILADELPHIA", "PA", "19103")),
+                pay(SOCIAL_SECURITY_WAGE_BASE_CENTS + 1).federalIncomeTax(36_900_00L).w2(person(21, "BRYN MAWR", "PA", "19010")),
                 pay(199_999_99L).federalIncomeTax(44_800_00L).w2(person(22, "WAYNE", "PA", "19087")),
                 pay(250_000_00L).federalIncomeTax(62_000_00L).w2(person(23, "ARDMORE", "PA", "19003")),
                 pay(1_000_000_00L).federalIncomeTax(292_000_00L).w2(person(24, "GLADWYNE", "PA", "19035")));

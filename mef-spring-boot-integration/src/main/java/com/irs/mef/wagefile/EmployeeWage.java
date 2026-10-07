@@ -54,6 +54,9 @@ public record EmployeeWage(
         Map<Efw2Amount, Long> others = new EnumMap<>(Efw2Amount.class);
         if (otherAmountsCents != null) {
             for (Map.Entry<Efw2Amount, Long> entry : otherAmountsCents.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) {
+                    throw new IllegalArgumentException("other amounts cannot hold a null amount or key");
+                }
                 if (NAMED_AMOUNTS.contains(entry.getKey())) {
                     throw new IllegalArgumentException(entry.getKey().label() + " is a named field, not an other amount");
                 }

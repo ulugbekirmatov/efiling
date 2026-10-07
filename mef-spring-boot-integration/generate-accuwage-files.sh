@@ -14,7 +14,5 @@ args=(-q test -Dtest=AccuWageFilesTest "-Daccuwage.taxYear=$year" "-Daccuwage.ou
 mvn "${args[@]}"
 echo "$out"
 ls -1 "$out"
-# Independent second opinion: efw2_check.py is built from the TY2026 publication only, not from the Java writer.
-if [[ "$year" == 2026 ]]; then
-  python3 efw2_check.py "$out"/0*.txt
-fi
+# Independent second opinion: efw2_check.py is built from Pub 42-007, not from the Java writer.
+python3 efw2_check.py --tax-year "$year" "$out"/0*.txt

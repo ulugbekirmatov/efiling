@@ -109,7 +109,7 @@ final class NegativeScenarios {
     }
 
     /** One employer, three employees. RW 2 earns past the wage base so its Social Security boxes sit at the cap. */
-    private static String baseFile() {
+    static String baseFile() {
         List<EmployeeWage> employees = List.of(
                 pay(48_000_00L).federalIncomeTax(3_960_00L).w2(person(40, "YORK", "PA", "17401")),
                 pay(210_000_00L).federalIncomeTax(41_250_00L).w2(person(41, "RED LION", "PA", "17356")),

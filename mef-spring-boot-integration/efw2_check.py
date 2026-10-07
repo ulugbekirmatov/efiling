@@ -5,7 +5,10 @@ Built from SSA Publication 42-007, EFW2 Tax Year 2026 (version 2, 9/14/2026),
 https://www.ssa.gov/employer/efw/26efw2.pdf, and the AccuWage Online issue
 levels SSA publishes at https://www.ssa.gov/employer/accuwage/.
 
-Usage: python3 efw2_check.py FILE...
+Usage: python3 efw2_check.py [--tax-year 2025] FILE...
+--tax-year 2025 swaps in the TY2025 wage base and maximum only. The TY2026 fields
+that TY2025 reserved (RE 319-328, RW 490-495, the new RO/RU codes) are optional, so a
+TY2025 file that leaves them blank checks the same way.
 Prints every finding as "ERROR|WARN record-number record-id positions: message",
 then OK or a count per file. Exits 1 when any file has an ERROR.
 """
@@ -15,9 +18,10 @@ import sys
 from collections import namedtuple
 
 TAX_YEAR = 2026
+WAGE_BASES_CENTS = {2025: 176_100_00, 2026: 184_500_00}
 RECORD_LENGTH = 512
 RECORD_DELIMITER = b"\r\n"
-SOCIAL_SECURITY_WAGE_BASE_CENTS = 184_500_00
+SOCIAL_SECURITY_WAGE_BASE_CENTS = WAGE_BASES_CENTS[TAX_YEAR]
 SOCIAL_SECURITY_MAX_TAX_CENTS = 11_439_00
 SOCIAL_SECURITY_RATE = 0.062
 MEDICARE_RATE = 0.0145
@@ -907,9 +911,20 @@ def check_file(path):
     return checker.findings
 
 
-def main(paths):
-    if not paths:
-        print("usage: python3 efw2_check.py FILE...", file=sys.stderr)
+def use_tax_year(year):
+    global TAX_YEAR, SOCIAL_SECURITY_WAGE_BASE_CENTS, SOCIAL_SECURITY_MAX_TAX_CENTS
+    TAX_YEAR = year
+    SOCIAL_SECURITY_WAGE_BASE_CENTS = WAGE_BASES_CENTS[year]
+    SOCIAL_SECURITY_MAX_TAX_CENTS = round(SOCIAL_SECURITY_WAGE_BASE_CENTS * SOCIAL_SECURITY_RATE)
+
+
+def main(args):
+    paths = list(args)
+    if paths[:1] == ["--tax-year"] and len(paths) >= 2 and paths[1].isdigit() and int(paths[1]) in WAGE_BASES_CENTS:
+        use_tax_year(int(paths[1]))
+        paths = paths[2:]
+    if not paths or paths[0].startswith("--"):
+        print("usage: python3 efw2_check.py [--tax-year 2025|2026] FILE...", file=sys.stderr)
         return 2
     any_error = False
     for path in paths:

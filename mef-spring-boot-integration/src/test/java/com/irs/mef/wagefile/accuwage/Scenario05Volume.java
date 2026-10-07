@@ -22,6 +22,9 @@ final class Scenario05Volume {
             {"ERIE", "16501"}
     };
 
+    /** Roughly the standard deduction: low earners have next to no federal withholding. */
+    private static final long WITHHOLDING_FREE_GROSS_CENTS = 15_000_00L;
+
     private Scenario05Volume() {
     }
 
@@ -30,7 +33,8 @@ final class Scenario05Volume {
         for (int n = 100; n <= 349; n++) {
             String[] city = CITIES[n % 5];
             long gross = 15_000_00L + (n * 7_919_31L) % 125_000_00L;
-            ScenarioKit.Pay row = pay(gross).federalIncomeTax(percentOf(gross, 8 + (n % 9), 100));
+            ScenarioKit.Pay row = pay(gross)
+                    .federalIncomeTax(percentOf(gross - WITHHOLDING_FREE_GROSS_CENTS, 8 + (n % 9), 100));
             if (n % 7 == 0) {
                 row = row.deferral401k(percentOf(gross, 5, 100));
             }
@@ -41,7 +45,7 @@ final class Scenario05Volume {
                         "17101", employees)));
         return new AccuWageScenario(
                 "05-volume.txt",
-                "One employer with 250 employees across five Pennsylvania cities, wages, withholding, and 401k on every seventh person.",
+                "One employer with 250 employees across five Pennsylvania cities, wages, withholding on gross above $15,000, and 401k on every seventh person.",
                 AccuWageScenario.AccuWageOutcome.NO_ERRORS,
                 "No errors, no warnings.",
                 new Efw2Writer().write(year));

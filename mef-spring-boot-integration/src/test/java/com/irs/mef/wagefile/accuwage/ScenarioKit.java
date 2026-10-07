@@ -10,14 +10,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Builds TY2026 W-2 rows from gross pay so every scenario gets the box arithmetic right once.
+ * Builds W-2 rows from gross pay so every scenario gets the box arithmetic right once.
+ * Tax year defaults to 2026; -Daccuwage.taxYear=2025 builds the same scenarios for AccuWage before it
+ * accepts TY2026 (the RA/RE/RW/RT/RF fields written here did not move between the two years).
  * Submitter EIN and BSO User ID default to placeholders; pass -Daccuwage.submitterEin and
  * -Daccuwage.bsoUserId to stamp real values.
  */
 final class ScenarioKit {
 
-    static final int TAX_YEAR = 2026;
-    static final long SOCIAL_SECURITY_WAGE_BASE_CENTS = 184_500_00L;
+    private static final Map<Integer, Long> SOCIAL_SECURITY_WAGE_BASES_CENTS = Map.of(
+            2025, 176_100_00L,
+            2026, 184_500_00L);
+
+    static final int TAX_YEAR = Integer.getInteger("accuwage.taxYear", 2026);
+    static final long SOCIAL_SECURITY_WAGE_BASE_CENTS = wageBase(TAX_YEAR);
+    static final long SOCIAL_SECURITY_TAX_MAXIMUM_CENTS = percentOf(SOCIAL_SECURITY_WAGE_BASE_CENTS, 62, 1000);
     static final long ADDITIONAL_MEDICARE_THRESHOLD_CENTS = 200_000_00L;
 
     private static final String[] FIRST_NAMES = {"JAMES", "MARIA", "ROBERT", "LINDA", "DAVID", "PATRICIA",
@@ -26,6 +33,18 @@ final class ScenarioKit {
             "MILLER", "DAVIS", "RODRIGUEZ", "MARTINEZ", "HERNANDEZ", "LOPEZ", "WILSON", "ANDERSON", "TAYLOR"};
 
     private ScenarioKit() {
+    }
+
+    private static long wageBase(int taxYear) {
+        Long cents = SOCIAL_SECURITY_WAGE_BASES_CENTS.get(taxYear);
+        if (cents == null) {
+            throw new IllegalArgumentException("no Social Security wage base for tax year " + taxYear);
+        }
+        return cents;
+    }
+
+    static String dollars(long cents) {
+        return String.format("$%,d.%02d", cents / 100, cents % 100);
     }
 
     static Submitter submitter() {

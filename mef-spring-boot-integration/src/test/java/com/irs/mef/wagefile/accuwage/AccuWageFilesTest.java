@@ -19,11 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Writes every AccuWage scenario file plus MANIFEST.tsv. Output goes to -Daccuwage.out, default
- * target/accuwage-ty2026; generate-accuwage-files.sh points it at reports/accuwage-ty2026.
+ * target/accuwage-ty&lt;year&gt;; generate-accuwage-files.sh points it at reports/accuwage-ty&lt;year&gt;.
  */
 class AccuWageFilesTest {
 
-    private static final Path OUTPUT = Path.of(System.getProperty("accuwage.out", "target/accuwage-ty2026"));
+    private static final Path OUTPUT = Path.of(
+            System.getProperty("accuwage.out", "target/accuwage-ty" + ScenarioKit.TAX_YEAR));
 
     @Test
     void cleanScenariosPassTheStructuralValidator() {

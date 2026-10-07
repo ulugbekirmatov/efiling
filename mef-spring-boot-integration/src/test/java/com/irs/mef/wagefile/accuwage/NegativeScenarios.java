@@ -35,8 +35,6 @@ final class NegativeScenarios {
     private static final int RT = 5;
     private static final int RF = 6;
 
-    private static final long SOCIAL_SECURITY_TAX_MAXIMUM_CENTS = 11_439_00L;
-
     private NegativeScenarios() {
     }
 
@@ -49,7 +47,8 @@ final class NegativeScenarios {
                                 + " 666 or 9.\"",
                         patch(base, FIRST_RW, 3, 11, "666" + field(base, FIRST_RW, 6, 11))),
                 negative("91-social-security-wages-over-base.txt",
-                        "RW 2 Social Security wages are $184,500.01, one cent over the TY2026 wage base.",
+                        "RW 2 Social Security wages are " + ScenarioKit.dollars(ScenarioKit.SOCIAL_SECURITY_WAGE_BASE_CENTS + 1)
+                                + ", one cent over the TY" + ScenarioKit.TAX_YEAR + " wage base.",
                         "Error on RW 2 Social Security Wages: " + PUB_42_007 + " RW 210-220 \"The sum of this field"
                                 + " and the Social Security Tips field should not exceed the annual maximum Social"
                                 + " Security wage base for the tax year\"; SSA condition \"Social Security Wages / Tips"
@@ -57,11 +56,15 @@ final class NegativeScenarios {
                         patchMoney(base, SECOND_RW, Efw2Amount.SOCIAL_SECURITY_WAGES,
                                 ScenarioKit.SOCIAL_SECURITY_WAGE_BASE_CENTS + 1)),
                 negative("92-social-security-tax-over-maximum.txt",
-                        "RW 2 Social Security tax is $11,439.01, one cent over the TY2026 maximum.",
+                        "RW 2 Social Security tax is "
+                                + ScenarioKit.dollars(ScenarioKit.SOCIAL_SECURITY_TAX_MAXIMUM_CENTS + 1)
+                                + ", one cent over the TY" + ScenarioKit.TAX_YEAR + " maximum.",
                         "Error on RW 2 Social Security Tax Withheld: " + PUB_42_007 + " RW 221-231 \"This amount"
-                                + " should not exceed\" the year's maximum ($11,439.00 for TY2026)",
+                                + " should not exceed\" the year's maximum ("
+                                + ScenarioKit.dollars(ScenarioKit.SOCIAL_SECURITY_TAX_MAXIMUM_CENTS) + " for TY"
+                                + ScenarioKit.TAX_YEAR + ")",
                         patchMoney(base, SECOND_RW, Efw2Amount.SOCIAL_SECURITY_TAX_WITHHELD,
-                                SOCIAL_SECURITY_TAX_MAXIMUM_CENTS + 1)),
+                                ScenarioKit.SOCIAL_SECURITY_TAX_MAXIMUM_CENTS + 1)),
                 negative("93-medicare-wages-below-social-security-wages.txt",
                         "RW 1 Medicare wages are $47,000.00, below its $48,000.00 Social Security wages.",
                         "Error on RW 1 Medicare Wages and Tips: " + PUB_42_007 + " RW 232-242 \"this amount must"

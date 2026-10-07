@@ -7,6 +7,7 @@ import com.irs.mef.wagefile.Submitter;
 
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -22,7 +23,7 @@ final class ScenarioKit {
             2025, 176_100_00L,
             2026, 184_500_00L);
 
-    static final int TAX_YEAR = Integer.getInteger("accuwage.taxYear", 2026);
+    static final int TAX_YEAR = Integer.parseInt(System.getProperty("accuwage.taxYear", "2026"));
     static final long SOCIAL_SECURITY_WAGE_BASE_CENTS = wageBase(TAX_YEAR);
     static final long SOCIAL_SECURITY_TAX_MAXIMUM_CENTS = percentOf(SOCIAL_SECURITY_WAGE_BASE_CENTS, 62, 1000);
     static final long ADDITIONAL_MEDICARE_THRESHOLD_CENTS = 200_000_00L;
@@ -44,7 +45,7 @@ final class ScenarioKit {
     }
 
     static String dollars(long cents) {
-        return String.format("$%,d.%02d", cents / 100, cents % 100);
+        return String.format(Locale.ROOT, "$%,d.%02d", cents / 100, cents % 100);
     }
 
     static Submitter submitter() {

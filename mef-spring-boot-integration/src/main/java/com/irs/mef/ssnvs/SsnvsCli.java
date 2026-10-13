@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * SSNVS bulk verification for one tax year's W-2 people, without the Spring context.
  * <pre>
- * build   --csv &lt;export.csv&gt; --out &lt;dir&gt; [--today &lt;yyyy-mm-dd&gt;]   writes &lt;dir&gt;/&lt;ein&gt;/ per employer EIN
+ * build   --csv &lt;export.csv&gt; --out &lt;dir&gt; [--today &lt;yyyy-mm-dd&gt;] [--replace]
  * results --dir &lt;dir&gt;/&lt;ein&gt; --results &lt;ssa-results.txt&gt;           writes fixes.csv in that directory
  * </pre>
  * Output names counts, codes and paths only, never an SSN, a name or a birth date.
@@ -36,11 +36,12 @@ public final class SsnvsCli {
     }
 
     private static final String USAGE = String.join(System.lineSeparator(),
-            "usage: ssnvs.sh build --csv <export.csv> --out <dir> [--today <yyyy-mm-dd>]",
+            "usage: ssnvs.sh build --csv <export.csv> --out <dir> [--today <yyyy-mm-dd>] [--replace]",
             "       ssnvs.sh results --dir <dir>/<ein> --results <ssa-results.txt>");
     private static final Map<String, Set<String>> OPTIONS = Map.of(
-            "build", Set.of("--csv", "--out", "--today"),
+            "build", Set.of("--csv", "--out", "--today", "--replace"),
             "results", Set.of("--dir", "--results"));
+    private static final String REPLACE = "--replace";
 
     private SsnvsCli() {
     }
@@ -77,18 +78,17 @@ public final class SsnvsCli {
             return Exit.INPUT_ERROR;
         }
         List<W2PersonRow> rows = W2PeopleCsv.read(Files.readAllBytes(Path.of(options.get("--csv"))));
-        Exit exit = Exit.CLEAN;
-        for (EmployerPlan plan : SsnvsPlanner.plan(rows, today.get())) {
-            Optional<SsnvsOutput.Written> written = SsnvsOutput.write(Path.of(options.get("--out")), plan, today.get());
-            out.println(summary(plan, written));
-            if (plan.legalCompanyInactive()) {
-                out.println("EIN " + plan.ein() + ": legal company is inactive (note only; a closed company still files W-2s)");
-            }
-            if (plan.gate().isPresent() || !plan.held().isEmpty()) {
-                exit = Exit.ACTION_NEEDED;
-            }
+        EmployerPlan plan = SsnvsPlanner.plan(rows, today.get());
+        Optional<SsnvsOutput.Written> written = SsnvsOutput.write(Path.of(options.get("--out")), plan, today.get(),
+                options.containsKey(REPLACE));
+        out.println(summary(plan, written));
+        if (plan.legalCompanyInactive()) {
+            out.println("EIN " + plan.ein() + ": legal company is inactive (note only; a closed company still files W-2s)");
         }
-        return exit;
+        if (plan.gate().isPresent() || !plan.held().isEmpty()) {
+            return Exit.ACTION_NEEDED;
+        }
+        return Exit.CLEAN;
     }
 
     private static String summary(EmployerPlan plan, Optional<SsnvsOutput.Written> written) {
@@ -110,6 +110,7 @@ public final class SsnvsCli {
             return Exit.INPUT_ERROR;
         }
         Path dir = Path.of(options.get("--dir"));
+        Files.deleteIfExists(dir.resolve(SsnvsOutput.FIXES));
         SsnvsOutput.Built built = SsnvsOutput.read(dir);
         List<SsnvsResult> parsed = SsnvsResultParser.parse(Files.readAllBytes(Path.of(options.get("--results"))));
         FixList fixes = FixList.reconcile(built.sent(), built.manifest(), parsed);
@@ -133,14 +134,23 @@ public final class SsnvsCli {
 
     /** Empty when the command is unknown, an option is unknown or repeated, or an option has no value. */
     private static Optional<Map<String, String>> options(String[] args) {
-        if (args.length == 0 || !OPTIONS.containsKey(args[0]) || args.length % 2 == 0) {
+        if (args.length == 0 || !OPTIONS.containsKey(args[0])) {
             return Optional.empty();
         }
         Map<String, String> options = new HashMap<>();
-        for (int i = 1; i < args.length; i += 2) {
-            if (!OPTIONS.get(args[0]).contains(args[i]) || options.put(args[i], args[i + 1]) != null) {
+        for (int i = 1; i < args.length; i++) {
+            String option = args[i];
+            if (!OPTIONS.get(args[0]).contains(option) || options.containsKey(option)) {
                 return Optional.empty();
             }
+            if (REPLACE.equals(option)) {
+                options.put(option, "");
+                continue;
+            }
+            if (i + 1 >= args.length) {
+                return Optional.empty();
+            }
+            options.put(option, args[++i]);
         }
         return Optional.of(options);
     }

@@ -124,7 +124,7 @@ final class SsnvsFixtures {
         return W2PeopleCsv.read(csvBytes(rows));
     }
 
-    static List<EmployerPlan> plan(Row... rows) {
+    static EmployerPlan plan(Row... rows) {
         return SsnvsPlanner.plan(parsed(List.of(rows)), TODAY);
     }
 

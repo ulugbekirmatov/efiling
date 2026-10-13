@@ -17,9 +17,9 @@ import static com.irs.mef.ssnvs.SsnvsFixtures.employeeId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Writes synthetic sample files for ssnvs_check.py to -Dssnvs.out (default target/ssnvs-samples):
- * a clean request file and SSA's fake answer to it with a mix of codes. generate-ssnvs-samples.sh points
- * the output at reports/ssnvs-samples and runs the checker on both.
+ * Writes synthetic sample files for ssnvs_check.py to -Dssnvs.out (default target/ssnvs-samples, gitignored):
+ * a clean request file and SSA's fake answer to it with a mix of codes. generate-ssnvs-samples.sh writes
+ * the same directory and runs the checker on both.
  */
 class SsnvsSampleFilesTest {
 
@@ -40,19 +40,27 @@ class SsnvsSampleFilesTest {
         return rows;
     }
 
-    @Test
-    @DisplayName("writes a clean request file and a mixed-code result file for the independent checker")
-    void writeSamples() throws IOException {
-        EmployerPlan plan = SsnvsPlanner.plan(SsnvsFixtures.parsed(samplePeople()), SsnvsFixtures.TODAY).get(0);
-        assertEquals(List.of(), plan.held());
+    /** The sample request and its fake SSA result, for the generator and the checker agreement test. */
+    static void writeSamplePair(Path dir) throws IOException {
+        EmployerPlan plan = SsnvsPlanner.plan(SsnvsFixtures.parsed(samplePeople()), SsnvsFixtures.TODAY);
+        if (!plan.held().isEmpty()) {
+            throw new IllegalStateException("sample people were held");
+        }
         byte[] request = SsnvsOutput.requestFile(plan.sent());
         String result = FakeSsaResults.answer(request,
                 Map.of(employeeId(1), '1', employeeId(2), '3', employeeId(3), '5', employeeId(4), '6'),
                 Map.of(employeeId(5), 'Y'));
+        Files.createDirectories(dir);
+        Files.write(dir.resolve(REQUEST), request);
+        Files.writeString(dir.resolve(RESULT), result, StandardCharsets.US_ASCII);
+    }
 
-        Files.createDirectories(OUTPUT);
-        Files.write(OUTPUT.resolve(REQUEST), request);
-        Files.writeString(OUTPUT.resolve(RESULT), result, StandardCharsets.US_ASCII);
+    @Test
+    @DisplayName("writes a clean request file and a mixed-code result file for the independent checker")
+    void writeSamples() throws IOException {
+        writeSamplePair(OUTPUT);
+        EmployerPlan plan = SsnvsPlanner.plan(SsnvsFixtures.parsed(samplePeople()), SsnvsFixtures.TODAY);
+        assertEquals(List.of(), plan.held());
 
         FixList fixes = FixList.reconcile(plan.sent().stream().map(SentPerson::request).toList(),
                 Manifest.of(plan, SsnvsFixtures.TODAY),

@@ -82,6 +82,17 @@ class W2PeopleCsvTest {
     }
 
     @Test
+    @DisplayName("two employer EIN digit strings are MIXED_EMPLOYERS; the same digits with punctuation are one employer")
+    void mixedEmployers() {
+        SsnvsInputException mixed = failure(csv(List.of(row(0), row(1).with("employer_ein", SsnvsFixtures.ein(2)))));
+
+        assertEquals(Problem.MIXED_EMPLOYERS, mixed.problem());
+        assertEquals(3, mixed.line());
+        assertEquals("employer_ein", mixed.column());
+        assertEquals(2, read(csv(List.of(row(0), row(1).with("employer_ein", "98-0000001")))).size());
+    }
+
+    @Test
     @DisplayName("a quoted field may span lines; the next record keeps its own line number")
     void multilineField() {
         List<W2PersonRow> rows = read(csv(List.of(row(0).with("company_codes", "C1\nC2"), row(1))));

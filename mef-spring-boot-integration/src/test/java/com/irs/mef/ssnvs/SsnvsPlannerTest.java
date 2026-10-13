@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -23,7 +22,6 @@ import static com.irs.mef.ssnvs.SsnvsFixtures.middle;
 import static com.irs.mef.ssnvs.SsnvsFixtures.plan;
 import static com.irs.mef.ssnvs.SsnvsFixtures.row;
 import static com.irs.mef.ssnvs.SsnvsFixtures.ssn;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,9 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SsnvsPlannerTest {
 
     private static EmployerPlan only(Row... rows) {
-        List<EmployerPlan> plans = plan(rows);
-        assertEquals(1, plans.size());
-        return plans.get(0);
+        return plan(rows);
     }
 
     private static SentPerson sentOnly(Row row) {
@@ -52,8 +48,9 @@ class SsnvsPlannerTest {
         cases.put(Holdback.NO_SSN, row(0).with("ssn", null));
         cases.put(Holdback.SSN_NOT_9_DIGITS, row(0).with("ssn", ssn(0).substring(0, 8)));
         cases.put(Holdback.SSN_SHAPE_NEVER_ISSUED, row(0).with("ssn", "666" + ssn(0).substring(3)));
-        cases.put(Holdback.W2_FIELDS_DISAGREE, row(0).with("active_w2_count", "2").with("ssn", null));
+        cases.put(Holdback.W2_FIELDS_BLANK_OR_DISAGREE, row(0).with("active_w2_count", "2").with("ssn", null));
         cases.put(Holdback.W2_EIN_DIFFERS, row(0).with("w2_box_b_ein", ein(2)));
+        cases.put(Holdback.W2_EIN_BLANK, row(0).with("w2_box_b_ein", null));
         cases.put(Holdback.LAST_NAME_BLANK, row(0).with("w2_box_e_last_name", null));
         cases.put(Holdback.FIRST_NAME_BLANK, row(0).with("w2_box_e_first_middle", null));
         cases.put(Holdback.NAME_INVALID_CHARACTER, row(0).with("w2_box_e_last_name", "ZQL9"));
@@ -154,6 +151,86 @@ class SsnvsPlannerTest {
             assertEquals(c.middle(), field(person, SsnvsRequest.Field.MIDDLE_NAME), c.source().name());
             assertEquals(last(0), field(person, SsnvsRequest.Field.LAST_NAME), c.source().name());
         }
+        SentPerson titled = sentOnly(row(0).with("w2_box_e_first_middle", "Dr. " + first(0) + " " + middle(0)));
+        assertEquals(EnumSet.of(Advisory.SUFFIX_OR_PREFIX_DROPPED), titled.advisories());
+        assertEquals(first(0), field(titled, SsnvsRequest.Field.FIRST_NAME));
+        assertEquals(middle(0), field(titled, SsnvsRequest.Field.MIDDLE_NAME));
+    }
+
+    @Test
+    @DisplayName("a title-only box e stays the title with no suffix advisory")
+    void titleOnlyBoxEStays() {
+        SentPerson person = sentOnly(row(0).with("w2_box_e_first_middle", "DR")
+                .with("hr_first_name", "ZQOTHER").with("adp_first_name", "ZQOTHER")
+                .with("hr_middle_name", null).with("hr_middle_initial", null).with("adp_middle_name", null));
+
+        assertEquals(NameSource.SINGLE_TOKEN, person.nameSource());
+        assertEquals("DR", field(person, SsnvsRequest.Field.FIRST_NAME));
+        assertEquals("", field(person, SsnvsRequest.Field.MIDDLE_NAME));
+        assertEquals(EnumSet.noneOf(Advisory.class), person.advisories());
+    }
+
+    @Test
+    @DisplayName("a suffix in box e first and middle is dropped before the master cut")
+    void suffixInBoxEFirstMiddle() {
+        String initial = middle(0).substring(0, 1);
+        SentPerson withMiddle = sentOnly(row(0)
+                .with("w2_box_e_first_middle", first(0) + " " + initial + " JR")
+                .with("hr_middle_name", initial));
+
+        assertEquals(NameSource.HR_FULL, withMiddle.nameSource());
+        assertEquals(first(0), field(withMiddle, SsnvsRequest.Field.FIRST_NAME));
+        assertEquals(initial, field(withMiddle, SsnvsRequest.Field.MIDDLE_NAME));
+        assertEquals(EnumSet.of(Advisory.SUFFIX_OR_PREFIX_DROPPED), withMiddle.advisories());
+
+        SentPerson noMiddle = sentOnly(row(0)
+                .with("w2_box_e_first_middle", first(0) + " JR")
+                .with("hr_middle_name", null).with("hr_middle_initial", null).with("adp_middle_name", null));
+
+        assertEquals(NameSource.HR_FULL, noMiddle.nameSource());
+        assertEquals(first(0), field(noMiddle, SsnvsRequest.Field.FIRST_NAME));
+        assertEquals("", field(noMiddle, SsnvsRequest.Field.MIDDLE_NAME));
+        assertEquals(EnumSet.of(Advisory.SUFFIX_OR_PREFIX_DROPPED), noMiddle.advisories());
+    }
+
+    @Test
+    @DisplayName("a lone V after the first name in box e is sent as the middle initial, not dropped as a suffix")
+    void middleInitialV() {
+        SentPerson person = sentOnly(row(0)
+                .with("w2_box_e_first_middle", first(0) + " V")
+                .with("hr_middle_name", null).with("hr_middle_initial", "V").with("adp_middle_name", null));
+
+        assertEquals(NameSource.HR_INITIAL, person.nameSource());
+        assertEquals(first(0), field(person, SsnvsRequest.Field.FIRST_NAME));
+        assertEquals("V", field(person, SsnvsRequest.Field.MIDDLE_NAME));
+        assertEquals(EnumSet.noneOf(Advisory.class), person.advisories());
+    }
+
+    @Test
+    @DisplayName("accents, a no-break space, and a trailing last-name suffix still match the master")
+    void masterMatchUsesTokens() {
+        SentPerson accent = sentOnly(row(0).with("hr_first_name", "zqf\u00e1" + first(0).substring(4)));
+        assertEquals(NameSource.HR_FULL, accent.nameSource());
+        assertEquals(first(0), field(accent, SsnvsRequest.Field.FIRST_NAME));
+
+        SentPerson nbsp = sentOnly(row(0).with("w2_box_e_first_middle", first(0) + "\u00A0" + middle(0)));
+        assertEquals(NameSource.HR_FULL, nbsp.nameSource());
+        assertEquals(first(0), field(nbsp, SsnvsRequest.Field.FIRST_NAME));
+        assertEquals(middle(0), field(nbsp, SsnvsRequest.Field.MIDDLE_NAME));
+
+        SentPerson suffix = sentOnly(row(0).with("w2_box_e_last_name", last(0) + " JR"));
+        assertEquals(NameSource.HR_FULL, suffix.nameSource());
+        assertEquals(last(0), field(suffix, SsnvsRequest.Field.LAST_NAME));
+        assertEquals(EnumSet.of(Advisory.SUFFIX_OR_PREFIX_DROPPED), suffix.advisories());
+    }
+
+    @Test
+    @DisplayName("a null box b EIN is W2_EIN_BLANK for one W-2 and W2_FIELDS_BLANK_OR_DISAGREE for several")
+    void nullBoxBEin() {
+        assertEquals(EnumSet.of(Holdback.W2_EIN_BLANK),
+                only(row(0).with("w2_box_b_ein", null)).held().get(0).holdbacks());
+        assertEquals(EnumSet.of(Holdback.W2_FIELDS_BLANK_OR_DISAGREE),
+                only(row(0).with("w2_box_b_ein", null).with("active_w2_count", "2")).held().get(0).holdbacks());
     }
 
     @Test
@@ -197,28 +274,10 @@ class SsnvsPlannerTest {
                     null, null, null, null, null));
         }
 
-        EmployerPlan plan = SsnvsPlanner.plan(rows, TODAY).get(0);
+        EmployerPlan plan = SsnvsPlanner.plan(rows, TODAY);
 
         assertEquals(FileGate.MAX_RECORDS + 1, plan.sent().size());
         assertEquals(Optional.of(FileGate.OVER_250000), plan.gate());
         assertEquals(Optional.empty(), FileGate.check(ein(1), FileGate.MAX_RECORDS));
-    }
-
-    @Test
-    @DisplayName("rows split into one plan per EIN, people in employee id order, same input gives same bytes")
-    void perEinAndDeterministic() {
-        List<Row> rows = new ArrayList<>(SsnvsFixtures.people(6));
-        rows.get(4).with("employer_ein", ein(2)).with("w2_box_b_ein", ein(2)).with("legal_company_is_active", "false");
-        Collections.reverse(rows);
-
-        List<EmployerPlan> plans = SsnvsPlanner.plan(SsnvsFixtures.parsed(rows), TODAY);
-
-        assertEquals(List.of(ein(1), ein(2)), plans.stream().map(EmployerPlan::ein).toList());
-        assertEquals(List.of(employeeId(0), employeeId(1), employeeId(2), employeeId(3), employeeId(5)),
-                plans.get(0).sent().stream().map(p -> p.refs().employeeId()).toList());
-        assertFalse(plans.get(0).legalCompanyInactive());
-        assertTrue(plans.get(1).legalCompanyInactive());
-        assertArrayEquals(SsnvsOutput.requestFile(plans.get(0).sent()),
-                SsnvsOutput.requestFile(SsnvsPlanner.plan(SsnvsFixtures.parsed(rows), TODAY).get(0).sent()));
     }
 }

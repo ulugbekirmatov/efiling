@@ -26,7 +26,9 @@ import java.util.zip.ZipOutputStream;
 /**
  * The per-EIN output directory: {@code <out>/<ein>/}. Only ssnvs.txt (and its zip) carries PII, because
  * SSA requires it; the manifest and the CSVs carry ids, codes and company codes only. A rebuild replaces the
- * whole directory, so a stale request file or fix list never sits next to a new build.
+ * whole directory. A directory that still has manifest.json and no fixes.csv is an upload that has not been
+ * reconciled: write refuses it unless the caller passes replace. replace moves the live directory aside and
+ * puts it back if the new directory cannot take its place.
  */
 final class SsnvsOutput {
 
@@ -54,13 +56,19 @@ final class SsnvsOutput {
     record Built(List<SsnvsRequest> sent, Manifest manifest) {
     }
 
-    /** Writes nothing for EIN_INVALID: there is no directory to name. */
-    static Optional<Written> write(Path outRoot, EmployerPlan plan, LocalDate builtOn) throws IOException {
+    /**
+     * Writes nothing for EIN_INVALID: there is no directory to name. Refuses, without touching the
+     * directory, when manifest.json is present and fixes.csv is not, unless {@code replace} is true.
+     */
+    static Optional<Written> write(Path outRoot, EmployerPlan plan, LocalDate asOf, boolean replace) throws IOException {
         if (plan.gate().filter(gate -> gate == FileGate.EIN_INVALID).isPresent()) {
             return Optional.empty();
         }
         Files.createDirectories(outRoot);
         Path target = outRoot.resolve(plan.ein());
+        if (!replace && Files.isRegularFile(target.resolve(MANIFEST)) && !Files.isRegularFile(target.resolve(FIXES))) {
+            throw new SsnvsInputException(Problem.BUILD_NOT_RECONCILED, 0, MANIFEST);
+        }
         Path staging = outRoot.resolve("." + plan.ein() + ".partial");
         deleteTree(staging);
         Files.createDirectories(staging);
@@ -71,11 +79,11 @@ final class SsnvsOutput {
             byte[] request = requestFile(plan.sent());
             Files.write(staging.resolve(REQUEST), request);
             Files.writeString(staging.resolve(MANIFEST),
-                    JSON.writerWithDefaultPrettyPrinter().writeValueAsString(Manifest.of(plan, builtOn)),
+                    JSON.writerWithDefaultPrettyPrinter().writeValueAsString(Manifest.of(plan, asOf)),
                     StandardCharsets.UTF_8);
             String uploadName = REQUEST;
             if (plan.sent().size() > ZIP_ABOVE_RECORDS) {
-                Files.write(staging.resolve(ZIP), zip(request, builtOn));
+                Files.write(staging.resolve(ZIP), zip(request, asOf));
                 uploadName = ZIP;
             }
             upload = Optional.of(target.resolve(uploadName));
@@ -159,12 +167,12 @@ final class SsnvsOutput {
         return value == null ? "" : value;
     }
 
-    /** One entry named ssnvs.txt, timestamped with the build date so the same build gives the same bytes. */
-    private static byte[] zip(byte[] request, LocalDate builtOn) throws IOException {
+    /** One entry named ssnvs.txt, timestamped with --today so the same build gives the same bytes. */
+    private static byte[] zip(byte[] request, LocalDate asOf) throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
             ZipEntry entry = new ZipEntry(REQUEST);
-            entry.setTimeLocal(builtOn.atStartOfDay());
+            entry.setTimeLocal(asOf.atStartOfDay());
             zip.putNextEntry(entry);
             zip.write(request);
             zip.closeEntry();
@@ -172,13 +180,30 @@ final class SsnvsOutput {
         return bytes.toByteArray();
     }
 
-    private static void replace(Path staging, Path target) throws IOException {
+    /**
+     * Moves the live directory aside, then moves staging into its place. If that second move fails, moves
+     * the live directory back before rethrowing.
+     */
+    static void replace(Path staging, Path target) throws IOException {
         Path previous = target.resolveSibling("." + target.getFileName() + ".previous");
         deleteTree(previous);
+        boolean movedAside = false;
         if (Files.exists(target)) {
             Files.move(target, previous);
+            movedAside = true;
         }
-        Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE);
+        try {
+            Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException failed) {
+            if (movedAside) {
+                try {
+                    Files.move(previous, target);
+                } catch (IOException rollbackFailed) {
+                    failed.addSuppressed(rollbackFailed);
+                }
+            }
+            throw failed;
+        }
         deleteTree(previous);
     }
 

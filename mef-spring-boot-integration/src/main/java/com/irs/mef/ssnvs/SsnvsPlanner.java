@@ -6,7 +6,6 @@ import com.irs.mef.ssnvs.EmployerPlan.SentPerson;
 import com.irs.mef.ssnvs.SsaNameRules.NormalizedName;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -14,26 +13,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
- * Pure policy: export rows in, one {@link EmployerPlan} per employer EIN out (SSA takes one EIN per file).
- * Each person is either sent, with advisories, or held back with the reasons. Same rows and same
- * {@code today} give the same plan, so the same request bytes.
+ * Pure policy: one export file in, one {@link EmployerPlan} out. The CSV reader rejects a file that mixes
+ * employer EINs, so a duplicate employee row is a duplicate inside that one file. Each person is either
+ * sent, with advisories, or held back with the reasons. Same rows and same {@code today} give the same plan.
  */
-public final class SsnvsPlanner {
+final class SsnvsPlanner {
 
     private SsnvsPlanner() {
     }
 
-    public static List<EmployerPlan> plan(List<W2PersonRow> rows, LocalDate today) {
+    static EmployerPlan plan(List<W2PersonRow> rows, LocalDate today) {
+        String ein = digits(rows.get(0).employerEin());
         Set<Long> duplicateEmployeeIds = duplicates(rows.stream().map(W2PersonRow::employeeId).toList());
-        Map<String, List<W2PersonRow>> byEin = rows.stream()
-                .collect(Collectors.groupingBy(row -> digits(row.employerEin()), TreeMap::new, Collectors.toList()));
-        List<EmployerPlan> plans = new ArrayList<>();
-        byEin.forEach((ein, einRows) -> plans.add(planEmployer(ein, einRows, today, duplicateEmployeeIds)));
-        return plans;
+        return planEmployer(ein, rows, today, duplicateEmployeeIds);
     }
 
     private static EmployerPlan planEmployer(String ein, List<W2PersonRow> rows, LocalDate today,
@@ -104,15 +99,18 @@ public final class SsnvsPlanner {
             person.checkLastName();
             person.checkFirstAndMiddle();
             person.chooseBirthDate(today);
-            if (row.activeW2Count() > 1 && !person.holdbacks.contains(Holdback.W2_FIELDS_DISAGREE)) {
+            if (row.activeW2Count() > 1 && !person.holdbacks.contains(Holdback.W2_FIELDS_BLANK_OR_DISAGREE)) {
                 person.advisories.add(Advisory.SEVERAL_W2S);
             }
             return person;
         }
 
-        /** The SQL nulls a field when the employee's active W-2s disagree on it; one W-2 with a null is a blank. */
+        /**
+         * The SQL nulls a field when the active W-2s disagree or any copy is blank. Several W-2s then share
+         * one holdback; one W-2 keeps the specific blank reason.
+         */
         private Holdback whenMissing(Holdback onOneW2) {
-            return row.activeW2Count() > 1 ? Holdback.W2_FIELDS_DISAGREE : onOneW2;
+            return row.activeW2Count() > 1 ? Holdback.W2_FIELDS_BLANK_OR_DISAGREE : onOneW2;
         }
 
         private void checkSsn() {
@@ -133,6 +131,10 @@ public final class SsnvsPlanner {
         }
 
         private void checkEin() {
+            if (digits(row.w2BoxBEin()).isEmpty()) {
+                holdbacks.add(whenMissing(Holdback.W2_EIN_BLANK));
+                return;
+            }
             if (!digits(row.w2BoxBEin()).equals(digits(row.employerEin()))) {
                 holdbacks.add(Holdback.W2_EIN_DIFFERS);
             }
@@ -155,7 +157,7 @@ public final class SsnvsPlanner {
                 return;
             }
             nameSource = split.source();
-            if (split.prefixDropped()) {
+            if (split.affixDropped()) {
                 advisories.add(Advisory.SUFFIX_OR_PREFIX_DROPPED);
             }
             if (split.source() == NameSource.GUESSED) {

@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * Pure reconciliation of one EIN's sent records with SSA's results. A row for every person who is not
  * (verified and alive) and for every integrity problem; an empty list means the EFW2 file can be built.
  */
-public record FixList(List<FixRow> rows, int sent, int verifiedAlive) {
+record FixList(List<FixRow> rows, int sent, int verifiedAlive) {
 
     static final List<String> COLUMNS = List.of("employee_id", "w2_form_ids", "company_codes", "verification_code",
             "meaning", "death", "name_source", "birth_date_sent", "action");
@@ -53,7 +53,7 @@ public record FixList(List<FixRow> rows, int sent, int verifiedAlive) {
         }
     }
 
-    public static FixList reconcile(List<SsnvsRequest> sentRecords, Manifest manifest, List<SsnvsResult> results) {
+    static FixList reconcile(List<SsnvsRequest> sentRecords, Manifest manifest, List<SsnvsResult> results) {
         Map<String, SsnvsRequest> sentByControl = new HashMap<>();
         sentRecords.forEach(request -> sentByControl.put(request.control().text(), request));
         if (!sentByControl.keySet().equals(manifest.people().keySet())) {

@@ -9,14 +9,19 @@ import java.util.Locale;
 
 /**
  * SSA's name rule (letters only; no hyphens, apostrophes, spaces, periods, suffixes or prefixes) as one
- * function with a fixed order. Affixes are dropped while the name is still tokenized: dropping them after
- * the spaces are gone would turn SMITH JR into SMITHJR.
+ * tokenizer. Affixes are dropped while the name is still tokenized: dropping them after the spaces are
+ * gone would turn SMITH JR into SMITHJR.
  */
 final class SsaNameRules {
 
-    /** Straight and typographic apostrophes plus the hyphen; every other non-letter holds the person. */
-    private static final String DELETED_PUNCTUATION = "['\u2019-]";
-    private static final String TOKEN_SEPARATORS = "[\\s,.]+";
+    /**
+     * Hyphen U+002D and hyphens U+2010 through U+2015, plus apostrophes U+0027, U+2018, U+2019, U+02BC,
+     * U+0060 and U+00B4. The trailing hyphen is literal; U+2010-U+2015 is the other hyphen range.
+     * Every other non-letter holds the person.
+     */
+    private static final String DELETED_PUNCTUATION = "['\u2018\u2019\u02BC\u0060\u00B4\u2010-\u2015-]";
+    /** Unicode separators (including no-break space), ASCII whitespace, comma and period. */
+    private static final String TOKEN_SEPARATORS = "[\\p{Z}\\s,.]+";
 
     private SsaNameRules() {
     }
@@ -29,19 +34,35 @@ final class SsaNameRules {
         }
     }
 
+    /** Tokens after affix dropping. {@code toString} omits the tokens, which are name text. */
+    record NameTokens(List<String> tokens, boolean affixDropped) {
+        @Override
+        public String toString() {
+            return "NameTokens[count=" + tokens.size() + ", affixDropped=" + affixDropped + "]";
+        }
+    }
+
+    /**
+     * NFD, drop combining marks, uppercase, split, then drop this part's affixes while another token remains.
+     */
+    static NameTokens tokens(String raw, NamePart part) {
+        String folded = Normalizer.normalize(raw == null ? "" : raw, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toUpperCase(Locale.ROOT);
+        List<String> words = new ArrayList<>(Arrays.asList(folded.split(TOKEN_SEPARATORS)));
+        words.removeIf(String::isEmpty);
+        boolean dropped = dropAffixes(words, part);
+        return new NameTokens(List.copyOf(words), dropped);
+    }
+
     static NormalizedName normalize(String raw, NamePart part) {
         EnumSet<Holdback> holdbacks = EnumSet.noneOf(Holdback.class);
         EnumSet<Advisory> advisories = EnumSet.noneOf(Advisory.class);
-        String folded = Normalizer.normalize(raw == null ? "" : raw, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toUpperCase(Locale.ROOT)
-                .trim();
-        List<String> tokens = new ArrayList<>(Arrays.asList(folded.split(TOKEN_SEPARATORS)));
-        tokens.removeIf(String::isEmpty);
-        if (dropAffixes(tokens, part)) {
+        NameTokens parsed = tokens(raw, part);
+        if (parsed.affixDropped()) {
             advisories.add(Advisory.SUFFIX_OR_PREFIX_DROPPED);
         }
-        String joined = String.join("", tokens).replaceAll(DELETED_PUNCTUATION, "");
+        String joined = String.join("", parsed.tokens()).replaceAll(DELETED_PUNCTUATION, "");
         if (!joined.matches("[A-Z]*")) {
             holdbacks.add(Holdback.NAME_INVALID_CHARACTER);
             return new NormalizedName(null, holdbacks, advisories);
@@ -59,19 +80,14 @@ final class SsaNameRules {
         return new NormalizedName(joined, holdbacks, advisories);
     }
 
-    /** Uppercase, whitespace collapsed, trimmed: the form box e and the masters are compared in. */
-    static String fold(String raw) {
-        return raw == null ? "" : raw.trim().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT);
-    }
-
-    private static boolean dropAffixes(List<String> tokens, NamePart part) {
+    private static boolean dropAffixes(List<String> words, NamePart part) {
         boolean dropped = false;
-        while (tokens.size() > 1) {
-            int edge = part.affixEnd == NamePart.AffixEnd.TRAILING ? tokens.size() - 1 : 0;
-            if (!part.affixes.contains(tokens.get(edge))) {
+        while (words.size() > 1) {
+            int edge = part.affixEnd == NamePart.AffixEnd.TRAILING ? words.size() - 1 : 0;
+            if (!part.affixes.contains(words.get(edge))) {
                 break;
             }
-            tokens.remove(edge);
+            words.remove(edge);
             dropped = true;
         }
         return dropped;

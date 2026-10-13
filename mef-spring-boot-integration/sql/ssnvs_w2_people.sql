@@ -23,17 +23,21 @@ WITH w AS (
     NULLIF(TRIM(adp.last_name), '') AS adp_last_name,
     adp.birth_dt AS adp_birth_dt
   FROM onepay_w2_form f
-  JOIN hr_company hc
+  LEFT JOIN hr_company hc
     ON UPPER(TRIM(hc.code)) = UPPER(TRIM(f.company_code))
   JOIN onepay_legal_company lc
-    ON lc.legal_company_id = hc.legal_company_id
+    ON lc.legal_company_id = '${req.xlegal_company_id}'::int
   LEFT JOIN hr_employee hre
     ON hre.employee_id = f.employee_id
   LEFT JOIN adp_employee adp
     ON adp.employee_id = f.employee_id
   WHERE f.is_active = true
     AND f.tax_year = '${req.xtax_year}'::int
-    AND lc.legal_company_id = '${req.xlegal_company_id}'::int
+    AND (
+      hc.legal_company_id = lc.legal_company_id
+      OR NULLIF(regexp_replace(COALESCE(f.box_b_employer_ein, ''), '[^0-9]', '', 'g'), '')
+         = NULLIF(regexp_replace(COALESCE(lc.fein_number, ''), '[^0-9]', '', 'g'), '')
+    )
 )
 SELECT
   w.legal_company_id,
@@ -61,13 +65,13 @@ SELECT
   END AS hr_ssn_digits,
   CASE
     WHEN COUNT(DISTINCT w.w2_form_id) FILTER (WHERE w.box_e_first_middle IS NOT NULL) = COUNT(DISTINCT w.w2_form_id)
-     AND COUNT(DISTINCT w.box_e_first_middle) = 1
-    THEN MAX(w.box_e_first_middle)
+     AND COUNT(DISTINCT upper(regexp_replace(trim(w.box_e_first_middle), '\s+', ' ', 'g'))) = 1
+    THEN MAX(upper(regexp_replace(trim(w.box_e_first_middle), '\s+', ' ', 'g')))
   END AS w2_box_e_first_middle,
   CASE
     WHEN COUNT(DISTINCT w.w2_form_id) FILTER (WHERE w.box_e_last_name IS NOT NULL) = COUNT(DISTINCT w.w2_form_id)
-     AND COUNT(DISTINCT w.box_e_last_name) = 1
-    THEN MAX(w.box_e_last_name)
+     AND COUNT(DISTINCT upper(regexp_replace(trim(w.box_e_last_name), '\s+', ' ', 'g'))) = 1
+    THEN MAX(upper(regexp_replace(trim(w.box_e_last_name), '\s+', ' ', 'g')))
   END AS w2_box_e_last_name,
   MAX(w.hr_first_name) AS hr_first_name,
   MAX(w.hr_middle_name) AS hr_middle_name,

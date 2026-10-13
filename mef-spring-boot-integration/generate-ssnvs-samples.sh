@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Writes synthetic SSNVS sample files to reports/ssnvs-samples/ at the repo root, then checks them with
+# Writes synthetic SSNVS sample files to target/ssnvs-samples (gitignored), then checks them with
 # ssnvs_check.py, which is written from the SSA handbook alone and shares no code with the Java writer.
 # Every SSN, name and birth date in the samples is synthetic (SsnvsFixtures).
 set -euo pipefail
 cd "$(dirname "$0")"
 export JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
-out="$(cd .. && pwd)/reports/ssnvs-samples"
+out="target/ssnvs-samples"
 rm -rf "$out"
 mvn -q test -Dtest=SsnvsSampleFilesTest "-Dssnvs.out=$out"
 echo "$out"

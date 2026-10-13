@@ -48,9 +48,13 @@ final class W2PeopleCsv {
         if (rows.isEmpty()) {
             throw new SsnvsInputException(Problem.NO_ROWS, HEADER_LINE + 1, null);
         }
+        String employerEin = SsnvsPlanner.digits(rows.get(0).employerEin());
         for (W2PersonRow row : rows) {
             if (row.taxYear() != rows.get(0).taxYear()) {
                 throw new SsnvsInputException(Problem.MIXED_TAX_YEARS, row.line(), "tax_year");
+            }
+            if (!employerEin.equals(SsnvsPlanner.digits(row.employerEin()))) {
+                throw new SsnvsInputException(Problem.MIXED_EMPLOYERS, row.line(), "employer_ein");
             }
         }
         return rows;

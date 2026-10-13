@@ -10,7 +10,7 @@ import java.util.List;
  * The results-file boundary (SSNVS Handbook pp.20-21). Strict: every line is 130 characters and echoes
  * {@code 214}, {@code OEVS} and {@code 000}, or the whole file is refused. Errors name the line, never content.
  */
-public final class SsnvsResultParser {
+final class SsnvsResultParser {
 
     static final String RESULTS_FILE = "results";
 
@@ -42,7 +42,7 @@ public final class SsnvsResultParser {
     private SsnvsResultParser() {
     }
 
-    public static List<SsnvsResult> parse(byte[] results) {
+    static List<SsnvsResult> parse(byte[] results) {
         List<String> lines = new ArrayList<>();
         for (String line : new String(results, StandardCharsets.ISO_8859_1).split("\n", -1)) {
             lines.add(stripOneCarriageReturn(line));

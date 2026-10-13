@@ -22,7 +22,7 @@ final class FakeSsaResults {
     static String answer(byte[] requestFile, Map<Long, Character> codes, Map<Long, Character> deaths) {
         return Arrays.stream(new String(requestFile, StandardCharsets.US_ASCII).split("\r\n"))
                 .map(request -> {
-                    long employeeId = Long.parseLong(SsnvsRequest.Field.CONTROL.in(request));
+                    long employeeId = Long.parseLong(request.substring(89, 103));
                     return line(request, codes.getOrDefault(employeeId, ' '), deaths.getOrDefault(employeeId, 'N'),
                             CONFIRMATION) + "\r\n";
                 })
@@ -38,7 +38,10 @@ final class FakeSsaResults {
         Arrays.fill(line, ' ');
         String ssn = request.substring(0, 9);
         put(line, 1, MASKED_CODES.contains(code) ? "XXXXX" + ssn.substring(5) : ssn);
-        put(line, 10, request.substring(15, 53));
+        put(line, 10, request.substring(15, 28));
+        put(line, 23, request.substring(28, 38));
+        put(line, 33, request.substring(38, 45));
+        put(line, 40, request.substring(45, 53));
         put(line, 49, confirmation);
         put(line, 84, request.substring(89, 103));
         put(line, 98, String.valueOf(code));

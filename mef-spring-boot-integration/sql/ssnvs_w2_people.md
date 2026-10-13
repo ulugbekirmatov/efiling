@@ -4,11 +4,17 @@ Header comments for `sql/ssnvs_w2_people.sql`. C2S rejects comments in a query, 
 
 ```text
 -- Purpose: one row per employee who has an active W-2 for the parameter tax year
---          under the parameter legal company. Feeds the SSNVS bulk request builder:
+--          that will be filed under the parameter legal company. A W-2 is included
+--          when UPPER(TRIM(company_code)) maps to that legal company through
+--          hr_company, or when the digits of box_b_employer_ein equal the digits
+--          of that legal company's fein_number. hr_company is a LEFT JOIN so the
+--          box b path does not require a company-code match. Feeds
 --          ./ssnvs.sh build --csv
---          w2_box_b_ein, ssn, hr_ssn_digits, w2_box_e_first_middle, and
---          w2_box_e_last_name are NULL when that employee's active W-2s disagree
---          or any of those values is blank.
+--          w2_box_b_ein, ssn, and hr_ssn_digits are NULL when that employee's
+--          active W-2s disagree or any of those values is blank.
+--          w2_box_e_first_middle and w2_box_e_last_name use the same rule after
+--          upper(regexp_replace(trim(x), '\s+', ' ', 'g')), and the value returned
+--          is that normalized string.
 -- Params:  xtax_year (int), xlegal_company_id (int). Both are written as
 --          '${req.xtax_year}'::int and '${req.xlegal_company_id}'::int.
 -- Tables:  onepay_w2_form — shared/ddl/onepay_tables.sql:642
@@ -31,8 +37,8 @@ Header comments for `sql/ssnvs_w2_people.sql`. C2S rejects comments in a query, 
 --   w2_box_b_ein — digits of onepay_w2_form.box_b_employer_ein, NULL on disagreement or blank — shared/ddl/onepay_tables.sql:647
 --   ssn — digits of onepay_w2_form.ssn, NULL on disagreement or blank — shared/ddl/onepay_tables.sql:645
 --   hr_ssn_digits — digits of hr_employee.government_no, same agreement rule — shared/ddl/hr_tables.sql:370
---   w2_box_e_first_middle — onepay_w2_form.box_e_first_middle, NULL on disagreement or blank — shared/ddl/onepay_tables.sql:650
---   w2_box_e_last_name — onepay_w2_form.box_e_last_name, NULL on disagreement or blank — shared/ddl/onepay_tables.sql:651
+--   w2_box_e_first_middle — box e first and middle, uppercased with internal whitespace collapsed, NULL on disagreement or blank — shared/ddl/onepay_tables.sql:650
+--   w2_box_e_last_name — box e last name, uppercased with internal whitespace collapsed, NULL on disagreement or blank — shared/ddl/onepay_tables.sql:651
 --   hr_first_name — hr_employee.first_name — shared/ddl/hr_tables.sql:280
 --   hr_middle_name — hr_employee.middle_name — shared/ddl/hr_tables.sql:365
 --   hr_middle_initial — hr_employee.middle_initial — shared/ddl/hr_tables.sql:349
@@ -48,7 +54,11 @@ Header comments for `sql/ssnvs_w2_people.sql`. C2S rejects comments in a query, 
 --   hr_employee.employee_id — shared/ddl/hr_tables.sql:278
 --   adp_employee.employee_id — shared/ddl/hr_tables.sql:41
 --   onepay_w2_form.is_active — shared/ddl/onepay_tables.sql:668
--- DBeaver: replace ${req.xtax_year} and ${req.xlegal_company_id}, keeping the
+-- DBeaver: the .sql file stays the C2S-registered shape, including the four
+--          /*!*/ markers. Before running in DBeaver, delete the two lines
+--          /*!*/WHERE and /*!*/GROUP BY (empty C2S editor markers), because
+--          PostgreSQL rejects an empty WHERE and an empty GROUP BY. Then
+--          replace ${req.xtax_year} and ${req.xlegal_company_id}, keeping the
 --          quotes, so each stays a quoted literal cast to int (for example
 --          '2025'::int). Run the statement. Export CSV with a header row,
 --          comma separator, double-quote quoting, and ISO dates. Save the file
@@ -56,3 +66,23 @@ Header comments for `sql/ssnvs_w2_people.sql`. C2S rejects comments in a query, 
 --          names, and birth dates.
 -- QID: not registered (0). Never guess one.
 ```
+
+One-line sed, run from `mef-spring-boot-integration`. It writes the DBeaver copy to the home directory, outside this repo. Substitute the two parameters in that copy, then run it:
+
+```bash
+sed '/^\/\*!*\*\/WHERE$/d;/^\/\*!*\*\/GROUP BY$/d' sql/ssnvs_w2_people.sql > "$HOME/ssnvs_w2_people_dbeaver.sql"
+```
+
+The export filters `tax_year` to the parameter year, so an active W-2 whose `tax_year` is NULL never appears. Run this check, with the same quoted legal-company id, and read `null_tax_year_w2s`. A count above zero is forms the export cannot include: active W-2s whose box b EIN digits equal that legal company's FEIN and whose tax year is null.
+
+```sql
+SELECT COUNT(*) AS null_tax_year_w2s
+FROM onepay_w2_form f
+JOIN onepay_legal_company lc
+  ON lc.legal_company_id = '${req.xlegal_company_id}'::int
+WHERE f.is_active = true
+  AND f.tax_year IS NULL
+  AND NULLIF(regexp_replace(COALESCE(f.box_b_employer_ein, ''), '[^0-9]', '', 'g'), '')
+    = NULLIF(regexp_replace(COALESCE(lc.fein_number, ''), '[^0-9]', '', 'g'), '')
+```
+

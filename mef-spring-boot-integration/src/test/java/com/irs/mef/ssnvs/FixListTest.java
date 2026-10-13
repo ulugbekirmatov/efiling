@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FixListTest {
 
     private final EmployerPlan plan = SsnvsPlanner.plan(SsnvsFixtures.parsed(SsnvsFixtures.people(6)),
-            SsnvsFixtures.TODAY).get(0);
+            SsnvsFixtures.TODAY);
     private final byte[] requestFile = SsnvsOutput.requestFile(plan.sent());
     private final List<SsnvsRequest> sent = plan.sent().stream().map(SentPerson::request).toList();
     private final Manifest manifest = Manifest.of(plan, SsnvsFixtures.TODAY);

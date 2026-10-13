@@ -13,6 +13,8 @@ public final class SsnvsInputException extends RuntimeException {
         BAD_VALUE,
         NO_ROWS,
         MIXED_TAX_YEARS,
+        MIXED_EMPLOYERS,
+        BUILD_NOT_RECONCILED,
         BAD_REQUEST_FILE,
         BAD_MANIFEST,
         MANIFEST_MISMATCH,
@@ -24,10 +26,18 @@ public final class SsnvsInputException extends RuntimeException {
     private final String column;
 
     public SsnvsInputException(Problem problem, int line, String column) {
-        super(problem + " at line " + line + (column == null ? "" : " column " + column));
+        super(message(problem, line, column));
         this.problem = problem;
         this.line = line;
         this.column = column;
+    }
+
+    private static String message(Problem problem, int line, String column) {
+        String text = problem + " at line " + line + (column == null ? "" : " column " + column);
+        if (problem == Problem.BUILD_NOT_RECONCILED) {
+            return text + ": run results first or pass --replace";
+        }
+        return text;
     }
 
     public Problem problem() {

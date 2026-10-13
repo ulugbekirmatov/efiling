@@ -1,16 +1,18 @@
 package com.irs.mef.ssnvs;
 
+import com.irs.mef.ssnvs.SsaNameRules.NameTokens;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
 /**
  * Cuts box e first_middle (one string on the W-2) into first and middle. Box e is what is sent, because SSA
- * must verify the W-2 name; the HR and ADP masters only decide where to cut. Pieces are folded, not yet
- * normalized. {@code middle} is null when there is none.
+ * must verify the W-2 name; the HR and ADP masters only decide where to cut. Comparison uses
+ * {@link SsaNameRules#tokens}, so accents, case and affixes do not block a master match. {@code middle} is
+ * null when there is none.
  */
-record BoxESplit(String first, String middle, NameSource source, boolean prefixDropped) {
+record BoxESplit(String first, String middle, NameSource source, boolean affixDropped) {
 
     /** A master's name parts, tried in order: the first one whose first + middle and last equal box e wins. */
     private record MasterName(NameSource source, Function<W2PersonRow, String> first,
@@ -32,40 +34,44 @@ record BoxESplit(String first, String middle, NameSource source, boolean prefixD
 
     /** Null when box e first_middle holds no token at all. */
     static BoxESplit of(W2PersonRow row) {
-        List<String> tokens = new ArrayList<>(Arrays.asList(SsaNameRules.fold(row.boxEFirstMiddle()).split(" ")));
-        tokens.removeIf(String::isEmpty);
+        NameTokens leading = SsaNameRules.tokens(row.boxEFirstMiddle(), NamePart.FIRST);
+        if (leading.tokens().isEmpty()) {
+            return null;
+        }
+        NameTokens boxE = SsaNameRules.tokens(String.join(" ", leading.tokens()), NamePart.MIDDLE);
+        List<String> tokens = boxE.tokens();
         if (tokens.isEmpty()) {
             return null;
         }
-        boolean prefixDropped = false;
-        while (tokens.size() > 1 && NamePart.FIRST.affixes.contains(tokens.get(0).replaceAll("[.,]", ""))) {
-            tokens.remove(0);
-            prefixDropped = true;
-        }
-        String boxE = String.join(" ", tokens);
-        String boxELast = SsaNameRules.fold(row.boxELastName());
+        NameTokens boxELast = SsaNameRules.tokens(row.boxELastName(), NamePart.LAST);
+        boolean affixDropped = leading.affixDropped() || boxE.affixDropped() || boxELast.affixDropped();
         for (MasterName master : MASTER_NAMES) {
-            String first = master.first().apply(row);
-            String middle = master.middle().apply(row);
-            if (first != null && !boxELast.isEmpty()
-                    && boxELast.equals(SsaNameRules.fold(master.last().apply(row)))
-                    && boxE.equals(SsaNameRules.fold(middle == null ? first : first + " " + middle))) {
-                return new BoxESplit(SsaNameRules.fold(first), middle == null ? null : SsaNameRules.fold(middle),
-                        master.source(), prefixDropped);
+            List<String> masterFirst = SsaNameRules.tokens(master.first().apply(row), NamePart.FIRST).tokens();
+            List<String> masterMiddle = SsaNameRules.tokens(master.middle().apply(row), NamePart.MIDDLE).tokens();
+            List<String> masterLast = SsaNameRules.tokens(master.last().apply(row), NamePart.LAST).tokens();
+            List<String> masterFirstMiddle = new ArrayList<>(masterFirst);
+            masterFirstMiddle.addAll(masterMiddle);
+            if (!boxELast.tokens().isEmpty() && boxELast.tokens().equals(masterLast)
+                    && tokens.equals(masterFirstMiddle)) {
+                return new BoxESplit(String.join(" ", masterFirst),
+                        masterMiddle.isEmpty() ? null : String.join(" ", masterMiddle), master.source(),
+                        affixDropped);
             }
         }
         if (tokens.size() == 1) {
-            return new BoxESplit(boxE, null, NameSource.SINGLE_TOKEN, prefixDropped);
+            return new BoxESplit(tokens.get(0), null, NameSource.SINGLE_TOKEN, affixDropped);
         }
-        String hrFirst = SsaNameRules.fold(row.hrFirstName());
-        if (!hrFirst.isEmpty() && boxE.equals(hrFirst)) {
-            return new BoxESplit(hrFirst, null, NameSource.HR_FIRST_PREFIX, prefixDropped);
+        List<String> hrFirst = SsaNameRules.tokens(row.hrFirstName(), NamePart.FIRST).tokens();
+        if (!hrFirst.isEmpty() && tokens.equals(hrFirst)) {
+            return new BoxESplit(String.join(" ", hrFirst), null, NameSource.HR_FIRST_PREFIX, affixDropped);
         }
-        if (!hrFirst.isEmpty() && boxE.startsWith(hrFirst + " ")) {
-            return new BoxESplit(hrFirst, boxE.substring(hrFirst.length() + 1), NameSource.HR_FIRST_PREFIX,
-                    prefixDropped);
+        if (!hrFirst.isEmpty() && tokens.size() > hrFirst.size()
+                && tokens.subList(0, hrFirst.size()).equals(hrFirst)) {
+            return new BoxESplit(String.join(" ", hrFirst),
+                    String.join(" ", tokens.subList(hrFirst.size(), tokens.size())), NameSource.HR_FIRST_PREFIX,
+                    affixDropped);
         }
         return new BoxESplit(tokens.get(0), String.join(" ", tokens.subList(1, tokens.size())), NameSource.GUESSED,
-                prefixDropped);
+                affixDropped);
     }
 }

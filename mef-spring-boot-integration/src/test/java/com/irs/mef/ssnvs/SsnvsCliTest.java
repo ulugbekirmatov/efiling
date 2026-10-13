@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SsnvsCliTest {
@@ -57,8 +58,17 @@ class SsnvsCliTest {
         return csv;
     }
 
-    private Run build(List<Row> rows) throws IOException {
-        return cli("build", "--csv", csvFile(rows).toString(), "--out", temp.resolve("out").toString(), "--today", TODAY);
+    private Run build(List<Row> rows, String... extra) throws IOException {
+        List<String> args = new ArrayList<>();
+        args.add("build");
+        args.add("--csv");
+        args.add(csvFile(rows).toString());
+        args.add("--out");
+        args.add(temp.resolve("out").toString());
+        args.add("--today");
+        args.add(TODAY);
+        args.addAll(List.of(extra));
+        return cli(args.toArray(String[]::new));
     }
 
     private Path einDir() {
@@ -132,10 +142,10 @@ class SsnvsCliTest {
 
         JsonNode manifest = new ObjectMapper().readTree(einDir().resolve("manifest.json").toFile());
 
-        assertEquals(List.of("ein", "taxYear", "builtOn", "recordCount", "people"), fieldNames(manifest));
+        assertEquals(List.of("ein", "taxYear", "asOf", "recordCount", "people"), fieldNames(manifest));
         assertEquals(ein(1), manifest.get("ein").asText());
         assertEquals(2026, manifest.get("taxYear").asInt());
-        assertEquals(TODAY, manifest.get("builtOn").asText());
+        assertEquals(TODAY, manifest.get("asOf").asText());
         assertEquals(2, manifest.get("recordCount").asInt());
         JsonNode person = manifest.get("people").get(new ControlId(employeeId(0)).text());
         assertEquals(List.of("employeeId", "w2FormIds", "companyCodes", "nameSource", "birthDateSent"), fieldNames(person));
@@ -165,7 +175,7 @@ class SsnvsCliTest {
             assertNull(zip.getNextEntry());
         }
 
-        build(people(500));
+        build(people(500), "--replace");
 
         assertFalse(Files.exists(einDir().resolve("ssnvs.zip")));
     }
@@ -263,5 +273,65 @@ class SsnvsCliTest {
 
         assertEquals(Exit.INPUT_ERROR, run.exit());
         assertEquals("input error: BAD_RESULT_RECORD at line 3 column results" + System.lineSeparator(), run.err());
+    }
+
+    @Test
+    @DisplayName("two employer EINs are an input error and the build writes nothing")
+    void mixedEmployers() throws IOException {
+        Run mixed = build(List.of(row(0), row(1).with("employer_ein", ein(2))));
+
+        assertEquals(Exit.INPUT_ERROR, mixed.exit());
+        assertEquals("input error: MIXED_EMPLOYERS at line 3 column employer_ein" + System.lineSeparator(), mixed.err());
+        assertFalse(Files.exists(temp.resolve("out")));
+    }
+
+    @Test
+    @DisplayName("a build with manifest.json and no fixes.csv is refused unless --replace is passed")
+    void uploadedBuildIsKept() throws IOException {
+        build(people(1));
+        byte[] request = Files.readAllBytes(einDir().resolve("ssnvs.txt"));
+
+        Run refused = build(people(2));
+
+        assertEquals(Exit.INPUT_ERROR, refused.exit());
+        assertEquals("input error: BUILD_NOT_RECONCILED at line 0 column manifest.json: run results first or pass --replace"
+                + System.lineSeparator(), refused.err());
+        assertArrayEquals(request, Files.readAllBytes(einDir().resolve("ssnvs.txt")));
+        assertFalse(Files.exists(einDir().resolve("fixes.csv")));
+
+        Run replaced = build(people(2), "--replace");
+
+        assertEquals(Exit.CLEAN, replaced.exit());
+        assertEquals(2, new ObjectMapper().readTree(einDir().resolve("manifest.json").toFile()).get("recordCount").asInt());
+    }
+
+    @Test
+    @DisplayName("replace puts the previous directory back when the new directory cannot take its place")
+    void replaceRollsBack() throws IOException {
+        Path root = temp.resolve("rollback");
+        Path target = root.resolve(ein(1));
+        Files.createDirectories(target);
+        Files.writeString(target.resolve("manifest.json"), "{\"asOf\":\"kept\"}");
+        Path staging = root.resolve("missing-staging");
+
+        assertThrows(java.io.IOException.class, () -> SsnvsOutput.replace(staging, target));
+
+        assertEquals("{\"asOf\":\"kept\"}", Files.readString(target.resolve("manifest.json")));
+        assertFalse(Files.exists(target.resolveSibling("." + ein(1) + ".previous")));
+    }
+
+    @Test
+    @DisplayName("a failed results run deletes the previous fixes.csv before parsing")
+    void failedResultsDeletesStaleFixes() throws IOException {
+        build(people(1));
+        String good = FakeSsaResults.answer(Files.readAllBytes(einDir().resolve("ssnvs.txt")), Map.of());
+        assertEquals(Exit.CLEAN, results(good).exit());
+        assertEquals(String.join(",", FixList.COLUMNS) + "\r\n", Files.readString(einDir().resolve("fixes.csv")));
+
+        Run failed = results("short\r\n");
+
+        assertEquals(Exit.INPUT_ERROR, failed.exit());
+        assertEquals("input error: BAD_RESULT_RECORD at line 1 column results" + System.lineSeparator(), failed.err());
+        assertFalse(Files.exists(einDir().resolve("fixes.csv")));
     }
 }

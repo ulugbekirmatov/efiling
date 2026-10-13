@@ -24,8 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Runs build and results on fixture people and asserts no fixture SSN, name or birth date reaches anything a
- * person or a log could see: stdout, stderr, exception messages, toString, manifest.json and the three CSVs.
+ * Runs build and results on fixture people and asserts no fixture SSN, name, birth date, or SSN last four
+ * (a standalone 4-digit token) reaches anything a person or a log could see: stdout, stderr, exception
+ * messages, toString, manifest.json and the three CSVs.
  * Only ssnvs.txt (which SSA requires) may hold them. Every fixture name token starts with ZQ, so "ZQ" anywhere
  * in that text is a leak.
  */
@@ -50,9 +51,10 @@ class SsnvsPiiGuardTest {
 
     private static List<String> forbidden() {
         List<String> values = new ArrayList<>(List.of("ZQ", ssn(OTHER_HR_SSN), "666" + ssn(PEOPLE).substring(3)));
+        values.add(ssn(OTHER_HR_SSN).substring(5));
         for (int n = 0; n <= PEOPLE; n++) {
             LocalDate birthDate = SsnvsFixtures.birthDate(n);
-            values.addAll(List.of(ssn(n), birthDate.toString(), birthDate.format(MMDDYYYY),
+            values.addAll(List.of(ssn(n), ssn(n).substring(5), birthDate.toString(), birthDate.format(MMDDYYYY),
                     birthDate.plusDays(1).toString()));
         }
         return values;
@@ -60,7 +62,10 @@ class SsnvsPiiGuardTest {
 
     private static void assertNoPii(String where, String text) {
         for (String value : forbidden()) {
-            assertFalse(text.contains(value), where + " leaks a fixture value of length " + value.length());
+            boolean leaked = value.matches("\\d{4}")
+                    ? java.util.regex.Pattern.compile("(?<!\\d)" + value + "(?!\\d)").matcher(text).find()
+                    : text.contains(value);
+            assertFalse(leaked, where + " leaks a fixture value of length " + value.length());
         }
     }
 
@@ -113,15 +118,14 @@ class SsnvsPiiGuardTest {
     @DisplayName("toString of every domain object and every exception message leaks no fixture value")
     void noLeaksInObjects() {
         List<W2PersonRow> rows = SsnvsFixtures.parsed(fixturePeople());
-        List<EmployerPlan> plans = SsnvsPlanner.plan(rows, SsnvsFixtures.TODAY);
-        EmployerPlan plan = plans.get(0);
+        EmployerPlan plan = SsnvsPlanner.plan(rows, SsnvsFixtures.TODAY);
         List<SsnvsRequest> sent = plan.sent().stream().map(SentPerson::request).toList();
         List<SsnvsResult> results = SsnvsResultParser.parse(FakeSsaResults.answer(
                 SsnvsOutput.requestFile(plan.sent()), Map.of(employeeId(1), '5')).getBytes(StandardCharsets.US_ASCII));
         Manifest manifest = Manifest.of(plan, SsnvsFixtures.TODAY);
         FixList fixes = FixList.reconcile(sent, manifest, results);
         StringBuilder shown = new StringBuilder();
-        shown.append(rows).append(plans).append(sent).append(results).append(manifest).append(fixes);
+        shown.append(rows).append(plan).append(sent).append(results).append(manifest).append(fixes);
         for (W2PersonRow row : rows) {
             shown.append(BoxESplit.of(row));
             shown.append(SsaNameRules.normalize(row.boxELastName(), NamePart.LAST));

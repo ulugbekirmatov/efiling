@@ -65,6 +65,51 @@ class SsaNameRulesTest {
     }
 
     @Test
+    @DisplayName("hyphens U+002D and U+2010-U+2015 and the apostrophe class are deleted; a nearby symbol is not")
+    void punctuationClasses() {
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL-AAA", NamePart.LAST));
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL\u2010AAA", NamePart.LAST));
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL\u2011AAA", NamePart.LAST));
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL\u2012AAA", NamePart.LAST));
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL\u2013AAA", NamePart.LAST));
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL\u2014AAA", NamePart.LAST));
+        assertEquals(sent("ZQLAAA"), SsaNameRules.normalize("ZQL\u2015AAA", NamePart.LAST));
+        assertEquals(sent("ZQFAAA"), SsaNameRules.normalize("ZQF\u2018AAA", NamePart.FIRST));
+        assertEquals(sent("ZQFAAA"), SsaNameRules.normalize("ZQF\u2019AAA", NamePart.FIRST));
+        assertEquals(sent("ZQFAAA"), SsaNameRules.normalize("ZQF\u02BCAAA", NamePart.FIRST));
+        assertEquals(sent("ZQFAAA"), SsaNameRules.normalize("ZQF\u0060AAA", NamePart.FIRST));
+        assertEquals(sent("ZQFAAA"), SsaNameRules.normalize("ZQF\u00B4AAA", NamePart.FIRST));
+        assertEquals(held(Holdback.NAME_INVALID_CHARACTER), SsaNameRules.normalize("ZQL\u2016AAA", NamePart.LAST));
+    }
+
+    @Test
+    @DisplayName("last-name suffixes and a trailing middle suffix are dropped; a lone suffix stays")
+    void widerAffixes() {
+        assertEquals(sent("ZQLAAA", Advisory.SUFFIX_OR_PREFIX_DROPPED),
+                SsaNameRules.normalize("ZQLAAA V", NamePart.LAST));
+        assertEquals(sent("ZQLAAA", Advisory.SUFFIX_OR_PREFIX_DROPPED),
+                SsaNameRules.normalize("ZQLAAA JUNIOR", NamePart.LAST));
+        assertEquals(sent("ZQLAAA", Advisory.SUFFIX_OR_PREFIX_DROPPED),
+                SsaNameRules.normalize("ZQLAAA 2ND", NamePart.LAST));
+        assertEquals(sent("ZQLAAA", Advisory.SUFFIX_OR_PREFIX_DROPPED),
+                SsaNameRules.normalize("ZQLAAA ESQ", NamePart.LAST));
+        assertEquals(sent("ZQM", Advisory.SUFFIX_OR_PREFIX_DROPPED),
+                SsaNameRules.normalize("ZQM JR", NamePart.MIDDLE));
+        assertEquals(sent("V"), SsaNameRules.normalize("V", NamePart.LAST));
+        assertEquals(sent("DR"), SsaNameRules.normalize("DR", NamePart.FIRST));
+    }
+
+    @Test
+    @DisplayName("tokens split a no-break space, fold an accent, and report a dropped affix")
+    void tokens() {
+        SsaNameRules.NameTokens parsed = SsaNameRules.tokens("zqf\u00e1\u00A0aaa jr", NamePart.LAST);
+
+        assertEquals(List.of("ZQFA", "AAA"), parsed.tokens());
+        assertEquals(true, parsed.affixDropped());
+        assertEquals("NameTokens[count=2, affixDropped=true]", parsed.toString());
+    }
+
+    @Test
     @DisplayName("a suffix or title that is the whole name stays")
     void loneAffixStays() {
         assertEquals(sent("JR"), SsaNameRules.normalize("Jr", NamePart.LAST));

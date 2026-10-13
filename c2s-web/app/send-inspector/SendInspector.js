@@ -14,7 +14,8 @@ import {
   login,
   logout,
 } from "./api";
-import { prettyXml, redactCredentials } from "./prettyXml";
+import { prettyXml } from "./prettyXml";
+import { redactCredentials } from "../lib/redact.js";
 
 const TABS = [
   { id: "returnXml", label: "Return XML", docKey: "returnXml" },

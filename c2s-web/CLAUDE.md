@@ -6,6 +6,8 @@ The design system in `app/design-system/` is the default and the only styling sy
 
 Reuse a `components.css` class before adding page CSS. Page CSS is one file per page, layout only, `var(--token)` for color, class names prefixed with the page name. A class a second page needs goes in `components.css`, and every consumer moves to it.
 
+Mask personal identifiers and strip session credentials only through `app/lib/redact.js` (`maskSsn`, `maskKnownSsns`, `redactDocument`, `redactMessage`); load a sibling repo's script only through `app/lib/nodeRequire.js`. `app/lib/redact.guard.test.js` fails on a second copy of either.
+
 Map domain states through `tones.js` (`attention`, `safe`, `neutral`, `waiting`) and render them with `Badge` or `Chip`. Render XML with `XmlCode`.
 
 Write app code as ES modules in plain `.js` files. Do not add TypeScript.
@@ -14,4 +16,4 @@ Leave the contrast choices as they are: muted text on `--g600`, the primary butt
 
 From this directory, finish with `npm test` and `npx next build`. `next dev` writes `.next`; `next build` and `next start` write `.next-build` (`next.config.js` picks the directory by phase), so a build never touches a running dev server.
 
-AIR pages live under `app/air/`. The pure state model is `app/air/lib/runModel.js`. Every stage, tone, and next action comes from `STAGES` there. Client modules may import `runModel.js`. Import `airConfig.js`, `runStore.js`, `airTools.js`, `scenarioCatalog.js`, `redact.js`, and `http.js` only from route handlers and server pages. Readiness reports `jar` when the file exists and does not verify it. `npm test` covers the model, store, redaction, and views. Nothing in `npm test` contacts IRS. Never run a live submit or status from a test.
+AIR pages live under `app/air/`. The pure state model is `app/air/lib/runModel.js`. Every stage, tone, and next action comes from `STAGES` there. Client modules may import `runModel.js`. Import `airConfig.js`, `runStore.js`, `airTools.js`, `scenarioCatalog.js`, and `http.js` only from route handlers and server pages. Readiness reports `jar` when the file exists and does not verify it. `npm test` covers the model, store, redaction, and views. Nothing in `npm test` contacts IRS. Never run a live submit or status from a test.

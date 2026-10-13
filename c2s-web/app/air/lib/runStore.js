@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { airConfig } from "./airConfig.js";
-import { redactDocument, redactMessage, redactSecrets } from "./redact.js";
+import { redactDocument, redactMessage, redactSecrets } from "../../lib/redact.js";
 import {
   EXIT,
   RUN_FILES,

@@ -7,6 +7,10 @@ https://www.ssa.gov/employer/ssnvsHandbook.pdf.
 Submission file format is handbook pp.18-19. Returned file format is pp.20-21.
 File statuses are p.24. Calendar bounds for the date of birth follow the
 online-entry rules cited with the request record (handbook pp.14-15).
+Identical first and last names are handbook p.15. Pairing compares positions
+6-9 of the SSN on every code, and all nine digits for codes 1 and 5
+(handbook pp.20-21). One confirmation number is assigned to a results file
+(handbook p.20).
 
 Usage:
   python3 ssnvs_check.py request FILE...
@@ -265,6 +269,7 @@ def check_spaces(path, line, text, layout, field_name, display, rule, checker):
 
 def check_request(path, records, checker):
     seen_number = {}
+    seen_names = defaultdict(list)
     seen_control = {}
     for line, blob in enumerate(records, start=1):
         text = note_record_bytes(path, line, blob, "REQ-LEN", checker)
@@ -287,6 +292,20 @@ def check_request(path, records, checker):
         check_name(path, line, text, REQ, "Last Name", "REQ-LAST", True, checker)
         check_name(path, line, text, REQ, "First Name", "REQ-FIRST", True, checker)
         check_name(path, line, text, REQ, "Middle Name", "REQ-MIDDLE", False, checker)
+        # Handbook p.15 (online section): SSA may not process identical first and last names.
+        name_key = (grab(text, REQ, "Last Name"), grab(text, REQ, "First Name"))
+        earlier = [
+            prior_line
+            for prior_line, prior_number in seen_names[name_key]
+            if prior_number != number
+        ]
+        if earlier:
+            listed = ", ".join(str(prior_line) for prior_line in earlier)
+            checker.warn(
+                path, line, "Last Name", "REQ-NAME-DUP",
+                f"same first and last name as line {listed}",
+            )
+        seen_names[name_key].append((line, number))
         check_dob(path, line, grab(text, REQ, "Date of Birth"), checker)
         check_spaces(path, line, text, REQ, "Blank 54", "Blank", "REQ-FILL-54", checker)
         control = grab(text, REQ, "User Control Data")
@@ -366,8 +385,10 @@ def check_result(path, records, checker):
         elif death not in ("Y", "N"):
             checker.error(path, line, "Death Indicator", "RES-DEATH", "must be Y or N")
         check_spaces(path, line, text, RES, "Blank 122", "Blank", "RES-FILL-122", checker)
+    # Handbook p.20: one confirmation number is assigned to a file, so mixed
+    # numbers cannot be paired to one request file.
     if len(set(confirmations)) > 1:
-        checker.warn(
+        checker.error(
             path, 0, "Confirmation Number", "RES-CONFIRM-DIFF",
             "is not identical on every record",
         )
@@ -400,6 +421,25 @@ def result_tally(records):
         f"tally verification-code: {code_part}",
         f"tally death-indicator: {death_part}",
     ]
+
+
+def check_pair_number(result_path, line, request_text, result_text, checker):
+    # Handbook p.20: codes blank, 3, and 6 mask positions 1-5, so positions 6-9
+    # are the digits every code can be checked on. Codes 1 and 5 are never
+    # masked (pp.20-21), so all nine digits must match the request.
+    request_number = grab(request_text, REQ, NUMBER_FIELD)
+    result_number = grab(result_text, RES, NUMBER_FIELD)
+    if result_number[5:9] != request_number[5:9]:
+        checker.error(
+            result_path, line, NUMBER_FIELD, "PAIR-SSN4",
+            "positions 6-9 differ from the request record",
+        )
+    code = grab(result_text, RES, "Verification Code")
+    if code in ("1", "5") and result_number != request_number:
+        checker.error(
+            result_path, line, NUMBER_FIELD, "PAIR-SSN9",
+            "nine digits differ from the request record",
+        )
 
 
 def check_pair(request_path, result_path, request_records, result_records, checker):
@@ -445,6 +485,7 @@ def check_pair(request_path, result_path, request_records, result_records, check
                     result_path, line, field_name, "PAIR-ECHO",
                     "echoed value differs from the request record",
                 )
+        check_pair_number(result_path, line, request_text, result_text, checker)
     for control, group in req_map.items():
         if control not in res_map:
             for line, _text in group:

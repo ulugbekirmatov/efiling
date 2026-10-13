@@ -5,6 +5,7 @@ Records are built here. The number uses an issued-looking shape, area 123
 and group 45, and the names are DOE and JANE. Findings must not repeat them.
 """
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -205,6 +206,7 @@ class SsnvsCheckTests(unittest.TestCase):
         proc = self.run_check("request", path)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("REQ-SSN-DUP", proc.stdout)
+        self.assertNotIn("REQ-NAME-DUP", proc.stdout)
         self.assertNotIn("ERROR", proc.stdout)
         self.assert_no_values(proc)
 
@@ -267,6 +269,154 @@ class SsnvsCheckTests(unittest.TestCase):
         result = self.write("result.txt", [result_record(first="JOHN")])
         proc = self.run_check("pair", request, result)
         self.assert_fail(proc, "PAIR-ECHO")
+
+    def test_pair_last_four_must_match_every_code(self):
+        # Handbook p.20: positions 6-9 stay visible for every verification code.
+        base = issued()
+        bad_tail = "0001"
+        for code in (" ", "1", "3", "5", "6", "7"):
+            label = "blank" if code == " " else code
+            if code in (" ", "3", "6"):
+                shown = "XXXXX" + bad_tail
+            else:
+                shown = base[:5] + bad_tail
+            with self.subTest(code=label):
+                request = self.write(f"request-{label}.txt", [request_record()])
+                result = self.write(
+                    f"result-{label}.txt",
+                    [result_record(number=shown, code=code)],
+                )
+                proc = self.run_check("pair", request, result)
+                self.assert_fail(proc, "PAIR-SSN4", shown, bad_tail)
+                self.assertIn(
+                    "SSN PAIR-SSN4: positions 6-9 differ from the request record",
+                    proc.stdout,
+                )
+                if code in ("1", "5"):
+                    self.assertIn("PAIR-SSN9", proc.stdout)
+                else:
+                    self.assertNotIn("PAIR-SSN9", proc.stdout)
+
+    def test_pair_codes_1_and_5_require_all_nine_digits(self):
+        # Handbook pp.20-21: codes 1 and 5 are never masked.
+        base = issued()
+        for code in ("1", "5"):
+            with self.subTest(code=code, match=False):
+                shown = "99999" + base[5:]
+                request = self.write(f"request-nine-{code}.txt", [request_record()])
+                result = self.write(
+                    f"result-nine-{code}.txt",
+                    [result_record(number=shown, code=code)],
+                )
+                proc = self.run_check("pair", request, result)
+                self.assert_fail(proc, "PAIR-SSN9", shown)
+                self.assertIn(
+                    "SSN PAIR-SSN9: nine digits differ from the request record",
+                    proc.stdout,
+                )
+                self.assertNotIn("PAIR-SSN4", proc.stdout)
+            with self.subTest(code=code, match=True):
+                request = self.write(f"request-nine-ok-{code}.txt", [request_record(number=base)])
+                result = self.write(
+                    f"result-nine-ok-{code}.txt",
+                    [result_record(number=base, code=code)],
+                )
+                proc = self.run_check("pair", request, result)
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertNotIn("PAIR-SSN", proc.stdout)
+                self.assert_no_values(proc)
+
+    def test_mixed_confirmation_is_error(self):
+        # Handbook p.20: one confirmation number is assigned to a file.
+        other = issued(serial="7680")
+        first = "AB12CD34EF56GH78"
+        second = "ZZ99YY88XX77WW66"
+        path = self.write("mixed-confirm.txt", [
+            result_record(confirm=first),
+            result_record(
+                number="XXXXX" + other[5:],
+                control="C0000000000002",
+                confirm=second,
+            ),
+        ])
+        proc = self.run_check("result", path)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn(
+            "ERROR " + path + " line 0 Confirmation Number RES-CONFIRM-DIFF: "
+            "is not identical on every record",
+            proc.stdout,
+        )
+        self.assertNotIn("WARN", proc.stdout)
+        self.assert_no_values(proc, first, second, other)
+
+    def test_same_first_and_last_name_different_number_warns(self):
+        # Handbook p.15: SSA may not process identical first and last names.
+        other = issued(serial="7680")
+        path = self.write("same-name.txt", [
+            request_record(control="C0000000000001"),
+            request_record(number=other, middle="ANNE", control="C0000000000002"),
+        ])
+        proc = self.run_check("request", path)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn(
+            "WARN " + path + " line 2 Last Name REQ-NAME-DUP: "
+            "same first and last name as line 1",
+            proc.stdout,
+        )
+        self.assertEqual(proc.stdout.count("REQ-NAME-DUP"), 1)
+        self.assertNotIn("ERROR", proc.stdout)
+        self.assert_no_values(proc, other, "ANNE")
+
+    def test_modes_do_not_print_fixed_record_values(self):
+        area, group, serial = "135", "79", "2468"
+        number = issued(area, group, serial)
+        other_serial = "0001"
+        other = issued(area, group, other_serial)
+        last = "ALDER"
+        first = "BIRCH"
+        middle = "CEDAR"
+        born = "07041776"
+        wrong_tail = "9999"
+        request = self.write("request.txt", [
+            request_record(
+                number=number, last=last, first=first, middle=middle, dob=born,
+                control="C0000000000001",
+            ),
+            request_record(
+                number=other, last=last, first=first, middle=middle, dob=born,
+                control="C0000000000002",
+            ),
+        ])
+        unmasked = "99999" + other[5:]
+        masked = "XXXXX" + wrong_tail
+        result = self.write("result.txt", [
+            result_record(
+                number=masked, last=last, first=first, middle=middle, dob=born,
+                control="C0000000000001", code=" ", confirm="AB12CD34EF56GH78",
+            ),
+            result_record(
+                number=unmasked, last=last, first=first, middle=middle, dob=born,
+                control="C0000000000002", code="5", confirm="ZZ99YY88XX77WW66",
+            ),
+        ])
+        procs = (
+            self.run_check("request", request),
+            self.run_check("result", result),
+            self.run_check("pair", request, result),
+        )
+        banned = (number, other, unmasked, masked, last, first, middle, born)
+        tails = (serial, other_serial, wrong_tail)
+        for proc in procs:
+            self.assertIn(proc.returncode, (0, 1), proc.stdout + proc.stderr)
+            blob = proc.stdout + proc.stderr
+            blob = blob.replace(request, "").replace(result, "").replace(self.tmp.name, "")
+            for secret in banned:
+                self.assertNotIn(secret, blob)
+            for tail in tails:
+                self.assertIsNone(
+                    re.search(r"(?<!\d)" + tail + r"(?!\d)", blob),
+                    tail + " appeared as its own token",
+                )
 
 
 if __name__ == "__main__":

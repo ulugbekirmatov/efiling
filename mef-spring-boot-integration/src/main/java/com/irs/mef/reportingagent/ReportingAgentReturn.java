@@ -61,10 +61,6 @@ public final class ReportingAgentReturn {
         Objects.requireNonNull(originator);
         Objects.requireNonNull(client);
         Objects.requireNonNull(clock);
-        if (!ClientReturnBody.RETURN_VERSION.equals(client.returnVersion())) {
-            throw new ReportingAgentValidationException("returnVersion",
-                    "locked to " + ClientReturnBody.RETURN_VERSION);
-        }
         OffsetDateTime returnTs = OffsetDateTime.now(clock.withZone(PROCESSING_ZONE));
         String xml = ReportingAgentReturnXml.render(originator, client, returnTs);
         return new ReportingAgentReturn(originator, client, xml);

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 /**
  * The return types a Reporting Agent client body can carry. Each row owns the header
- * ReturnTypeCd, the NewSend form type (manifest FederalSubmissionTypeCd and schema root),
+ * ReturnTypeCd, the NewSend form type (manifest FederalSubmissionTypeCd, schema release and root),
  * and the main form that must open ReturnData.
  */
 public enum ClientReturnType {
@@ -34,6 +34,13 @@ public enum ClientReturnType {
 
     public String mainDocument() {
         return mainDocument;
+    }
+
+    /** The Return returnVersion; owned by the form's schema release, never by the client body. */
+    public String returnVersion() {
+        return formType.schemaRelease()
+                .orElseThrow(() -> new IllegalStateException("No schema release for form " + formType.code()))
+                .returnVersion();
     }
 
     public static ClientReturnType parse(String raw) {

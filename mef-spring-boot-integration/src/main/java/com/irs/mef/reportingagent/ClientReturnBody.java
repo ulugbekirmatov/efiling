@@ -27,7 +27,6 @@ import java.util.Set;
  */
 public final class ClientReturnBody {
 
-    public static final String RETURN_VERSION = "2026Q1v4.0";
     static final String NS = "http://www.irs.gov/efile";
 
     private static final Set<Integer> QUARTER_MONTHS = Set.of(3, 6, 9, 12);
@@ -115,12 +114,13 @@ public final class ClientReturnBody {
                             + localName + " ns=" + root.getNamespaceURI());
         }
 
-        String returnVersion = requiredAttribute(root, "returnVersion");
-        if (!RETURN_VERSION.equals(returnVersion)) {
-            throw new ReportingAgentValidationException("returnVersion",
-                    "locked to " + RETURN_VERSION + ", found " + returnVersion);
-        }
         ClientReturnType returnType = ClientReturnType.parse(requiredAttribute(root, "returnTypeCd"));
+        String returnVersion = requiredAttribute(root, "returnVersion");
+        if (!returnType.returnVersion().equals(returnVersion)) {
+            throw new ReportingAgentValidationException("returnVersion",
+                    "returnTypeCd " + returnType.returnTypeCd() + " is locked to " + returnType.returnVersion()
+                            + ", found " + returnVersion);
+        }
 
         TaxPeriod taxPeriod = new TaxPeriod(
                 parseDate("taxPeriodBegin", requiredAttribute(root, "taxPeriodBegin")),

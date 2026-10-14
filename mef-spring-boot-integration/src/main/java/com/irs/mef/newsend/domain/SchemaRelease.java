@@ -5,7 +5,8 @@ package com.irs.mef.newsend.domain;
  * schema tree, copied verbatim so the tree's relative includes resolve unchanged.
  */
 public enum SchemaRelease {
-    Y2026Q1_V4("2026Q1v4.0", "schemas/94x/2026Q1v4.0/");
+    Y2026Q1_V4("2026Q1v4.0", "schemas/94x/2026Q1v4.0/"),
+    Y2026_V2("2026v2.0", "schemas/94x/2026v2.0/");
 
     private final String returnVersion;
     private final String bundleRoot;

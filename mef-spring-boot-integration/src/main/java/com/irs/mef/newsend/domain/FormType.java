@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
  * two minutes later. The legacy service hardcoded "941"; here the form is always explicit.
  */
 public enum FormType {
-    F940("940"),
+    // Path is a placeholder: the 2026v2.0 bundle (e-Services mailbox) is not in the repo yet, so its layout is unknown.
+    F940("940", SchemaRelease.Y2026_V2, "EmploymentTax/940/Return940.xsd"),
     F940PR("940PR"),
     F941("941", SchemaRelease.Y2026Q1_V4, "EmploymentTax/941/Return941.xsd"),
     F941PR("941PR"),

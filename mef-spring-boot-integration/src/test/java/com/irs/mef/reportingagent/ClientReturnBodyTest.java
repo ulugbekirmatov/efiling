@@ -6,6 +6,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.Year;
 import java.time.YearMonth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +43,7 @@ class ClientReturnBodyTest {
         ReportingAgentValidationException ex = assertThrows(
                 ReportingAgentValidationException.class, () -> ClientReturnBody.load(unsupported));
         assertEquals("returnTypeCd", ex.field());
-        assertEquals("Unknown returnTypeCd '943'. Must be one of: 941, 941X", ex.getMessage());
+        assertEquals("Unknown returnTypeCd '943'. Must be one of: 940, 941, 941X", ex.getMessage());
     }
 
     @Test
@@ -81,6 +83,74 @@ class ClientReturnBodyTest {
 
         assertEquals("quarterEndingDt", ex.field());
         assertEquals("quarterEndingDt 2026-06 must equal tax period end year-month 2026-03", ex.getMessage());
+    }
+
+    @Test
+    void annual940BodyLoadsWithItsTaxYear() throws IOException {
+        Path annual = Form940Body.write(dir);
+
+        ClientReturnBody body = ClientReturnBody.load(annual);
+
+        assertEquals(ClientReturnType.F940, body.returnType());
+        assertEquals(new ReportingPeriod.TaxYear(Year.of(2026)), body.period());
+        assertEquals("2026v2.0", body.returnVersion());
+        assertEquals(LocalDate.of(2026, 1, 1), body.taxPeriod().begin());
+        assertEquals(LocalDate.of(2026, 12, 31), body.taxPeriod().end());
+    }
+
+    @Test
+    void rejectsQuarterEndingDtOnA940() throws IOException {
+        Path quarterly = Form940Body.write(dir, "taxYr=\"2026\"", "quarterEndingDt=\"2026-12\"");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(quarterly));
+
+        assertEquals("quarterEndingDt", ex.field());
+        assertEquals("returnTypeCd 940 takes taxYr, not quarterEndingDt", ex.getMessage());
+    }
+
+    @Test
+    void rejectsA940CarryingBothPeriodAttributes() throws IOException {
+        Path both = Form940Body.write(dir, "taxYr=\"2026\"", "taxYr=\"2026\" quarterEndingDt=\"2026-12\"");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(both));
+
+        assertEquals("quarterEndingDt", ex.field());
+    }
+
+    @Test
+    void rejectsA940OnTheQuarterlySchemaRelease() throws IOException {
+        Path quarterlyRelease = Form940Body.write(dir, "2026v2.0", "2026Q1v4.0");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(quarterlyRelease));
+
+        assertEquals("returnVersion", ex.field());
+        assertEquals("returnTypeCd 940 is locked to 2026v2.0, found 2026Q1v4.0", ex.getMessage());
+    }
+
+    @Test
+    void rejectsA940WhosePeriodIsNotTheWholeYear() throws IOException {
+        Path firstQuarter = Form940Body.write(dir, "2026-12-31", "2026-03-31");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(firstQuarter));
+
+        assertEquals("taxYr", ex.field());
+        assertEquals("taxYr 2026 requires tax period 2026-01-01..2026-12-31, found 2026-01-01..2026-03-31",
+                ex.getMessage());
+    }
+
+    @Test
+    void rejectsA940WithoutTaxYr() throws IOException {
+        Path untimed = Form940Body.write(dir, " taxYr=\"2026\"", "");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(untimed));
+
+        assertEquals("taxYr", ex.field());
+        assertEquals("taxYr is required", ex.getMessage());
     }
 
     @Test

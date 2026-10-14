@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
  * the main form that must open ReturnData, and the kind of reporting period its header names.
  */
 public enum ClientReturnType {
+    F940("940", FormType.F940, "IRS940", PeriodKind.TAX_YEAR),
     F941("941", FormType.F941, "IRS941", PeriodKind.QUARTER),
     F941X("941X", FormType.F941X, "IRS941X", PeriodKind.QUARTER);
 

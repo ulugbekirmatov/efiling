@@ -2,6 +2,7 @@ package com.irs.mef.reportingagent;
 
 import com.irs.mef.newsend.domain.Efin;
 import com.irs.mef.newsend.domain.Ein;
+import com.irs.mef.newsend.domain.SchemaRelease;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -10,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Map;
 
 class ReportingAgentOriginatorTest {
 
@@ -54,7 +57,9 @@ class ReportingAgentOriginatorTest {
         return new ReportingAgentOriginator(
                 new Efin(efin),
                 new ReportingAgentPin("00000"),
-                new SoftwareId("00000000"),
+                new SoftwareIds(Map.of(
+                        SchemaRelease.Y2026Q1_V4, new SoftwareId("00000000"),
+                        SchemaRelease.Y2026_V2, new SoftwareId("00000000"))),
                 filingIp,
                 new ReportingAgentIdentity(
                         new Ein("000000000"),

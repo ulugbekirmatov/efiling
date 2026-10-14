@@ -1,6 +1,7 @@
 package com.irs.mef.reportingagent;
 
 import com.irs.mef.newsend.domain.FormType;
+import com.irs.mef.newsend.domain.SchemaRelease;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -45,9 +46,12 @@ public enum ClientReturnType {
 
     /** The Return returnVersion; owned by the form's schema release, never by the client body. */
     public String returnVersion() {
+        return schemaRelease().returnVersion();
+    }
+
+    public SchemaRelease schemaRelease() {
         return formType.schemaRelease()
-                .orElseThrow(() -> new IllegalStateException("No schema release for form " + formType.code()))
-                .returnVersion();
+                .orElseThrow(() -> new IllegalStateException("No schema release for form " + formType.code()));
     }
 
     public static ClientReturnType parse(String raw) {

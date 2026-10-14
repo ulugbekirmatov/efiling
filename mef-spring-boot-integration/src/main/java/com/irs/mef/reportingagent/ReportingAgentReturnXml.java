@@ -32,7 +32,7 @@ final class ReportingAgentReturnXml {
         xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
         element(xml, 2, "ReturnTypeCd", client.returnType().returnTypeCd());
         element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
-        element(xml, 2, "SoftwareId", originator.softwareId().value());
+        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.returnType().schemaRelease()).value());
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
         additionalFilerInformation(xml);
         filingSecurity(xml, originator, client, truncated);

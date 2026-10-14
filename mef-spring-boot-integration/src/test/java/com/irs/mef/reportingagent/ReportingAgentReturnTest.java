@@ -2,6 +2,7 @@ package com.irs.mef.reportingagent;
 
 import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.newsend.domain.FormType;
+import com.irs.mef.newsend.domain.SchemaRelease;
 import com.irs.mef.xml.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -63,10 +64,10 @@ class ReportingAgentReturnTest {
         ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
         assertEquals(6, standIn.efin().value().length());
         assertEquals(5, standIn.pin().value().length());
-        assertEquals(8, standIn.softwareId().value().length());
+        assertEquals(8, standIn.softwareIds().forRelease(SchemaRelease.Y2026Q1_V4).value().length());
         assertNotEquals("238689", standIn.efin().value());
         assertNotEquals("1234567890", standIn.pin().value());
-        assertNotEquals("12345678", standIn.softwareId().value());
+        assertNotEquals("12345678", standIn.softwareIds().forRelease(SchemaRelease.Y2026Q1_V4).value());
     }
 
     @Test

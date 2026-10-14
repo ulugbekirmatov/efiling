@@ -8,6 +8,7 @@ import com.irs.mef.live.LiveIrsTest;
 import com.irs.mef.newsend.NewSendSubmissionService;
 import com.irs.mef.newsend.NewSendSubmitResult;
 import com.irs.mef.newsend.domain.NewSendOutcome;
+import com.irs.mef.newsend.domain.NewSendSubmitCommand;
 import com.irs.mef.service.AcknowledgementService;
 import com.irs.mef.service.MefClientService;
 import org.junit.jupiter.api.Test;
@@ -81,13 +82,17 @@ class ReportingAgentAtsScenarioTest {
                 + " filerEin=" + header.filerEin().value()
                 + " agentEin=" + header.agentEin().value());
 
+        NewSendSubmitCommand command = ret.toSubmitCommand(
+                "ra-ats-scenario-" + scenario.id() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
+                scenario.clientId(),
+                true);
+        // Submit compiles the schema only after login; a missing bundle must not open a session.
+        SchemaPreflight.require(command.formType());
+
         LoginResponse session = login.login();
         assertTrue(session.isSuccess());
 
-        NewSendSubmitResult result = newSend.submit(ret.toSubmitCommand(
-                "ra-ats-scenario-" + scenario.id() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
-                scenario.clientId(),
-                true));
+        NewSendSubmitResult result = newSend.submit(command);
         assertFalse(result.replay());
 
         NewSendOutcome outcome = result.outcome();

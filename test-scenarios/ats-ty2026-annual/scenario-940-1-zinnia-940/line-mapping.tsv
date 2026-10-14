@@ -13,9 +13,9 @@ IRS940	Line 6	IRS940/SubtotalAmt	4000.00	2	guess	guess from the 940 line text
 IRS940	Line 7	IRS940/TotalTaxableFUTAWagesAmt	196000.00	2	guess	guess from the 940 line text
 IRS940	Line 8	IRS940/FUTATaxBeforeAdjustmentsAmt	1176.00	2	guess	guess from the 940 line text
 IRS940	Line 12	IRS940/TotalFUTATaxAfterAdjustmentsAmt	1176.00	2	guess	guess from the 940 line text
-IRS940	Line 13	IRS940/TotalTaxDepositAmt	2886.00	2	known	IRS941.xsd and IRS941ScheduleR.xsd TotalTaxDepositAmt (line 13 deposits)
-IRS940	Line 15a	IRS940/OverpaymentGrp/OverpaidAmt	1710.00	2	known	IRS941.xsd OverpaymentGrp, same line 15 choice
-IRS940	Line 15b send a refund	IRS940/OverpaymentGrp/RefundOverpaymentInd	X	2	known	IRS941.xsd OverpaymentGrp, same line 15 choice
+IRS940	Line 13	IRS940/TotalTaxDepositAmt	2886.00	2	guess	940 unverified; same name in IRS941.xsd and IRS941ScheduleR.xsd TotalTaxDepositAmt (line 13 deposits)
+IRS940	Line 15a	IRS940/OverpaymentGrp/OverpaidAmt	1710.00	2	guess	940 unverified; same name in IRS941.xsd OverpaymentGrp, same line 15 choice
+IRS940	Line 15b send a refund	IRS940/OverpaymentGrp/RefundOverpaymentInd	X	2	guess	940 unverified; same name in IRS941.xsd OverpaymentGrp, same line 15 choice
 IRS940	Line 16a	IRS940/TaxLiabilityQtr1Amt	300.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
 IRS940	Line 16b	IRS940/TaxLiabilityQtr2Amt	300.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
 IRS940	Line 16c	IRS940/TaxLiabilityQtr3Amt	300.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail

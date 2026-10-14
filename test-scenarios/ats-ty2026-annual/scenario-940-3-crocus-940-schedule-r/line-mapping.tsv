@@ -6,41 +6,41 @@ Filer	header	Filer/USAddress/AddressLine1Txt	4th Flower Street	2	known	ReturnHea
 Filer	header	Filer/USAddress/CityNm	Houston	2	known	ReturnHeader94x.xsd BusinessInformationType
 Filer	header	Filer/USAddress/StateAbbreviationCd	TX	2	known	ReturnHeader94x.xsd BusinessInformationType
 Filer	header	Filer/USAddress/ZIPCd	77002	2	known	ReturnHeader94x.xsd BusinessInformationType
-IRS940	Aggregate Return Filers Only - Section 3504 agent	IRS940/Section3504AgentInd	X	2	known	IRS941.xsd Section3504AgentInd, same aggregate filer box
+IRS940	Aggregate Return Filers Only - Section 3504 agent	IRS940/Section3504AgentInd	X	2	guess	940 unverified; same name in IRS941.xsd Section3504AgentInd, same aggregate filer box
 IRS940	Line 1a	IRS940/SingleStateCd	TX	2	guess	guess from the 940 line text
 IRS940	Line 3	IRS940/TotalPaymentsToAllEmployeesAmt	560000.00	2	guess	guess from the 940 line text
 IRS940	Line 7	IRS940/TotalTaxableFUTAWagesAmt	560000.00	2	guess	guess from the 940 line text
 IRS940	Line 8	IRS940/FUTATaxBeforeAdjustmentsAmt	3360.00	2	guess	guess from the 940 line text
 IRS940	Line 12	IRS940/TotalFUTATaxAfterAdjustmentsAmt	3360.00	2	guess	guess from the 940 line text
-IRS940	Line 13	IRS940/TotalTaxDepositAmt	3000.00	2	known	IRS941.xsd and IRS941ScheduleR.xsd TotalTaxDepositAmt (line 13 deposits)
-IRS940	Line 14	IRS940/BalanceDueAmt	360.00	2	known	IRS941.xsd BalanceDueAmt, same line 14
+IRS940	Line 13	IRS940/TotalTaxDepositAmt	3000.00	2	guess	940 unverified; same name in IRS941.xsd and IRS941ScheduleR.xsd TotalTaxDepositAmt (line 13 deposits)
+IRS940	Line 14	IRS940/BalanceDueAmt	360.00	2	guess	940 unverified; same name in IRS941.xsd BalanceDueAmt, same line 14
 IRS940	Line 16a	IRS940/TaxLiabilityQtr1Amt	800.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
 IRS940	Line 16b	IRS940/TaxLiabilityQtr2Amt	800.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
 IRS940	Line 16c	IRS940/TaxLiabilityQtr3Amt	800.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
 IRS940	Line 16d	IRS940/TaxLiabilityQtr4Amt	960.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
 IRS940	Line 17	IRS940/TotalTaxLiabilityAmt	3360.00	3	guess	IRS941ScheduleB.xsd TotalTaxLiabilityAmt names a liability total; year total is a guess
-IRS940ScheduleR	Type of filer - Section 3504 Agent	IRS940ScheduleR/Section3504AgentInd	X	4	known	IRS941ScheduleR.xsd, same Schedule R row
-IRS940ScheduleR	Line 1 col a	IRS940ScheduleR/ClientInformationGrp[1]/EIN	003000001	4	known	IRS941ScheduleR.xsd, same Schedule R row
+IRS940ScheduleR	Type of filer - Section 3504 Agent	IRS940ScheduleR/Section3504AgentInd	X	4	guess	940 unverified; same name in IRS941ScheduleR.xsd, same Schedule R row
+IRS940ScheduleR	Line 1 col a	IRS940ScheduleR/ClientInformationGrp[1]/EIN	003000001	4	guess	940 unverified; same name in IRS941ScheduleR.xsd, same Schedule R row
 IRS940ScheduleR	Line 1 col b	IRS940ScheduleR/ClientInformationGrp[1]/StateAbbreviationCd	TX	4	guess	efileTypes.xsd StateType element name; 941 Schedule R has no state column
 IRS940ScheduleR	Line 1 col d	IRS940ScheduleR/ClientInformationGrp[1]/ClientAllocationInformationGrp/TotalTaxableFUTAWagesAmt	140000.00	4	guess	IRS940 line 7 name, as 941 Schedule R reuses IRS941 names
 IRS940ScheduleR	Line 1 col g	IRS940ScheduleR/ClientInformationGrp[1]/ClientAllocationInformationGrp/TotalFUTATaxAfterAdjustmentsAmt	840.00	4	guess	IRS940 line 12 name, as 941 Schedule R reuses IRS941 names
-IRS940ScheduleR	Line 1 col h	IRS940ScheduleR/ClientInformationGrp[1]/ClientAllocationInformationGrp/TotalTaxDepositAmt	750.00	4	known	IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
-IRS940ScheduleR	Line 2 col a	IRS940ScheduleR/ClientInformationGrp[2]/EIN	003000003	4	known	IRS941ScheduleR.xsd, same Schedule R row
+IRS940ScheduleR	Line 1 col h	IRS940ScheduleR/ClientInformationGrp[1]/ClientAllocationInformationGrp/TotalTaxDepositAmt	750.00	4	guess	940 unverified; same name in IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
+IRS940ScheduleR	Line 2 col a	IRS940ScheduleR/ClientInformationGrp[2]/EIN	003000003	4	guess	940 unverified; same name in IRS941ScheduleR.xsd, same Schedule R row
 IRS940ScheduleR	Line 2 col b	IRS940ScheduleR/ClientInformationGrp[2]/StateAbbreviationCd	TX	4	guess	efileTypes.xsd StateType element name; 941 Schedule R has no state column
 IRS940ScheduleR	Line 2 col d	IRS940ScheduleR/ClientInformationGrp[2]/ClientAllocationInformationGrp/TotalTaxableFUTAWagesAmt	140000.00	4	guess	IRS940 line 7 name, as 941 Schedule R reuses IRS941 names
 IRS940ScheduleR	Line 2 col g	IRS940ScheduleR/ClientInformationGrp[2]/ClientAllocationInformationGrp/TotalFUTATaxAfterAdjustmentsAmt	840.00	4	guess	IRS940 line 12 name, as 941 Schedule R reuses IRS941 names
-IRS940ScheduleR	Line 2 col h	IRS940ScheduleR/ClientInformationGrp[2]/ClientAllocationInformationGrp/TotalTaxDepositAmt	750.00	4	known	IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
-IRS940ScheduleR	Line 3 col a	IRS940ScheduleR/ClientInformationGrp[3]/EIN	003000004	4	known	IRS941ScheduleR.xsd, same Schedule R row
+IRS940ScheduleR	Line 2 col h	IRS940ScheduleR/ClientInformationGrp[2]/ClientAllocationInformationGrp/TotalTaxDepositAmt	750.00	4	guess	940 unverified; same name in IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
+IRS940ScheduleR	Line 3 col a	IRS940ScheduleR/ClientInformationGrp[3]/EIN	003000004	4	guess	940 unverified; same name in IRS941ScheduleR.xsd, same Schedule R row
 IRS940ScheduleR	Line 3 col b	IRS940ScheduleR/ClientInformationGrp[3]/StateAbbreviationCd	TX	4	guess	efileTypes.xsd StateType element name; 941 Schedule R has no state column
 IRS940ScheduleR	Line 3 col d	IRS940ScheduleR/ClientInformationGrp[3]/ClientAllocationInformationGrp/TotalTaxableFUTAWagesAmt	140000.00	4	guess	IRS940 line 7 name, as 941 Schedule R reuses IRS941 names
 IRS940ScheduleR	Line 3 col g	IRS940ScheduleR/ClientInformationGrp[3]/ClientAllocationInformationGrp/TotalFUTATaxAfterAdjustmentsAmt	840.00	4	guess	IRS940 line 12 name, as 941 Schedule R reuses IRS941 names
-IRS940ScheduleR	Line 3 col h	IRS940ScheduleR/ClientInformationGrp[3]/ClientAllocationInformationGrp/TotalTaxDepositAmt	750.00	4	known	IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
+IRS940ScheduleR	Line 3 col h	IRS940ScheduleR/ClientInformationGrp[3]/ClientAllocationInformationGrp/TotalTaxDepositAmt	750.00	4	guess	940 unverified; same name in IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
 IRS940ScheduleR	Line 16 col d	IRS940ScheduleR/SubtotalForClientGrp/TotalTaxableFUTAWagesAmt	420000.00	4	guess	IRS940 line 7 name, as 941 Schedule R reuses IRS941 names
 IRS940ScheduleR	Line 16 col g	IRS940ScheduleR/SubtotalForClientGrp/TotalFUTATaxAfterAdjustmentsAmt	2520.00	4	guess	IRS940 line 12 name, as 941 Schedule R reuses IRS941 names
-IRS940ScheduleR	Line 16 col h	IRS940ScheduleR/SubtotalForClientGrp/TotalTaxDepositAmt	2250.00	4	known	IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
+IRS940ScheduleR	Line 16 col h	IRS940ScheduleR/SubtotalForClientGrp/TotalTaxDepositAmt	2250.00	4	guess	940 unverified; same name in IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
 IRS940ScheduleR	Line 18 col d	IRS940ScheduleR/AggregateEmployeeInfoGrp/TotalTaxableFUTAWagesAmt	140000.00	4	guess	IRS940 line 7 name, as 941 Schedule R reuses IRS941 names
 IRS940ScheduleR	Line 18 col g	IRS940ScheduleR/AggregateEmployeeInfoGrp/TotalFUTATaxAfterAdjustmentsAmt	840.00	4	guess	IRS940 line 12 name, as 941 Schedule R reuses IRS941 names
-IRS940ScheduleR	Line 18 col h	IRS940ScheduleR/AggregateEmployeeInfoGrp/TotalTaxDepositAmt	750.00	4	known	IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
+IRS940ScheduleR	Line 18 col h	IRS940ScheduleR/AggregateEmployeeInfoGrp/TotalTaxDepositAmt	750.00	4	guess	940 unverified; same name in IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
 IRS940ScheduleR	Line 19 col d	IRS940ScheduleR/TotalAggregateAndClientInfoGrp/TotalTaxableFUTAWagesAmt	560000.00	4	guess	IRS940 line 7 name, as 941 Schedule R reuses IRS941 names
 IRS940ScheduleR	Line 19 col g	IRS940ScheduleR/TotalAggregateAndClientInfoGrp/TotalFUTATaxAfterAdjustmentsAmt	3360.00	4	guess	IRS940 line 12 name, as 941 Schedule R reuses IRS941 names
-IRS940ScheduleR	Line 19 col h	IRS940ScheduleR/TotalAggregateAndClientInfoGrp/TotalTaxDepositAmt	3000.00	4	known	IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt
+IRS940ScheduleR	Line 19 col h	IRS940ScheduleR/TotalAggregateAndClientInfoGrp/TotalTaxDepositAmt	3000.00	4	guess	940 unverified; same name in IRS941ScheduleR.xsd ScheduleRAllocationType TotalTaxDepositAmt

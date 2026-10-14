@@ -289,8 +289,8 @@
       ],
       "pdf": "940-test-scenario-3-ty2026.pdf",
       "status": {
-        "state": "ready",
-        "note": "Composed offline (AtsScenarioComposeTest). Schema validation waits for the 2026v2.0 bundle. The $360.00 balance due has no IRSPayment in the composed Return; see notes."
+        "state": "partial",
+        "note": "Composed offline; schema validation waits for the 2026v2.0 bundle. The PDF asks for the $360.00 balance due to be paid with the return (requested payment date within 5 days of submission), and the composer emits no IRSPayment. Precedent: ATS accepted the Orchid 941-X (balance due, no IRSPayment) on 2026-10-14, so an unpaid send is likely accepted. Ask e-Help, or add IRSPayment before sending."
       },
       "summary": "A Section 3504 agent files an aggregate Form 940 for three clients and its own employees, all in Texas. Each of the four allocations is $140,000 of taxable FUTA wages, $840 of tax and $750 of deposits. Deposits of $3,000 against $3,360 of tax leave a $360 balance due.",
       "tests": [

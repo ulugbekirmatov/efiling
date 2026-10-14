@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/** The TY2026 94x ATS scenarios Pyramos sends as a Reporting Agent, with their client-body fixtures. */
+/** The TY2026 94x ATS scenarios, quarterly and annual, Pyramos sends as a Reporting Agent, with their client-body fixtures. */
 enum AtsScenario {
     ORCHID_941("1", "orchid-941",
             "test-scenarios/ats-ty2026/scenario-1-orchid-941/client-return-body.xml"),
@@ -14,7 +14,13 @@ enum AtsScenario {
     DAFFODIL_941_SCHEDULE_R_8974("3", "daffodil-941-schedule-r-8974",
             "test-scenarios/ats-ty2026/scenario-3-daffodil-941-schedule-r-8974/client-return-body.xml"),
     ORCHID_941X("4", "orchid-941x",
-            "test-scenarios/ats-ty2026/scenario-4-orchid-941x/client-return-body.xml");
+            "test-scenarios/ats-ty2026/scenario-4-orchid-941x/client-return-body.xml"),
+    ZINNIA_940("940-1", "zinnia-940",
+            "test-scenarios/ats-ty2026-annual/scenario-940-1-zinnia-940/client-return-body.xml"),
+    POPPY_940_SCHEDULE_A("940-2", "poppy-940-schedule-a",
+            "test-scenarios/ats-ty2026-annual/scenario-940-2-poppy-940-schedule-a/client-return-body.xml"),
+    CROCUS_940_SCHEDULE_R("940-3", "crocus-940-schedule-r",
+            "test-scenarios/ats-ty2026-annual/scenario-940-3-crocus-940-schedule-r/client-return-body.xml");
 
     private static final String MODULE_DIR = "mef-spring-boot-integration";
 

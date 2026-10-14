@@ -24,11 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
- * Offline. Every ATS scenario fixture composes into a Return the app's own validator accepts
- * in ENFORCE mode, with the header and manifest a Reporting Agent filing of that form needs.
+ * Offline. Every ATS scenario fixture composes into a Return with the header and manifest a
+ * Reporting Agent filing of that form needs. Quarterly returns must also pass the app's own
+ * validator in ENFORCE mode; annual 940 returns do once the 2026v2.0 schemas are bundled.
  * A missing fixture fails, naming its path.
  */
 class AtsScenarioComposeTest {
@@ -37,7 +39,7 @@ class AtsScenarioComposeTest {
     private static final XsdNewSendReturnXmlValidator VALIDATOR =
             new XsdNewSendReturnXmlValidator(enforcing());
 
-    static Stream<Arguments> scenarios() {
+    static Stream<Arguments> quarterlyScenarios() {
         return Stream.of(
                 arguments(AtsScenario.ORCHID_941, "941", FormType.F941, "003000004",
                         List.of("IRS941")),
@@ -49,22 +51,67 @@ class AtsScenarioComposeTest {
                         List.of("IRS941X")));
     }
 
+    static Stream<Arguments> annualScenarios() {
+        return Stream.of(
+                arguments(AtsScenario.ZINNIA_940, "003000011", List.of("IRS940")),
+                arguments(AtsScenario.POPPY_940_SCHEDULE_A, "003000001", List.of("IRS940", "IRS940ScheduleA")),
+                arguments(AtsScenario.CROCUS_940_SCHEDULE_R, "003000002", List.of("IRS940", "IRS940ScheduleR")));
+    }
+
     @ParameterizedTest(name = "scenario {0}")
-    @MethodSource("scenarios")
-    void composesAValidReportingAgentReturn(AtsScenario scenario,
-                                            String returnTypeCd,
-                                            FormType formType,
-                                            String filerEin,
-                                            List<String> documents) {
-        ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
-        ReportingAgentReturn ret = ReportingAgentReturn.compose(
-                standIn, ClientReturnBody.load(scenario.clientBody()), FIXED);
+    @MethodSource("quarterlyScenarios")
+    void composesAValidQuarterlyReportingAgentReturn(AtsScenario scenario,
+                                                     String returnTypeCd,
+                                                     FormType formType,
+                                                     String filerEin,
+                                                     List<String> documents) {
+        ReportingAgentReturn ret = compose(scenario);
 
         VALIDATOR.validate(formType, ret.xml());
 
         ReportingAgentReturn.Structure header = ret.structure();
-        assertEquals(returnTypeCd, header.returnTypeCd());
+        assertReportingAgentHeader(header, returnTypeCd, filerEin);
         assertEquals("2026Q1v4.0", header.returnVersion());
+        assertEquals("QuarterEndingDt", header.periodElement(), "EMPL-002-01 requires QuarterEndingDt on 941 and 941X");
+        assertEquals("2026-03", header.periodValue());
+        assertDocuments(ret, documents);
+        assertSubmitCommandAndManifest(ret, scenario, formType, filerEin, LocalDate.of(2026, 3, 31));
+    }
+
+    @ParameterizedTest(name = "scenario {0}")
+    @MethodSource("annualScenarios")
+    void composesAnAnnual940ReportingAgentReturn(AtsScenario scenario, String filerEin, List<String> documents) {
+        ReportingAgentReturn ret = compose(scenario);
+
+        ReportingAgentReturn.Structure header = ret.structure();
+        assertReportingAgentHeader(header, "940", filerEin);
+        assertEquals("2026v2.0", header.returnVersion());
+        assertEquals("TaxYr", header.periodElement(), "ReturnHeader94x makes TaxYr the annual choice");
+        assertEquals("2026", header.periodValue());
+        assertFalse(ret.xml().contains("QuarterEndingDt"), ret.xml());
+        assertDocuments(ret, documents);
+        assertSubmitCommandAndManifest(ret, scenario, FormType.F940, filerEin, LocalDate.of(2026, 12, 31));
+    }
+
+    @ParameterizedTest(name = "scenario {0}")
+    @MethodSource("annualScenarios")
+    void anAnnual940ReturnIsSchemaValid(AtsScenario scenario, String filerEin, List<String> documents) {
+        String schemaRoot = FormType.F940.schemaRoot().orElseThrow();
+        assumeTrue(getClass().getClassLoader().getResource(schemaRoot) != null,
+                "Bundled schema missing from classpath: " + schemaRoot);
+
+        VALIDATOR.validate(FormType.F940, compose(scenario).xml());
+    }
+
+    private static ReportingAgentReturn compose(AtsScenario scenario) {
+        return ReportingAgentReturn.compose(
+                ReportingAgentOriginatorStandIn.pyramosShaped(), ClientReturnBody.load(scenario.clientBody()), FIXED);
+    }
+
+    private static void assertReportingAgentHeader(ReportingAgentReturn.Structure header,
+                                                   String returnTypeCd,
+                                                   String filerEin) {
+        assertEquals(returnTypeCd, header.returnTypeCd());
         assertEquals("ReportingAgent", header.originatorTypeCd());
         assertEquals("000000", header.originatorEfin().value());
         assertEquals("000000000", header.agentEin().value());
@@ -74,22 +121,30 @@ class AtsScenarioComposeTest {
         assertFalse(header.hasOnlineFilerPinGrp());
         assertEquals("REPORTING AGENT", header.rapinEnteredByCd());
         assertEquals("REPORTING AGENT PIN", header.juratDisclosureCd());
-        assertEquals("QuarterEndingDt", header.periodElement(), "EMPL-002-01 requires QuarterEndingDt on 941 and 941X");
-        assertEquals("2026-03", header.periodValue());
+    }
+
+    private static void assertDocuments(ReportingAgentReturn ret, List<String> documents) {
         for (String document : documents) {
             assertTrue(ret.xml().contains("<" + document + " "), document + " missing from ReturnData");
         }
+    }
 
+    private static void assertSubmitCommandAndManifest(ReportingAgentReturn ret,
+                                                       AtsScenario scenario,
+                                                       FormType formType,
+                                                       String filerEin,
+                                                       LocalDate periodEnd) {
         NewSendSubmitCommand command = ret.toSubmitCommand("key", scenario.clientId(), false);
         assertEquals(formType, command.formType());
         assertEquals(filerEin, command.clientEin().value());
         assertEquals(LocalDate.of(2026, 1, 1), command.taxPeriod().begin());
-        assertEquals(LocalDate.of(2026, 3, 31), command.taxPeriod().end());
+        assertEquals(periodEnd, command.taxPeriod().end());
 
         String manifest = NewSendManifestXml.render(new NewSendFiling(
                 new NewSendSubmissionId("0000002026286abc1234"), command, FIXED.instant()));
-        assertTrue(manifest.contains("<FederalSubmissionTypeCd>" + returnTypeCd + "</FederalSubmissionTypeCd>"),
+        assertTrue(manifest.contains("<FederalSubmissionTypeCd>" + formType.code() + "</FederalSubmissionTypeCd>"),
                 manifest);
+        assertTrue(manifest.contains("<TaxPeriodEndDt>" + periodEnd + "</TaxPeriodEndDt>"), manifest);
         assertTrue(manifest.contains("<TIN>" + filerEin + "</TIN>"), manifest);
     }
 
@@ -108,7 +163,7 @@ class AtsScenarioComposeTest {
     void anUnknownScenarioIdIsRefused() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> AtsScenario.byId("5"));
-        assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4", ex.getMessage());
+        assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4, 940-1, 940-2, 940-3", ex.getMessage());
     }
 
     /** The journal and the c2s-web viewer group sends by this clientId; it must not drift. */
@@ -116,6 +171,7 @@ class AtsScenarioComposeTest {
     void aScenarioIdKeepsItsClientId() {
         assertEquals("ats-scenario-1-orchid-941", AtsScenario.byId("1").clientId());
         assertEquals("ats-scenario-4-orchid-941x", AtsScenario.byId("4").clientId());
+        assertEquals("ats-scenario-940-1-zinnia-940", AtsScenario.byId("940-1").clientId());
     }
 
     @Test

@@ -94,7 +94,7 @@ Other traps: `RetryConfig` retries **every** `Exception` (including `MefExceptio
 
 ## Configuration
 
-Env vars (or `.env`, gitignored): `MEF_ETIN`, `MEF_EFIN`, `MEF_ASID`, `MEF_KEYSTORE_PATH`, `MEF_KEYSTORE_PASSWORD`, `MEF_KEYSTORE_TYPE` (default `PKCS12`), `MEF_KEY_ALIAS`, `MEF_KEY_PASSWORD`, optional `MEF_TRUSTSTORE_PATH`/`MEF_TRUSTSTORE_PASSWORD`, `A2A_TOOLKIT_HOME`. `MEF_USERNAME`/`MEF_PASSWORD` are declared but unused — authentication is certificate-only. No `.env` currently exists; recreate it with Pyramos values once issued.
+Env vars (or `.env`, gitignored): `MEF_ETIN`, `MEF_EFIN`, `MEF_ASID`, `MEF_KEYSTORE_PATH`, `MEF_KEYSTORE_PASSWORD`, `MEF_KEYSTORE_TYPE` (default `PKCS12`), `MEF_KEY_ALIAS`, `MEF_KEY_PASSWORD`, `MEF_SOFTWARE_ID` (94x quarterly package), `MEF_SOFTWARE_ID_ANNUAL` (94x annual package, 940; IRS issues it separately), optional `MEF_TRUSTSTORE_PATH`/`MEF_TRUSTSTORE_PASSWORD`, `A2A_TOOLKIT_HOME`. `MEF_USERNAME`/`MEF_PASSWORD` are declared but unused — authentication is certificate-only. No `.env` currently exists; recreate it with Pyramos values once issued.
 
 Environment selection: `mef.sdk.environment` = `ATS` (test, `la.alt.www4.irs.gov`) or `PRD`. Known inconsistency: `application.yml` lists PRD as `www.irs.gov` while the SDK's `prd_endpoints.properties` uses `la.www4.irs.gov` — the SDK properties win; reconcile before production.
 

@@ -14,7 +14,7 @@
       "file": "line-mapping.tsv",
       "title": "Line mapping",
       "producedBy": "Hand-built while reading the PDF",
-      "description": "One row per value in the client body: which form line it comes from, the XML element path, the value, the PDF page, a confidence, and the name source. confidence is known when the name is taken verbatim from a bundled 2026Q1v4.0 schema where it means the same thing (ReturnHeader94x for Filer, IRS941 or IRS941ScheduleR for the same line on the sibling form), and guess when it is made up from the 940 line text. Two independent transcriptions were reconciled against the PDF; every value agreed, and the element names follow the 941 family's patterns."
+      "description": "One row per value in the client body: which form line it comes from, the XML element path, the value, the PDF page, a confidence, and the name source. confidence is known only for Filer elements, which come from the shared ReturnHeader94x.xsd. Every IRS940, IRS940ScheduleA and IRS940ScheduleR name is guess until the 2026v2.0 schema is bundled, including names copied from IRS941 or IRS941ScheduleR; the name source column records that sibling."
     },
     {
       "id": "composedReturn",

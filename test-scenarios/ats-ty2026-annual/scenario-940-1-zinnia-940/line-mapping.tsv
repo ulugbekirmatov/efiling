@@ -1,0 +1,23 @@
+document	form line	element path	value	pdf page	confidence	name source
+Filer	header	Filer/EIN	003000011	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/BusinessName/BusinessNameLine1Txt	Zinnia Company	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header (not printed; first four letters of the name)	Filer/BusinessNameControlTxt	ZINN	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/AddressLine1Txt	5000 Purple Road	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/CityNm	Tucson	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/StateAbbreviationCd	AZ	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/ZIPCd	85641	2	known	ReturnHeader94x.xsd BusinessInformationType
+IRS940	Line 1a	IRS940/SingleStateCd	AZ	2	guess	guess from the 940 line text
+IRS940	Line 3	IRS940/TotalPaymentsToAllEmployeesAmt	200000.00	2	guess	guess from the 940 line text
+IRS940	Line 5	IRS940/PaymentsExceedingWageBaseAmt	4000.00	2	guess	guess from the 940 line text
+IRS940	Line 6	IRS940/SubtotalAmt	4000.00	2	guess	guess from the 940 line text
+IRS940	Line 7	IRS940/TotalTaxableFUTAWagesAmt	196000.00	2	guess	guess from the 940 line text
+IRS940	Line 8	IRS940/FUTATaxBeforeAdjustmentsAmt	1176.00	2	guess	guess from the 940 line text
+IRS940	Line 12	IRS940/TotalFUTATaxAfterAdjustmentsAmt	1176.00	2	guess	guess from the 940 line text
+IRS940	Line 13	IRS940/TotalTaxDepositAmt	2886.00	2	known	IRS941.xsd and IRS941ScheduleR.xsd TotalTaxDepositAmt (line 13 deposits)
+IRS940	Line 15a	IRS940/OverpaymentGrp/OverpaidAmt	1710.00	2	known	IRS941.xsd OverpaymentGrp, same line 15 choice
+IRS940	Line 15b send a refund	IRS940/OverpaymentGrp/RefundOverpaymentInd	X	2	known	IRS941.xsd OverpaymentGrp, same line 15 choice
+IRS940	Line 16a	IRS940/TaxLiabilityQtr1Amt	300.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 16b	IRS940/TaxLiabilityQtr2Amt	300.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 16c	IRS940/TaxLiabilityQtr3Amt	300.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 16d	IRS940/TaxLiabilityQtr4Amt	276.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 17	IRS940/TotalTaxLiabilityAmt	1176.00	3	guess	IRS941ScheduleB.xsd TotalTaxLiabilityAmt names a liability total; year total is a guess

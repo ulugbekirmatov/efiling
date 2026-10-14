@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" returnVersion="2026v2.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <ReturnTypeCd>940</ReturnTypeCd>
+    <ReturnTs>2026-10-13T10:00:00-04:00</ReturnTs>
+    <SoftwareId>00000000</SoftwareId>
+    <MultSoftwarePackagesUsedInd>false</MultSoftwarePackagesUsedInd>
+    <AdditionalFilerInformation>
+      <AtSubmissionFilingGrp>
+        <RefundProductElectionInd>false</RefundProductElectionInd>
+        <RefundDisbursementGrp>
+          <RefundDisbursementCd>0</RefundDisbursementCd>
+        </RefundDisbursementGrp>
+      </AtSubmissionFilingGrp>
+    </AdditionalFilerInformation>
+    <FilingSecurityInformation>
+      <IPAddress>
+        <IPv4AddressTxt>192.0.2.1</IPv4AddressTxt>
+      </IPAddress>
+      <TotActiveTimePrepSubmissionTs>1</TotActiveTimePrepSubmissionTs>
+      <VendorControlNum>c8f6e2ea639492f7</VendorControlNum>
+      <AtSubmissionCreationDeviceId>A32961CAE2B4537E8CD58BEDC0CB16477F49018A</AtSubmissionCreationDeviceId>
+      <AtSubmissionFilingDeviceId>A32961CAE2B4537E8CD58BEDC0CB16477F49018A</AtSubmissionFilingDeviceId>
+    </FilingSecurityInformation>
+    <TaxYr>2026</TaxYr>
+    <Filer>
+    <EIN>003000011</EIN>
+    <BusinessName>
+      <BusinessNameLine1Txt>Zinnia Company</BusinessNameLine1Txt>
+    </BusinessName>
+    <BusinessNameControlTxt>ZINN</BusinessNameControlTxt>
+    <USAddress>
+      <AddressLine1Txt>5000 Purple Road</AddressLine1Txt>
+      <CityNm>Tucson</CityNm>
+      <StateAbbreviationCd>AZ</StateAbbreviationCd>
+      <ZIPCd>85641</ZIPCd>
+    </USAddress>
+  </Filer>
+    <OriginatorGrp>
+      <EFIN>000000</EFIN>
+      <OriginatorTypeCd>ReportingAgent</OriginatorTypeCd>
+    </OriginatorGrp>
+    <ReportingAgentPINGrp>
+      <PIN>00000</PIN>
+      <RAPINEnteredByCd>REPORTING AGENT</RAPINEnteredByCd>
+      <JuratDisclosureCd>REPORTING AGENT PIN</JuratDisclosureCd>
+    </ReportingAgentPINGrp>
+    <IRSResponsiblePrtyInfoCurrInd>true</IRSResponsiblePrtyInfoCurrInd>
+    <DiscussWithThirdPartyNoInd>X</DiscussWithThirdPartyNoInd>
+    <ReportingAgent94XFilerGrp>
+      <EIN>000000000</EIN>
+      <BusinessName>
+        <BusinessNameLine1Txt>PYRAMOS SOFTWARE LLC</BusinessNameLine1Txt>
+      </BusinessName>
+      <BusinessNameControlTxt>PYRA</BusinessNameControlTxt>
+      <USAddress>
+        <AddressLine1Txt>100 Market Street</AddressLine1Txt>
+        <CityNm>Philadelphia</CityNm>
+        <StateAbbreviationCd>PA</StateAbbreviationCd>
+        <ZIPCd>19103</ZIPCd>
+      </USAddress>
+    </ReportingAgent94XFilerGrp>
+  </ReturnHeader>
+  <ReturnData documentCnt="1">
+    <IRS940 documentId="IRS940">
+      <!-- Line 1a: State unemployment tax paid in one state only -->
+      <SingleStateCd>AZ</SingleStateCd>
+      <!-- Line 3: Total payments to all employees -->
+      <TotalPaymentsToAllEmployeesAmt>200000.00</TotalPaymentsToAllEmployeesAmt>
+      <!-- Line 4: Payments exempt from FUTA tax (blank on the form) -->
+      <!-- Line 5: Total of payments made to each employee in excess of $7,000 -->
+      <PaymentsExceedingWageBaseAmt>4000.00</PaymentsExceedingWageBaseAmt>
+      <!-- Line 6: Subtotal (line 4 + line 5) -->
+      <SubtotalAmt>4000.00</SubtotalAmt>
+      <!-- Line 7: Total taxable FUTA wages (line 3 - line 6) -->
+      <TotalTaxableFUTAWagesAmt>196000.00</TotalTaxableFUTAWagesAmt>
+      <!-- Line 8: FUTA tax before adjustments (line 7 x 0.006) -->
+      <FUTATaxBeforeAdjustmentsAmt>1176.00</FUTATaxBeforeAdjustmentsAmt>
+      <!-- Lines 9-11: Adjustments (blank on the form) -->
+      <!-- Line 12: Total FUTA tax after adjustments (lines 8 + 9 + 10 + 11) -->
+      <TotalFUTATaxAfterAdjustmentsAmt>1176.00</TotalFUTATaxAfterAdjustmentsAmt>
+      <!-- Line 13: FUTA tax deposited for the year -->
+      <TotalTaxDepositAmt>2886.00</TotalTaxDepositAmt>
+      <!-- Line 15a-b: Overpayment, refund requested -->
+      <OverpaymentGrp>
+        <OverpaidAmt>1710.00</OverpaidAmt>
+        <RefundOverpaymentInd>X</RefundOverpaymentInd>
+      </OverpaymentGrp>
+      <!-- Line 16a: FUTA tax liability, 1st quarter -->
+      <TaxLiabilityQtr1Amt>300.00</TaxLiabilityQtr1Amt>
+      <!-- Line 16b: FUTA tax liability, 2nd quarter -->
+      <TaxLiabilityQtr2Amt>300.00</TaxLiabilityQtr2Amt>
+      <!-- Line 16c: FUTA tax liability, 3rd quarter -->
+      <TaxLiabilityQtr3Amt>300.00</TaxLiabilityQtr3Amt>
+      <!-- Line 16d: FUTA tax liability, 4th quarter -->
+      <TaxLiabilityQtr4Amt>276.00</TaxLiabilityQtr4Amt>
+      <!-- Line 17: Total tax liability for the year (lines 16a-16d) -->
+      <TotalTaxLiabilityAmt>1176.00</TotalTaxLiabilityAmt>
+    </IRS940>
+  </ReturnData>
+</Return>

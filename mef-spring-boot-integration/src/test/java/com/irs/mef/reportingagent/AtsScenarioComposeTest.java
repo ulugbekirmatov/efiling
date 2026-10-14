@@ -2,6 +2,7 @@ package com.irs.mef.reportingagent;
 
 import com.irs.mef.newsend.NewSendProperties;
 import com.irs.mef.newsend.domain.FormType;
+import com.irs.mef.newsend.domain.SchemaRelease;
 import com.irs.mef.newsend.domain.NewSendFiling;
 import com.irs.mef.newsend.domain.NewSendManifestXml;
 import com.irs.mef.newsend.domain.NewSendSubmissionId;
@@ -96,9 +97,8 @@ class AtsScenarioComposeTest {
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
     void anAnnual940ReturnIsSchemaValid(AtsScenario scenario, String filerEin, List<String> documents) {
-        String schemaRoot = FormType.F940.schemaRoot().orElseThrow();
-        assumeTrue(getClass().getClassLoader().getResource(schemaRoot) != null,
-                "Bundled schema missing from classpath: " + schemaRoot);
+        assumeTrue(ClasspathSchemas.bundled(SchemaRelease.Y2026_V2),
+                "2026v2.0 schema bundle not on the classpath yet (IRS e-Services mailbox)");
 
         VALIDATOR.validate(FormType.F940, compose(scenario).xml());
     }

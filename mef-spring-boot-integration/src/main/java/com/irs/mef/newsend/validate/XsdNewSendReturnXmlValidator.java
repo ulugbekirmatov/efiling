@@ -2,6 +2,7 @@ package com.irs.mef.newsend.validate;
 
 import com.irs.mef.newsend.NewSendProperties;
 import com.irs.mef.newsend.domain.FormType;
+import com.irs.mef.newsend.error.NewSendConfigurationException;
 import com.irs.mef.newsend.error.NewSendValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,11 +44,13 @@ public class XsdNewSendReturnXmlValidator implements NewSendReturnXmlValidator {
     @Override
     public void validate(FormType formType, String returnXml) {
         assertWellFormed(returnXml);
+        Optional<String> schemaRoot = formType.schemaRoot();
+        // Checked before the OFF switch: a form tied to a schema release never goes out while that release is absent.
+        schemaRoot.ifPresent(this::requireBundled);
         NewSendProperties.XmlValidationMode mode = properties.getXmlValidation();
         if (mode == NewSendProperties.XmlValidationMode.OFF) {
             return;
         }
-        Optional<String> schemaRoot = formType.schemaRoot();
         if (schemaRoot.isEmpty()) {
             log.warn("No XSD bundled for form type {} — schema validation skipped", formType.code());
             return;
@@ -112,11 +115,14 @@ public class XsdNewSendReturnXmlValidator implements NewSendReturnXmlValidator {
         return errors;
     }
 
+    private void requireBundled(String schemaRoot) {
+        if (getClass().getClassLoader().getResource(schemaRoot) == null) {
+            throw new NewSendConfigurationException("Bundled schema missing from classpath: " + schemaRoot);
+        }
+    }
+
     private Schema loadSchema(String schemaRoot) {
         URL schemaUrl = getClass().getClassLoader().getResource(schemaRoot);
-        if (schemaUrl == null) {
-            throw new IllegalStateException("Bundled schema missing from classpath: " + schemaRoot);
-        }
         try {
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             trySetProperty(schemaFactory, XMLConstants.ACCESS_EXTERNAL_DTD);

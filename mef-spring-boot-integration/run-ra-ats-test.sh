@@ -25,6 +25,16 @@ export PATH="$JAVA_HOME/bin:/opt/homebrew/bin:$PATH"
 
 cd "$MODULE_DIR"
 
+ANNUAL_BUNDLE=src/main/resources/schemas/94x/2026v2.0
+case "$SCENARIO" in
+  940-*)
+    [ -d "$ANNUAL_BUNDLE" ] || {
+      echo "$ANNUAL_BUNDLE is missing: copy the IRS 2026v2.0 schema package (e-Services mailbox) there before sending a 940" >&2
+      exit 1
+    }
+    ;;
+esac
+
 [ -f .env ] || { echo ".env not found in $MODULE_DIR (see CLAUDE.md, Configuration)" >&2; exit 1; }
 if grep -qE '^MEF_KEYSTORE_PASSWORD=$' .env; then
   echo "MEF_KEYSTORE_PASSWORD is empty in .env; run ../create-pkcs12.sh and fill it in" >&2

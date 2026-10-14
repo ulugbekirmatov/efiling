@@ -8,20 +8,22 @@ import java.util.stream.Collectors;
 /**
  * The return types a Reporting Agent client body can carry. Each row owns the header
  * ReturnTypeCd, the NewSend form type (manifest FederalSubmissionTypeCd, schema release and root),
- * and the main form that must open ReturnData.
+ * the main form that must open ReturnData, and the kind of reporting period its header names.
  */
 public enum ClientReturnType {
-    F941("941", FormType.F941, "IRS941"),
-    F941X("941X", FormType.F941X, "IRS941X");
+    F941("941", FormType.F941, "IRS941", PeriodKind.QUARTER),
+    F941X("941X", FormType.F941X, "IRS941X", PeriodKind.QUARTER);
 
     private final String returnTypeCd;
     private final FormType formType;
     private final String mainDocument;
+    private final PeriodKind periodKind;
 
-    ClientReturnType(String returnTypeCd, FormType formType, String mainDocument) {
+    ClientReturnType(String returnTypeCd, FormType formType, String mainDocument, PeriodKind periodKind) {
         this.returnTypeCd = returnTypeCd;
         this.formType = formType;
         this.mainDocument = mainDocument;
+        this.periodKind = periodKind;
     }
 
     public String returnTypeCd() {
@@ -34,6 +36,10 @@ public enum ClientReturnType {
 
     public String mainDocument() {
         return mainDocument;
+    }
+
+    PeriodKind periodKind() {
+        return periodKind;
     }
 
     /** The Return returnVersion; owned by the form's schema release, never by the client body. */

@@ -15,53 +15,38 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.Set;
 
 /**
- * Employer return body for one client. Owns the return type, filer EIN, tax period, quarter
- * ending, and the opaque ReturnData XML (the main form plus any schedules).
+ * Employer return body for one client. Owns the return type, filer EIN, tax period, reporting
+ * period (quarter or tax year), and the opaque ReturnData XML (the main form plus any schedules).
  * Does not contain OriginatorGrp, any PIN group, SoftwareId, or ReportingAgent94XFilerGrp.
  */
 public final class ClientReturnBody {
 
     static final String NS = "http://www.irs.gov/efile";
 
-    private static final Set<Integer> QUARTER_MONTHS = Set.of(3, 6, 9, 12);
-
     private final ClientReturnType returnType;
     private final Ein filerEin;
     private final String filerXml;
     private final String returnDataXml;
     private final TaxPeriod taxPeriod;
-    private final YearMonth quarterEnding;
-    private final String returnVersion;
+    private final ReportingPeriod period;
 
     private ClientReturnBody(ClientReturnType returnType,
                              Ein filerEin,
                              String filerXml,
                              String returnDataXml,
                              TaxPeriod taxPeriod,
-                             YearMonth quarterEnding,
-                             String returnVersion) {
+                             ReportingPeriod period) {
         this.returnType = Objects.requireNonNull(returnType);
         this.filerEin = Objects.requireNonNull(filerEin);
         this.filerXml = Objects.requireNonNull(filerXml);
         this.returnDataXml = Objects.requireNonNull(returnDataXml);
         this.taxPeriod = Objects.requireNonNull(taxPeriod);
-        this.quarterEnding = Objects.requireNonNull(quarterEnding);
-        this.returnVersion = Objects.requireNonNull(returnVersion);
-        if (!QUARTER_MONTHS.contains(quarterEnding.getMonthValue())) {
-            throw new ReportingAgentValidationException("quarterEndingDt",
-                    "quarterEndingDt month must be 03, 06, 09, or 12");
-        }
-        if (!YearMonth.from(taxPeriod.end()).equals(quarterEnding)) {
-            throw new ReportingAgentValidationException("quarterEndingDt",
-                    "quarterEndingDt " + quarterEnding + " must equal tax period end year-month "
-                            + YearMonth.from(taxPeriod.end()));
-        }
+        this.period = Objects.requireNonNull(period);
+        period.requireMatches(taxPeriod);
     }
 
     public ClientReturnType returnType() {
@@ -76,12 +61,12 @@ public final class ClientReturnBody {
         return taxPeriod;
     }
 
-    public YearMonth quarterEnding() {
-        return quarterEnding;
+    public ReportingPeriod period() {
+        return period;
     }
 
     public String returnVersion() {
-        return returnVersion;
+        return returnType.returnVersion();
     }
 
     String filerXml() {
@@ -125,7 +110,7 @@ public final class ClientReturnBody {
         TaxPeriod taxPeriod = new TaxPeriod(
                 parseDate("taxPeriodBegin", requiredAttribute(root, "taxPeriodBegin")),
                 parseDate("taxPeriodEnd", requiredAttribute(root, "taxPeriodEnd")));
-        YearMonth quarterEnding = parseYearMonth("quarterEndingDt", requiredAttribute(root, "quarterEndingDt"));
+        ReportingPeriod period = reportingPeriod(root, returnType);
 
         Element filer = child(root, "Filer");
         Element einElement = child(filer, "EIN");
@@ -139,8 +124,20 @@ public final class ClientReturnBody {
                 serialize(filer),
                 serialize(returnData),
                 taxPeriod,
-                quarterEnding,
-                returnVersion);
+                period);
+    }
+
+    /** Reads only the attribute this return type's period kind names; the other kind's attribute is an error. */
+    private static ReportingPeriod reportingPeriod(Element root, ClientReturnType returnType) {
+        PeriodKind kind = returnType.periodKind();
+        for (PeriodKind other : PeriodKind.values()) {
+            if (other != kind && root.hasAttribute(other.attribute())) {
+                throw new ReportingAgentValidationException(other.attribute(),
+                        "returnTypeCd " + returnType.returnTypeCd() + " takes " + kind.attribute()
+                                + ", not " + other.attribute());
+            }
+        }
+        return kind.parse(requiredAttribute(root, kind.attribute()));
     }
 
     private static Document parseHardened(Path xml) {
@@ -215,14 +212,6 @@ public final class ClientReturnBody {
             return LocalDate.parse(raw);
         } catch (DateTimeParseException e) {
             throw new ReportingAgentValidationException(field, field + " is not an ISO date: " + raw);
-        }
-    }
-
-    private static YearMonth parseYearMonth(String field, String raw) {
-        try {
-            return YearMonth.parse(raw);
-        } catch (DateTimeParseException e) {
-            throw new ReportingAgentValidationException(field, field + " is not yyyy-MM: " + raw);
         }
     }
 

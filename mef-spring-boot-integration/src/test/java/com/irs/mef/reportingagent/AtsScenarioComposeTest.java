@@ -74,8 +74,8 @@ class AtsScenarioComposeTest {
         assertFalse(header.hasOnlineFilerPinGrp());
         assertEquals("REPORTING AGENT", header.rapinEnteredByCd());
         assertEquals("REPORTING AGENT PIN", header.juratDisclosureCd());
-        assertTrue(ret.xml().contains("<QuarterEndingDt>2026-03</QuarterEndingDt>"),
-                "EMPL-002-01 requires QuarterEndingDt on 941 and 941X");
+        assertEquals("QuarterEndingDt", header.periodElement(), "EMPL-002-01 requires QuarterEndingDt on 941 and 941X");
+        assertEquals("2026-03", header.periodValue());
         for (String document : documents) {
             assertTrue(ret.xml().contains("<" + document + " "), document + " missing from ReturnData");
         }

@@ -6,11 +6,12 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.YearMonth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** Offline. The returnTypeCd guards, driven by edits of the scenario 1 body. */
+/** Offline. The returnTypeCd and reporting-period guards, driven by edits of the scenario 1 body. */
 class ClientReturnBodyTest {
 
     private static final String TYPE_941 = "returnTypeCd=\"941\"";
@@ -50,6 +51,36 @@ class ClientReturnBodyTest {
                 ReportingAgentValidationException.class, () -> ClientReturnBody.load(untyped));
         assertEquals("returnTypeCd", ex.field());
         assertEquals("returnTypeCd is required", ex.getMessage());
+    }
+
+    @Test
+    void scenario1BodyCarriesItsQuarter() {
+        ClientReturnBody body = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
+
+        assertEquals(new ReportingPeriod.Quarter(YearMonth.of(2026, 3)), body.period());
+        assertEquals("2026Q1v4.0", body.returnVersion());
+    }
+
+    @Test
+    void rejectsTaxYrOnA941() throws IOException {
+        Path annualLabel = edited(TYPE_941, TYPE_941 + " taxYr=\"2026\"");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(annualLabel));
+
+        assertEquals("taxYr", ex.field());
+        assertEquals("returnTypeCd 941 takes quarterEndingDt, not taxYr", ex.getMessage());
+    }
+
+    @Test
+    void rejectsAQuarterThatIsNotTheTaxPeriodEnd() throws IOException {
+        Path secondQuarter = edited("quarterEndingDt=\"2026-03\"", "quarterEndingDt=\"2026-06\"");
+
+        ReportingAgentValidationException ex = assertThrows(
+                ReportingAgentValidationException.class, () -> ClientReturnBody.load(secondQuarter));
+
+        assertEquals("quarterEndingDt", ex.field());
+        assertEquals("quarterEndingDt 2026-06 must equal tax period end year-month 2026-03", ex.getMessage());
     }
 
     @Test

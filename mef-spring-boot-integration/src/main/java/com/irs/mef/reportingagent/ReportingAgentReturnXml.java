@@ -36,7 +36,7 @@ final class ReportingAgentReturnXml {
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
         additionalFilerInformation(xml);
         filingSecurity(xml, originator, client, truncated);
-        element(xml, 2, "QuarterEndingDt", client.quarterEnding().toString());
+        element(xml, 2, client.period().headerElement(), client.period().headerValue());
         xml.append("    ").append(inDefaultNs(client.filerXml())).append('\n');
         xml.append("    <OriginatorGrp>\n");
         element(xml, 3, "EFIN", originator.efin().value());

@@ -63,9 +63,9 @@ class ReportingAgentAtsScenarioTest {
     void submitsOneReportingAgentScenarioToAts() throws InterruptedException {
         String requested = System.getProperty(SCENARIO_PROPERTY);
         if (requested == null || requested.isBlank()) {
-            fail("Set -D" + SCENARIO_PROPERTY + "=<1-4>; this test sends a real ATS submission");
+            fail("Set -D" + SCENARIO_PROPERTY + "=<scenario id>; this test sends a real ATS submission");
         }
-        AtsScenario scenario = AtsScenario.byNumber(requested);
+        AtsScenario scenario = AtsScenario.byId(requested);
         ReportingAgentOriginator pyramos = originators.fromEnvironment();
         ReportingAgentAtsGate.open(sdk, pyramos);
 
@@ -73,7 +73,7 @@ class ReportingAgentAtsScenarioTest {
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
                 pyramos, client, Clock.system(ZoneId.of("America/New_York")));
         ReportingAgentReturn.Structure header = ret.structure();
-        System.out.println("RA ATS scenario=" + scenario.number() + " " + scenario.shortName()
+        System.out.println("RA ATS scenario=" + scenario.id() + " " + scenario.shortName()
                 + " returnType=" + header.returnTypeCd()
                 + " originatorType=" + header.originatorTypeCd()
                 + " efin=" + header.originatorEfin().value()
@@ -85,7 +85,7 @@ class ReportingAgentAtsScenarioTest {
         assertTrue(session.isSuccess());
 
         NewSendSubmitResult result = newSend.submit(ret.toSubmitCommand(
-                "ra-ats-scenario-" + scenario.number() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
+                "ra-ats-scenario-" + scenario.id() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
                 scenario.clientId(),
                 true));
         assertFalse(result.replay());

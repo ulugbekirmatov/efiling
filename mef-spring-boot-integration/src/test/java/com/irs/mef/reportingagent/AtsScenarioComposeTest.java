@@ -105,10 +105,17 @@ class AtsScenarioComposeTest {
     }
 
     @Test
-    void anUnknownScenarioNumberIsRefused() {
+    void anUnknownScenarioIdIsRefused() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> AtsScenario.byNumber("5"));
+                () -> AtsScenario.byId("5"));
         assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4", ex.getMessage());
+    }
+
+    /** The journal and the c2s-web viewer group sends by this clientId; it must not drift. */
+    @Test
+    void aScenarioIdKeepsItsClientId() {
+        assertEquals("ats-scenario-1-orchid-941", AtsScenario.byId("1").clientId());
+        assertEquals("ats-scenario-4-orchid-941x", AtsScenario.byId("4").clientId());
     }
 
     @Test

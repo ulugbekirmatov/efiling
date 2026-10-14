@@ -7,29 +7,30 @@ import java.util.stream.Collectors;
 
 /** The TY2026 94x ATS scenarios Pyramos sends as a Reporting Agent, with their client-body fixtures. */
 enum AtsScenario {
-    ORCHID_941(1, "orchid-941",
+    ORCHID_941("1", "orchid-941",
             "test-scenarios/ats-ty2026/scenario-1-orchid-941/client-return-body.xml"),
-    MARIGOLD_941_SCHEDULE_B(2, "marigold-941-schedule-b",
+    MARIGOLD_941_SCHEDULE_B("2", "marigold-941-schedule-b",
             "test-scenarios/ats-ty2026/scenario-2-marigold-941-schedule-b/client-return-body.xml"),
-    DAFFODIL_941_SCHEDULE_R_8974(3, "daffodil-941-schedule-r-8974",
+    DAFFODIL_941_SCHEDULE_R_8974("3", "daffodil-941-schedule-r-8974",
             "test-scenarios/ats-ty2026/scenario-3-daffodil-941-schedule-r-8974/client-return-body.xml"),
-    ORCHID_941X(4, "orchid-941x",
+    ORCHID_941X("4", "orchid-941x",
             "test-scenarios/ats-ty2026/scenario-4-orchid-941x/client-return-body.xml");
 
     private static final String MODULE_DIR = "mef-spring-boot-integration";
 
-    private final int number;
+    private final String id;
     private final String shortName;
     private final String fixture;
 
-    AtsScenario(int number, String shortName, String fixture) {
-        this.number = number;
+    AtsScenario(String id, String shortName, String fixture) {
+        this.id = id;
         this.shortName = shortName;
         this.fixture = fixture;
     }
 
-    int number() {
-        return number;
+    /** The id run-ra-ats-test.sh passes as -Dmef.ats.scenario: "1".."4" for quarterly, "940-n" for annual. */
+    String id() {
+        return id;
     }
 
     String shortName() {
@@ -38,20 +39,20 @@ enum AtsScenario {
 
     /** NewSend clientId; the journal and inspector group sends by it. */
     String clientId() {
-        return "ats-scenario-" + number + "-" + shortName;
+        return "ats-scenario-" + id + "-" + shortName;
     }
 
     Path clientBody() {
         return repoPath(fixture);
     }
 
-    static AtsScenario byNumber(String raw) {
+    static AtsScenario byId(String raw) {
         return Arrays.stream(values())
-                .filter(scenario -> Integer.toString(scenario.number).equals(raw))
+                .filter(scenario -> scenario.id.equals(raw))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown ATS scenario '" + raw
                         + "'. Must be one of: " + Arrays.stream(values())
-                                .map(scenario -> Integer.toString(scenario.number))
+                                .map(AtsScenario::id)
                                 .collect(Collectors.joining(", "))));
     }
 

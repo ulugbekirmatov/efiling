@@ -1,18 +1,19 @@
 #!/bin/bash
 # Send one TY2026 94x ATS scenario to IRS ATS as a Reporting Agent (ReportingAgentAtsScenarioTest).
-# Scenarios: 1 Orchid 941, 2 Marigold 941 + Schedule B, 3 Daffodil 941 + Schedule R + 8974,
-# 4 Orchid 941-X. Reads identifiers from .env in this module directory; MEF_SOFTWARE_ID must be
+# Quarterly scenarios: 1 Orchid 941, 2 Marigold 941 + Schedule B, 3 Daffodil 941 + Schedule R + 8974,
+# 4 Orchid 941-X. Annual scenarios: 940-1, 940-2, 940-3 (Form 940).
+# Reads identifiers from .env in this module directory; MEF_SOFTWARE_ID must be
 # 8 digits from the process environment or .env. This script never writes .env.
 #
-# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <scenario 1-4>
+# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <1|2|3|4|940-1|940-2|940-3>
 set -euo pipefail
 
 TEST_CLASS=ReportingAgentAtsScenarioTest
 SCENARIO="${1:-}"
 case "$SCENARIO" in
-  1|2|3|4) ;;
+  1|2|3|4|940-1|940-2|940-3) ;;
   *)
-    echo "Usage: $0 <scenario 1-4> (got '${SCENARIO}')" >&2
+    echo "Usage: $0 <1|2|3|4|940-1|940-2|940-3> (got '${SCENARIO}')" >&2
     exit 1
     ;;
 esac

@@ -9,6 +9,7 @@ import com.irs.mef.newsend.NewSendSubmissionService;
 import com.irs.mef.newsend.NewSendSubmitResult;
 import com.irs.mef.newsend.domain.NewSendOutcome;
 import com.irs.mef.newsend.domain.NewSendSubmitCommand;
+import com.irs.mef.newsend.validate.NewSendReturnXmlValidator;
 import com.irs.mef.service.AcknowledgementService;
 import com.irs.mef.service.MefClientService;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,8 @@ class ReportingAgentAtsScenarioTest {
     @Autowired
     NewSendSubmissionService newSend;
     @Autowired
+    NewSendReturnXmlValidator returnXmlValidator;
+    @Autowired
     AcknowledgementService acknowledgements;
 
     @Test
@@ -86,8 +89,8 @@ class ReportingAgentAtsScenarioTest {
                 "ra-ats-scenario-" + scenario.id() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
                 scenario.clientId(),
                 true);
-        // Submit compiles the schema only after login; a missing bundle must not open a session.
-        SchemaPreflight.require(command.formType());
+        // Submit validates only after login; a missing bundle or a schema error must not open an IRS session.
+        returnXmlValidator.validate(command.formType(), command.returnXml());
 
         LoginResponse session = login.login();
         assertTrue(session.isSuccess());

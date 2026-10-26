@@ -1,5 +1,13 @@
-const { test } = require("node:test");
+const { test: nodeTest } = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+
+// The AIR fixtures live in the sibling aca repo (AIR_REPO_ROOT, default ~/Documents/aca).
+const AIR_ROOT = path.resolve(process.env.AIR_REPO_ROOT || path.join(os.homedir(), "Documents", "aca"));
+const FIXTURES_MISSING = !fs.existsSync(path.join(AIR_ROOT, "redesign", "air-a2a", "fixtures", "aats"));
+const test = (name, fn) => nodeTest(name, { skip: FIXTURES_MISSING && `AIR fixtures not found under ${AIR_ROOT}; set AIR_REPO_ROOT` }, fn);
 
 test("listScenarios reports scenario-2 and scenario-3 with their measured counts", async () => {
   const { listScenarios } = await import("./scenarioCatalog.js");

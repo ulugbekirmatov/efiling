@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A complete schema-shaped 94x Return (941 or 941X) whose originator is a Reporting Agent.
+ * A complete schema-shaped 94x Return whose originator is a Reporting Agent.
  * Constructed only by {@link #compose}. Callers cannot pass OriginatorTypeCd.
  *
  * Hidden: header element order, PIN-group enumerations, FilingSecurityInformation
@@ -43,6 +43,8 @@ public final class ReportingAgentReturn {
 
     private static final String NS = ReportingAgentReturnXml.NS;
     private static final ZoneId PROCESSING_ZONE = ZoneId.of("America/New_York");
+    private static final String PERIOD_ELEMENT =
+            "/efile:Return/efile:ReturnHeader/*[self::efile:QuarterEndingDt or self::efile:TaxYr]";
 
     private final ReportingAgentOriginator originator;
     private final ClientReturnBody client;
@@ -61,10 +63,6 @@ public final class ReportingAgentReturn {
         Objects.requireNonNull(originator);
         Objects.requireNonNull(client);
         Objects.requireNonNull(clock);
-        if (!ClientReturnBody.RETURN_VERSION.equals(client.returnVersion())) {
-            throw new ReportingAgentValidationException("returnVersion",
-                    "locked to " + ClientReturnBody.RETURN_VERSION);
-        }
         OffsetDateTime returnTs = OffsetDateTime.now(clock.withZone(PROCESSING_ZONE));
         String xml = ReportingAgentReturnXml.render(originator, client, returnTs);
         return new ReportingAgentReturn(originator, client, xml);
@@ -121,7 +119,9 @@ public final class ReportingAgentReturn {
                     text(xpath, document,
                             "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp/efile:RAPINEnteredByCd"),
                     text(xpath, document,
-                            "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp/efile:JuratDisclosureCd"));
+                            "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp/efile:JuratDisclosureCd"),
+                    text(xpath, document, "local-name(" + PERIOD_ELEMENT + ")"),
+                    text(xpath, document, PERIOD_ELEMENT));
         } catch (ReportingAgentValidationException e) {
             throw e;
         } catch (Exception e) {
@@ -178,7 +178,9 @@ public final class ReportingAgentReturn {
             Ein filerEin,
             String softwareId,
             String rapinEnteredByCd,
-            String juratDisclosureCd) {}
+            String juratDisclosureCd,
+            String periodElement,
+            String periodValue) {}
 
     private static final class EfileNamespace implements NamespaceContext {
         @Override

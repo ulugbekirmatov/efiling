@@ -2,6 +2,9 @@ package com.irs.mef.reportingagent;
 
 import com.irs.mef.newsend.domain.Efin;
 import com.irs.mef.newsend.domain.Ein;
+import com.irs.mef.newsend.domain.SchemaRelease;
+
+import java.util.Map;
 
 /**
  * Schema-valid literals for offline tests. These are XSD stand-ins, not Pyramos enrollment values,
@@ -19,7 +22,9 @@ final class ReportingAgentOriginatorStandIn {
         return new ReportingAgentOriginator(
                 new Efin("000000"),
                 new ReportingAgentPin("00000"),
-                new SoftwareId("00000000"),
+                new SoftwareIds(Map.of(
+                        SchemaRelease.Y2026Q1_V4, new SoftwareId("00000000"),
+                        SchemaRelease.Y2026_V2, new SoftwareId("00000000"))),
                 "192.0.2.1",
                 new ReportingAgentIdentity(
                         new Ein("000000000"),

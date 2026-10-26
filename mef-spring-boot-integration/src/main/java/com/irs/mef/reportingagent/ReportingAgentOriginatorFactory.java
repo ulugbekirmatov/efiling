@@ -3,6 +3,7 @@ package com.irs.mef.reportingagent;
 import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.newsend.domain.Efin;
 import com.irs.mef.newsend.domain.Ein;
+import com.irs.mef.newsend.domain.SchemaRelease;
 import org.springframework.stereotype.Component;
 
 import static com.irs.mef.reportingagent.ReportingAgentChecks.requireConfigured;
@@ -45,7 +46,7 @@ public class ReportingAgentOriginatorFactory {
         return new ReportingAgentOriginator(
                 new Efin(efinValue),
                 new ReportingAgentPin(requireConfigured("MEF_RA_PIN", properties.getPin())),
-                new SoftwareId(requireConfigured("MEF_SOFTWARE_ID", properties.getSoftwareId())),
+                softwareIds(),
                 requireConfigured("MEF_RA_FILING_IP", properties.getFilingIp()),
                 new ReportingAgentIdentity(
                         new Ein(einRaw),
@@ -56,5 +57,14 @@ public class ReportingAgentOriginatorFactory {
                                 requireConfigured("MEF_RA_CITY", properties.getCity()),
                                 requireConfigured("MEF_RA_STATE", properties.getState()),
                                 requireConfigured("MEF_RA_ZIP", properties.getZip()))));
+    }
+
+    private SoftwareIds softwareIds() {
+        SoftwareIds quarterly = SoftwareIds.of(SchemaRelease.Y2026Q1_V4,
+                new SoftwareId(requireConfigured("MEF_SOFTWARE_ID", properties.getSoftwareId())));
+        String annual = properties.getAnnualSoftwareId();
+        return annual == null || annual.isBlank()
+                ? quarterly
+                : quarterly.with(SchemaRelease.Y2026_V2, new SoftwareId(annual.trim()));
     }
 }

@@ -1,0 +1,32 @@
+document	form line	element path	value	pdf page	confidence	name source
+Filer	header	Filer/EIN	003000001	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/BusinessName/BusinessNameLine1Txt	Poppy Company	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header (not printed; first four letters of the name)	Filer/BusinessNameControlTxt	POPP	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/AddressLine1Txt	1000 Black St	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/CityNm	New York	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/StateAbbreviationCd	NY	2	known	ReturnHeader94x.xsd BusinessInformationType
+Filer	header	Filer/USAddress/ZIPCd	10005	2	known	ReturnHeader94x.xsd BusinessInformationType
+IRS940	Line 1b	IRS940/MultiStateInd	X	2	guess	guess from the 940 line text
+IRS940	Line 2	IRS940/CreditReductionStateInd	X	2	guess	guess from the 940 line text
+IRS940	Line 3	IRS940/TotalPaymentsToAllEmployeesAmt	350000.00	2	guess	guess from the 940 line text
+IRS940	Line 4	IRS940/ExemptPaymentsAmt	100000.00	2	guess	guess from the 940 line text
+IRS940	Line 4c	IRS940/RetirementPensionInd	X	2	guess	guess from the 940 line text
+IRS940	Line 6	IRS940/SubtotalAmt	100000.00	2	guess	guess from the 940 line text
+IRS940	Line 7	IRS940/TotalTaxableFUTAWagesAmt	250000.00	2	guess	guess from the 940 line text
+IRS940	Line 8	IRS940/FUTATaxBeforeAdjustmentsAmt	1500.00	2	guess	guess from the 940 line text
+IRS940	Line 11	IRS940/TotalCreditReductionAmt	11250.00	2	guess	guess from the 940 line text
+IRS940	Line 12	IRS940/TotalFUTATaxAfterAdjustmentsAmt	12750.00	2	guess	guess from the 940 line text
+IRS940	Line 13	IRS940/TotalTaxDepositAmt	13000.00	2	guess	940 unverified; same name in IRS941.xsd and IRS941ScheduleR.xsd TotalTaxDepositAmt (line 13 deposits)
+IRS940	Line 15a	IRS940/OverpaymentGrp/OverpaidAmt	250.00	2	guess	940 unverified; same name in IRS941.xsd OverpaymentGrp, same line 15 choice
+IRS940	Line 15b apply to next return	IRS940/OverpaymentGrp/ApplyOverpaymentNextReturnInd	X	2	guess	940 unverified; same name in IRS941.xsd OverpaymentGrp, same line 15 choice
+IRS940	Line 16a	IRS940/TaxLiabilityQtr1Amt	375.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 16b	IRS940/TaxLiabilityQtr2Amt	375.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 16c	IRS940/TaxLiabilityQtr3Amt	375.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 16d	IRS940/TaxLiabilityQtr4Amt	11625.00	3	guess	pattern of IRS941.xsd TaxLiabilityMonth1Amt and IRS941ScheduleB TaxLiabilityQtrMonthlyDetail
+IRS940	Line 17	IRS940/TotalTaxLiabilityAmt	12750.00	3	guess	IRS941ScheduleB.xsd TotalTaxLiabilityAmt names a liability total; year total is a guess
+IRS940ScheduleA	NY box	IRS940ScheduleA/StateGrp[1]/StateAbbreviationCd	NY	4	guess	guess from the 940 line text
+IRS940ScheduleA	VI box	IRS940ScheduleA/StateGrp[2]/StateAbbreviationCd	VI	4	guess	guess from the 940 line text
+IRS940ScheduleA	VI FUTA taxable wages	IRS940ScheduleA/StateGrp[2]/FUTATaxableWagesAmt	250000.00	4	guess	guess from the 940 line text
+IRS940ScheduleA	VI reduction rate	IRS940ScheduleA/StateGrp[2]/CreditReductionRt	0.045	4	guess	guess from the 940 line text
+IRS940ScheduleA	VI credit reduction	IRS940ScheduleA/StateGrp[2]/CreditReductionAmt	11250.00	4	guess	guess from the 940 line text
+IRS940ScheduleA	Total credit reduction	IRS940ScheduleA/TotalCreditReductionAmt	11250.00	4	guess	guess from the 940 line text

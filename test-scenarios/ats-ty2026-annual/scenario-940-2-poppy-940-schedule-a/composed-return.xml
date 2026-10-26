@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Return xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" returnVersion="2026v2.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <ReturnTypeCd>940</ReturnTypeCd>
+    <ReturnTs>2026-10-13T10:00:00-04:00</ReturnTs>
+    <SoftwareId>00000000</SoftwareId>
+    <MultSoftwarePackagesUsedInd>false</MultSoftwarePackagesUsedInd>
+    <AdditionalFilerInformation>
+      <AtSubmissionFilingGrp>
+        <RefundProductElectionInd>false</RefundProductElectionInd>
+        <RefundDisbursementGrp>
+          <RefundDisbursementCd>0</RefundDisbursementCd>
+        </RefundDisbursementGrp>
+      </AtSubmissionFilingGrp>
+    </AdditionalFilerInformation>
+    <FilingSecurityInformation>
+      <IPAddress>
+        <IPv4AddressTxt>192.0.2.1</IPv4AddressTxt>
+      </IPAddress>
+      <TotActiveTimePrepSubmissionTs>1</TotActiveTimePrepSubmissionTs>
+      <VendorControlNum>70f94b739838cab0</VendorControlNum>
+      <AtSubmissionCreationDeviceId>00693E2B581B40C001D94A4EF64FF21271063345</AtSubmissionCreationDeviceId>
+      <AtSubmissionFilingDeviceId>00693E2B581B40C001D94A4EF64FF21271063345</AtSubmissionFilingDeviceId>
+    </FilingSecurityInformation>
+    <TaxYr>2026</TaxYr>
+    <Filer>
+    <EIN>003000001</EIN>
+    <BusinessName>
+      <BusinessNameLine1Txt>Poppy Company</BusinessNameLine1Txt>
+    </BusinessName>
+    <BusinessNameControlTxt>POPP</BusinessNameControlTxt>
+    <USAddress>
+      <AddressLine1Txt>1000 Black St</AddressLine1Txt>
+      <CityNm>New York</CityNm>
+      <StateAbbreviationCd>NY</StateAbbreviationCd>
+      <ZIPCd>10005</ZIPCd>
+    </USAddress>
+  </Filer>
+    <OriginatorGrp>
+      <EFIN>000000</EFIN>
+      <OriginatorTypeCd>ReportingAgent</OriginatorTypeCd>
+    </OriginatorGrp>
+    <ReportingAgentPINGrp>
+      <PIN>00000</PIN>
+      <RAPINEnteredByCd>REPORTING AGENT</RAPINEnteredByCd>
+      <JuratDisclosureCd>REPORTING AGENT PIN</JuratDisclosureCd>
+    </ReportingAgentPINGrp>
+    <IRSResponsiblePrtyInfoCurrInd>true</IRSResponsiblePrtyInfoCurrInd>
+    <DiscussWithThirdPartyNoInd>X</DiscussWithThirdPartyNoInd>
+    <ReportingAgent94XFilerGrp>
+      <EIN>000000000</EIN>
+      <BusinessName>
+        <BusinessNameLine1Txt>PYRAMOS SOFTWARE LLC</BusinessNameLine1Txt>
+      </BusinessName>
+      <BusinessNameControlTxt>PYRA</BusinessNameControlTxt>
+      <USAddress>
+        <AddressLine1Txt>100 Market Street</AddressLine1Txt>
+        <CityNm>Philadelphia</CityNm>
+        <StateAbbreviationCd>PA</StateAbbreviationCd>
+        <ZIPCd>19103</ZIPCd>
+      </USAddress>
+    </ReportingAgent94XFilerGrp>
+  </ReturnHeader>
+  <ReturnData documentCnt="2">
+    <IRS940 documentId="IRS940" referenceDocumentId="IRS940ScheduleA">
+      <!-- Line 1b: Multi-state employer (complete Schedule A) -->
+      <MultiStateInd>X</MultiStateInd>
+      <!-- Line 2: Paid wages in a state subject to credit reduction (complete Schedule A) -->
+      <CreditReductionStateInd>X</CreditReductionStateInd>
+      <!-- Line 3: Total payments to all employees -->
+      <TotalPaymentsToAllEmployeesAmt>350000.00</TotalPaymentsToAllEmployeesAmt>
+      <!-- Line 4: Payments exempt from FUTA tax -->
+      <ExemptPaymentsAmt>100000.00</ExemptPaymentsAmt>
+      <!-- Line 4c: Exempt payment type, retirement/pension -->
+      <RetirementPensionInd>X</RetirementPensionInd>
+      <!-- Line 5: Payments in excess of $7,000 (blank on the form) -->
+      <!-- Line 6: Subtotal (line 4 + line 5) -->
+      <SubtotalAmt>100000.00</SubtotalAmt>
+      <!-- Line 7: Total taxable FUTA wages (line 3 - line 6) -->
+      <TotalTaxableFUTAWagesAmt>250000.00</TotalTaxableFUTAWagesAmt>
+      <!-- Line 8: FUTA tax before adjustments (line 7 x 0.006) -->
+      <FUTATaxBeforeAdjustmentsAmt>1500.00</FUTATaxBeforeAdjustmentsAmt>
+      <!-- Lines 9-10: Adjustments (blank on the form) -->
+      <!-- Line 11: Credit reduction, total from Schedule A -->
+      <TotalCreditReductionAmt>11250.00</TotalCreditReductionAmt>
+      <!-- Line 12: Total FUTA tax after adjustments (lines 8 + 9 + 10 + 11) -->
+      <TotalFUTATaxAfterAdjustmentsAmt>12750.00</TotalFUTATaxAfterAdjustmentsAmt>
+      <!-- Line 13: FUTA tax deposited for the year -->
+      <TotalTaxDepositAmt>13000.00</TotalTaxDepositAmt>
+      <!-- Line 15a-b: Overpayment, applied to the next return -->
+      <OverpaymentGrp>
+        <OverpaidAmt>250.00</OverpaidAmt>
+        <ApplyOverpaymentNextReturnInd>X</ApplyOverpaymentNextReturnInd>
+      </OverpaymentGrp>
+      <!-- Line 16a: FUTA tax liability, 1st quarter -->
+      <TaxLiabilityQtr1Amt>375.00</TaxLiabilityQtr1Amt>
+      <!-- Line 16b: FUTA tax liability, 2nd quarter -->
+      <TaxLiabilityQtr2Amt>375.00</TaxLiabilityQtr2Amt>
+      <!-- Line 16c: FUTA tax liability, 3rd quarter -->
+      <TaxLiabilityQtr3Amt>375.00</TaxLiabilityQtr3Amt>
+      <!-- Line 16d: FUTA tax liability, 4th quarter -->
+      <TaxLiabilityQtr4Amt>11625.00</TaxLiabilityQtr4Amt>
+      <!-- Line 17: Total tax liability for the year (lines 16a-16d) -->
+      <TotalTaxLiabilityAmt>12750.00</TotalTaxLiabilityAmt>
+    </IRS940>
+    <IRS940ScheduleA documentId="IRS940ScheduleA">
+      <!-- NY: state unemployment tax paid, no credit reduction -->
+      <StateGrp>
+        <StateAbbreviationCd>NY</StateAbbreviationCd>
+      </StateGrp>
+      <!-- VI: state unemployment tax paid, credit reduction state -->
+      <StateGrp>
+        <StateAbbreviationCd>VI</StateAbbreviationCd>
+        <FUTATaxableWagesAmt>250000.00</FUTATaxableWagesAmt>
+        <CreditReductionRt>0.045</CreditReductionRt>
+        <CreditReductionAmt>11250.00</CreditReductionAmt>
+      </StateGrp>
+      <!-- Total credit reduction, carried to Form 940 line 11 -->
+      <TotalCreditReductionAmt>11250.00</TotalCreditReductionAmt>
+    </IRS940ScheduleA>
+  </ReturnData>
+</Return>

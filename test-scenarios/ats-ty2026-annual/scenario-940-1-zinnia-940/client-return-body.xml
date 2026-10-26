@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClientReturnBody returnTypeCd="940" xmlns="http://www.irs.gov/efile"
+               returnVersion="2026v2.0"
+               taxPeriodBegin="2026-01-01"
+               taxPeriodEnd="2026-12-31"
+               taxYr="2026">
+  <Filer>
+    <EIN>003000011</EIN>
+    <BusinessName>
+      <BusinessNameLine1Txt>Zinnia Company</BusinessNameLine1Txt>
+    </BusinessName>
+    <BusinessNameControlTxt>ZINN</BusinessNameControlTxt>
+    <USAddress>
+      <AddressLine1Txt>5000 Purple Road</AddressLine1Txt>
+      <CityNm>Tucson</CityNm>
+      <StateAbbreviationCd>AZ</StateAbbreviationCd>
+      <ZIPCd>85641</ZIPCd>
+    </USAddress>
+  </Filer>
+  <ReturnData documentCnt="1">
+    <IRS940 documentId="IRS940">
+      <!-- Line 1a: State unemployment tax paid in one state only -->
+      <SingleStateCd>AZ</SingleStateCd>
+      <!-- Line 3: Total payments to all employees -->
+      <TotalPaymentsToAllEmployeesAmt>200000.00</TotalPaymentsToAllEmployeesAmt>
+      <!-- Line 4: Payments exempt from FUTA tax (blank on the form) -->
+      <!-- Line 5: Total of payments made to each employee in excess of $7,000 -->
+      <PaymentsExceedingWageBaseAmt>4000.00</PaymentsExceedingWageBaseAmt>
+      <!-- Line 6: Subtotal (line 4 + line 5) -->
+      <SubtotalAmt>4000.00</SubtotalAmt>
+      <!-- Line 7: Total taxable FUTA wages (line 3 - line 6) -->
+      <TotalTaxableFUTAWagesAmt>196000.00</TotalTaxableFUTAWagesAmt>
+      <!-- Line 8: FUTA tax before adjustments (line 7 x 0.006) -->
+      <FUTATaxBeforeAdjustmentsAmt>1176.00</FUTATaxBeforeAdjustmentsAmt>
+      <!-- Lines 9-11: Adjustments (blank on the form) -->
+      <!-- Line 12: Total FUTA tax after adjustments (lines 8 + 9 + 10 + 11) -->
+      <TotalFUTATaxAfterAdjustmentsAmt>1176.00</TotalFUTATaxAfterAdjustmentsAmt>
+      <!-- Line 13: FUTA tax deposited for the year -->
+      <TotalTaxDepositAmt>2886.00</TotalTaxDepositAmt>
+      <!-- Line 15a-b: Overpayment, refund requested -->
+      <OverpaymentGrp>
+        <OverpaidAmt>1710.00</OverpaidAmt>
+        <RefundOverpaymentInd>X</RefundOverpaymentInd>
+      </OverpaymentGrp>
+      <!-- Line 16a: FUTA tax liability, 1st quarter -->
+      <TaxLiabilityQtr1Amt>300.00</TaxLiabilityQtr1Amt>
+      <!-- Line 16b: FUTA tax liability, 2nd quarter -->
+      <TaxLiabilityQtr2Amt>300.00</TaxLiabilityQtr2Amt>
+      <!-- Line 16c: FUTA tax liability, 3rd quarter -->
+      <TaxLiabilityQtr3Amt>300.00</TaxLiabilityQtr3Amt>
+      <!-- Line 16d: FUTA tax liability, 4th quarter -->
+      <TaxLiabilityQtr4Amt>276.00</TaxLiabilityQtr4Amt>
+      <!-- Line 17: Total tax liability for the year (lines 16a-16d) -->
+      <TotalTaxLiabilityAmt>1176.00</TotalTaxLiabilityAmt>
+    </IRS940>
+  </ReturnData>
+</ClientReturnBody>

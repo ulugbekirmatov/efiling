@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public record ReportingAgentOriginator(
         Efin efin,
         ReportingAgentPin pin,
-        SoftwareId softwareId,
+        SoftwareIds softwareIds,
         String filingIpv4Address,
         ReportingAgentIdentity identity) {
 
@@ -31,7 +31,7 @@ public record ReportingAgentOriginator(
     public ReportingAgentOriginator {
         Objects.requireNonNull(efin);
         Objects.requireNonNull(pin);
-        Objects.requireNonNull(softwareId);
+        Objects.requireNonNull(softwareIds);
         Objects.requireNonNull(identity);
         requireReportingAgentEfin(efin);
         requireRoutableIpv4(filingIpv4Address);

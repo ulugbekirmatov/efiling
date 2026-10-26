@@ -32,11 +32,11 @@ final class ReportingAgentReturnXml {
         xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
         element(xml, 2, "ReturnTypeCd", client.returnType().returnTypeCd());
         element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
-        element(xml, 2, "SoftwareId", originator.softwareId().value());
+        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.returnType().schemaRelease()).value());
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
         additionalFilerInformation(xml);
         filingSecurity(xml, originator, client, truncated);
-        element(xml, 2, "QuarterEndingDt", client.quarterEnding().toString());
+        element(xml, 2, client.period().headerElement(), client.period().headerValue());
         xml.append("    ").append(inDefaultNs(client.filerXml())).append('\n');
         xml.append("    <OriginatorGrp>\n");
         element(xml, 3, "EFIN", originator.efin().value());

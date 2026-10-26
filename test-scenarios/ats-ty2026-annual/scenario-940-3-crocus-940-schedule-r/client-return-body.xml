@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClientReturnBody returnTypeCd="940" xmlns="http://www.irs.gov/efile"
+               returnVersion="2026v2.0"
+               taxPeriodBegin="2026-01-01"
+               taxPeriodEnd="2026-12-31"
+               taxYr="2026">
+  <Filer>
+    <EIN>003000002</EIN>
+    <BusinessName>
+      <BusinessNameLine1Txt>Crocus Company Inc</BusinessNameLine1Txt>
+    </BusinessName>
+    <BusinessNameControlTxt>CROC</BusinessNameControlTxt>
+    <USAddress>
+      <AddressLine1Txt>4th Flower Street</AddressLine1Txt>
+      <CityNm>Houston</CityNm>
+      <StateAbbreviationCd>TX</StateAbbreviationCd>
+      <ZIPCd>77002</ZIPCd>
+    </USAddress>
+  </Filer>
+  <ReturnData documentCnt="2">
+    <IRS940 documentId="IRS940">
+      <!-- Aggregate Return Filers Only - Type of filer: Section 3504 agent -->
+      <Section3504AgentInd>X</Section3504AgentInd>
+      <!-- Line 1a: State unemployment tax paid in one state only -->
+      <SingleStateCd>TX</SingleStateCd>
+      <!-- Line 3: Total payments to all employees -->
+      <TotalPaymentsToAllEmployeesAmt>560000.00</TotalPaymentsToAllEmployeesAmt>
+      <!-- Lines 4-6: Exempt payments, excess over $7,000, subtotal (blank on the form) -->
+      <!-- Line 7: Total taxable FUTA wages (line 3 - line 6) -->
+      <TotalTaxableFUTAWagesAmt>560000.00</TotalTaxableFUTAWagesAmt>
+      <!-- Line 8: FUTA tax before adjustments (line 7 x 0.006) -->
+      <FUTATaxBeforeAdjustmentsAmt>3360.00</FUTATaxBeforeAdjustmentsAmt>
+      <!-- Lines 9-11: Adjustments (blank on the form) -->
+      <!-- Line 12: Total FUTA tax after adjustments (lines 8 + 9 + 10 + 11) -->
+      <TotalFUTATaxAfterAdjustmentsAmt>3360.00</TotalFUTATaxAfterAdjustmentsAmt>
+      <!-- Line 13: FUTA tax deposited for the year -->
+      <TotalTaxDepositAmt>3000.00</TotalTaxDepositAmt>
+      <!-- Line 14: Balance due (line 12 - line 13) -->
+      <BalanceDueAmt>360.00</BalanceDueAmt>
+      <!-- Line 16a: FUTA tax liability, 1st quarter -->
+      <TaxLiabilityQtr1Amt>800.00</TaxLiabilityQtr1Amt>
+      <!-- Line 16b: FUTA tax liability, 2nd quarter -->
+      <TaxLiabilityQtr2Amt>800.00</TaxLiabilityQtr2Amt>
+      <!-- Line 16c: FUTA tax liability, 3rd quarter -->
+      <TaxLiabilityQtr3Amt>800.00</TaxLiabilityQtr3Amt>
+      <!-- Line 16d: FUTA tax liability, 4th quarter -->
+      <TaxLiabilityQtr4Amt>960.00</TaxLiabilityQtr4Amt>
+      <!-- Line 17: Total tax liability for the year (lines 16a-16d) -->
+      <TotalTaxLiabilityAmt>3360.00</TotalTaxLiabilityAmt>
+    </IRS940>
+    <IRS940ScheduleR documentId="IRS940ScheduleR">
+      <!-- Type of filer - Section 3504 Agent (same as Form 940) -->
+      <Section3504AgentInd>X</Section3504AgentInd>
+      <!-- Line 1: client allocation -->
+      <ClientInformationGrp>
+        <EIN>003000001</EIN>
+        <StateAbbreviationCd>TX</StateAbbreviationCd>
+        <ClientAllocationInformationGrp>
+          <TotalTaxableFUTAWagesAmt>140000.00</TotalTaxableFUTAWagesAmt>
+          <TotalFUTATaxAfterAdjustmentsAmt>840.00</TotalFUTATaxAfterAdjustmentsAmt>
+          <TotalTaxDepositAmt>750.00</TotalTaxDepositAmt>
+        </ClientAllocationInformationGrp>
+      </ClientInformationGrp>
+      <!-- Line 2: client allocation -->
+      <ClientInformationGrp>
+        <EIN>003000003</EIN>
+        <StateAbbreviationCd>TX</StateAbbreviationCd>
+        <ClientAllocationInformationGrp>
+          <TotalTaxableFUTAWagesAmt>140000.00</TotalTaxableFUTAWagesAmt>
+          <TotalFUTATaxAfterAdjustmentsAmt>840.00</TotalFUTATaxAfterAdjustmentsAmt>
+          <TotalTaxDepositAmt>750.00</TotalTaxDepositAmt>
+        </ClientAllocationInformationGrp>
+      </ClientInformationGrp>
+      <!-- Line 3: client allocation -->
+      <ClientInformationGrp>
+        <EIN>003000004</EIN>
+        <StateAbbreviationCd>TX</StateAbbreviationCd>
+        <ClientAllocationInformationGrp>
+          <TotalTaxableFUTAWagesAmt>140000.00</TotalTaxableFUTAWagesAmt>
+          <TotalFUTATaxAfterAdjustmentsAmt>840.00</TotalFUTATaxAfterAdjustmentsAmt>
+          <TotalTaxDepositAmt>750.00</TotalTaxDepositAmt>
+        </ClientAllocationInformationGrp>
+      </ClientInformationGrp>
+      <!-- Line 16: Subtotals for clients -->
+      <SubtotalForClientGrp>
+        <TotalTaxableFUTAWagesAmt>420000.00</TotalTaxableFUTAWagesAmt>
+        <TotalFUTATaxAfterAdjustmentsAmt>2520.00</TotalFUTATaxAfterAdjustmentsAmt>
+        <TotalTaxDepositAmt>2250.00</TotalTaxDepositAmt>
+      </SubtotalForClientGrp>
+      <!-- Line 17: Continuation sheet subtotal (blank on the form) -->
+      <!-- Line 18: Form 940 amounts for your employees -->
+      <AggregateEmployeeInfoGrp>
+        <TotalTaxableFUTAWagesAmt>140000.00</TotalTaxableFUTAWagesAmt>
+        <TotalFUTATaxAfterAdjustmentsAmt>840.00</TotalFUTATaxAfterAdjustmentsAmt>
+        <TotalTaxDepositAmt>750.00</TotalTaxDepositAmt>
+      </AggregateEmployeeInfoGrp>
+      <!-- Line 19: Totals (lines 16 + 17 + 18) -->
+      <TotalAggregateAndClientInfoGrp>
+        <TotalTaxableFUTAWagesAmt>560000.00</TotalTaxableFUTAWagesAmt>
+        <TotalFUTATaxAfterAdjustmentsAmt>3360.00</TotalFUTATaxAfterAdjustmentsAmt>
+        <TotalTaxDepositAmt>3000.00</TotalTaxDepositAmt>
+      </TotalAggregateAndClientInfoGrp>
+    </IRS940ScheduleR>
+  </ReturnData>
+</ClientReturnBody>

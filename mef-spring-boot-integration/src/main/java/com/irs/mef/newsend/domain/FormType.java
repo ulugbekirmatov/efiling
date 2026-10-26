@@ -13,12 +13,13 @@ import java.util.stream.Collectors;
  * two minutes later. The legacy service hardcoded "941"; here the form is always explicit.
  */
 public enum FormType {
-    F940("940"),
+    // Path is a placeholder: the 2026v2.0 bundle (e-Services mailbox) is not in the repo yet, so its layout is unknown.
+    F940("940", SchemaRelease.Y2026_V2, "EmploymentTax/940/Return940.xsd"),
     F940PR("940PR"),
-    F941("941"),
+    F941("941", SchemaRelease.Y2026Q1_V4, "EmploymentTax/941/Return941.xsd"),
     F941PR("941PR"),
     F941SS("941SS"),
-    F941X("941X"),
+    F941X("941X", SchemaRelease.Y2026Q1_V4, "EmploymentTax/941X/Return941X.xsd"),
     F943("943"),
     F943X("943X"),
     F943PR("943PR"),
@@ -27,13 +28,18 @@ public enum FormType {
     F945X("945X"),
     F94XPINREG("94XPINREG");
 
-    /** The IRS 2026Q1v4.0 schema tree, copied verbatim so its relative includes resolve unchanged. */
-    private static final String SCHEMA_BUNDLE = "schemas/94x/2026Q1v4.0/";
-
     private final String code;
+    private final SchemaRelease schemaRelease;
+    private final String pathInBundle;
 
     FormType(String code) {
+        this(code, null, null);
+    }
+
+    FormType(String code, SchemaRelease schemaRelease, String pathInBundle) {
         this.code = code;
+        this.schemaRelease = schemaRelease;
+        this.pathInBundle = pathInBundle;
     }
 
     /** The wire value used in the manifest and in JSON. */
@@ -51,13 +57,14 @@ public enum FormType {
                         "Unknown form type '" + raw + "'. Must be one of: " + legalCodes()));
     }
 
+    /** The schema release this form is filed under; empty for a form with no bundled schema. */
+    public Optional<SchemaRelease> schemaRelease() {
+        return Optional.ofNullable(schemaRelease);
+    }
+
     /** Classpath root XSD for this form when one is bundled; empty means schema validation degrades to a warning. */
     public Optional<String> schemaRoot() {
-        return switch (this) {
-            case F941 -> Optional.of(SCHEMA_BUNDLE + "EmploymentTax/941/Return941.xsd");
-            case F941X -> Optional.of(SCHEMA_BUNDLE + "EmploymentTax/941X/Return941X.xsd");
-            default -> Optional.empty();
-        };
+        return schemaRelease().map(release -> release.resolve(pathInBundle));
     }
 
     private static String legalCodes() {

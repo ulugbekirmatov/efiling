@@ -27,3 +27,23 @@ jobs:
         run: ./install-sdk-jars.sh
       - name: Run the offline test suite (same command as local)
         run: mvn -B test
+
+  # The AIR and FTB catalog tests read fixtures from the sibling aca repo and skip here with a
+  # reason; everything else, including the redaction and one-owner guards, runs.
+  c2s-web-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: c2s-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: c2s-web/package-lock.json
+      - run: npm ci
+      - name: Run the c2s-web tests (same command as local)
+        run: npm test
+      - name: Build the pages (same command as local)
+        run: npx next build

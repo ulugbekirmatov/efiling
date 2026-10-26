@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 import { compose } from "../../lib/airTools.js";
 import { json, apiError, requireSameOrigin } from "../../lib/http.js";
-import { redactMessage } from "../../lib/redact.js";
+import { redactMessage } from "../../../lib/redact.js";
 import { commitComposedRun, listRuns, newRunId, readRun, stagingDir } from "../../lib/runStore.js";
 import { scenarioFile } from "../../lib/scenarioCatalog.js";
 

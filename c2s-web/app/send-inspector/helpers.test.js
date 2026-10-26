@@ -85,14 +85,14 @@ test("prettyXml returns an empty string for blank input", async () => {
   assert.equal(prettyXml(null), "");
 });
 
-test("redactCredentials replaces SAML and token elements", async () => {
-  const { redactCredentials } = await import("./prettyXml.js");
+test("the inspector strips SAML and token elements through the shared redaction", async () => {
+  const { redactCredentials } = await import("../lib/redact.js");
   assert.equal(
     redactCredentials("<soap><saml:Assertion>secret</saml:Assertion></soap>"),
-    "<soap><!-- credential omitted --></soap>"
+    "<soap><saml:Assertion>[redacted]</saml:Assertion></soap>"
   );
   assert.equal(
     redactCredentials("<h><wsse:UsernameToken>x</wsse:UsernameToken></h>"),
-    "<h><!-- credential omitted --></h>"
+    "<h><wsse:UsernameToken>[redacted]</wsse:UsernameToken></h>"
   );
 });

@@ -3,7 +3,7 @@ import { runJava } from "../../../../lib/airTools.js";
 import { readiness } from "../../../../lib/airConfig.js";
 import { json, apiError, requireSameOrigin, airNotConfigured } from "../../../../lib/http.js";
 import { isRunId, RUN_FILES } from "../../../../lib/runModel.js";
-import { redactMessage } from "../../../../lib/redact.js";
+import { redactMessage } from "../../../../../lib/redact.js";
 import { readRun, runDir, secretValues } from "../../../../lib/runStore.js";
 
 export const dynamic = "force-dynamic";

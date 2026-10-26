@@ -1,16 +1,12 @@
 import { execFile } from "node:child_process";
-import { createRequire } from "node:module";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { airConfig } from "./airConfig.js";
-import { redactDocument } from "./redact.js";
+import { redactDocument } from "../../lib/redact.js";
+import { nodeRequire } from "../../lib/nodeRequire.js";
 
 const execFileAsync = promisify(execFile);
-// webpack rewrites createRequire into its bundle require, which cannot load the AIR package by absolute path.
-const requireFromHere = typeof __non_webpack_require__ === "function"
-  ? __non_webpack_require__
-  : createRequire(import.meta.url);
 
 const SCENARIO_FILE_RE = /^(scenario-[0-9]+[a-z]?)\.json$/;
 const SCENARIO_ID_RE = /^scenario-[0-9]+[a-z]?$/;
@@ -96,7 +92,7 @@ export async function loadScenario(id) {
   const { airRoot, transmitterConfig, pdfZip } = airConfig();
   const scenario = await readScenarioJson(file);
   const transmitter = await readScenarioJson(transmitterConfig);
-  const { buildTransmission } = requireFromHere(path.join(airRoot, "lib", "transmission.js"));
+  const { buildTransmission } = nodeRequire(path.join(airRoot, "lib", "transmission.js"));
   const built = buildTransmission(scenario, transmitter, new Date());
   const pdfs = pdfsForScenario(await listPdfEntries(pdfZip), id);
   return {

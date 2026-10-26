@@ -1,9 +1,14 @@
-const { test } = require("node:test");
+const { test: nodeTest } = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
-const OPERATOR_PAGE = path.join(os.homedir(), "Documents", "aca", "ftb-fx", "scripts", "operator-page.js");
+// The ftb-fx model lives in the sibling aca repo (FTB_REPO_ROOT, default ~/Documents/aca).
+const FTB_ROOT = path.resolve(process.env.FTB_REPO_ROOT || path.join(os.homedir(), "Documents", "aca"));
+const OPERATOR_PAGE = path.join(FTB_ROOT, "ftb-fx", "scripts", "operator-page.js");
+const FIXTURES_MISSING = !fs.existsSync(OPERATOR_PAGE);
+const test = (name, fn) => nodeTest(name, { skip: FIXTURES_MISSING && `ftb-fx not found at ${OPERATOR_PAGE}; set FTB_REPO_ROOT` }, fn);
 
 function rawSsns(id) {
   const model = require(OPERATOR_PAGE).buildModel({ previewRoot: path.join(os.tmpdir(), "c2s-web-ftb-test") });

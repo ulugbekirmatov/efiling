@@ -1,19 +1,7 @@
-import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 import { ftbConfig } from "./ftbConfig.js";
-import { maskSsn } from "../../air/lib/redact.js";
-
-// webpack rewrites createRequire into its bundle require, which cannot load ftb-fx by absolute path.
-const requireFromHere = typeof __non_webpack_require__ === "function"
-  ? __non_webpack_require__
-  : createRequire(import.meta.url);
-
-const SSN_MASK = "*****";
-const SSN_VISIBLE_DIGITS = 4;
-
-function maskedDigits(value) {
-  return SSN_MASK + String(value).replace(/\D/g, "").slice(-SSN_VISIBLE_DIGITS);
-}
+import { maskKnownSsns, maskSsn, maskedDigits } from "../../lib/redact.js";
+import { nodeRequire } from "../../lib/nodeRequire.js";
 
 // A person's TIN is their SSN or ITIN. Only an EIN names a business and stays readable.
 function isPersonalId(person) {
@@ -27,16 +15,6 @@ function scenarioSsns(scenario) {
   const xml = [scenario.preview.formXml, scenario.preview.answerKeyXml].filter(Boolean).join("");
   const fromXml = [...xml.matchAll(/<(?:[\w.-]+:)?SSN>(\d{9})<\/(?:[\w.-]+:)?SSN>/g)].map((m) => m[1]);
   return [...new Set([...fromPeople, ...fromXml])];
-}
-
-// A narrative or check message quotes an SSN as plain text. Mask only the SSNs this scenario
-// carries, so EINs in the same text stay readable.
-function maskKnownSsns(text, ssns) {
-  if (typeof text !== "string") return text;
-  return ssns.reduce((out, ssn) => {
-    const dashed = `${ssn.slice(0, 3)}-${ssn.slice(3, 5)}-${ssn.slice(5)}`;
-    return out.split(ssn).join(maskedDigits(ssn)).split(dashed).join(maskedDigits(ssn));
-  }, text);
 }
 
 function redactScenario(scenario) {
@@ -67,7 +45,7 @@ function redactScenario(scenario) {
 // sends and never writes the ledger, so calling it per request is safe.
 export function loadModel() {
   const { operatorPageScript, previewRoot } = ftbConfig();
-  const { buildModel } = requireFromHere(operatorPageScript);
+  const { buildModel } = nodeRequire(operatorPageScript);
   const model = buildModel({ previewRoot });
   return { ...model, scenarios: model.scenarios.map(redactScenario) };
 }

@@ -25,12 +25,3 @@ export function prettyXml(xml) {
     .filter(Boolean)
     .join("\n");
 }
-
-/** Strip session credentials if a payload ever contains them. Fixtures must not. */
-export function redactCredentials(xml) {
-  if (!xml) return xml;
-  return String(xml)
-    .replace(/<([A-Za-z0-9._-]*:?Assertion)\b[\s\S]*?<\/\1>/gi, "<!-- credential omitted -->")
-    .replace(/<([A-Za-z0-9._-]*:?UsernameToken)\b[\s\S]*?<\/\1>/gi, "<!-- credential omitted -->")
-    .replace(/<([A-Za-z0-9._-]*:?BinarySecurityToken)\b[\s\S]*?<\/\1>/gi, "<!-- credential omitted -->");
-}

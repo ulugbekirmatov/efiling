@@ -295,7 +295,7 @@ Login and logout are **GET**, not POST as older docs state, and take no body.
 | POST | `/mef/submissions/archive/create` | `createSubmissionArchive` :114 | `@RequestParam submissionId, returnXmlPath, attachments?` | `String` path 200 — stub |
 | GET | `/mef/submissions/test/form941` | `testForm941Submission` :149 | none | `SubmitResponse` 201 |
 
-`testForm941Submission` self-logs-in if needed (153-166), reads EFIN from config and validates `\d{6}` (173-185), builds a submission ID as `EFIN(6) + yyyyDDD(7) + millis-slice(7)` (198-208) and asserts `[0-9]{13}[a-z0-9]{7}` (211-215). **Line 225 hardcodes `/Users/ulugbekirmatov/Documents/MeF-test/test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml`** — that directory does not exist; the file actually lives under `.../Documents/MeF/test-scenarios/...` (`MeF-test` vs `MeF`). This endpoint fails with `FILE_NOT_FOUND` at `SubmissionService.java:50-53`. TIN is hardcoded `"003000004"` (239) and the tax period to Q1 2026 (242-243).
+`testForm941Submission` self-logs-in if needed (153-166), reads EFIN from config and validates `\d{6}` (173-185), builds a submission ID as `EFIN(6) + yyyyDDD(7) + millis-slice(7)` (198-208) and asserts `[0-9]{13}[a-z0-9]{7}` (211-215). **Line 225 hardcodes `test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml`** — that directory does not exist; the file actually lives under `.../Documents/MeF/test-scenarios/...` (`MeF-test` vs `MeF`). This endpoint fails with `FILE_NOT_FOUND` at `SubmissionService.java:50-53`. TIN is hardcoded `"003000004"` (239) and the tax period to Q1 2026 (242-243).
 
 ### `AcknowledgementController` — `@RequestMapping("/mef/acknowledgments")`
 
@@ -456,13 +456,13 @@ The five jars other than `mef_client_sdk.jar` carry real public coordinates and 
 
 ## 6. Build / Test / Run
 
-### Toolchain prerequisites — not currently satisfied
+### Toolchain prerequisites
 
 On this machine (checked 2026-08-28), `mvn` is not on `PATH` and `/usr/bin/java` is the macOS stub (`Unable to locate a Java Runtime`). Neither a JDK nor Maven is installed, and `~/.m2` is absent. Nothing below can run until these are in place:
 
 ```bash
 brew install openjdk@17 maven
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 ```
 
 ### One-time: install the MeF SDK jar into the local repo
@@ -486,7 +486,7 @@ The zip also contains `webservices-{api,extra,rt,tools}-4.0.4.jar` and `xmlsec-4
 
 ```bash
 cd /Users/ulugbekirmatov/Documents/MeF/mef-spring-boot-integration
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 
 mvn clean package -DskipTests     # → target/mef-spring-boot-integration-1.0.0.jar
 mvn clean package                 # with tests
@@ -510,7 +510,7 @@ Gating (historical, file deleted 2026-09-16): `MefLoginIntegrationTest` guarded 
 
 ```bash
 cd /Users/ulugbekirmatov/Documents/MeF/mef-spring-boot-integration
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 mvn spring-boot:run                 # JVM --add-opens/--add-exports come from pom.xml:123-128
 ```
 

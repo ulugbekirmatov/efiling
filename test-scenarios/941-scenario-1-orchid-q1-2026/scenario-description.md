@@ -211,7 +211,7 @@ This scenario tests:
 | Source PDF | `941-test-scenario-1-ty2026.pdf` | Original IRS test scenario |
 | Return XML | `Return941-Scenario1.xml` | Generated MeF submission XML |
 | Configuration | `../../mef-spring-boot-integration/src/test/resources/test-scenarios/941-scenario-1/scenario-config.yml` | YAML configuration |
-| Test Class | `../../mef-spring-boot-integration/src/test/java/com/irs/mef/scenarios/Form941XmlGenerationTest.java` | Validation tests |
+| Test Class | `../../mef-spring-boot-integration/src/test/java/com/irs/mef/scenarios/Form941XmlGenerationTest.java` | Validation tests (deleted in 5355a43) |
 
 ## Validation
 
@@ -219,7 +219,7 @@ This scenario tests:
 
 ```bash
 cd ../../mef-spring-boot-integration
-mvn test -Dtest=Form941XmlGenerationTest
+mvn test -Dtest=AtsScenarioComposeTest   # replaces the deleted Form941XmlGenerationTest
 ```
 
 ### Expected Test Results

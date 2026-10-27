@@ -195,7 +195,7 @@ Ensure:
 - **IRS MeF Documentation**: https://www.irs.gov/e-file-providers/modernized-e-file-mef-guide-for-software-developers
 - **Schema Downloads**: https://www.irs.gov/e-file-providers/current-valid-xml-schemas-and-business-rules
 - **Spring Boot Project**: `../mef-spring-boot-integration/`
-- **Implementation Plan**: `../.claude/plans/curious-finding-clover.md`
+- **Implementation Plan**: curious-finding-clover.md (a local plan file, not tracked)
 
 ## Support
 

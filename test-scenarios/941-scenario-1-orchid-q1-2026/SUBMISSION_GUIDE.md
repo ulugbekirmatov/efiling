@@ -165,7 +165,7 @@ Note: These endpoints will need implementation. See `StatusService.java` and `Ac
 
 **Error:** XML schema validation failed
 - **Solution:** Should not happen - XML is pre-validated. If it does:
-  1. Re-run `Form941XmlGenerationTest` to verify XML
+  1. Re-run the XML schema validation (the old `Form941XmlGenerationTest` was deleted in 5355a43; see `AtsScenarioComposeTest`)
   2. Check IRS schema version matches (2026Q1v4.0)
 
 ## IRS Response Codes

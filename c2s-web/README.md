@@ -76,7 +76,7 @@ Scenario pages render per request, so regenerated snapshots show up on reload wi
 
 ## AIR operator
 
-The AIR operator pages are for the IRS AIR 1094-C/1095-C AATS session described in `TESTING.md` of the AIR package. They compose a transmission from an AATS fixture, validate and preview it, submit it to AATS, and check status. Each run is one directory under `AIR_RUNS_DIR`. The MeF Spring Boot backend is not needed.
+The AIR operator pages are for the IRS AIR 1094-C/1095-C AATS session described in TESTING.md of the AIR package (a separate repo). They compose a transmission from an AATS fixture, validate and preview it, submit it to AATS, and check status. Each run is one directory under `AIR_RUNS_DIR`. The MeF Spring Boot backend is not needed.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -92,7 +92,7 @@ Live runs are written under `AIR_RUNS_DIR`. The default sits outside both the c2
 
 **Build the AIR jar first.** The default `AIR_JAR` is `redesign/air-a2a/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` under `AIR_REPO_ROOT`. A stale jar fails with `Invalid signature file digest for Manifest main attributes`. Readiness only checks that the jar file exists.
 
-From `AIR_REPO_ROOT`, rebuild with the `mvn package` command in `redesign/air-a2a/java/README.md` and the `JAVA_HOME` it names.
+From `AIR_REPO_ROOT`, rebuild with the `mvn package` command in redesign/air-a2a/java/README.md in the AIR repo and the `JAVA_HOME` it names.
 
 ```bash
 export JAVA_HOME=/opt/homebrew/Cellar/openjdk/26.0.2.1/libexec/openjdk.jdk/Contents/Home
@@ -118,6 +118,6 @@ On a composed run, Validate (needs `xmllint` on PATH), then Preview, then Submit
 
 Check status only while the stage is PROCESSING, a Receipt ID exists, and 10 minutes have passed since the last submit or status call that may have reached IRS. Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID. Preview uses the same PKCS12, ASID, and jar. It does not POST.
 
-Every POST must be same-origin. The pages show SSN-masked form XML, redacted credentials, and redacted CLI records. Downloads of `form.xml` and `manifest.xml` are the exact bytes. The PKCS12 password is passed by env var name only.
+Every POST must be same-origin. The pages show SSN-masked form XML, redacted credentials, and redacted CLI records. Downloads of form.xml and `manifest.xml` are the exact bytes. The PKCS12 password is passed by env var name only.
 
 **Check it offline.** From `c2s-web`, run `npm test`. The AIR tests cover the model, store, redaction, and views. Nothing in `npm test` contacts IRS.

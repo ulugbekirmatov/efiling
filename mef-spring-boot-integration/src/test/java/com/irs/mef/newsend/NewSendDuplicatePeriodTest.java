@@ -1,6 +1,8 @@
 package com.irs.mef.newsend;
 
 import com.irs.mef.config.MefSdkConfig;
+import com.irs.mef.filing.IrsCall;
+import com.irs.mef.filing.IrsSession;
 import com.irs.mef.newsend.domain.Ein;
 import com.irs.mef.newsend.domain.FormType;
 import com.irs.mef.newsend.domain.NewSendOutcome;
@@ -9,7 +11,6 @@ import com.irs.mef.newsend.domain.NewSendSubmitCommand;
 import com.irs.mef.newsend.domain.TaxPeriod;
 import com.irs.mef.newsend.error.NewSendDuplicateException;
 import com.irs.mef.newsend.journal.InMemoryNewSendSubmissionJournal;
-import com.irs.mef.service.MefClientService;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -21,13 +22,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * Offline. The duplicate-period guard keys on (EIN, form, period): a 941-X correcting a
  * transmitted 941 is a new filing, a second 941 for the same quarter is not.
- * MefClientService is mocked because it is the IRS session boundary.
+ * IrsSession is mocked because it is the IRS session boundary.
  */
 class NewSendDuplicatePeriodTest {
 
@@ -62,10 +64,13 @@ class NewSendDuplicatePeriodTest {
                 "<Return xmlns=\"http://www.irs.gov/efile\"/>", false);
     }
 
+    @SuppressWarnings("unchecked")
     private static NewSendSubmissionService service() {
-        MefClientService session = mock(MefClientService.class);
-        when(session.isLoggedIn()).thenReturn(true);
-        when(session.getCurrentServiceContext()).thenReturn(new Object());
+        IrsSession session = mock(IrsSession.class);
+        when(session.call(any())).thenAnswer(invocation -> {
+            IrsCall<NewSendOutcome> body = invocation.getArgument(0);
+            return body.run(new Object());
+        });
         MefSdkConfig sdk = new MefSdkConfig();
         sdk.setEnvironment("ATS");
         sdk.getAuthentication().setEfin("000000");

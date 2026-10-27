@@ -26,7 +26,7 @@ This document provides complete specifications for the **GetSubmissionStatus** a
 | Service | Purpose | Status | Implementation |
 |---------|---------|--------|----------------|
 | GetSubmissionStatus | Query status of a specific submission | ✅ Working | `StatusService.java:33-101` | (deleted in 6e0bb7e)
-| GetNewAcks | Retrieve new acknowledgments | ✅ Working | `AcknowledgementService.java:98-188` |
+| GetNewAcks | Retrieve new acknowledgments | ✅ Working | `AcknowledgementService.java:98-188` | deleted |
 
 ---
 
@@ -630,7 +630,7 @@ Both **GetSubmissionStatus** and **GetNewAcks** services are fully implemented a
 ### Key Files
 
 - **StatusService**: `src/main/java/com/irs/mef/service/StatusService.java` (deleted in 6e0bb7e)
-- **AcknowledgementService**: `src/main/java/com/irs/mef/service/AcknowledgementService.java`
+- **AcknowledgementService**: `src/main/java/com/irs/mef/service/AcknowledgementService.java` (deleted)
 - **Tests**: `src/test/java/com/irs/mef/scenarios/Form941SubmissionTest.java` (deleted in 6e0bb7e)
 - **DTOs**: `src/main/java/com/irs/mef/dto/StatusResponse.java`, `AckResponse.java` (deleted in 6e0bb7e)
 

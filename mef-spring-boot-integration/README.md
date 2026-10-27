@@ -529,11 +529,11 @@ The service classes contain placeholder implementations with `TODO` comments ind
 6. Validate with actual certificates and credentials
 
 Example areas needing SDK integration:
-- `MefClientService.java:54` - Login service invocation
-- `MefClientService.java:118` - Logout service invocation
+- `MefClientService.java:54` - Login service invocation (deleted)
+- `MefClientService.java:118` - Logout service invocation (deleted)
 - `SubmissionService.java:66` - SendSubmissions service call (deleted in 6e0bb7e)
 - `StatusService.java:48` - GetSubmissionStatus service call (deleted in 6e0bb7e)
-- `AcknowledgementService.java:49` - GetAck service call
+- `AcknowledgementService.java:49` - GetAck service call (deleted)
 
 ## References
 

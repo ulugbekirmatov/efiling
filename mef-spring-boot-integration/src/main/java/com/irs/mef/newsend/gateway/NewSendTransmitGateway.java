@@ -17,9 +17,8 @@ import com.irs.mef.newsend.domain.NewSendOutcome;
 public interface NewSendTransmitGateway {
 
     /**
-     * @param serviceContext the SINGLETON gov.irs.mef.services.ServiceContext from
-     *                       MefClientService#getCurrentServiceContext(), passed as Object because
-     *                       that is the existing accessor's type. A fresh one invalidates the session.
+     * @param serviceContext the ServiceContext from {@code IrsSession.call}, passed as Object
+     *                       because the SDK type stays behind reflection. A fresh one invalidates the session.
      * @throws NewSendCompositionException before any network I/O (safe to release the idempotency key)
      */
     NewSendOutcome transmit(Object serviceContext, NewSendFiling filing);

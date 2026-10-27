@@ -1,7 +1,8 @@
 package com.irs.mef.newsend;
 
 import com.irs.mef.config.MefSdkConfig;
-import com.irs.mef.exception.MefException;
+import com.irs.mef.filing.IrsLoginException;
+import com.irs.mef.filing.IrsSession;
 import com.irs.mef.newsend.domain.Efin;
 import com.irs.mef.newsend.domain.NewSendFault;
 import com.irs.mef.newsend.domain.NewSendFiling;
@@ -10,17 +11,14 @@ import com.irs.mef.newsend.domain.NewSendState;
 import com.irs.mef.newsend.domain.NewSendSubmissionId;
 import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
 import com.irs.mef.newsend.domain.NewSendSubmitCommand;
-import com.irs.mef.newsend.error.NewSendBusyException;
 import com.irs.mef.newsend.error.NewSendConfigurationException;
 import com.irs.mef.newsend.error.NewSendDuplicateException;
-import com.irs.mef.newsend.error.NewSendNotLoggedInException;
 import com.irs.mef.newsend.error.NewSendValidationException;
 import com.irs.mef.newsend.gateway.NewSendCompositionException;
 import com.irs.mef.newsend.gateway.NewSendTransmitGateway;
 import com.irs.mef.newsend.journal.NewSendSubmissionJournal;
 import com.irs.mef.newsend.journal.NewSendSubmissionJournal.NewSendReservation;
 import com.irs.mef.newsend.validate.NewSendReturnXmlValidator;
-import com.irs.mef.service.MefClientService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,23 +30,21 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Orchestrates one filing. Public surface: {@link #submit} plus two reads. Behind it sit
- * idempotency, write-ahead journaling, submission-id minting, XSD pre-validation, session
- * serialisation, and receipt matching.
+ * idempotency, write-ahead journaling, submission-id minting, XSD pre-validation, and
+ * receipt matching. The IRS session lock lives in {@link IrsSession}.
  *
  * DELIBERATELY ABSENT: retry. SendSubmissions is not idempotent at the IRS; a retry is a
- * duplicate federal filing. The codebase's RetryTemplate is consciously not wired here.
+ * duplicate federal filing.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class NewSendSubmissionService {
 
-    private final MefClientService mefClientService;
+    private final IrsSession session;
     private final MefSdkConfig mefSdkConfig;
     private final NewSendProperties properties;
     private final NewSendSubmissionJournal journal;
@@ -56,15 +52,6 @@ public class NewSendSubmissionService {
     private final NewSendTransmitGateway gateway;
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
-
-    /**
-     * The single ServiceContext in MefClientService is not thread-safe and the IRS enforces a
-     * concurrent-session limit, so transmits are serialised rather than hoped about. Per-actor
-     * sessions are impossible (a second ServiceContext invalidates the first), so we serialise
-     * explicitly, with a bounded wait and an honest 503.
-     * Known gap: the legacy SubmissionService shares the same session and does not take this lock.
-     */
-    private final ReentrantLock sessionLock = new ReentrantLock(true);
 
     /** Warn at boot (not fail — the app must still start for login/diagnostics without an EFIN). */
     @PostConstruct
@@ -78,19 +65,14 @@ public class NewSendSubmissionService {
 
     /**
      * File one 94x return. Order is load-bearing:
-     * 1 replay/conflict probe, 2 duplicate-period guard, 3 validate, 4 mint id, 5 reserve
-     * (durable, pre-wire), 6 lock, 7 transmit, 8 complete. Steps 1-5 can fail safely; from
-     * step 7 on, the journal row already exists on disk.
+     * replay/conflict probe, duplicate-period guard, validate, mint id, reserve
+     * (durable, pre-wire), then {@link IrsSession#call}, which logs in if needed and transmits.
+     * A pre-wire failure abandons the reserved row.
      *
-     * @throws NewSendNotLoggedInException 401 — nothing was sent
      * @throws NewSendValidationException  400 — nothing was sent
      * @throws NewSendDuplicateException   409 — key or (EIN, form, period) collision
-     * @throws NewSendBusyException        503 — session not acquired within the configured wait
      */
     public NewSendSubmitResult submit(NewSendSubmitCommand command) {
-        if (!mefClientService.isLoggedIn()) {
-            throw new NewSendNotLoggedInException();
-        }
         Efin efin = configuredEfin();
         String environment = mefSdkConfig.getEnvironment();
         if (command.returnXml().length() > properties.getMaxReturnXmlChars()) {
@@ -130,42 +112,22 @@ public class NewSendSubmissionService {
 
     private NewSendSubmitResult transmitReserved(NewSendFiling filing, String environment) {
         NewSendSubmissionId submissionId = filing.submissionId();
-        boolean locked;
-        try {
-            locked = sessionLock.tryLock(properties.getSessionWaitSeconds(), TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            journal.abandon(submissionId, NewSendFault.lockTimeout(), clock.instant());
-            throw new NewSendBusyException(properties.getSessionWaitSeconds());
-        }
-        if (!locked) {
-            journal.abandon(submissionId, NewSendFault.lockTimeout(), clock.instant());
-            throw new NewSendBusyException(properties.getSessionWaitSeconds());
-        }
         try (MDC.MDCCloseable ignored = MDC.putCloseable("submissionId", submissionId.value())) {
-            Object serviceContext;
-            try {
-                serviceContext = mefClientService.getCurrentServiceContext();
-            } catch (MefException e) {
-                journal.abandon(submissionId, NewSendFault.sessionLost(e), clock.instant());
-                throw new NewSendNotLoggedInException();
-            }
-
             NewSendOutcome outcome;
             try {
-                outcome = gateway.transmit(serviceContext, filing);
+                outcome = session.call(ctx -> gateway.transmit(ctx, filing));
             } catch (NewSendCompositionException e) {
-                // Provably pre-wire: release the key so a corrected request can reuse it.
                 journal.abandon(submissionId, e.fault(), clock.instant());
                 throw new NewSendValidationException("returnXml",
                         "The submission could not be composed: " + e.getMessage());
+            } catch (IrsLoginException e) {
+                journal.abandon(submissionId, NewSendFault.sessionLost(e), clock.instant());
+                throw e;
             }
 
             boolean journalDurable = completeQuietly(submissionId, outcome);
             logOutcome(filing, outcome, environment, journalDurable);
             return new NewSendSubmitResult(submissionId, outcome, false, journalDurable);
-        } finally {
-            sessionLock.unlock();
         }
     }
 

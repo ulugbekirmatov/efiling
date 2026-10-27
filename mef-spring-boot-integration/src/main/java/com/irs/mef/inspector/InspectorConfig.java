@@ -7,7 +7,6 @@ import com.irs.mef.inspector.capture.RingSendSubmissionsWireTap;
 import com.irs.mef.inspector.ring.EmptySendSnapshotRing;
 import com.irs.mef.inspector.ring.FileSendSnapshotRing;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
-import com.irs.mef.inspector.view.InspectorHtml;
 import com.irs.mef.newsend.gateway.NoOpSendSubmissionsWireTap;
 import com.irs.mef.newsend.gateway.SendSubmissionsWireTap;
 import org.springframework.context.annotation.Bean;
@@ -25,11 +24,6 @@ public class InspectorConfig {
         }
         return new FileSendSnapshotRing(
                 properties.resolvedPath(), properties.ringSizeClamped(), objectMapper);
-    }
-
-    @Bean
-    public InspectorHtml inspectorHtml(InspectorProperties properties) {
-        return new InspectorHtml(properties.ringSizeClamped());
     }
 
     @Bean

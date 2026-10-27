@@ -1,17 +1,8 @@
-package com.irs.mef.service;
+package com.irs.mef.filing;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.irs.mef.ack.FileAckStore;
-import com.irs.mef.config.MefSdkConfig;
-import com.irs.mef.dto.AckResponse;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.retry.support.RetryTemplate;
 
-import java.lang.reflect.Method;
-import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -20,67 +11,48 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 class AckValidationErrorExtractionTest {
 
     private static final Instant NOW = Instant.parse("2026-09-25T09:26:34Z");
+    private static final String SUBMISSION_ID = "2378612026268yagqidh";
     private static final String MSG_244 = "The IP Address ... must have a valid value.";
     private static final String MSG_248 = "If Form 94x, Refund Product Election Indicator must have a valid value.";
 
-    @TempDir
-    Path temp;
-
-    private MefClientService mefClientService;
-    private RetryTemplate retryTemplate;
-
-    @BeforeEach
-    void setUp() {
-        mefClientService = mock(MefClientService.class);
-        retryTemplate = mock(RetryTemplate.class);
-    }
+    private final IrsWire wire = new IrsWire(Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test
     @DisplayName("rejected ack with two validation errors maps codes, messages, and details")
-    void rejectedAckExtractsTwoValidationErrors() throws Exception {
+    void rejectedAckExtractsTwoValidationErrors() {
         FakeAck ack = new FakeAck("Rejected", new FakeValidationErrorList(List.of(
                 new FakeValidationError("R0000-244", "Reject and Stop", MSG_244, null, ""),
                 new FakeValidationError("R0000-248", "Reject and Stop", MSG_248, null, "X"))));
 
-        AckResponse response = invokeBuild(service(), ack);
+        var stored = wire.parse(ack, SUBMISSION_ID);
 
-        assertEquals("Rejected", response.getAckType());
-        assertEquals(List.of("R0000-244", "R0000-248"), response.getErrorCodes());
+        assertEquals("Rejected", stored.ackType());
+        assertEquals(List.of("R0000-244", "R0000-248"), stored.errorCodes());
         assertEquals(List.of(
                 "[Reject and Stop] " + MSG_244,
-                "[Reject and Stop] " + MSG_248 + " [Value: X]"), response.getErrorMessages());
-        assertEquals(true, response.getHasValidationErrors());
-        assertTrue(response.getDetails().startsWith("Validation errors (2):"));
+                "[Reject and Stop] " + MSG_248 + " [Value: X]"), stored.errorMessages());
+        assertEquals(true, stored.hasValidationErrors());
+        assertTrue(stored.details().startsWith("Validation errors (2):"));
+        assertEquals(SUBMISSION_ID, stored.submissionId());
+        assertEquals(NOW, stored.retrievedAt());
     }
 
     @Test
     @DisplayName("accepted ack with a null validation error list has no errors")
-    void acceptedAckWithNullErrorListHasNoErrors() throws Exception {
+    void acceptedAckWithNullErrorListHasNoErrors() {
         FakeAck ack = new FakeAck("Accepted", null);
 
-        AckResponse response = invokeBuild(service(), ack);
+        var stored = wire.parse(ack, SUBMISSION_ID);
 
-        assertEquals("Accepted", response.getAckType());
-        assertEquals(List.of(), response.getErrorCodes());
-        assertEquals(List.of(), response.getErrorMessages());
-        assertFalse(response.getHasValidationErrors());
-        assertEquals("Acknowledgment retrieved successfully", response.getDetails());
-    }
-
-    private AcknowledgementService service() {
-        return new AcknowledgementService(mefClientService, new MefSdkConfig(), retryTemplate,
-                new FileAckStore(temp, new ObjectMapper()), Clock.fixed(NOW, ZoneOffset.UTC));
-    }
-
-    private static AckResponse invokeBuild(AcknowledgementService service, Object ack) throws Exception {
-        Method method = AcknowledgementService.class.getDeclaredMethod("buildAckResponseReflection", Object.class);
-        method.setAccessible(true);
-        return (AckResponse) method.invoke(service, ack);
+        assertEquals("Accepted", stored.ackType());
+        assertEquals(List.of(), stored.errorCodes());
+        assertEquals(List.of(), stored.errorMessages());
+        assertFalse(stored.hasValidationErrors());
+        assertEquals("Acknowledgment retrieved successfully", stored.details());
     }
 
     public static class FakeAck {

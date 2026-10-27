@@ -19,7 +19,7 @@ The dominating constraint: **SendSubmissions is non-idempotent and un-retryable,
 execution is a duplicate federal filing** — filed by Pyramos as a Reporting Agent on someone
 else's tax account. Constraints carried in from grounding: reflection-only SDK access (Java 17
 module rules vs the Metro stack); one non-thread-safe `ServiceContext` singleton owned by
-`MefClientService` (a fresh one invalidates the IRS session); the legacy `GlobalExceptionHandler`
+`IrsSession` (a fresh one invalidates the IRS session); the legacy `GlobalExceptionHandler`
 maps every `MefException` to 500 and must keep doing so for legacy routes; manifest element order
 and EFIN/TIN formats are fixed by `efileAttachments.xsd`; the submission id is
 EFIN(6) + yyyyDDD current-processing-date + 7 lowercase base36.
@@ -148,7 +148,7 @@ parse lives on the wire DTO — one fewer hop).
   shared store first.
 - The session lock does not cover the legacy `SubmissionService`, which shares the same
   `ServiceContext`. Interleaving is possible if both paths are exercised concurrently; the fix
-  (a gate inside `MefClientService`) means touching legacy — deferred deliberately.
+  (a gate inside `IrsSession`) means touching legacy — deferred deliberately.
 - Which quarterly 941 schema version should XSD validation pin to, given the 2026 v1.0→v4.0
   churn? The bundled set is the one the offline tests already used.
 

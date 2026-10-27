@@ -3,10 +3,11 @@ package com.irs.mef.inspector.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.irs.mef.ack.AckSource;
+import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.FileAckStore;
 import com.irs.mef.ack.StoredAck;
-import com.irs.mef.dto.AckResponse;
-import com.irs.mef.exception.MefException;
+import com.irs.mef.filing.IrsSession;
+import com.irs.mef.filing.IrsWire;
 import com.irs.mef.inspector.FixtureSnapshots;
 import com.irs.mef.inspector.ring.FileSendSnapshotRing;
 import com.irs.mef.newsend.domain.NewSendFiling;
@@ -14,7 +15,6 @@ import com.irs.mef.newsend.domain.NewSendOutcome;
 import com.irs.mef.newsend.domain.NewSendReceipt;
 import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
 import com.irs.mef.newsend.journal.InMemoryNewSendSubmissionJournal;
-import com.irs.mef.service.AcknowledgementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,11 +27,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -50,7 +51,8 @@ class InspectorSendsControllerTest {
     private FileSendSnapshotRing ring;
     private InMemoryNewSendSubmissionJournal journal;
     private FileAckStore ackStore;
-    private AcknowledgementService acknowledgementService;
+    private IrsSession session;
+    private IrsWire wire;
     private MockMvc mvc;
 
     @BeforeEach
@@ -58,12 +60,17 @@ class InspectorSendsControllerTest {
         ring = new FileSendSnapshotRing(temp.resolve("ring"), 20, new ObjectMapper());
         journal = new InMemoryNewSendSubmissionJournal();
         ackStore = new FileAckStore(temp.resolve("acks"), new ObjectMapper());
-        acknowledgementService = mock(AcknowledgementService.class);
+        session = mock(IrsSession.class);
+        wire = mock(IrsWire.class);
+        mvc = mvc(ackStore);
+    }
+
+    private MockMvc mvc(AckStore store) {
         ObjectMapper bootLikeMapper = Jackson2ObjectMapperBuilder.json()
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
-        mvc = MockMvcBuilders.standaloneSetup(
-                        new InspectorSendsController(ring, journal, ackStore, acknowledgementService))
+        return MockMvcBuilders.standaloneSetup(
+                        new InspectorSendsController(ring, journal, store, session, wire))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(bootLikeMapper))
                 .build();
     }
@@ -87,7 +94,7 @@ class InspectorSendsControllerTest {
                 .andExpect(jsonPath("$[0].state").value("TRANSMITTED"))
                 .andExpect(jsonPath("$[0].depositId").value("QG6CDEPOSIT1"))
                 .andExpect(jsonPath("$[0].ackType").value("Accepted"));
-        verifyNoInteractions(acknowledgementService);
+        verifyNoInteractions(session, wire);
     }
 
     @Test
@@ -164,12 +171,9 @@ class InspectorSendsControllerTest {
     @Test
     @DisplayName("POST ack returns the stored ack from GetAck")
     void postAckReturnsStoredAck() throws Exception {
-        StoredAck fresh = StoredAck.from(AckResponse.builder()
-                .submissionId(ID)
-                .ackType("Rejected")
-                .errorCodes(List.of("X0000-008"))
-                .build(), Instant.parse("2026-09-25T10:00:00Z"), AckSource.GET_ACK);
-        when(acknowledgementService.retrieveAndRecordAcknowledgment(ID)).thenReturn(fresh);
+        StoredAck fresh = stored(ID, "Rejected", Instant.parse("2026-09-25T10:00:00Z"),
+                AckSource.GET_ACK, List.of("X0000-008"));
+        when(session.call(any())).thenReturn(Optional.of(fresh));
 
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isOk())
@@ -182,18 +186,13 @@ class InspectorSendsControllerTest {
     }
 
     @Test
-    @DisplayName("POST ack maps not logged in to 409, no ack yet to 404, other IRS errors to 502")
+    @DisplayName("POST ack maps no ack yet to 404 and other IRS errors to 502")
     void postAckErrorMapping() throws Exception {
-        when(acknowledgementService.retrieveAndRecordAcknowledgment(anyString()))
-                .thenThrow(new MefException("NOT_LOGGED_IN", "Not logged in to IRS MeF", "login first"))
-                .thenThrow(new MefException("ACK_NOT_FOUND", "Acknowledgment not found", "none yet"))
-                .thenThrow(new MefException("ACK_PARSE_ERROR", "Failed to parse acknowledgment response", "x"))
+        when(session.call(any()))
+                .thenReturn(Optional.empty())
+                .thenThrow(new IllegalStateException("Failed to parse acknowledgment response"))
                 .thenThrow(new RuntimeException("IRS session limit - retryable"));
 
-        mvc.perform(post("/inspector/sends/" + ID + "/ack"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("NOT_LOGGED_IN"))
-                .andExpect(jsonPath("$.message").value("Not logged in to IRS MeF"));
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("ACK_NOT_FOUND"));
@@ -207,12 +206,35 @@ class InspectorSendsControllerTest {
     }
 
     @Test
+    @DisplayName("POST ack surfaces a failed store write instead of reporting a stored ack")
+    void postAckStoreFailureSurfaces() throws Exception {
+        AckStore broken = new AckStore() {
+            @Override
+            public void record(StoredAck ack) {
+                throw new IllegalStateException("disk full");
+            }
+
+            @Override
+            public java.util.Optional<StoredAck> find(String submissionId) {
+                return java.util.Optional.empty();
+            }
+        };
+        when(session.call(any())).thenReturn(Optional.of(
+                stored(ID, "Accepted", Instant.parse("2026-09-25T10:00:00Z"), AckSource.GET_ACK, List.of())));
+
+        mvc(broken).perform(post("/inspector/sends/" + ID + "/ack"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"))
+                .andExpect(jsonPath("$.message").value("disk full"));
+    }
+
+    @Test
     @DisplayName("POST ack with a malformed id is 400 and never reaches IRS")
     void postAckMalformedId() throws Exception {
         mvc.perform(post("/inspector/sends/bad/ack"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_SUBMISSION_ID"));
-        verifyNoInteractions(acknowledgementService);
+        verifyNoInteractions(session, wire);
     }
 
     private void transmitted(String depositId) {
@@ -225,9 +247,15 @@ class InspectorSendsControllerTest {
     }
 
     private static StoredAck storedAck(String ackType) {
-        return StoredAck.from(AckResponse.builder()
-                .submissionId(ID)
-                .ackType(ackType)
-                .build(), Instant.parse("2026-09-25T09:26:34Z"), AckSource.GET_NEW_ACKS);
+        return stored(ID, ackType, Instant.parse("2026-09-25T09:26:34Z"), AckSource.GET_NEW_ACKS, null);
+    }
+
+    private static StoredAck stored(String submissionId, String ackType, Instant retrievedAt, AckSource source,
+                                    List<String> errorCodes) {
+        return new StoredAck(
+                null, submissionId, retrievedAt, source, ackType, null, null,
+                errorCodes, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null);
     }
 }

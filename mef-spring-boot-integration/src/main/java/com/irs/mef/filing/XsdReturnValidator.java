@@ -1,6 +1,5 @@
 package com.irs.mef.filing;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.xml.sax.ErrorHandler;
@@ -19,49 +18,36 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * XXE-hardened well-formedness check plus optional per-form XSD validation.
- * Schemas are compiled once per form and cached; each root sits in its form's IRS schema
- * release bundle on the classpath (see {@link FormType#schemaRoot()}).
+ * XXE-hardened well-formedness check plus XSD validation. Schema errors are always refused.
+ * A {@link SchemaBinding.Pending} form is refused with that binding's reason.
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 class XsdReturnValidator implements ReturnValidator {
 
     private static final int MAX_REPORTED_ERRORS = 5;
 
-    private final FilingProperties properties;
-    private final Map<FormType, Schema> schemaCache = new ConcurrentHashMap<>();
+    private final Map<FormSpec, Schema> schemaCache = new ConcurrentHashMap<>();
 
     @Override
-    public void validate(FormType formType, String returnXml) {
+    public void validate(FormSpec form, String returnXml) {
         assertWellFormed(returnXml);
-        Optional<String> schemaRoot = formType.schemaRoot();
-        // Checked before the OFF switch: a form tied to a schema release never goes out while that release is absent.
-        schemaRoot.ifPresent(this::requireBundled);
-        FilingProperties.XmlValidationMode mode = properties.getXmlValidation();
-        if (mode == FilingProperties.XmlValidationMode.OFF) {
-            return;
+        if (form.schema() instanceof SchemaBinding.Pending pending) {
+            throw new FilingValidationException("form", pending.why());
         }
-        if (schemaRoot.isEmpty()) {
-            log.warn("No XSD bundled for form type {} — schema validation skipped", formType.code());
-            return;
-        }
-        List<String> errors = schemaErrors(formType, schemaRoot.get(), returnXml);
+        SchemaBinding.Bundled bundled = (SchemaBinding.Bundled) form.schema();
+        String schemaRoot = bundled.release().resolve(bundled.pathInBundle());
+        requireBundled(schemaRoot);
+        List<String> errors = schemaErrors(form, schemaRoot, returnXml);
         if (errors.isEmpty()) {
             return;
         }
         String summary = String.join("; ", errors.subList(0, Math.min(errors.size(), MAX_REPORTED_ERRORS)));
-        if (mode == FilingProperties.XmlValidationMode.ENFORCE) {
-            throw new FilingValidationException("returnXml",
-                    "Return XML failed " + formType.code() + " schema validation: " + summary);
-        }
-        log.warn("Return XML has {} schema violation(s) for form {} (mode=WARN, proceeding): {}",
-                errors.size(), formType.code(), summary);
+        throw new FilingValidationException("returnXml",
+                "Return XML failed " + form.code() + " schema validation: " + summary);
     }
 
     private void assertWellFormed(String returnXml) {
@@ -82,7 +68,7 @@ class XsdReturnValidator implements ReturnValidator {
         }
     }
 
-    private List<String> schemaErrors(FormType formType, String schemaRoot, String returnXml) {
+    private List<String> schemaErrors(FormSpec formType, String schemaRoot, String returnXml) {
         Schema schema = schemaCache.computeIfAbsent(formType, ignored -> loadSchema(schemaRoot));
         List<String> errors = new ArrayList<>();
         try {

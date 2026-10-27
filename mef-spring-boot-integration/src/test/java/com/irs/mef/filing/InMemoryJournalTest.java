@@ -18,9 +18,9 @@ class InMemoryJournalTest {
 
     private static SubmissionRecord created(String submissionId, String requestKey) {
         SubmitCommand command = new SubmitCommand(
-                requestKey, "orchid", new Ein("003000004"), FormType.F941,
+                requestKey, "orchid", new Ein("003000004"), FormSpec.F941,
                 new TaxPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31)),
-                "<Return xmlns=\"http://www.irs.gov/efile\"/>", false);
+                "<Return xmlns=\"http://www.irs.gov/efile\"/>");
         Filing filing = new Filing(new SubmissionId(submissionId), command,
                 Instant.parse("2026-03-31T12:00:00Z"));
         return SubmissionRecord.created(filing, "ATS");
@@ -75,15 +75,15 @@ class InMemoryJournalTest {
         SubmissionRecord record = created("2386892026090aaaa111", "key-1");
         journal.reserve(record);
 
-        assertEquals(1, journal.findFiledFor(new Ein("003000004"), FormType.F941,
+        assertEquals(1, journal.findFiledFor(new Ein("003000004"), FormSpec.F941,
                 new TaxPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31))).size());
-        assertTrue(journal.findFiledFor(new Ein("003000004"), FormType.F940,
+        assertTrue(journal.findFiledFor(new Ein("003000004"), FormSpec.F940,
                 new TaxPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31))).isEmpty());
     }
 
     private static FilingOutcome.Transmitted transmitted(SubmissionRecord record) {
-        return new FilingOutcome.Transmitted(new FilingReceipt(
+        return new FilingOutcome.Transmitted(new TransmissionReceipt(
                 "DEP-1", record.submissionId(), Instant.parse("2026-03-31T12:00:30Z"),
-                FilingReceipt.TimestampSource.IRS, 1));
+                TransmissionReceipt.TimestampSource.IRS, 1));
     }
 }

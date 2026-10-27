@@ -11,12 +11,12 @@ final class ReportingAgentOriginatorStandIn {
 
     private ReportingAgentOriginatorStandIn() {}
 
-    static ReportingAgentOriginator pyramosShaped() {
+    static Originator pyramosShaped() {
         // EFIN 000000 is legal EFINType; NOT 238689 (OneWell). Not IRS-issued.
         // PIN 00000 is legal PINType; NOT 1234567890 (OnlineFiler SignatureType).
         // SoftwareId 00000000 is legal; NOT 12345678.
         // Agent EIN 000000000 is legal EINType; NOT 003000004 (Orchid filer).
-        return new ReportingAgentOriginator(
+        return new Originator(
                 new Efin("000000"),
                 new ReportingAgentPin("00000"),
                 new SoftwareIds(Map.of(

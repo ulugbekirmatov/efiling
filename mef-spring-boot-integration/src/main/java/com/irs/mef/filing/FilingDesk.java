@@ -1,27 +1,28 @@
 package com.irs.mef.filing;
 
+import com.irs.mef.ack.AckStore;
+import com.irs.mef.ack.StoredAck;
 import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.filing.Journal.NewSendReservation;
-import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Orchestrates one filing. Public surface: {@link #submit} plus two reads. Behind it sit
- * idempotency, write-ahead journaling, submission-id minting, XSD pre-validation, and
- * receipt matching. The IRS session lock lives in {@link IrsSession}.
- *
- * DELIBERATELY ABSENT: retry. SendSubmissions is not idempotent at the IRS; a retry is a
- * duplicate federal filing.
+ * The filing pipeline. {@link #preflight} is offline. {@link #file} is the only send.
+ * {@link #ack} is the only GetAck. There is no retry: SendSubmissions is not idempotent at the IRS.
  */
 @Service
 @Slf4j
@@ -30,79 +31,89 @@ public class FilingDesk {
 
     private final IrsSession session;
     private final MefSdkConfig mefSdkConfig;
+    private final Originator originator;
     private final FilingProperties properties;
     private final Journal journal;
     private final ReturnValidator returnXmlValidator;
     private final TransmitGateway gateway;
+    private final AckStore ackStore;
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
 
-    /** Warn at boot (not fail — the app must still start for login/diagnostics without an EFIN). */
-    @PostConstruct
-    void warnOnUnusableEfin() {
-        try {
-            configuredEfin();
-        } catch (FilingConfigurationException e) {
-            log.warn("NewSend submissions will fail until fixed: {}", e.getMessage());
-        }
-    }
-
     /**
-     * File one 94x return. Order is load-bearing:
-     * replay/conflict probe, duplicate-period guard, validate, mint id, reserve
-     * (durable, pre-wire), then {@link IrsSession#call}, which logs in if needed and transmits.
-     * A pre-wire failure abandons the reserved row.
-     *
-     * @throws FilingValidationException  400 — nothing was sent
-     * @throws FilingDuplicateException   409 — key or (EIN, form, period) collision
+     * Offline. Composes, mints, renders the manifest, and XSD-validates the return.
+     * Never touches {@link IrsSession}.
      */
-    public SubmitResult submit(SubmitCommand command) {
-        Efin efin = configuredEfin();
-        String environment = mefSdkConfig.getEnvironment();
-        if (command.returnXml().length() > properties.getMaxReturnXmlChars()) {
+    public Preflight preflight(ClientFiling filing) {
+        if (filing.form().schema() instanceof SchemaBinding.Pending pending) {
+            throw new FilingValidationException("form", pending.why());
+        }
+        if (filing.clientBodyXml().length() > properties.getMaxReturnXmlChars()) {
+            throw new FilingValidationException("clientBody",
+                    "clientBody exceeds " + properties.getMaxReturnXmlChars() + " characters");
+        }
+        ReturnComposer composed = ReturnComposer.compose(originator, filing.body(), clock);
+        if (composed.xml().length() > properties.getMaxReturnXmlChars()) {
             throw new FilingValidationException("returnXml",
                     "returnXml exceeds " + properties.getMaxReturnXmlChars() + " characters");
         }
-
-        Optional<SubmissionRecord> priorClaim = journal.findByClientRequestId(command.clientRequestId());
-        if (priorClaim.isPresent() && !priorClaim.get().releasesIdempotencyKey()) {
-            return replayOrConflict(priorClaim.get(), command, environment);
-        }
-
-        guardDuplicatePeriod(command, environment);
-        returnXmlValidator.validate(command.formType(), command.returnXml());
-
         Instant now = clock.instant();
-        SubmissionId submissionId =
-                SubmissionId.generate(efin, now, properties.processingZoneId(), random);
-        Filing filing = new Filing(submissionId, command, now);
+        SubmissionId id = SubmissionId.mint(originator, now, Efile.PROCESSING_ZONE, random);
+        SubmitCommand command = new SubmitCommand(
+                contentKey(filing),
+                filing.clientId().value(),
+                filing.filer(),
+                filing.form(),
+                filing.period(),
+                composed.xml());
+        Filing prepared = new Filing(id, command, now);
+        String manifest = ManifestXml.render(prepared);
+        returnXmlValidator.validate(filing.form(), composed.xml());
+        return Preflight.of(filing, prepared, manifest);
+    }
 
-        NewSendReservation reservation = journal.reserve(SubmissionRecord.created(filing, environment));
-        if (reservation instanceof NewSendReservation.AlreadyClaimed alreadyClaimed) {
-            // Lost a race on the same key between the probe and the reservation.
-            return replayOrConflict(alreadyClaimed.existing(), command, environment);
+    /**
+     * File one client body. Identical client id and body bytes return the journaled receipt
+     * and do not call the IRS, including after a rejection. A changed byte is a new filing.
+     */
+    public FilingReceipt file(ClientFiling filing) {
+        String environment = mefSdkConfig.getEnvironment();
+        Optional<SubmissionRecord> prior = journal.findByClientRequestId(contentKey(filing));
+        if (prior.isPresent() && !prior.get().releasesIdempotencyKey()) {
+            return replay(prior.get(), environment);
         }
 
-        return transmitReserved(filing, environment);
+        Preflight preflight = preflight(filing);
+        guardDuplicatePeriod(preflight.prepared(), environment);
+
+        NewSendReservation reservation = journal.reserve(
+                SubmissionRecord.created(preflight.prepared(), environment));
+        if (reservation instanceof NewSendReservation.AlreadyClaimed alreadyClaimed) {
+            return replay(alreadyClaimed.existing(), environment);
+        }
+        return transmit(preflight, environment);
+    }
+
+    /** GetAck for one submission. Records the ack. Safe to call twice. */
+    public Optional<StoredAck> ack(SubmissionId id) {
+        Optional<StoredAck> found = session.call(ctx -> gateway.getAck(ctx, id.value()));
+        found.ifPresent(ackStore::record);
+        return found;
     }
 
     public Optional<SubmissionRecord> findBySubmissionId(String rawSubmissionId) {
         return journal.findBySubmissionId(new SubmissionId(rawSubmissionId));
     }
 
-    public Optional<SubmissionRecord> findByClientRequestId(String clientRequestId) {
-        return journal.findByClientRequestId(clientRequestId);
-    }
-
-    private SubmitResult transmitReserved(Filing filing, String environment) {
-        SubmissionId submissionId = filing.submissionId();
+    private FilingReceipt transmit(Preflight preflight, String environment) {
+        SubmissionId submissionId = preflight.id();
         try (MDC.MDCCloseable ignored = MDC.putCloseable("submissionId", submissionId.value())) {
             FilingOutcome outcome;
             try {
-                outcome = session.call(ctx -> gateway.transmit(ctx, filing));
+                outcome = session.call(ctx -> gateway.transmit(ctx, preflight.cleared()));
             } catch (NewSendCompositionException e) {
                 journal.abandon(submissionId, e.fault(), clock.instant());
-                throw new FilingValidationException("returnXml",
+                throw new FilingValidationException("clientBody",
                         "The submission could not be composed: " + e.getMessage());
             } catch (IrsLoginException e) {
                 journal.abandon(submissionId, IrsFault.sessionLost(e), clock.instant());
@@ -110,58 +121,57 @@ public class FilingDesk {
             }
 
             boolean journalDurable = completeQuietly(submissionId, outcome);
-            logOutcome(filing, outcome, environment, journalDurable);
-            return new SubmitResult(submissionId, outcome, false, journalDurable);
+            logOutcome(preflight.prepared(), outcome, environment, journalDurable);
+            return new FilingReceipt(
+                    submissionId,
+                    preflight.filing().clientId(),
+                    outcome,
+                    journalDurable,
+                    false);
         }
     }
 
     /**
-     * The idempotency protocol for an existing claim on this key.
-     * Same payload + TRANSMITTED replays the stored receipt without any network call;
-     * everything else is a 409 that names the prior submission id.
+     * Same bytes as a journaled filing. Returns that receipt and does not call the IRS.
+     * CREATED (another thread is mid-flight) is the one state that is not yet a receipt.
      */
-    private SubmitResult replayOrConflict(SubmissionRecord existing,
-                                                 SubmitCommand command,
-                                                 String environment) {
-        List<String> conflicting = List.of(existing.submissionId().value());
+    private FilingReceipt replay(SubmissionRecord existing, String environment) {
         if (!existing.environment().equals(environment)) {
             throw new FilingDuplicateException("NEWSEND_ENVIRONMENT_MISMATCH",
-                    "Idempotency key was used in environment " + existing.environment()
-                            + "; current environment is " + environment, conflicting);
+                    "These bytes were filed in environment " + existing.environment()
+                            + "; current environment is " + environment,
+                    List.of(existing.submissionId().value()));
         }
-        boolean samePayload = existing.returnXmlSha256().equals(command.returnXmlSha256())
-                && existing.clientEin().equals(command.clientEin())
-                && existing.formType() == command.formType()
-                && existing.taxPeriod().equals(command.taxPeriod());
-        if (!samePayload) {
-            throw new FilingDuplicateException("NEWSEND_KEY_REUSED",
-                    "Idempotency key was already used for submission " + existing.submissionId().value()
-                            + " with a different payload. Use a new key for a new filing.", conflicting);
+        if (existing.state() == JournalState.CREATED) {
+            throw new FilingDuplicateException("NEWSEND_KEY_UNRESOLVED",
+                    "A filing of these bytes (submission " + existing.submissionId().value()
+                            + ") is in state " + existing.state()
+                            + ". Do NOT resubmit; reconcile that submission id first.",
+                    List.of(existing.submissionId().value()));
         }
-        JournalState state = existing.state();
-        if (state == JournalState.TRANSMITTED) {
-            log.info("Idempotent replay of {} (key {}): nothing re-sent to the IRS",
-                    existing.submissionId().value(), command.clientRequestId());
-            return new SubmitResult(existing.submissionId(),
-                    new FilingOutcome.Transmitted(existing.receipt()), true, true);
-        }
-        if (state == JournalState.REJECTED) {
-            throw new FilingDuplicateException("NEWSEND_KEY_REJECTED_PREVIOUSLY",
-                    "This key's filing was rejected by the IRS as submission " + existing.submissionId().value()
-                            + ". Correct the return and file under a NEW key.", conflicting);
-        }
-        // CREATED (another thread is mid-flight) or INDETERMINATE (outcome unknown).
-        throw new FilingDuplicateException("NEWSEND_KEY_UNRESOLVED",
-                "This key's filing (submission " + existing.submissionId().value() + ") is in state " + state
-                        + ". Do NOT resubmit; reconcile via status/acks for that submission id first.",
-                conflicting);
+        log.info("Idempotent replay of {} ({}): nothing re-sent to the IRS",
+                existing.submissionId().value(), existing.state());
+        return new FilingReceipt(
+                existing.submissionId(),
+                new ClientId(existing.clientId()),
+                outcomeOf(existing),
+                true,
+                true);
     }
 
-    /** Catches the human duplicate: same quarter re-run under a fresh key. Override is explicit per request. */
-    private void guardDuplicatePeriod(SubmitCommand command, String environment) {
-        if (command.allowDuplicatePeriod()) {
-            return;
-        }
+    private static FilingOutcome outcomeOf(SubmissionRecord existing) {
+        return switch (existing.state()) {
+            case TRANSMITTED -> new FilingOutcome.Transmitted(existing.receipt());
+            case REJECTED -> new FilingOutcome.Rejected(existing.fault());
+            case INDETERMINATE -> new FilingOutcome.Indeterminate(existing.fault());
+            case CREATED, ABANDONED -> throw new IllegalStateException(
+                    "No receipt for " + existing.submissionId().value() + " in state " + existing.state());
+        };
+    }
+
+    /** Same EIN, form, and period already transmitted or still unresolved. A rejected period does not block. */
+    private void guardDuplicatePeriod(Filing filing, String environment) {
+        SubmitCommand command = filing.command();
         List<String> blocking = journal
                 .findFiledFor(command.clientEin(), command.formType(), command.taxPeriod())
                 .stream()
@@ -175,16 +185,11 @@ public class FilingDesk {
             throw new FilingDuplicateException("NEWSEND_PERIOD_ALREADY_FILED",
                     command.formType().code() + " for EIN " + command.clientEin().masked() + ", period "
                             + command.taxPeriod().begin() + ".." + command.taxPeriod().end()
-                            + " was already transmitted or is unresolved. Set allowDuplicatePeriod=true "
-                            + "to deliberately file again (e.g. a correction).", blocking);
+                            + " was already transmitted or is unresolved. Change the return to file a correction.",
+                    blocking);
         }
     }
 
-    /**
-     * If the journal write after a successful transmit fails, still return the receipt
-     * (journalDurable=false) — withholding a deposit id the caller cannot otherwise recover
-     * would be the worse failure.
-     */
     private boolean completeQuietly(SubmissionId submissionId, FilingOutcome outcome) {
         try {
             journal.complete(submissionId, outcome, clock.instant());
@@ -196,8 +201,7 @@ public class FilingDesk {
         }
     }
 
-    private void logOutcome(Filing filing, FilingOutcome outcome, String environment,
-                            boolean journalDurable) {
+    private void logOutcome(Filing filing, FilingOutcome outcome, String environment, boolean journalDurable) {
         if (outcome instanceof FilingOutcome.Transmitted transmitted) {
             log.info("TRANSMITTED {} ({} for EIN {}, {}): deposit id {}, receipts {}, durable={}",
                     filing.submissionId().value(), filing.command().formType().code(),
@@ -214,15 +218,19 @@ public class FilingDesk {
         }
     }
 
-    private Efin configuredEfin() {
-        String rawEfin = mefSdkConfig.getAuthentication() != null
-                ? mefSdkConfig.getAuthentication().getEfin()
-                : null;
+    /**
+     * SHA-256 of the client id, a zero byte, and the client body. The zero byte keeps two
+     * different splits of the same concatenation from sharing a key.
+     */
+    static String contentKey(ClientFiling filing) {
         try {
-            return new Efin(rawEfin);
-        } catch (FilingValidationException e) {
-            throw new FilingConfigurationException(
-                    "MEF_EFIN is missing or not exactly 6 digits — set it before filing");
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(filing.clientId().value().getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
+            digest.update(filing.clientBodyXml().getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 unavailable", e);
         }
     }
 }

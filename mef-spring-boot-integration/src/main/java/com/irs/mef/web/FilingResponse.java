@@ -1,10 +1,10 @@
 package com.irs.mef.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.irs.mef.filing.FilingReceipt;
 import com.irs.mef.filing.FilingOutcome;
-import com.irs.mef.filing.SubmitResult;
+import com.irs.mef.filing.FilingReceipt;
 import com.irs.mef.filing.SubmissionRecord;
+import com.irs.mef.filing.TransmissionReceipt;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,11 +37,11 @@ public record FilingResponse(
             "Received by IRS. A receipt confirms transmission only, NOT acceptance. "
                     + "Acceptance arrives via acknowledgements, typically 2-5 minutes later.";
     private static final String REPLAY_MESSAGE =
-            "Replay of a previously transmitted filing. Nothing was re-sent to the IRS.";
+            "Replay of a previously journaled filing. Nothing was re-sent to the IRS.";
 
-    public static FilingResponse from(SubmissionRecord record, SubmitResult result) {
+    public static FilingResponse from(SubmissionRecord record, FilingReceipt result) {
         FilingOutcome.Transmitted transmitted = (FilingOutcome.Transmitted) result.outcome();
-        FilingReceipt receipt = transmitted.receipt();
+        TransmissionReceipt receipt = transmitted.receipt();
         return new FilingResponse(
                 record.submissionId().value(),
                 record.state().name(),

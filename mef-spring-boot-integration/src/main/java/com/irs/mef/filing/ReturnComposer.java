@@ -14,7 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -37,29 +36,28 @@ final class ReturnComposer {
     static final String RAPIN_ENTERED_BY = "REPORTING AGENT";
     static final String JURAT = "REPORTING AGENT PIN";
 
-    private static final String NS = ReturnComposerXml.NS;
-    private static final ZoneId PROCESSING_ZONE = ZoneId.of("America/New_York");
+    private static final String NS = Efile.NAMESPACE;
     private static final String PERIOD_ELEMENT =
             "/efile:Return/efile:ReturnHeader/*[self::efile:QuarterEndingDt or self::efile:TaxYr]";
 
-    private final ReportingAgentOriginator originator;
+    private final Originator originator;
     private final ClientReturnBody client;
     private final String xml;
 
-    private ReturnComposer(ReportingAgentOriginator originator, ClientReturnBody client, String xml) {
+    private ReturnComposer(Originator originator, ClientReturnBody client, String xml) {
         this.originator = originator;
         this.client = client;
         this.xml = xml;
     }
 
     static ReturnComposer compose(
-            ReportingAgentOriginator originator,
+            Originator originator,
             ClientReturnBody client,
             Clock clock) {
         Objects.requireNonNull(originator);
         Objects.requireNonNull(client);
         Objects.requireNonNull(clock);
-        OffsetDateTime returnTs = OffsetDateTime.now(clock.withZone(PROCESSING_ZONE));
+        OffsetDateTime returnTs = OffsetDateTime.now(clock.withZone(Efile.PROCESSING_ZONE));
         String xml = ReturnComposerXml.render(originator, client, returnTs);
         return new ReturnComposer(originator, client, xml);
     }
@@ -80,18 +78,14 @@ final class ReturnComposer {
      * EIN, form, period, and XML come from this object — they cannot disagree.
      * Form type comes from the client body's return type. Submission id is still minted by NewSend.
      */
-    SubmitCommand toSubmitCommand(
-            String idempotencyKey,
-            String clientId,
-            boolean allowDuplicatePeriod) {
+    SubmitCommand toSubmitCommand(String idempotencyKey, String clientId) {
         return new SubmitCommand(
                 idempotencyKey,
                 clientId,
                 client.filerEin(),
-                client.returnType().formType(),
+                client.form(),
                 client.taxPeriod(),
-                xml,
-                allowDuplicatePeriod);
+                xml);
     }
 
     Structure structure() {

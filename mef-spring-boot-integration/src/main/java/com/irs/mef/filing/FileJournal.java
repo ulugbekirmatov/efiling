@@ -98,7 +98,7 @@ class FileJournal implements Journal {
     }
 
     @Override
-    public synchronized List<SubmissionRecord> findFiledFor(Ein clientEin, FormType formType,
+    public synchronized List<SubmissionRecord> findFiledFor(Ein clientEin, FormSpec formType,
                                                                    TaxPeriod taxPeriod) {
         List<String> ids = submissionIdsByFilingIdentity.getOrDefault(
                 InMemoryJournal.filingIdentityKey(clientEin, formType, taxPeriod), List.of());
@@ -172,7 +172,7 @@ class FileJournal implements Journal {
     }
 
     private static JournalLine toLine(SubmissionRecord record) {
-        FilingReceipt receipt = record.receipt();
+        TransmissionReceipt receipt = record.receipt();
         IrsFault fault = record.fault();
         return new JournalLine(
                 record.submissionId().value(),
@@ -200,11 +200,11 @@ class FileJournal implements Journal {
 
     private static SubmissionRecord fromLine(JournalLine line) {
         SubmissionId submissionId = new SubmissionId(line.submissionId());
-        FilingReceipt receipt = line.depositId() == null ? null : new FilingReceipt(
+        TransmissionReceipt receipt = line.depositId() == null ? null : new TransmissionReceipt(
                 line.depositId(),
                 submissionId,
                 Instant.parse(line.receiptTimestamp()),
-                FilingReceipt.TimestampSource.valueOf(line.receiptTimestampSource()),
+                TransmissionReceipt.TimestampSource.valueOf(line.receiptTimestampSource()),
                 line.receiptCount() != null ? line.receiptCount() : 0);
         IrsFault fault = line.faultCode() == null ? null : new IrsFault(
                 line.faultCode(), line.faultMessage(), line.faultSdkExceptionClass(),
@@ -214,7 +214,7 @@ class FileJournal implements Journal {
                 line.clientRequestId(),
                 line.clientId(),
                 new Ein(line.clientEin()),
-                FormType.parse(line.formType()),
+                FormSpec.parse(line.formType()),
                 new TaxPeriod(LocalDate.parse(line.taxPeriodBegin()), LocalDate.parse(line.taxPeriodEnd())),
                 line.returnXmlSha256(),
                 line.environment(),

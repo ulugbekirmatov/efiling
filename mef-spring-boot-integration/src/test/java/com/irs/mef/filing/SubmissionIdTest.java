@@ -16,13 +16,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SubmissionIdTest {
 
     private static final Efin EFIN = new Efin("238689");
-    private static final ZoneId EASTERN = ZoneId.of("America/New_York");
+    private static final Originator ORIGINATOR = new Originator(
+            EFIN,
+            new ReportingAgentPin("00000"),
+            SoftwareIds.of(SchemaRelease.Y2026Q1_V4, new SoftwareId("00000000")),
+            "192.0.2.1",
+            new ReportingAgentIdentity(
+                    new Ein("000000000"),
+                    "PYRAMOS SOFTWARE LLC",
+                    new NameControl("PYRA"),
+                    new UsAddress("100 Market Street", "Philadelphia", "PA", "19103")));
+    private static final ZoneId EASTERN = Efile.PROCESSING_ZONE;
     private static final SecureRandom RNG = new SecureRandom();
 
     @Test
     @DisplayName("generate produces exactly [0-9]{13}[a-z0-9]{7}")
     void generateMatchesIrsPattern() {
-        SubmissionId id = SubmissionId.generate(EFIN, Instant.now(), EASTERN, RNG);
+        SubmissionId id = SubmissionId.mint(ORIGINATOR, Instant.now(), EASTERN, RNG);
 
         assertEquals(20, id.value().length());
         assertTrue(id.value().matches("[0-9]{13}[a-z0-9]{7}"), "got: " + id.value());
@@ -35,7 +45,7 @@ class SubmissionIdTest {
         Instant now = Instant.parse("2026-03-31T02:00:00Z");
         LocalDate expected = now.atZone(EASTERN).toLocalDate();
 
-        SubmissionId id = SubmissionId.generate(EFIN, now, EASTERN, RNG);
+        SubmissionId id = SubmissionId.mint(ORIGINATOR, now, EASTERN, RNG);
 
         assertEquals(expected, id.processingDate());
         String expectedDate = String.format("%04d%03d", expected.getYear(), expected.getDayOfYear());
@@ -45,7 +55,7 @@ class SubmissionIdTest {
     @Test
     @DisplayName("the manifest EFIN is derived from the id and equals its first 6 chars")
     void efinIsDerivedFromTheId() {
-        SubmissionId id = SubmissionId.generate(EFIN, Instant.now(), EASTERN, RNG);
+        SubmissionId id = SubmissionId.mint(ORIGINATOR, Instant.now(), EASTERN, RNG);
 
         assertEquals(EFIN, id.efin());
         assertEquals(id.value().substring(0, 6), id.efin().value());
@@ -56,7 +66,7 @@ class SubmissionIdTest {
     void dayOfYearIsZeroPadded() {
         Instant january5 = Instant.parse("2026-01-05T15:00:00Z");
 
-        SubmissionId id = SubmissionId.generate(EFIN, january5, EASTERN, RNG);
+        SubmissionId id = SubmissionId.mint(ORIGINATOR, january5, EASTERN, RNG);
 
         assertEquals("2026005", id.value().substring(6, 13));
     }

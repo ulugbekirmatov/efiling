@@ -11,7 +11,7 @@ import java.util.Objects;
 /** Package-private. The only place header XML is written. */
 final class ReturnComposerXml {
 
-    static final String NS = "http://www.irs.gov/efile";
+    private static final String NS = Efile.NAMESPACE;
 
     /** TY2026 rules R0000-248/249 (941 and 941X) require these even on a return with no refund. */
     private static final String REFUND_PRODUCT_ELECTED = "false";
@@ -21,7 +21,7 @@ final class ReturnComposerXml {
 
     private ReturnComposerXml() {}
 
-    static String render(ReportingAgentOriginator originator, ClientReturnBody client, OffsetDateTime returnTs) {
+    static String render(Originator originator, ClientReturnBody client, OffsetDateTime returnTs) {
         OffsetDateTime truncated = returnTs.withNano(0);
         StringBuilder xml = new StringBuilder(4096);
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -30,9 +30,9 @@ final class ReturnComposerXml {
                 .append("\" returnVersion=\"")
                 .append(escape(client.returnVersion())).append("\">\n");
         xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
-        element(xml, 2, "ReturnTypeCd", client.returnType().returnTypeCd());
+        element(xml, 2, "ReturnTypeCd", client.form().code());
         element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
-        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.returnType().schemaRelease()).value());
+        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.form().schema().release()).value());
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
         additionalFilerInformation(xml);
         filingSecurity(xml, originator, client, truncated);
@@ -78,7 +78,7 @@ final class ReturnComposerXml {
     }
 
     private static void filingSecurity(
-            StringBuilder xml, ReportingAgentOriginator originator, ClientReturnBody client, OffsetDateTime returnTs) {
+            StringBuilder xml, Originator originator, ClientReturnBody client, OffsetDateTime returnTs) {
         Objects.requireNonNull(returnTs, "returnTs");
         String deviceId = sha1HexUpper("pyramos-ats" + client.filerEin().value());
         xml.append("    <FilingSecurityInformation>\n");

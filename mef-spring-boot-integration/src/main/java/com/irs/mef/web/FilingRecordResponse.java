@@ -1,7 +1,7 @@
 package com.irs.mef.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.irs.mef.filing.FilingReceipt;
+import com.irs.mef.filing.TransmissionReceipt;
 import com.irs.mef.filing.SubmissionRecord;
 
 import java.time.Instant;
@@ -33,7 +33,7 @@ public record FilingRecordResponse(
         String logHint) {
 
     public static FilingRecordResponse from(SubmissionRecord record) {
-        FilingReceipt receipt = record.receipt();
+        TransmissionReceipt receipt = record.receipt();
         return new FilingRecordResponse(
                 record.submissionId().value(),
                 record.clientRequestId(),

@@ -17,10 +17,10 @@ class CapturedXmlTest {
         String expected = new SubmitCommand(
                 "inspector-demo-1", "orchid",
                 new com.irs.mef.filing.Ein("003000004"),
-                com.irs.mef.filing.FormType.F941,
+                com.irs.mef.filing.FormSpec.F941,
                 new com.irs.mef.filing.TaxPeriod(
                         java.time.LocalDate.of(2026, 1, 1), java.time.LocalDate.of(2026, 3, 31)),
-                FixtureSnapshots.RETURN_XML, false).returnXmlSha256();
+                FixtureSnapshots.RETURN_XML).returnXmlSha256();
         assertEquals(expected, xml.sha256());
         assertEquals(com.irs.mef.inspector.Sha256Hex.ofUtf8(xml.original()), xml.sha256(),
                 "sha256() must hash original(), never pretty()");

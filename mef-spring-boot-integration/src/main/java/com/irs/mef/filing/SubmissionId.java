@@ -1,10 +1,10 @@
 package com.irs.mef.filing;
 
 
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.random.RandomGenerator;
 import java.util.regex.Pattern;
 
 /**
@@ -32,17 +32,17 @@ public record SubmissionId(String value) {
     }
 
     /**
-     * Mint a new id. The SecureRandom suffix carries ~36 bits of entropy — unlike the legacy
-     * epoch-millis slice, which repeated every ~2.8 hours.
+     * Mint a new id. The prefix is the originator's EFIN. The random suffix carries ~36 bits
+     * of entropy — unlike the legacy epoch-millis slice, which repeated every ~2.8 hours.
      */
-    static SubmissionId generate(Efin efin, Instant now, ZoneId processingZone, SecureRandom rng) {
+    static SubmissionId mint(Originator originator, Instant now, ZoneId processingZone, RandomGenerator random) {
         LocalDate processingDate = now.atZone(processingZone).toLocalDate();
         String date = String.format("%04d%03d", processingDate.getYear(), processingDate.getDayOfYear());
         StringBuilder suffix = new StringBuilder(SUFFIX_LENGTH);
         for (int i = 0; i < SUFFIX_LENGTH; i++) {
-            suffix.append(SUFFIX_ALPHABET.charAt(rng.nextInt(SUFFIX_ALPHABET.length())));
+            suffix.append(SUFFIX_ALPHABET.charAt(random.nextInt(SUFFIX_ALPHABET.length())));
         }
-        return new SubmissionId(efin.value() + date + suffix);
+        return new SubmissionId(originator.efin().value() + date + suffix);
     }
 
     /** The originator EFIN embedded in the id — the single source the manifest reads from. */

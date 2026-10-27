@@ -1,18 +1,13 @@
 package com.irs.mef.filing;
 
-import java.time.Instant;
-
 /**
- * Proof of receipt from SendSubmissions — never proof of acceptance.
- * The timestamp's provenance is not a detail: {@code LOCAL} means the SDK exposed no
- * receipt timestamp and the value is our own clock at parse time.
+ * What {@link FilingDesk#file} returns. {@code replay} is true when these bytes were already
+ * journaled and nothing was sent to the IRS again.
  */
 public record FilingReceipt(
-        String depositId,
-        SubmissionId submissionId,
-        Instant receiptTimestamp,
-        TimestampSource receiptTimestampSource,
-        int receiptCount) {
-
-    public enum TimestampSource { IRS, LOCAL }
+        SubmissionId id,
+        ClientId clientId,
+        FilingOutcome outcome,
+        boolean journalDurable,
+        boolean replay) {
 }

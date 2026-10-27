@@ -10,9 +10,11 @@ final class ClasspathSchemas {
 
     private ClasspathSchemas() {}
 
-    static File root(FormType formType) {
-        String resource = formType.schemaRoot()
-                .orElseThrow(() -> new IllegalStateException("No schema bundled for " + formType.code()));
+    static File root(FormSpec form) {
+        if (!(form.schema() instanceof SchemaBinding.Bundled bundled)) {
+            throw new IllegalStateException("No schema bundled for " + form.code());
+        }
+        String resource = bundled.release().resolve(bundled.pathInBundle());
         URL url = ClasspathSchemas.class.getClassLoader().getResource(resource);
         if (url == null) {
             throw new IllegalStateException("Bundled schema missing from classpath: " + resource);

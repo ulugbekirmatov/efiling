@@ -12,7 +12,7 @@ public sealed interface FilingOutcome {
     JournalState state();
 
     /** IRS holds the filing; the receipt confirms TRANSMISSION, not acceptance. */
-    record Transmitted(FilingReceipt receipt) implements FilingOutcome {
+    record Transmitted(TransmissionReceipt receipt) implements FilingOutcome {
         @Override
         public JournalState state() {
             return JournalState.TRANSMITTED;

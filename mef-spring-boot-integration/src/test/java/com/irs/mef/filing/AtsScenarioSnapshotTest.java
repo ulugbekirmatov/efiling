@@ -26,7 +26,7 @@ class AtsScenarioSnapshotTest {
         ReturnComposer ret = ReturnComposer.compose(
                 ReportingAgentOriginatorStandIn.pyramosShaped(),
                 ClientReturnBody.load(scenario.clientBody()), FIXED);
-        SubmitCommand command = ret.toSubmitCommand("key", scenario.clientId(), false);
+        SubmitCommand command = ret.toSubmitCommand("key", scenario.clientId());
         String manifest = ManifestXml.render(new Filing(
                 new SubmissionId("0000002026286abc1234"), command, FIXED.instant()));
         Path dir = scenario.clientBody().getParent();

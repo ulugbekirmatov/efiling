@@ -1,23 +1,18 @@
 package com.irs.mef.filing;
 
 import com.irs.mef.ack.StoredAck;
-import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.live.LiveIrsTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Clock;
 import java.time.Duration;
-import java.time.ZoneId;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -42,88 +37,51 @@ class ReportingAgentAtsScenarioTest {
     }
 
     @Autowired
-    IrsSession session;
-    @Autowired
-    IrsWire wire;
-    @Autowired
-    MefSdkConfig sdk;
-    @Autowired
-    ReportingAgentOriginatorFactory originators;
-    @Autowired
-    FilingDesk newSend;
-    @Autowired
-    ReturnValidator returnXmlValidator;
+    FilingDesk desk;
 
     @Test
-    void submitsOneReportingAgentScenarioToAts() throws InterruptedException {
+    void submitsOneReportingAgentScenarioToAts() throws Exception {
         String requested = System.getProperty(SCENARIO_PROPERTY);
         if (requested == null || requested.isBlank()) {
             fail("Set -D" + SCENARIO_PROPERTY + "=<scenario id>; this test sends a real ATS submission");
         }
         AtsScenario scenario = AtsScenario.byId(requested);
-        ReportingAgentOriginator pyramos = originators.fromEnvironment();
-        ReportingAgentAtsGate.open(sdk, pyramos);
+        String clientBody = Files.readString(scenario.clientBody());
+        FilingReceipt receipt = desk.file(ClientFiling.parse(scenario.clientId(), clientBody));
 
-        ClientReturnBody client = ClientReturnBody.load(scenario.clientBody());
-        ReturnComposer ret = ReturnComposer.compose(
-                pyramos, client, Clock.system(ZoneId.of("America/New_York")));
-        ReturnComposer.Structure header = ret.structure();
-        System.out.println("RA ATS scenario=" + scenario.id() + " " + scenario.shortName()
-                + " returnType=" + header.returnTypeCd()
-                + " originatorType=" + header.originatorTypeCd()
-                + " efin=" + header.originatorEfin().value()
-                + " softwareId=" + header.softwareId()
-                + " filerEin=" + header.filerEin().value()
-                + " agentEin=" + header.agentEin().value());
-
-        SubmitCommand command = ret.toSubmitCommand(
-                "ra-ats-scenario-" + scenario.id() + "-" + scenario.shortName() + "-" + UUID.randomUUID(),
-                scenario.clientId(),
-                true);
-        // Submit validates only after login; a missing bundle or a schema error must not open an IRS session.
-        returnXmlValidator.validate(command.formType(), command.returnXml());
-
-        assertTrue(session.probe().loggedIn());
-
-        SubmitResult result = newSend.submit(command);
-        assertFalse(result.replay());
-
-        FilingOutcome outcome = result.outcome();
+        FilingOutcome outcome = receipt.outcome();
         if (outcome instanceof FilingOutcome.Rejected rejected) {
             fail("ATS rejected the container (nothing filed): " + rejected.fault());
         }
         if (outcome instanceof FilingOutcome.Indeterminate indeterminate) {
             fail("Indeterminate send; do not resubmit; reconcile submissionId "
-                    + result.submissionId().value() + ": " + indeterminate.fault());
+                    + receipt.id().value() + ": " + indeterminate.fault());
         }
         assertInstanceOf(FilingOutcome.Transmitted.class, outcome);
 
-        String submissionId = result.submissionId().value();
-        System.out.println("RA ATS transmitted submissionId=" + submissionId);
-        StoredAck ack = waitForAck(submissionId);
+        System.out.println("RA ATS transmitted submissionId=" + receipt.id().value());
+        StoredAck ack = waitForAck(receipt.id());
         System.out.println("RA ATS ackType=" + ack.ackType()
                 + " details=" + ack.details()
                 + " errorCodes=" + ack.errorCodes());
         assertEquals("Accepted", ack.ackType(),
-                "IRS did not accept submissionId " + submissionId + ": " + ack.errorCodes());
+                "IRS did not accept submissionId " + receipt.id().value() + ": " + ack.errorCodes());
     }
 
-    /**
-     * GetAck by submission id, not GetNewAcks. IRS validation is minutes behind Transmitted.
-     */
-    private StoredAck waitForAck(String submissionId) throws InterruptedException {
+    /** GetAck by submission id, not GetNewAcks. IRS validation is minutes behind Transmitted. */
+    private StoredAck waitForAck(SubmissionId submissionId) throws InterruptedException {
         Duration budget = Duration.ofMinutes(6);
         Duration pause = Duration.ofSeconds(30);
         long deadline = System.currentTimeMillis() + budget.toMillis();
         while (System.currentTimeMillis() < deadline) {
-            Optional<StoredAck> ack = session.call(ctx -> wire.getAck(ctx, submissionId));
+            Optional<StoredAck> ack = desk.ack(submissionId);
             if (ack.isPresent()) {
                 return ack.get();
             }
             Thread.sleep(pause.toMillis());
         }
         fail("No ACK after " + budget.toMinutes() + " minutes. Poll GetAck later. submissionId="
-                + submissionId);
+                + submissionId.value());
         return null;
     }
 }

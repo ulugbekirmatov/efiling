@@ -33,7 +33,7 @@ public interface Journal {
      * Duplicate-period guard index: "has this client's quarter already gone out?" is a dominant
      * access pattern, present from day one. Callers filter by environment and state.
      */
-    List<SubmissionRecord> findFiledFor(Ein clientEin, FormType formType, TaxPeriod taxPeriod);
+    List<SubmissionRecord> findFiledFor(Ein clientEin, FormSpec formType, TaxPeriod taxPeriod);
 
     /** Reservation result. AlreadyClaimed carries the existing row so the caller can answer without a second read. */
     sealed interface NewSendReservation {

@@ -5,19 +5,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.nio.file.Path;
-import java.time.ZoneId;
 
-/** Configuration for the NewSend vertical. Binds {@code mef.newsend.*}; every field has a safe default. */
+/** Configuration for the filing desk. Binds {@code mef.newsend.*}; every field has a safe default. */
 @Configuration
 @ConfigurationProperties(prefix = "mef.newsend")
 @Data
 class FilingProperties {
-
-    /**
-     * Zone used for the submission id's yyyyDDD processing date. IRS day boundaries are an
-     * IRS-side concept, so this is pinned to Eastern rather than the server's arbitrary default.
-     */
-    private String processingZone = "America/New_York";
 
     /** How long a submit waits for the single IRS session before returning 503. */
     private int sessionWaitSeconds = 30;
@@ -25,16 +18,7 @@ class FilingProperties {
     /** Return XML size cap, in characters. */
     private long maxReturnXmlChars = 8_000_000L;
 
-    /** ENFORCE (default): schema errors are a 400. WARN: logged, filing proceeds. OFF: well-formedness only. */
-    private XmlValidationMode xmlValidation = XmlValidationMode.ENFORCE;
-
     private Journal journal = new Journal();
-
-    ZoneId processingZoneId() {
-        return ZoneId.of(processingZone);
-    }
-
-    enum XmlValidationMode { ENFORCE, WARN, OFF }
 
     @Data
     static class Journal {

@@ -5,12 +5,10 @@ package com.irs.mef.filing;
 interface ReturnValidator {
 
     /**
-     * Always parses for well-formedness with DTDs and external entities disabled — the body is
-     * untrusted input. Schema validation additionally applies per {@code mef.newsend.xml-validation}:
-     * ENFORCE throws on schema errors (400), WARN logs and proceeds, OFF checks well-formedness only.
-     * A form with no bundled XSD degrades to WARN regardless of mode.
+     * Always parses for well-formedness with DTDs and external entities disabled, then validates
+     * against the form's bundled XSD. A pending form is refused with its reason.
      *
-     * @throws com.irs.mef.filing.FilingValidationException when the document is rejected
+     * @throws FilingValidationException when the document is rejected
      */
-    void validate(FormType formType, String returnXml);
+    void validate(FormSpec form, String returnXml);
 }

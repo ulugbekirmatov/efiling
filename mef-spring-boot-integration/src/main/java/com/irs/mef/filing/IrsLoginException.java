@@ -1,13 +1,13 @@
 package com.irs.mef.filing;
 
-/** LoginClient failed. Nothing was sent. */
-final class IrsLoginException extends RuntimeException {
+/** LoginClient failed. Nothing was sent. The message can name a keystore path; HTTP must not echo it. */
+public final class IrsLoginException extends RuntimeException {
 
-    IrsLoginException(String message) {
+    public IrsLoginException(String message) {
         super(message);
     }
 
-    IrsLoginException(String message, Throwable cause) {
+    public IrsLoginException(String message, Throwable cause) {
         super(message, cause);
     }
 }

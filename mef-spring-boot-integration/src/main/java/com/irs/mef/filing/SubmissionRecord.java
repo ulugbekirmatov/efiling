@@ -12,14 +12,14 @@ public record SubmissionRecord(
         String clientRequestId,
         String clientId,
         Ein clientEin,
-        FormType formType,
+        FormSpec formType,
         TaxPeriod taxPeriod,
         String returnXmlSha256,
         String environment,
         JournalState state,
         Instant createdAt,
         Instant completedAt,
-        FilingReceipt receipt,
+        TransmissionReceipt receipt,
         IrsFault fault) {
 
     public static SubmissionRecord created(Filing filing, String environment) {
@@ -73,7 +73,7 @@ public record SubmissionRecord(
     }
 
     private SubmissionRecord with(JournalState nextState, Instant at,
-                                         FilingReceipt nextReceipt, IrsFault nextFault) {
+                                         TransmissionReceipt nextReceipt, IrsFault nextFault) {
         return new SubmissionRecord(submissionId, clientRequestId, clientId, clientEin, formType,
                 taxPeriod, returnXmlSha256, environment, nextState, createdAt, at, nextReceipt, nextFault);
     }

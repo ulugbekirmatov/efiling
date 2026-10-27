@@ -11,9 +11,4 @@ public record Filing(
         SubmissionId submissionId,
         SubmitCommand command,
         Instant postmark) {
-
-    /** Derived from the submission id — the single source of truth for the originator EFIN. */
-    Efin efin() {
-        return submissionId.efin();
-    }
 }

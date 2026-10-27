@@ -1,14 +1,12 @@
 package com.irs.mef.web;
 
+import com.irs.mef.filing.ClientFiling;
 import com.irs.mef.filing.FilingDesk;
-import com.irs.mef.filing.SubmitResult;
 import com.irs.mef.filing.FilingOutcome;
+import com.irs.mef.filing.FilingReceipt;
 import com.irs.mef.filing.SubmissionRecord;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -24,44 +21,33 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.time.Instant;
 
 /**
- * Thin by construction: bind, map to a command, delegate, translate the outcome to a status.
- * No SDK type, no journal type and no business rule appears here.
- *
- * Routes are distinct from the legacy /mef/submissions/** so the two verticals never collide.
+ * Bind, parse, delegate. No SDK type and no business rule appears here.
  */
 @RestController
-@RequestMapping("/mef/newsend/submissions")
+@RequestMapping("/mef/filings")
 @RequiredArgsConstructor
 @Validated
-@Slf4j
 public class FilingController {
 
-    private final FilingDesk service;
+    private final FilingDesk desk;
 
-    /**
-     * File one 94x return. 201 on first transmission, 200 on idempotent replay.
-     * The Idempotency-Key header is REQUIRED: sending the same key twice returns the original
-     * receipt and does not transmit again — the only safe way to retry a filing request.
-     */
+    /** File one client body. 201 on first transmission, 200 when the same bytes were already journaled. */
     @PostMapping
-    public ResponseEntity<?> submit(
-            @RequestHeader("Idempotency-Key") @NotBlank @Size(max = 128) String idempotencyKey,
-            @Valid @RequestBody FilingRequest request) {
-        SubmitResult result = service.submit(request.toCommand(idempotencyKey));
-        FilingOutcome outcome = result.outcome();
+    public ResponseEntity<?> file(@Valid @RequestBody FilingRequest request) {
+        FilingReceipt receipt = desk.file(ClientFiling.parse(request.clientId(), request.clientBody()));
+        FilingOutcome outcome = receipt.outcome();
 
         if (outcome instanceof FilingOutcome.Transmitted) {
-            SubmissionRecord record = service
-                    .findBySubmissionId(result.submissionId().value())
+            SubmissionRecord record = desk.findBySubmissionId(receipt.id().value())
                     .orElseThrow(() -> new IllegalStateException(
-                            "Transmitted submission missing from journal: " + result.submissionId().value()));
-            FilingResponse body = FilingResponse.from(record, result);
-            if (result.replay()) {
+                            "Transmitted submission missing from journal: " + receipt.id().value()));
+            FilingResponse body = FilingResponse.from(record, receipt);
+            if (receipt.replay()) {
                 return ResponseEntity.ok(body);
             }
             return ResponseEntity
                     .created(ServletUriComponentsBuilder.fromCurrentRequest()
-                            .path("/{id}").buildAndExpand(result.submissionId().value()).toUri())
+                            .path("/{id}").buildAndExpand(receipt.id().value()).toUri())
                     .body(body);
         }
 
@@ -71,8 +57,8 @@ public class FilingController {
                     .status(HttpStatus.BAD_GATEWAY.value())
                     .errorCode(rejected.fault().code())
                     .message("The IRS refused the submission; nothing was filed. Correct the return "
-                            + "and file under a NEW Idempotency-Key. " + rejected.fault().message())
-                    .submissionId(result.submissionId().value())
+                            + "and resubmit. " + rejected.fault().message())
+                    .submissionId(receipt.id().value())
                     .resubmitSafe(true)
                     .logHint(rejected.fault().logHint())
                     .build());
@@ -85,26 +71,17 @@ public class FilingController {
                 .errorCode(indeterminate.fault().code())
                 .message("Transmission outcome unknown — the filing MAY have reached the IRS. "
                         + "Do NOT resubmit. " + indeterminate.fault().message())
-                .submissionId(result.submissionId().value())
+                .submissionId(receipt.id().value())
                 .resubmitSafe(false)
-                .reconcileWith("GET /api/mef/submissions/" + result.submissionId().value()
-                        + "/status (allow 2-5 minutes), then the acknowledgement endpoints")
+                .reconcileWith("GET /api/mef/filings/" + receipt.id().value())
                 .logHint(indeterminate.fault().logHint())
                 .build());
     }
 
-    /** Local journal record by submission id. NOT live IRS status. */
+    /** Local journal record by submission id. Not live IRS status. */
     @GetMapping("/{submissionId}")
     public ResponseEntity<FilingRecordResponse> bySubmissionId(@PathVariable String submissionId) {
-        return service.findBySubmissionId(submissionId)
-                .map(record -> ResponseEntity.ok(FilingRecordResponse.from(record)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    /** Reconcile by idempotency key — the post-crash "did my filing go out?" question. */
-    @GetMapping("/by-request/{clientRequestId}")
-    public ResponseEntity<FilingRecordResponse> byClientRequestId(@PathVariable String clientRequestId) {
-        return service.findByClientRequestId(clientRequestId)
+        return desk.findBySubmissionId(submissionId)
                 .map(record -> ResponseEntity.ok(FilingRecordResponse.from(record)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

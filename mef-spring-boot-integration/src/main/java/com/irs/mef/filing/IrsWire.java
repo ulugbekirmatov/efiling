@@ -53,7 +53,8 @@ final class IrsWire implements TransmitGateway {
         this.wireTap = wireTap;
     }
 
-    Optional<StoredAck> getAck(Object serviceContext, String submissionId) {
+    @Override
+    public Optional<StoredAck> getAck(Object serviceContext, String submissionId) {
         try {
             Class<?> serviceContextClass = Class.forName("gov.irs.mef.services.ServiceContext");
             Class<?> clientClass = Class.forName("gov.irs.mef.services.transmitter.GetAckClient");
@@ -238,8 +239,9 @@ final class IrsWire implements TransmitGateway {
     }
 
     @Override
-    public FilingOutcome transmit(Object serviceContext, Filing filing) {
-        PreparedCall prepared = prepare(filing);
+    public FilingOutcome transmit(Object serviceContext, Preflight.Cleared cleared) {
+        Filing filing = cleared.prepared();
+        PreparedCall prepared = prepare(filing, cleared.manifestXml());
         try (SendSubmissionsWireTap.Session tap = wireTap.open(filing)) {
             tap.attach(prepared.client());
             try {
@@ -259,7 +261,7 @@ final class IrsWire implements TransmitGateway {
      * Everything local: manifest + return XML wrapping, archive, postmark, container, client and
      * method resolution. A failure here provably precedes any network I/O.
      */
-    private PreparedCall prepare(Filing filing) {
+    private PreparedCall prepare(Filing filing, String manifestXml) {
         try {
             Class<?> submissionXmlClass = Class.forName(SUBMISSION_XML);
             Class<?> submissionManifestClass = Class.forName(SUBMISSION_MANIFEST);
@@ -272,7 +274,7 @@ final class IrsWire implements TransmitGateway {
             Object submissionXml = submissionXmlClass.getConstructor(String.class, String.class)
                     .newInstance(RETURN_XML_FILENAME, filing.command().returnXml());
             Object manifest = submissionManifestClass.getConstructor(String.class, String.class)
-                    .newInstance(MANIFEST_FILENAME, ManifestXml.render(filing));
+                    .newInstance(MANIFEST_FILENAME, manifestXml);
 
             Object emptyAttachments = Array.newInstance(binaryAttachmentClass, 0);
             Method createArchive = submissionBuilderClass.getMethod("createIRSSubmissionArchive",
@@ -350,10 +352,10 @@ final class IrsWire implements TransmitGateway {
             return new FilingOutcome.Indeterminate(IrsFault.noReceipt(depositId, filing.submissionId()));
         }
         Instant receiptTimestamp = probeReceiptTimestamp(receipt);
-        FilingReceipt.TimestampSource source = receiptTimestamp != null
-                ? FilingReceipt.TimestampSource.IRS
-                : FilingReceipt.TimestampSource.LOCAL;
-        return new FilingOutcome.Transmitted(new FilingReceipt(
+        TransmissionReceipt.TimestampSource source = receiptTimestamp != null
+                ? TransmissionReceipt.TimestampSource.IRS
+                : TransmissionReceipt.TimestampSource.LOCAL;
+        return new FilingOutcome.Transmitted(new TransmissionReceipt(
                 depositId,
                 filing.submissionId(),
                 receiptTimestamp != null ? receiptTimestamp : observedAt,

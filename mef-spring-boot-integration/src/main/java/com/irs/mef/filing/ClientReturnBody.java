@@ -23,16 +23,16 @@ import java.util.Objects;
  */
 final class ClientReturnBody {
 
-    static final String NS = "http://www.irs.gov/efile";
+    private static final String NS = Efile.NAMESPACE;
 
-    private final ClientReturnType returnType;
+    private final FormSpec returnType;
     private final Ein filerEin;
     private final String filerXml;
     private final String returnDataXml;
     private final TaxPeriod taxPeriod;
     private final ReportingPeriod period;
 
-    private ClientReturnBody(ClientReturnType returnType,
+    private ClientReturnBody(FormSpec returnType,
                              Ein filerEin,
                              String filerXml,
                              String returnDataXml,
@@ -47,7 +47,7 @@ final class ClientReturnBody {
         period.requireMatches(taxPeriod);
     }
 
-    ClientReturnType returnType() {
+    FormSpec form() {
         return returnType;
     }
 
@@ -81,6 +81,16 @@ final class ClientReturnBody {
      */
     static ClientReturnBody load(Path xml) {
         Objects.requireNonNull(xml, "xml");
+        try {
+            return parse(Files.readString(xml));
+        } catch (java.io.IOException e) {
+            throw new ReportingAgentValidationException("xml",
+                    "Could not parse ClientReturnBody from " + xml + ": " + e.getMessage());
+        }
+    }
+
+    static ClientReturnBody parse(String xml) {
+        Objects.requireNonNull(xml, "xml");
         Document document = parseHardened(xml);
         Element root = document.getDocumentElement();
         if (root == null) {
@@ -97,13 +107,7 @@ final class ClientReturnBody {
                             + localName + " ns=" + root.getNamespaceURI());
         }
 
-        ClientReturnType returnType = ClientReturnType.parse(requiredAttribute(root, "returnTypeCd"));
-        String returnVersion = requiredAttribute(root, "returnVersion");
-        if (!returnType.returnVersion().equals(returnVersion)) {
-            throw new ReportingAgentValidationException("returnVersion",
-                    "returnTypeCd " + returnType.returnTypeCd() + " is locked to " + returnType.returnVersion()
-                            + ", found " + returnVersion);
-        }
+        FormSpec returnType = FormSpec.parse(requiredAttribute(root, "returnTypeCd"));
 
         TaxPeriod taxPeriod = new TaxPeriod(
                 parseDate("taxPeriodBegin", requiredAttribute(root, "taxPeriodBegin")),
@@ -126,20 +130,20 @@ final class ClientReturnBody {
     }
 
     /** Reads only the attribute this return type's period kind names; the other kind's attribute is an error. */
-    private static ReportingPeriod reportingPeriod(Element root, ClientReturnType returnType) {
+    private static ReportingPeriod reportingPeriod(Element root, FormSpec returnType) {
         PeriodKind kind = returnType.periodKind();
         for (PeriodKind other : PeriodKind.values()) {
             if (other != kind && root.hasAttribute(other.attribute())) {
                 throw new ReportingAgentValidationException(other.attribute(),
-                        "returnTypeCd " + returnType.returnTypeCd() + " takes " + kind.attribute()
+                        "returnTypeCd " + returnType.code() + " takes " + kind.attribute()
                                 + ", not " + other.attribute());
             }
         }
         return kind.parse(requiredAttribute(root, kind.attribute()));
     }
 
-    private static Document parseHardened(Path xml) {
-        try (InputStream in = Files.newInputStream(xml)) {
+    private static Document parseHardened(String xml) {
+        try (InputStream in = new java.io.ByteArrayInputStream(xml.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             factory.setXIncludeAware(false);
@@ -159,17 +163,17 @@ final class ClientReturnBody {
             throw e;
         } catch (Exception e) {
             throw new ReportingAgentValidationException("xml",
-                    "Could not parse ClientReturnBody from " + xml + ": " + e.getMessage());
+                    "Could not parse ClientReturnBody: " + e.getMessage());
         }
     }
 
-    private static void requireMainDocumentFirst(Element returnData, ClientReturnType returnType) {
+    private static void requireMainDocumentFirst(Element returnData, FormSpec returnType) {
         Element first = firstElement(returnData);
         String found = first == null ? "nothing" : first.getLocalName();
         if (first == null || !NS.equals(first.getNamespaceURI())
                 || !returnType.mainDocument().equals(found)) {
             throw new ReportingAgentValidationException("returnTypeCd",
-                    "returnTypeCd " + returnType.returnTypeCd() + " requires ReturnData to open with "
+                    "returnTypeCd " + returnType.code() + " requires ReturnData to open with "
                             + returnType.mainDocument() + ", found " + found);
         }
     }

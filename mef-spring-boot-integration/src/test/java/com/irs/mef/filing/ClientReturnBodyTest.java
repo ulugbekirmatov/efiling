@@ -24,7 +24,7 @@ class ClientReturnBodyTest {
     @Test
     void scenario1BodyLoadsAs941() {
         ClientReturnBody body = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
-        assertEquals(ClientReturnType.F941, body.returnType());
+        assertEquals(FormSpec.F941, body.form());
         assertEquals("003000004", body.filerEin().value());
     }
 
@@ -91,7 +91,7 @@ class ClientReturnBodyTest {
 
         ClientReturnBody body = ClientReturnBody.load(annual);
 
-        assertEquals(ClientReturnType.F940, body.returnType());
+        assertEquals(FormSpec.F940, body.form());
         assertEquals(new ReportingPeriod.TaxYear(Year.of(2026)), body.period());
         assertEquals("2026v2.0", body.returnVersion());
         assertEquals(LocalDate.of(2026, 1, 1), body.taxPeriod().begin());
@@ -117,17 +117,6 @@ class ClientReturnBodyTest {
                 ReportingAgentValidationException.class, () -> ClientReturnBody.load(both));
 
         assertEquals("quarterEndingDt", ex.field());
-    }
-
-    @Test
-    void rejectsA940OnTheQuarterlySchemaRelease() throws IOException {
-        Path quarterlyRelease = Form940Body.write(dir, "2026v2.0", "2026Q1v4.0");
-
-        ReportingAgentValidationException ex = assertThrows(
-                ReportingAgentValidationException.class, () -> ClientReturnBody.load(quarterlyRelease));
-
-        assertEquals("returnVersion", ex.field());
-        assertEquals("returnTypeCd 940 is locked to 2026v2.0, found 2026Q1v4.0", ex.getMessage());
     }
 
     @Test

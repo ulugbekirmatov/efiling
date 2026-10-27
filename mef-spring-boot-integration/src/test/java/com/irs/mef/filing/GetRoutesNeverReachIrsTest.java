@@ -26,7 +26,18 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @SpringBootTest(properties = {
         "mef.newsend.journal.mode=memory",
         "mef.inspector.enabled=false",
-        "mef.ack-store.path=${java.io.tmpdir}/mef-u4-acks"
+        "mef.ack-store.path=${java.io.tmpdir}/mef-u4-acks",
+        "MEF_EFIN=237861",
+        "MEF_RA_PIN=11111",
+        "MEF_RA_FILING_IP=192.0.2.1",
+        "MEF_RA_EIN=000000000",
+        "MEF_RA_NAME=PYRAMOS SOFTWARE LLC",
+        "MEF_RA_NAME_CONTROL=PYRA",
+        "MEF_RA_ADDRESS_LINE1=100 Market Street",
+        "MEF_RA_CITY=Philadelphia",
+        "MEF_RA_STATE=PA",
+        "MEF_RA_ZIP=19103",
+        "MEF_SOFTWARE_ID=11111111"
 })
 @AutoConfigureMockMvc
 @Import(GetRoutesNeverReachIrsTest.FailingLogin.class)

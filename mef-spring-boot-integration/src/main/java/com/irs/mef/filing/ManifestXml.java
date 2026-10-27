@@ -14,7 +14,6 @@ package com.irs.mef.filing;
  */
 public final class ManifestXml {
 
-    private static final String NAMESPACE = "http://www.irs.gov/efile";
     private static final String GOVERNMENT_CD = "IRS";
 
     private ManifestXml() {
@@ -24,10 +23,10 @@ public final class ManifestXml {
         SubmitCommand command = filing.command();
         StringBuilder xml = new StringBuilder(512);
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        xml.append("<IRSSubmissionManifest xmlns=\"").append(NAMESPACE)
-                .append("\" xmlns:efile=\"").append(NAMESPACE).append("\">\n");
+        xml.append("<IRSSubmissionManifest xmlns=\"").append(Efile.NAMESPACE)
+                .append("\" xmlns:efile=\"").append(Efile.NAMESPACE).append("\">\n");
         element(xml, "SubmissionId", filing.submissionId().value());
-        element(xml, "EFIN", filing.efin().value());
+        element(xml, "EFIN", filing.submissionId().efin().value());
         element(xml, "TaxYr", Integer.toString(command.taxPeriod().end().getYear()));
         element(xml, "GovernmentCd", GOVERNMENT_CD);
         element(xml, "FederalSubmissionTypeCd", command.formType().code());

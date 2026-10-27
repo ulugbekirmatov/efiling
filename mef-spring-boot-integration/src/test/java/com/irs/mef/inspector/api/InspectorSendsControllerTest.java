@@ -11,7 +11,7 @@ import com.irs.mef.inspector.FixtureSnapshots;
 import com.irs.mef.inspector.ring.FileSendSnapshotRing;
 import com.irs.mef.filing.Filing;
 import com.irs.mef.filing.FilingOutcome;
-import com.irs.mef.filing.FilingReceipt;
+import com.irs.mef.filing.TransmissionReceipt;
 import com.irs.mef.filing.SubmissionRecord;
 import com.irs.mef.filing.InMemoryJournal;
 import org.junit.jupiter.api.BeforeEach;
@@ -237,8 +237,8 @@ class InspectorSendsControllerTest {
     private void transmitted(String depositId) {
         Filing filing = FixtureSnapshots.orchidFiling();
         journal.reserve(SubmissionRecord.created(filing, "ATS"));
-        FilingReceipt receipt = new FilingReceipt(depositId, filing.submissionId(),
-                Instant.parse("2026-03-31T12:00:04Z"), FilingReceipt.TimestampSource.IRS, 1);
+        TransmissionReceipt receipt = new TransmissionReceipt(depositId, filing.submissionId(),
+                Instant.parse("2026-03-31T12:00:04Z"), TransmissionReceipt.TimestampSource.IRS, 1);
         journal.complete(filing.submissionId(), new FilingOutcome.Transmitted(receipt),
                 Instant.parse("2026-03-31T12:00:05Z"));
     }

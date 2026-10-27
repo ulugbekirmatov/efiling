@@ -14,10 +14,9 @@ public record SubmitCommand(
         String clientRequestId,
         String clientId,
         Ein clientEin,
-        FormType formType,
+        FormSpec formType,
         TaxPeriod taxPeriod,
-        String returnXml,
-        boolean allowDuplicatePeriod) {
+        String returnXml) {
 
     public SubmitCommand {
         if (clientRequestId == null || clientRequestId.isBlank() || clientRequestId.length() > 128) {

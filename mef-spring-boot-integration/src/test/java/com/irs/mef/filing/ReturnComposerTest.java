@@ -1,6 +1,5 @@
 package com.irs.mef.filing;
 
-import com.irs.mef.config.MefSdkConfig;
 import com.irs.mef.xml.XmlValidator;
 import org.junit.jupiter.api.Test;
 
@@ -19,12 +18,12 @@ class ReturnComposerTest {
     @Test
     void composedReturnIsSchemaValidReportingAgent() {
         ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
-        ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
+        Originator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
 
         ReturnComposer ret = ReturnComposer.compose(
                 standIn, orchid, Clock.system(ZoneId.of("America/New_York")));
 
-        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.root(FormType.F941));
+        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.root(FormSpec.F941));
         assertTrue(xsd.isValid(), xsd::report);
 
         ReturnComposer.Structure s = ret.structure();
@@ -43,7 +42,7 @@ class ReturnComposerTest {
         assertFalse(ret.xml().contains("10219201"), "ASID must not appear in the Return");
         assertFalse(ret.xml().contains("OnlineFilerPINGrp"));
         assertFalse(ret.xml().contains("OnlineFiler"));
-        assertTrue(ret.xml().contains("xmlns:efile=\"" + ReturnComposerXml.NS + "\""),
+        assertTrue(ret.xml().contains("xmlns:efile=\"" + Efile.NAMESPACE + "\""),
                 "X0000-008 requires xmlns:efile on Return");
         assertFalse(ret.xml().contains("<Filer xmlns="),
                 "Filer must inherit the Return default namespace");
@@ -59,7 +58,7 @@ class ReturnComposerTest {
 
     @Test
     void standInIsNotFiveDigitEtinOrTenDigitPin() {
-        ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
+        Originator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
         assertEquals(6, standIn.efin().value().length());
         assertEquals(5, standIn.pin().value().length());
         assertEquals(8, standIn.softwareIds().forRelease(SchemaRelease.Y2026Q1_V4).value().length());
@@ -71,69 +70,8 @@ class ReturnComposerTest {
     @Test
     void agentEinDiffersFromFilerEin() {
         ClientReturnBody orchid = ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody());
-        ReportingAgentOriginator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
+        Originator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
         assertEquals("003000004", orchid.filerEin().value());
         assertNotEquals(orchid.filerEin(), standIn.identity().ein());
-    }
-
-    @Test
-    void fromEnvironmentRejectsOneWellEfin() {
-        ReportingAgentOriginatorFactory factory = factoryWithEfin("238689");
-        ReportingAgentValidationException ex = assertThrows(
-                ReportingAgentValidationException.class, factory::fromEnvironment);
-        assertEquals("efin", ex.field());
-    }
-
-    @Test
-    void fromEnvironmentRejectsStandInEfin() {
-        ReportingAgentOriginatorFactory factory = factoryWithEfin("000000");
-        ReportingAgentValidationException ex = assertThrows(
-                ReportingAgentValidationException.class, factory::fromEnvironment);
-        assertEquals("efin", ex.field());
-    }
-
-    @Test
-    void fromEnvironmentRejectsOrchidAgentEin() {
-        ReportingAgentProperties properties = populatedProperties();
-        properties.setEin("003000004");
-        MefSdkConfig sdk = new MefSdkConfig();
-        sdk.getAuthentication().setEfin("111111");
-        ReportingAgentOriginatorFactory factory = new ReportingAgentOriginatorFactory(properties, sdk);
-        ReportingAgentValidationException ex = assertThrows(
-                ReportingAgentValidationException.class, factory::fromEnvironment);
-        assertEquals("ein", ex.field());
-    }
-
-    @Test
-    void fromEnvironmentFailsClosedOnMissingPin() {
-        ReportingAgentProperties properties = populatedProperties();
-        properties.setPin("");
-        MefSdkConfig sdk = new MefSdkConfig();
-        sdk.getAuthentication().setEfin("111111");
-        ReportingAgentOriginatorFactory factory = new ReportingAgentOriginatorFactory(properties, sdk);
-        ReportingAgentValidationException ex = assertThrows(
-                ReportingAgentValidationException.class, factory::fromEnvironment);
-        assertEquals("MEF_RA_PIN", ex.field());
-    }
-
-    private static ReportingAgentOriginatorFactory factoryWithEfin(String efin) {
-        MefSdkConfig sdk = new MefSdkConfig();
-        sdk.getAuthentication().setEfin(efin);
-        return new ReportingAgentOriginatorFactory(populatedProperties(), sdk);
-    }
-
-    private static ReportingAgentProperties populatedProperties() {
-        ReportingAgentProperties properties = new ReportingAgentProperties();
-        properties.setPin("11111");
-        properties.setSoftwareId("11111111");
-        properties.setFilingIp("192.0.2.1");
-        properties.setEin("111111111");
-        properties.setBusinessName("PYRAMOS SOFTWARE LLC");
-        properties.setNameControl("PYRA");
-        properties.setAddressLine1("100 Market Street");
-        properties.setCity("Philadelphia");
-        properties.setState("PA");
-        properties.setZip("19103");
-        return properties;
     }
 }

@@ -28,18 +28,17 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class AtsScenarioComposeTest {
 
     private static final Clock FIXED = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);
-    private static final XsdReturnValidator VALIDATOR =
-            new XsdReturnValidator(enforcing());
+    private static final XsdReturnValidator VALIDATOR = new XsdReturnValidator();
 
     static Stream<Arguments> quarterlyScenarios() {
         return Stream.of(
-                arguments(AtsScenario.ORCHID_941, "941", FormType.F941, "003000004",
+                arguments(AtsScenario.ORCHID_941, "941", FormSpec.F941, "003000004",
                         List.of("IRS941")),
-                arguments(AtsScenario.MARIGOLD_941_SCHEDULE_B, "941", FormType.F941, "003333330",
+                arguments(AtsScenario.MARIGOLD_941_SCHEDULE_B, "941", FormSpec.F941, "003333330",
                         List.of("IRS941", "IRS941ScheduleB")),
-                arguments(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974, "941", FormType.F941, "003222220",
+                arguments(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974, "941", FormSpec.F941, "003222220",
                         List.of("IRS941", "IRS941ScheduleR", "IRS8974")),
-                arguments(AtsScenario.ORCHID_941X, "941X", FormType.F941X, "003000004",
+                arguments(AtsScenario.ORCHID_941X, "941X", FormSpec.F941X, "003000004",
                         List.of("IRS941X")));
     }
 
@@ -54,7 +53,7 @@ class AtsScenarioComposeTest {
     @MethodSource("quarterlyScenarios")
     void composesAValidQuarterlyReturnComposer(AtsScenario scenario,
                                                      String returnTypeCd,
-                                                     FormType formType,
+                                                     FormSpec formType,
                                                      String filerEin,
                                                      List<String> documents) {
         ReturnComposer ret = compose(scenario);
@@ -72,7 +71,8 @@ class AtsScenarioComposeTest {
 
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
-    void composesAnAnnual940ReturnComposer(AtsScenario scenario, String filerEin, List<String> documents) {
+    void composesAnAnnual940Return(AtsScenario scenario, String filerEin, List<String> documents) {
+        skipIfPending(FormSpec.F940);
         ReturnComposer ret = compose(scenario);
 
         ReturnComposer.Structure header = ret.structure();
@@ -82,16 +82,20 @@ class AtsScenarioComposeTest {
         assertEquals("2026", header.periodValue());
         assertFalse(ret.xml().contains("QuarterEndingDt"), ret.xml());
         assertDocuments(ret, documents);
-        assertSubmitCommandAndManifest(ret, scenario, FormType.F940, filerEin, LocalDate.of(2026, 12, 31));
+        assertSubmitCommandAndManifest(ret, scenario, FormSpec.F940, filerEin, LocalDate.of(2026, 12, 31));
     }
 
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
     void anAnnual940ReturnIsSchemaValid(AtsScenario scenario, String filerEin, List<String> documents) {
-        assumeTrue(ClasspathSchemas.bundled(SchemaRelease.Y2026_V2),
-                "2026v2.0 schema bundle not on the classpath yet (IRS e-Services mailbox)");
+        skipIfPending(FormSpec.F940);
+        VALIDATOR.validate(FormSpec.F940, compose(scenario).xml());
+    }
 
-        VALIDATOR.validate(FormType.F940, compose(scenario).xml());
+    private static void skipIfPending(FormSpec form) {
+        if (form.schema() instanceof SchemaBinding.Pending pending) {
+            assumeTrue(false, pending.why());
+        }
     }
 
     private static ReturnComposer compose(AtsScenario scenario) {
@@ -122,10 +126,10 @@ class AtsScenarioComposeTest {
 
     private static void assertSubmitCommandAndManifest(ReturnComposer ret,
                                                        AtsScenario scenario,
-                                                       FormType formType,
+                                                       FormSpec formType,
                                                        String filerEin,
                                                        LocalDate periodEnd) {
-        SubmitCommand command = ret.toSubmitCommand("key", scenario.clientId(), false);
+        SubmitCommand command = ret.toSubmitCommand("key", scenario.clientId());
         assertEquals(formType, command.formType());
         assertEquals(filerEin, command.clientEin().value());
         assertEquals(LocalDate.of(2026, 1, 1), command.taxPeriod().begin());
@@ -146,7 +150,7 @@ class AtsScenarioComposeTest {
                 ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody()), FIXED);
 
         FilingValidationException ex = assertThrows(FilingValidationException.class,
-                () -> VALIDATOR.validate(FormType.F941X, scenario1.xml()));
+                () -> VALIDATOR.validate(FormSpec.F941X, scenario1.xml()));
         assertTrue(ex.getMessage().startsWith("Return XML failed 941X schema validation: "), ex.getMessage());
     }
 
@@ -174,9 +178,4 @@ class AtsScenarioComposeTest {
                 ex.getMessage());
     }
 
-    private static FilingProperties enforcing() {
-        FilingProperties properties = new FilingProperties();
-        properties.setXmlValidation(FilingProperties.XmlValidationMode.ENFORCE);
-        return properties;
-    }
 }

@@ -7,7 +7,7 @@ import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SnapshotId;
 import com.irs.mef.inspector.ring.SoapCapture;
 import com.irs.mef.filing.Ein;
-import com.irs.mef.filing.FormType;
+import com.irs.mef.filing.FormSpec;
 import com.irs.mef.filing.Filing;
 import com.irs.mef.filing.ManifestXml;
 import com.irs.mef.filing.SubmissionId;
@@ -40,10 +40,9 @@ public final class FixtureSnapshots {
                 "inspector-demo-1",
                 "orchid",
                 new Ein("003000004"),
-                FormType.F941,
+                FormSpec.F941,
                 new TaxPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31)),
-                RETURN_XML,
-                false);
+                RETURN_XML);
         return new Filing(
                 new SubmissionId(SUBMISSION_ID),
                 command,

@@ -55,7 +55,7 @@ public class InMemoryJournal implements Journal {
     }
 
     @Override
-    public synchronized List<SubmissionRecord> findFiledFor(Ein clientEin, FormType formType,
+    public synchronized List<SubmissionRecord> findFiledFor(Ein clientEin, FormSpec formType,
                                                                    TaxPeriod taxPeriod) {
         List<String> ids = submissionIdsByFilingIdentity
                 .getOrDefault(filingIdentityKey(clientEin, formType, taxPeriod), List.of());
@@ -83,7 +83,7 @@ public class InMemoryJournal implements Journal {
                 .add(record.submissionId().value());
     }
 
-    static String filingIdentityKey(Ein clientEin, FormType formType, TaxPeriod taxPeriod) {
+    static String filingIdentityKey(Ein clientEin, FormSpec formType, TaxPeriod taxPeriod) {
         return clientEin.value() + '|' + formType.code() + '|' + taxPeriod.begin() + '|' + taxPeriod.end();
     }
 }

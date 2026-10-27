@@ -38,7 +38,6 @@ public class MefSdkConfig {
     @Data
     public static class Authentication {
         private String etin;
-        private String efin;
         private String asid;
     }
 }

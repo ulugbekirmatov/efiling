@@ -134,7 +134,7 @@ curl -X GET "http://localhost:8080/api/mef/submissions/{submissionId}/status"
 curl -X GET "http://localhost:8080/api/mef/acknowledgments/new"
 ```
 
-Note: These endpoints will need implementation. See `StatusService.java` and `AcknowledgementService.java`.
+Note: These endpoints will need implementation. See `StatusService.java` and `AcknowledgementService.java`. (deleted in 6e0bb7e)
 
 ## Troubleshooting
 

@@ -25,7 +25,7 @@ This document provides complete specifications for the **GetSubmissionStatus** a
 
 | Service | Purpose | Status | Implementation |
 |---------|---------|--------|----------------|
-| GetSubmissionStatus | Query status of a specific submission | ✅ Working | `StatusService.java:33-101` |
+| GetSubmissionStatus | Query status of a specific submission | ✅ Working | `StatusService.java:33-101` | (deleted in 6e0bb7e)
 | GetNewAcks | Retrieve new acknowledgments | ✅ Working | `AcknowledgementService.java:98-188` |
 
 ---
@@ -502,7 +502,7 @@ try {
 
 ### Integration Test
 
-The `Form941SubmissionTest` includes tests for both services:
+The `Form941SubmissionTest` includes tests for both services: (deleted in 6e0bb7e)
 
 ```java
 @Test
@@ -629,10 +629,10 @@ Both **GetSubmissionStatus** and **GetNewAcks** services are fully implemented a
 
 ### Key Files
 
-- **StatusService**: `src/main/java/com/irs/mef/service/StatusService.java`
+- **StatusService**: `src/main/java/com/irs/mef/service/StatusService.java` (deleted in 6e0bb7e)
 - **AcknowledgementService**: `src/main/java/com/irs/mef/service/AcknowledgementService.java`
-- **Tests**: `src/test/java/com/irs/mef/scenarios/Form941SubmissionTest.java`
-- **DTOs**: `src/main/java/com/irs/mef/dto/StatusResponse.java`, `AckResponse.java`
+- **Tests**: `src/test/java/com/irs/mef/scenarios/Form941SubmissionTest.java` (deleted in 6e0bb7e)
+- **DTOs**: `src/main/java/com/irs/mef/dto/StatusResponse.java`, `AckResponse.java` (deleted in 6e0bb7e)
 
 ---
 

@@ -95,7 +95,7 @@ String submissionId = timestampStr + suffix;
 ```
 
 **Files Changed**:
-- `Form941SubmissionTest.java:56-59` - Fixed ID generation in @BeforeAll
+- `Form941SubmissionTest.java:56-59` - Fixed ID generation in @BeforeAll (deleted in 6e0bb7e)
 - Created `SUBMISSION_ID_FORMAT.md` - Comprehensive format documentation
 
 ---
@@ -145,9 +145,9 @@ private SubmissionManifest createIRSManifest(
 ```
 
 **Files Changed**:
-- `SubmissionService.java:233-269` - Added createIRSManifest() method
-- `SubmitRequest.java:48-65` - Added EFIN, TIN, taxPeriodBegin, taxPeriodEnd fields
-- `Form941SubmissionTest.java:147-154` - Pass manifest fields in SubmitRequest
+- `SubmissionService.java:233-269` - Added createIRSManifest() method (deleted in 6e0bb7e)
+- `SubmitRequest.java:48-65` - Added EFIN, TIN, taxPeriodBegin, taxPeriodEnd fields (deleted in 6e0bb7e)
+- `Form941SubmissionTest.java:147-154` - Pass manifest fields in SubmitRequest (deleted in 6e0bb7e)
 
 **Required Manifest Fields**:
 - `SubmissionId`: Must match submission ID in SubmissionArchive
@@ -231,8 +231,8 @@ SendSubmissionsResult result = client.invoke(serviceContext, container);
 > **SDK Serialization Pattern**: The MeF SDK's serialization mechanism (used during ZIP compression and SOAP transmission) ALWAYS uses in-memory methods like `getXmlData()`, regardless of whether objects were created with file-based or in-memory constructors. Therefore, all submission components (SubmissionXML, SubmissionManifest, BinaryAttachment) MUST be created using in-memory constructors.
 
 **Files Changed**:
-- `SubmissionService.java:73-105` - Converted to all in-memory objects
-- `SubmissionService.java:262` - Return in-memory SubmissionManifest
+- `SubmissionService.java:73-105` - Converted to all in-memory objects (deleted in 6e0bb7e)
+- `SubmissionService.java:262` - Return in-memory SubmissionManifest (deleted in 6e0bb7e)
 
 ---
 
@@ -307,7 +307,7 @@ public static void beforeAll() {
 ```
 
 **Files Changed**:
-- `Form941SubmissionTest.java:48-66` - Fixed submission ID generation with semantic structure
+- `Form941SubmissionTest.java:48-66` - Fixed submission ID generation with semantic structure (deleted in 6e0bb7e)
 - `SUBMISSION_ID_FORMAT.md` - Updated with semantic structure requirements
 
 ---

@@ -111,7 +111,7 @@ Line 43-44 sets `A2A_TOOLKIT_HOME` to `${user.dir}/src/main/resources/mef_config
 |---|---|
 | `mefRetryTemplate()` `@Bean` | 40 |
 
-Exponential backoff: 5 s initial, ×3.0, capped at 60 s (lines 45-47). `SimpleRetryPolicy(3, {Exception.class: true}, true)` at lines 56-60 — **retries every `Exception`, including `MefException`**, despite the "Don't retry MefException" comments in the services (`StatusService.java:111`, `AcknowledgementService.java:136/242/363`). A `NOT_LOGGED_IN` or `NO_STATUS_FOUND` failure is therefore retried three times with backoff before surfacing.
+Exponential backoff: 5 s initial, ×3.0, capped at 60 s (lines 45-47). `SimpleRetryPolicy(3, {Exception.class: true}, true)` at lines 56-60 — **retries every `Exception`, including `MefException`**, despite the "Don't retry MefException" comments in the services (`StatusService.java:111`, deleted in 6e0bb7e; `AcknowledgementService.java:136/242/363`, line numbers predate 6e0bb7e). A `NOT_LOGGED_IN` or `NO_STATUS_FOUND` failure is therefore retried three times with backoff before surfacing.
 
 ### `com.irs.mef.config.DotenvEnvironmentPostProcessor`
 `src/main/java/com/irs/mef/config/DotenvEnvironmentPostProcessor.java`
@@ -158,8 +158,8 @@ SDK classes via reflection:
 
 `logout()` (lines 215-236) calls `LogoutClient.invoke(ServiceContext)` by reflection (`invokeIrsLogout`, lines 242-255), then always `clearLocalSession()`. It returns `true` only when IRS confirmed; local state is cleared even on a fault so a dead SAML token is not reused.
 
-### `com.irs.mef.service.SubmissionService`
-`src/main/java/com/irs/mef/service/SubmissionService.java`
+### `com.irs.mef.service.SubmissionService` (deleted in 6e0bb7e; replaced by `NewSendSubmissionService`)
+`src/main/java/com/irs/mef/service/SubmissionService.java` (deleted)
 
 | Method | Line | Visibility |
 |---|---|---|
@@ -186,8 +186,8 @@ SDK classes via reflection (all in `submitSubmission`):
 
 The manifest XML template is at lines 282-297: `IRSSubmissionManifest` with `SubmissionId`, `EFIN`, `GovernmentCd=IRS`, hardcoded `FederalSubmissionTypeCd=941`, optional `TaxPeriodBeginDt`/`TaxPeriodEndDt`, `TIN`. The receipt block (lines 151-166) fetches the receipt and only logs it — nothing from it reaches the response; `status` is hardcoded `"Accepted"` (line 148) and `messageId` is just the deposit ID (149).
 
-### `com.irs.mef.service.StatusService`
-`src/main/java/com/irs/mef/service/StatusService.java`
+### `com.irs.mef.service.StatusService` (deleted in 6e0bb7e)
+`src/main/java/com/irs/mef/service/StatusService.java` (deleted)
 
 | Method | Line | Visibility |
 |---|---|---|
@@ -285,7 +285,7 @@ Base URL `http://localhost:8080/api` (`server.port: 8080`, `server.servlet.conte
 
 Login and logout are **GET**, not POST as older docs state, and take no body.
 
-### `SubmissionController` — `@RequestMapping("/mef/submissions")`
+### `SubmissionController` — `@RequestMapping("/mef/submissions")` (deleted in 6e0bb7e; the send route is now `POST /mef/newsend/submissions`)
 
 | Method | Path | Handler (line) | Request | Response |
 |---|---|---|---|---|
@@ -295,9 +295,9 @@ Login and logout are **GET**, not POST as older docs state, and take no body.
 | POST | `/mef/submissions/archive/create` | `createSubmissionArchive` :114 | `@RequestParam submissionId, returnXmlPath, attachments?` | `String` path 200 — stub |
 | GET | `/mef/submissions/test/form941` | `testForm941Submission` :149 | none | `SubmitResponse` 201 |
 
-`testForm941Submission` self-logs-in if needed (153-166), reads EFIN from config and validates `\d{6}` (173-185), builds a submission ID as `EFIN(6) + yyyyDDD(7) + millis-slice(7)` (198-208) and asserts `[0-9]{13}[a-z0-9]{7}` (211-215). **Line 225 hardcodes `test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml`** — that directory does not exist; the file actually lives under `.../Documents/MeF/test-scenarios/...` (`MeF-test` vs `MeF`). This endpoint fails with `FILE_NOT_FOUND` at `SubmissionService.java:50-53`. TIN is hardcoded `"003000004"` (239) and the tax period to Q1 2026 (242-243).
+`testForm941Submission` self-logs-in if needed (153-166), reads EFIN from config and validates `\d{6}` (173-185), builds a submission ID as `EFIN(6) + yyyyDDD(7) + millis-slice(7)` (198-208) and asserts `[0-9]{13}[a-z0-9]{7}` (211-215). **Line 225 hardcodes `test-scenarios/941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml`** — that directory does not exist; the file actually lives under `.../Documents/MeF/test-scenarios/...` (`MeF-test` vs `MeF`). This endpoint fails with `FILE_NOT_FOUND` at `SubmissionService.java:50-53`. TIN is hardcoded `"003000004"` (239) and the tax period to Q1 2026 (242-243). (This endpoint was deleted in 6e0bb7e.)
 
-### `AcknowledgementController` — `@RequestMapping("/mef/acknowledgments")`
+### `AcknowledgementController` — `@RequestMapping("/mef/acknowledgments")` (deleted in 6e0bb7e; acks now via `POST /inspector/sends/{id}/ack`)
 
 | Method | Path | Handler (line) | Request | Response |
 |---|---|---|---|---|
@@ -408,7 +408,7 @@ The `mef.sdk.endpoints.*` and `mef.sdk.security.*` trees are bound into `MefSdkC
 |---|---|---|
 | `MEF_ETIN` | `application.yml:57` | yes — login |
 | `MEF_ASID` | 69 | yes — login (`ASID_NOT_CONFIGURED` at `MefClientService.java:542`) |
-| `MEF_EFIN` | 60 | for `/test/form941` (`SubmissionController.java:173`) |
+| `MEF_EFIN` | 60 | for `/test/form941` (`SubmissionController.java:173`, deleted in 6e0bb7e) |
 | `MEF_KEYSTORE_PATH` | 43 | yes |
 | `MEF_KEYSTORE_PASSWORD` | 44 | yes |
 | `MEF_KEYSTORE_TYPE` | 45 | no (PKCS12) |
@@ -503,7 +503,7 @@ mvn test -Dtest=Form941SubmissionTest                 # @SpringBootTest, live AT
 
 Gating (historical, file deleted 2026-09-16): `MefLoginIntegrationTest` guarded its live methods with `@EnabledIfSystemProperty(named="mef.integration.test.enabled", matches="true")` (lines 92, 314, 369, ~397); its offline methods (`testKeystoreExists` :66, `testLoadSdkClasses` :77, `testCreateLoginClient` :121, `testLoginClientInvokeMethods` :131, `testSdkKeystoreAccess` :183, `testKeystoreLoadingForSdk` :246) run unconditionally and expect `./irs_cert/IRS_test_keystore.p12` with password `test123`, alias `irs_test_cert` — hardcoded at lines 32-34; the file is not in the repo.
 
-**`Form941SubmissionTest` is gated** by `@LiveIrsTest`: it runs only with `-Dmef.live.test=Form941SubmissionTest`. Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date. 
+**`Form941SubmissionTest` is gated** by `@LiveIrsTest`: it runs only with `-Dmef.live.test=Form941SubmissionTest`. Submission IDs now use `MEF_EFIN` plus today's `yyyyDDD` processing date.  The test was deleted in 6e0bb7e.
 
 
 ### Run
@@ -560,8 +560,8 @@ Defects worth acting on, roughly by severity:
 7. **The retry policy retries everything.** `RetryConfig.java:53-60` classifies `Exception.class` as retryable, so the `catch (MefException e) { throw e; }` "don't retry" blocks in `StatusService:111` and `AcknowledgementService:136/242/363` don't have their intended effect — `NOT_LOGGED_IN` and `ACK_NOT_FOUND` are retried three times across ~20 s of backoff.
 8. **Session state is unguarded shared mutable state** on a singleton (`MefClientService.java:34-37`). Concurrent requests share one `ServiceContext`; a second login silently swaps the context out from under in-flight calls. No expiry tracking or re-login on IRS session timeout.
 9. **`getAcknowledgmentsBySubmission` drains the ack queue.** GetNewAcks marks acknowledgments retrieved IRS-side; filtering client-side (`AcknowledgementService.java:341-343`) discards every non-matching ack permanently.
-10. **`Form941SubmissionTest` is gated** by `@LiveIrsTest` (`-Dmef.live.test=Form941SubmissionTest`; each live class has its own value). A plain `mvn test` is offline-safe.
-11. Stubs presented as working endpoints: `StatusService.getNewSubmissionsStatus()` :149 always returns `[]`; `SubmissionService.createSubmissionArchive()` :197 returns a path to a file it never creates. Both reachable over HTTP.
+10. **`Form941SubmissionTest` is gated** by `@LiveIrsTest` (`-Dmef.live.test=Form941SubmissionTest`; each live class has its own value). A plain `mvn test` is offline-safe. (Test deleted in 6e0bb7e.)
+11. Stubs presented as working endpoints: `StatusService.getNewSubmissionsStatus()` :149 always returns `[]`; `SubmissionService.createSubmissionArchive()` :197 returns a path to a file it never creates. Both reachable over HTTP. Both were deleted in 6e0bb7e.
 12. Dead code: `getCertificateFile()` duplicated and unused in `SubmissionService:241`, `StatusService:206`, `AcknowledgementService:594`. `LoginRequest` bound by nothing. `MefSdkConfig.Authentication.username`/`password` and the entire `endpoints`/`security` trees never read at call time.
 13. `buildAckResponseReflection`'s `getField` lambda (`AcknowledgementService.java:424-431`) swallows all reflection errors into `null` — an SDK getter rename degrades to silently-empty response fields.
 14. Every `MefException` maps to HTTP 500 (`GlobalExceptionHandler.java:24-38`), including client-fault codes like `NOT_LOGGED_IN` (401/409) and `FILE_NOT_FOUND` (400).

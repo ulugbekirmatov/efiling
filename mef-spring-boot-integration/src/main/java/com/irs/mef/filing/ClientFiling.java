@@ -1,12 +1,7 @@
 package com.irs.mef.filing;
 
-/**
- * What a caller files. {@link #parse} is the boundary: the client id and the client body XML
- * come in as strings, and everything past this point is a validated value.
- */
 public final class ClientFiling {
 
-    /** Hard cap on {@code clientBody}, in characters. {@code FilingProperties} starts at this value. */
     public static final int MAX_CLIENT_BODY_CHARS = 8_000_000;
 
     private final ClientId clientId;
@@ -62,7 +57,6 @@ public final class ClientFiling {
         return clientBodyXml;
     }
 
-    /** Per-request escape for the duplicate-period guard. Not part of the content key. */
     public boolean allowDuplicatePeriod() {
         return allowDuplicatePeriod;
     }

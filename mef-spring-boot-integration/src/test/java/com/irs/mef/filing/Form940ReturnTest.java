@@ -10,7 +10,6 @@ import java.time.ZoneOffset;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** Offline. A 940 needs its own schema bundle and its own Software ID before it can be sent. */
 class Form940ReturnTest {
 
     private static final Clock FIXED = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);

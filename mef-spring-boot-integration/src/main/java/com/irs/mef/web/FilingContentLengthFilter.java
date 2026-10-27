@@ -46,7 +46,6 @@ class FilingContentLengthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /** A non-numeric Content-Length is the container's problem. This filter only caps a number. */
     private static long parseLength(String header) {
         try {
             return Long.parseLong(header.trim());

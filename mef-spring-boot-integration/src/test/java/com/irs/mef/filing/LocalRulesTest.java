@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-/** Offline. Each local rule fails on its scrubbed sample and passes on every quarterly preflight. */
 class LocalRulesTest {
 
     private static final Pattern SUBMISSION_ID = Pattern.compile("<SubmissionId>([^<]+)</SubmissionId>");
@@ -29,9 +28,9 @@ class LocalRulesTest {
     @Test
     void eachRuleFailsOnItsSample() throws IOException {
         for (LocalRule rule : LocalRules.all()) {
-            Preflight sample = sample(rule.rejectedSample());
+            Preflight sample = sample(rule.rejectedSampleClasspathDir());
             RuleResult result = rule.check(sample);
-            assertFalse(result.passed(), rule.irsCode() + " passed on " + rule.rejectedSample()
+            assertFalse(result.passed(), rule.irsCode() + " passed on " + rule.rejectedSampleClasspathDir()
                     + " (" + result.detail() + ")");
         }
     }

@@ -14,11 +14,6 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * Sends the ATS scenario named by -Dmef.ats.scenario. Run through ./mef ats.
- * No default: a forgotten flag would re-file scenario 1, which ATS already accepted.
- * The shell, not this test, exits with the verdict: a reject is a result.
- */
 @SpringBootTest
 @LiveIrsTest
 class AtsRunTest {

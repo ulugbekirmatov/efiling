@@ -2,7 +2,6 @@ package com.irs.mef.filing;
 
 import java.util.List;
 
-/** Offline keystore read. No IRS call. */
 public record CertificateDiagnostic(
         boolean success,
         String keystorePath,

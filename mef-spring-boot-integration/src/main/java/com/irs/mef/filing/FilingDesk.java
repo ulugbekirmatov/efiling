@@ -20,10 +20,6 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * The filing pipeline. {@link #preflight} is offline. {@link #file} is the only send.
- * {@link #ack} is the only GetAck. There is no retry: SendSubmissions is not idempotent at the IRS.
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -41,10 +37,6 @@ public class FilingDesk {
     private final IrsWire wire;
     private final SecureRandom random = new SecureRandom();
 
-    /**
-     * Offline. Composes, mints, renders the manifest, XSD-validates the return and the manifest,
-     * builds the SDK archive, and runs every {@link LocalRule}. Never touches {@link IrsSession}.
-     */
     public Preflight preflight(ClientFiling filing) {
         if (filing.form().schema() instanceof SchemaBinding.Pending pending) {
             throw new FilingValidationException("form", pending.why());
@@ -150,10 +142,6 @@ public class FilingDesk {
         }
     }
 
-    /**
-     * Same bytes as a journaled filing. Returns that receipt and does not call the IRS.
-     * CREATED (another thread is mid-flight) is the one state that is not yet a receipt.
-     */
     private FilingReceipt replay(SubmissionRecord existing, String environment) {
         if (!existing.environment().equals(environment)) {
             throw new FilingDuplicateException("NEWSEND_ENVIRONMENT_MISMATCH",
@@ -188,11 +176,6 @@ public class FilingDesk {
         };
     }
 
-    /**
-     * Same EIN, form, and period already transmitted or still unresolved.
-     * A SOAP rejection does not block. A TRANSMITTED row whose stored ack is Rejected does not
-     * block either: the IRS filed nothing. {@code allowDuplicatePeriod} skips the guard.
-     */
     private void guardDuplicatePeriod(Filing filing, String environment, boolean allowDuplicatePeriod) {
         if (allowDuplicatePeriod) {
             return;
@@ -255,11 +238,6 @@ public class FilingDesk {
         }
     }
 
-    /**
-     * SHA-256 of the environment, a zero byte, the client id, a zero byte, and the client body.
-     * The zero bytes keep two different splits of the same concatenation from sharing a key.
-     * The environment lets the same bytes be filed once in ATS and once in PRD.
-     */
     static String contentKey(String environment, ClientFiling filing) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

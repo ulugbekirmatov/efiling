@@ -20,14 +20,9 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * The web reads journal states, ack statuses, and scenario states from one file.
- * {@code -Ddocs.update=true} rewrites it.
- */
 class ContractExportTest {
 
     private static final Path FACTS = Path.of("..", "c2s-web", "generated", "mef-facts.json");
-    /** A string literal compared to {@code StoredAck.ackType()}. */
     private static final Pattern ACK_STATUS = Pattern.compile(
             "\"([^\"]+)\"\\s*\\.equals\\([^\\n]*?ackType\\(\\)\\)");
 
@@ -59,7 +54,6 @@ class ContractExportTest {
                 + "}\n";
     }
 
-    /** Statuses the ack path treats as closed. The SDK field itself is free text. */
     private static List<String> ackStatuses() throws IOException {
         Set<String> found = new TreeSet<>();
         try (Stream<Path> files = Files.walk(Path.of("src"))) {

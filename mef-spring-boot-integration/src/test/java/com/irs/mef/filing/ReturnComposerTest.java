@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Offline. No Spring. No network. */
 class ReturnComposerTest {
 
     @Test

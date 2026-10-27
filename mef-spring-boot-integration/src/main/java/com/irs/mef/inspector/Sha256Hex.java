@@ -8,7 +8,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/** SHA-256 helpers. Lowercase hex, same as {@code SubmitCommand.returnXmlSha256}. */
 public final class Sha256Hex {
 
     private Sha256Hex() {

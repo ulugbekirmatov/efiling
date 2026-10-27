@@ -12,10 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * The last ack for a scenario. A Rejected ack whose codes have no {@link LocalRules} entry
- * blocks the next live send. There is no force flag.
- */
 public final class RejectLedger {
 
     private final Journal journal;

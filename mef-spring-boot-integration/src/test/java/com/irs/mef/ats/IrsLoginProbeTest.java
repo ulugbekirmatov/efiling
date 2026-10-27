@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.nio.file.Path;
 
-/** Login probe for ./mef login. No send. */
 @SpringBootTest
 @LiveIrsTest
 class IrsLoginProbeTest {

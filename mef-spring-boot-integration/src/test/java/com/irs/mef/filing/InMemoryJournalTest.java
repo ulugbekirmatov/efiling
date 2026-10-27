@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Offline. Pins the idempotency-key protocol: claim, replay lookup, and ABANDONED release. */
 class InMemoryJournalTest {
 
     private final InMemoryJournal journal = new InMemoryJournal();

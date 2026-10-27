@@ -20,9 +20,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.Instant;
 
-/**
- * Bind, parse, delegate. No SDK type and no business rule appears here.
- */
 @RestController
 @RequestMapping("/mef/filings")
 @RequiredArgsConstructor

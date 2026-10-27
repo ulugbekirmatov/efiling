@@ -16,10 +16,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Commands in docs are {@code ./mef} verbs. A fenced shell line that launches Maven or Java,
- * or a {@code ./mef} verb the script does not define, is a doc an agent will copy.
- */
 class DocCommandGuardTest {
 
     private static final Path REPO_ROOT = Path.of("..");
@@ -59,10 +55,6 @@ class DocCommandGuardTest {
         }
     }
 
-    /**
-     * After leading whitespace, an optional {@code $ } prompt, then a command.
-     * {@code java} and {@code mvn} must be the whole word, so a fenced {@code java.time} type is not a launch.
-     */
     private static boolean forbiddenCommand(String line) {
         String rest = line.stripLeading();
         if (rest.startsWith("$ ")) {

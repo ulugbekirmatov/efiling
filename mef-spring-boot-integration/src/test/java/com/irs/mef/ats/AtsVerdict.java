@@ -7,12 +7,8 @@ import com.irs.mef.filing.SubmissionId;
 import java.util.List;
 import java.util.Set;
 
-/**
- * What one {@code ./mef ats} run is worth. {@link #exitCode()} is exhaustive: only {@link Accepted} is 0.
- */
 public sealed interface AtsVerdict {
 
-    /** Shell exit. 3 is reserved for a missing verdict file. */
     enum Kind {
         ACCEPTED, REJECTED, NO_ACK, NOT_SENT, BLOCKED, PREFLIGHT_FAILED
     }

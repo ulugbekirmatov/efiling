@@ -25,8 +25,6 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Sole holder of the SDK ServiceContext. The context is not thread-safe, and a second one
  * invalidates the IRS session, so every SDK call takes the same fair lock.
- *
- * A failed call does not log in again: the expiry fault is not known, so a retry would guess.
  */
 @Component
 @Slf4j
@@ -57,7 +55,6 @@ public final class IrsSession {
         }
     }
 
-    /** Log in now, replacing any session this process already holds. */
     public SessionStatus probe() {
         lock.lock();
         try {
@@ -70,7 +67,6 @@ public final class IrsSession {
 
     /**
      * Ends the IRS session when there is one, then clears local state either way.
-     * A stale local session would keep sending a SAML token the IRS no longer honours.
      */
     public void logout() {
         lock.lock();
@@ -95,17 +91,10 @@ public final class IrsSession {
         }
     }
 
-    /** GetAck for one submission. The ServiceContext stays inside this package. */
     public Optional<StoredAck> getAck(String submissionId) {
         return call(ctx -> wire.getAck(ctx, submissionId));
     }
 
-    /**
-     * Runs {@code body} with the current context, logging in first when there is no session.
-     * Refuses inside a GET request before taking the lock or logging in: a GET route cannot reach IRS.
-     * Waits at most {@code mef.newsend.session-wait-seconds} for the lock, then throws before
-     * touching the context.
-     */
     <T> T call(IrsCall<T> body) {
         Objects.requireNonNull(body, "body");
         refuseGet();
@@ -129,7 +118,6 @@ public final class IrsSession {
         }
     }
 
-    /** Keystore and certificate details. Does not log in and does not take the session lock. */
     public CertificateDiagnostic certificate() {
         if (!config.isCertificateConfigured()) {
             return new CertificateDiagnostic(false, null, null, "Certificate not configured", List.of());

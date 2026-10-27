@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# One command surface. Offline except ats and login.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+MISSING_VERDICT_EXIT=3
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export PATH="$JAVA_HOME/bin:$PATH"
 
@@ -111,12 +111,12 @@ case "$verb" in
     set -e
     if [[ ! -f target/ats-verdict.json ]]; then
       echo "ats: target/ats-verdict.json is missing" >&2
-      exit 3
+      exit "$MISSING_VERDICT_EXIT"
     fi
     code="$(jq -r '.exitCode' target/ats-verdict.json)"
     if [[ ! "$code" =~ ^[0-9]+$ ]]; then
       echo "ats: verdict has no numeric exitCode" >&2
-      exit 3
+      exit "$MISSING_VERDICT_EXIT"
     fi
     exit "$code"
     ;;

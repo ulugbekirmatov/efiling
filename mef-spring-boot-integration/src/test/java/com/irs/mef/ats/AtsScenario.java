@@ -15,13 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * One TY2026 94x ATS scenario. The list is every scenario directory under test-scenarios.
- * The named constants are lookups for tests.
- */
 public record AtsScenario(String id, String shortName, String fixture, String form, String title) {
     private static final String MODULE_DIR = "mef-spring-boot-integration";
-    /** id is digits, or a 3-digit form number, a hyphen, and digits. The slug starts with a letter. */
     private static final Pattern DIRECTORY_NAME = Pattern.compile(
             "^scenario-(?<id>[0-9]{3}-[0-9]+|[0-9]+)-(?<slug>[A-Za-z][A-Za-z0-9-]*)$");
     private static final List<AtsScenario> ALL = readDirectories();
@@ -38,7 +33,6 @@ public record AtsScenario(String id, String shortName, String fixture, String fo
         return ALL;
     }
 
-    /** NewSend clientId; the journal and inspector group sends by it. */
     public String clientId() {
         return "ats-scenario-" + id + "-" + shortName;
     }
@@ -105,7 +99,6 @@ public record AtsScenario(String id, String shortName, String fixture, String fo
         return List.copyOf(scenarios);
     }
 
-    /** Plain numeric ids (1, 2, 3, 4) sort before form-prefixed ids (940-1). */
     private static int compareIds(String left, String right) {
         boolean leftPrefixed = left.indexOf('-') >= 0;
         boolean rightPrefixed = right.indexOf('-') >= 0;

@@ -8,7 +8,6 @@ import org.springframework.core.env.Environment;
 
 import java.time.Clock;
 
-/** Bean wiring for the NewSend vertical. */
 @Configuration
 @Slf4j
 class FilingConfig {

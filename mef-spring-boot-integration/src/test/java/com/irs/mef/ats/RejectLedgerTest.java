@@ -24,7 +24,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Offline. A stored Rejected ack blocks until every code has a local rule. */
 class RejectLedgerTest {
 
     private static final String CLIENT = "ats-scenario-1-orchid-941";

@@ -5,11 +5,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Write-ahead log for filings. The reason this port exists: an HTTP response is not durable,
- * and a lost deposit id turns into a duplicate filing. The in-memory implementation is
- * TEST-ONLY — it cannot satisfy the requirement the port was written for.
- */
 public interface Journal {
 
     /**
@@ -29,16 +24,10 @@ public interface Journal {
 
     Optional<SubmissionRecord> findByClientRequestId(String clientRequestId);
 
-    /**
-     * Duplicate-period guard index: "has this client's quarter already gone out?" is a dominant
-     * access pattern, present from day one. Callers filter by environment and state.
-     */
     List<SubmissionRecord> findFiledFor(Ein clientEin, FormSpec formType, TaxPeriod taxPeriod);
 
-    /** Every row whose client id matches. Callers pick the latest. */
     List<SubmissionRecord> findByClientId(String clientId);
 
-    /** Reservation result. AlreadyClaimed carries the existing row so the caller can answer without a second read. */
     sealed interface Reservation {
         record Reserved(SubmissionRecord record) implements Reservation {
         }

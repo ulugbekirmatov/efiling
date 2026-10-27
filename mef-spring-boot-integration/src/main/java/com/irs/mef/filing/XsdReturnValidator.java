@@ -20,10 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * XXE-hardened well-formedness check plus XSD validation. Schema errors are always refused.
- * A {@link SchemaBinding.Pending} form is refused with that binding's reason.
- */
 @Component
 @Slf4j
 class XsdReturnValidator implements ReturnValidator {

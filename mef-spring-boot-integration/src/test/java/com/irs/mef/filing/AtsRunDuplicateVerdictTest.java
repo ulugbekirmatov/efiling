@@ -21,9 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Offline. A refused send is a verdict, so {@code ./mef ats} does not exit 3.
- */
 class AtsRunDuplicateVerdictTest {
 
     @Test

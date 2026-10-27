@@ -3,11 +3,6 @@ package com.irs.mef.filing;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * The offline half of a filing: composed return, minted id, rendered manifest, SDK archive,
- * and local rule results. {@link Cleared} is the only token {@code transmit} accepts, and only
- * {@link FilingDesk#preflight} can produce one.
- */
 public final class Preflight {
 
     private final ClientFiling filing;
@@ -81,10 +76,6 @@ public final class Preflight {
         return prepared;
     }
 
-    /**
-     * Private constructor: the enclosing {@link Preflight} is the only type that can construct it,
-     * and {@link FilingDesk#preflight} is the only caller of {@link Preflight#of}.
-     */
     public final class Cleared {
         private Cleared() {}
 

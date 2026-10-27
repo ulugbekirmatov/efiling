@@ -8,16 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/**
- * Pyramos as originator. OriginatorTypeCd is not a field — compose always writes ReportingAgent.
- * ETIN and ASID are not fields — they belong to the A2A session, not the Return.
- *
- * <p>The compact constructor refuses the IRS rejects ATS already returned for this header:
- * R0000-118-01 (online-filer EFIN prefixes) and R0000-244 (non-routable filing IP).
- * {@link #fromEnvironment} is the only reader of {@code MEF_EFIN}, {@code MEF_RA_*}, and
- * {@code MEF_SOFTWARE_ID*}, and it also refuses a stale OneWell EFIN, the 000000 stand-in,
- * and the Orchid client EIN.
- */
 public record Originator(
         Efin efin,
         ReportingAgentPin pin,
@@ -46,7 +36,6 @@ public record Originator(
         requireRoutableIpv4(filingIpv4Address);
     }
 
-    /** Live originator. A bad value fails here, at boot, rather than on a send. */
     public static Originator fromEnvironment(Environment env) {
         String efinValue = ReportingAgentChecks.requireConfigured("MEF_EFIN", env.getProperty("MEF_EFIN"));
         if (ONEWELL_EFIN.equals(efinValue)) {

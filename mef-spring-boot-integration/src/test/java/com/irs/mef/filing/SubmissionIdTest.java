@@ -76,7 +76,7 @@ class SubmissionIdTest {
     void malformedIdsRejected() {
         assertThrows(FilingValidationException.class, () -> new SubmissionId("too-short"));
         assertThrows(FilingValidationException.class,
-                () -> new SubmissionId("2386892026090ABCDEFG")); // uppercase suffix
+                () -> new SubmissionId("2386892026090ABCDEFG"));
         assertThrows(FilingValidationException.class, () -> new SubmissionId(null));
     }
 }

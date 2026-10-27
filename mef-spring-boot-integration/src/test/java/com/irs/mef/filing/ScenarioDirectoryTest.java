@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ScenarioDirectoryTest {
-    /** id is digits, or a 3-digit form number, a hyphen, and digits. The slug starts with a letter. */
     private static final Pattern SCENARIO_DIR = Pattern.compile(
             "^scenario-(?<id>[0-9]{3}-[0-9]+|[0-9]+)-(?<slug>[A-Za-z][A-Za-z0-9-]*)$");
     private static final List<String> IDS = List.of("1", "2", "3", "4", "940-1", "940-2", "940-3");
@@ -85,7 +84,6 @@ class ScenarioDirectoryTest {
         return matcher.group("id");
     }
 
-    /** Plain numeric ids sort before form-prefixed ids such as 940-1. */
     private static int compareIds(String left, String right) {
         boolean leftPrefixed = left.indexOf('-') >= 0;
         boolean rightPrefixed = right.indexOf('-') >= 0;

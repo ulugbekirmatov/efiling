@@ -3,10 +3,6 @@ package com.irs.mef.filing;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/**
- * The fileable 94x forms. The return type code and the manifest code are the same constant,
- * and each form is either bundled or pending.
- */
 public enum FormSpec {
     F940("940", "IRS940", PeriodKind.TAX_YEAR,
             new SchemaBinding.Pending(SchemaRelease.Y2026_V2,

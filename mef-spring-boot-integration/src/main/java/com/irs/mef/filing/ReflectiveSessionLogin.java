@@ -8,9 +8,6 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.lang.reflect.Method;
 
-/**
- * Certificate-only LoginClient. Every SDK type is loaded by name.
- */
 @Component
 @Slf4j
 final class ReflectiveSessionLogin implements SessionLogin {
@@ -100,7 +97,6 @@ final class ReflectiveSessionLogin implements SessionLogin {
         return Enum.valueOf((Class<Enum>) enumClass, name);
     }
 
-    /** The IRS session id is the SAML assertion ID attribute, not a value we mint. */
     private static String assertionId(Element saml) {
         String id = saml.getAttribute("ID");
         if (id != null && !id.isEmpty()) {

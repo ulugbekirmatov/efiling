@@ -31,10 +31,6 @@ public record SubmissionId(String value) {
         }
     }
 
-    /**
-     * Mint a new id. The prefix is the originator's EFIN. The random suffix carries ~36 bits
-     * of entropy — unlike the legacy epoch-millis slice, which repeated every ~2.8 hours.
-     */
     static SubmissionId mint(Originator originator, Instant now, ZoneId processingZone, RandomGenerator random) {
         LocalDate processingDate = now.atZone(processingZone).toLocalDate();
         String date = String.format("%04d%03d", processingDate.getYear(), processingDate.getDayOfYear());

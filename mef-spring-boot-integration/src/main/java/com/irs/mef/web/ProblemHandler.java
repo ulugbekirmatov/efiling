@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
 
-/** Scoped to the filing controller. */
 @RestControllerAdvice(assignableTypes = FilingController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
@@ -81,7 +80,6 @@ public class ProblemHandler {
                 + (ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage()));
     }
 
-    /** The exception message can carry a keystore path, so the body is a fixed sentence. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemResponse> handleUnexpected(Exception ex) {
         log.error("Unexpected error on a filing endpoint", ex);

@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/** Offline. Identical client bytes replay a transmitted or indeterminate receipt and do not call the IRS. */
 class FilingDeskTest {
 
     @Test

@@ -17,10 +17,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Offline report for {@code ./mef preflight}. Skipped unless {@code -Dmef.ats.scenario} is set,
- * so a plain {@code mvn test} does not print a filing. Never logs in.
- */
 class AtsPreflightTest {
 
     @Test

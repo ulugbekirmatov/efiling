@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Wire request. Strings only. {@link com.irs.mef.filing.ClientFiling#parse} is the boundary.
- * Deliberately absent: a full Return, an EFIN, a submission id, a returnVersion, and an idempotency header.
  * {@code allowDuplicatePeriod} defaults to false when the field is omitted.
  */
 public record FilingRequest(

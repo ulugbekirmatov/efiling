@@ -27,10 +27,6 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * The three figures in {@code CLAUDE.md} are rendered from code. {@code -Ddocs.update=true}
- * rewrites the blocks in place.
- */
 class DocBlocksTest {
 
     private static final Path CLAUDE = Path.of("..", "CLAUDE.md");

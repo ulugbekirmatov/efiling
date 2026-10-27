@@ -15,10 +15,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Docs may not name a Java symbol or a file that no longer exists. Agents kept leaving such
- * references behind after deleting a class. Mark a line deleted/retired to keep a historical mention.
- */
 class DocReferenceGuardTest {
 
     private static final Path MODULE = Path.of("");
@@ -85,7 +81,6 @@ class DocReferenceGuardTest {
         return null;
     }
 
-    /** A bare file name (no slash) is a shorthand for the file; it counts when any tracked file has that name. */
     private static boolean pathExists(String token, Path doc, Set<String> trackedNames) {
         String path = token.replaceFirst(":\\d+(-\\d+)?$", "");
         if (!path.contains("/") && trackedNames.contains(path)) {

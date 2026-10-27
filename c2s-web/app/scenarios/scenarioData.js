@@ -11,7 +11,6 @@ export const FORMAT_CONTENT_TYPES = {
 
 const ALLOWED_STATUS_STATES = new Set(["accepted", "ready", "partial"]);
 
-// id is digits, or a 3-digit form number, a hyphen, and digits. The slug starts with a letter.
 const SCENARIO_DIR = /^scenario-([0-9]{3}-[0-9]+|[0-9]+)-([A-Za-z][A-Za-z0-9-]*)$/;
 const CANONICAL_ID = /^(?:[1-9][0-9]{2}-[1-9][0-9]*|[1-9][0-9]*)$/;
 
@@ -41,7 +40,6 @@ function parseScenarioDirName(name) {
   return { id: match[1], slug: match[2] };
 }
 
-/** Plain numeric ids (1, 2, 3, 4) sort before form-prefixed ids (940-1). */
 function compareIds(left, right) {
   const leftPrefixed = left.includes("-");
   const rightPrefixed = right.includes("-");

@@ -22,10 +22,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * The yml form and multipart caps do not bound a JSON body. Jackson refuses an over-limit
- * string when Content-Length is absent; a Content-Length over the byte cap is 413.
- */
 @WebMvcTest(controllers = FilingController.class)
 @Import(FilingBodyLimits.class)
 class FilingBodyLimitTest {

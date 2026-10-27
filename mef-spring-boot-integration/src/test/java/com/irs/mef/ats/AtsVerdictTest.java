@@ -13,7 +13,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-/** Offline. Only Accepted exits 0, and every sealed variant is in the switch. */
 class AtsVerdictTest {
 
     @Test

@@ -16,10 +16,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Manifest XSD, from the SDK jar or the extracted copy in the repo.
- * When neither ships, preflight says so and {@code X0000-008} still checks the efile prefix.
- */
 final class ManifestSchema {
 
     static final String MISSING =
@@ -71,7 +67,6 @@ final class ManifestSchema {
             try {
                 factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             } catch (SAXException ignored) {
-                // the JDK schema factory does not always expose the property
             }
             schema = factory.newSchema(schemaUrl);
         } catch (SAXException e) {
@@ -84,7 +79,6 @@ final class ManifestSchema {
                 validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
                 validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             } catch (SAXException ignored) {
-                // same as the return validator: some JDKs reject the property
             }
             validator.setErrorHandler(new ErrorHandler() {
                 @Override

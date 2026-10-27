@@ -22,10 +22,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Offline. The duplicate-period guard keys on (EIN, form, period): a 941-X correcting a
- * transmitted 941 is a new filing, a second 941 for the same quarter is not.
- */
 class NewSendDuplicatePeriodTest {
 
     private final AckStore ackStore = mock(AckStore.class);

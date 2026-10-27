@@ -22,9 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * One live ATS send. Refuses unless the environment is ATS. Writes {@code target/ats-verdict.json}.
- */
 public final class AtsRun {
 
     private static final int POLLS = 12;

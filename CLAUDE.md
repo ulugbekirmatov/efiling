@@ -20,7 +20,8 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 | IRS session | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/IrsSession.java` |
 | Per-form facts (940, 941, 941-X) | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/FormSpec.java` |
 | Schema release and returnVersion | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/SchemaRelease.java` |
-| Journal states and idempotency | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/package-info.java` |
+| Journal states | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/JournalState.java` |
+| Idempotency and replay | `FilingDesk.file` in `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/FilingDesk.java` |
 | Scenario list | `test-scenarios/*/scenario-*/scenario.json` |
 | Web state to tone | `c2s-web/app/lib/states.js` |
 | Web page list | `c2s-web/app/registry.js` |
@@ -95,7 +96,7 @@ Not yet built: per-client Form 8655 authorization. Any caller of `POST /api/mef/
 - A submission id is the EFIN, the processing-date `yyyyDDD` (not the tax year), and 7 `[a-z0-9]`. `SubmissionIdTest` holds it.
 - That same EFIN is in the id, the manifest, and OriginatorGrp. `ManifestXmlTest` holds it. The ETIN only authenticates. `IrsSession` holds the session.
 - `IrsWire` builds the SDK submission from a filename and the XML string, and every `gov.irs` call there is reflective (`Class.forName`, then `invoke`).
-- `FilingDesk` does not retry SendSubmissions. Identical client bytes replay the journaled receipt. The state machine is `JournalState`; the idempotency rule is in `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/package-info.java`.
+- `FilingDesk` does not retry SendSubmissions. Identical client bytes replay the journaled receipt. The state machine is `JournalState`; the replay rule is on `FilingDesk.file`.
 - The SOAP fault text is only in `a2a_sdk.log.*`. `IrsFault` carries that hint.
 - An online-filer EFIN prefix, or a filing IP that is not a routable IPv4, is refused at startup. `OriginatorTest` holds it.
 - IRS needs about 2 to 5 minutes after a send before an ack exists; an earlier GetAck finds nothing.

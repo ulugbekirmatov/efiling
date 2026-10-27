@@ -23,10 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- * SendSubmissions and GetAck. The {@code gov.irs} names for those two calls live here.
- * GetNewAcks is not called. Acks are parsed straight into {@link StoredAck}.
- */
 @Component
 @Slf4j
 final class IrsWire implements TransmitGateway {
@@ -259,10 +255,6 @@ final class IrsWire implements TransmitGateway {
         }
     }
 
-    /**
-     * The SDK submission archive, built with no session. A failure here is pre-wire:
-     * preflight calls this before login so a bad archive never reaches IRS.
-     */
     byte[] buildArchive(Preflight preflight) {
         Assembled assembled = assemble(preflight.prepared(), preflight.manifestText());
         try {
@@ -282,10 +274,6 @@ final class IrsWire implements TransmitGateway {
         }
     }
 
-    /**
-     * Everything local: manifest + return XML wrapping, archive, postmark, container, client and
-     * method resolution. A failure here provably precedes any network I/O.
-     */
     private PreparedCall prepare(Filing filing, String manifestXml) {
         Assembled assembled = assemble(filing, manifestXml);
         try {
@@ -340,9 +328,6 @@ final class IrsWire implements TransmitGateway {
         }
     }
 
-    /**
-     * The SDK reads this when it materializes an archive. Preflight has no session to have set it.
-     */
     private static void ensureToolkitHome() {
         String existing = System.getProperty("A2A_TOOLKIT_HOME");
         if (existing != null && !existing.isBlank()) {
@@ -358,12 +343,6 @@ final class IrsWire implements TransmitGateway {
         }
     }
 
-    /**
-     * Classification, biased toward safety: only a recognised IRS business fault (ServiceException —
-     * a SOAP fault response, meaning the IRS received and refused the request) becomes Rejected.
-     * ANYTHING else — timeout, IOException, unrecognised ToolkitException — is Indeterminate,
-     * because the container may already be at the IRS. Unknown never maps to "failed".
-     */
     private FilingOutcome classify(Throwable cause, Filing filing) {
         log.error("SendSubmissions threw for {}: {}", filing.submissionId().value(), cause.toString());
         if (isInstanceOfByName(cause, SERVICE_EXCEPTION)) {
@@ -374,11 +353,6 @@ final class IrsWire implements TransmitGateway {
                 IrsFault.wire("NEWSEND_TRANSPORT_UNKNOWN", cause, filing.submissionId()));
     }
 
-    /**
-     * A deposit id alone is NOT success. Success requires a receipt bearing OUR submission id:
-     * receipt found -> Transmitted; deposit id without our receipt, or no deposit id -> Indeterminate.
-     * A missing receipt TIMESTAMP is non-fatal — it falls back to our own clock, flagged LOCAL.
-     */
     private FilingOutcome readReceipt(Object sendSubmissionsResult, Filing filing, Instant observedAt) {
         String depositId;
         Object receipt = null;
@@ -395,7 +369,6 @@ final class IrsWire implements TransmitGateway {
                         .invoke(receiptList, filing.submissionId().value());
             }
         } catch (ReflectiveOperationException | RuntimeException e) {
-            // The wire call already succeeded; failing to READ the result must not look like a reject.
             return new FilingOutcome.Indeterminate(
                     IrsFault.wire("NEWSEND_RESULT_UNREADABLE", e, filing.submissionId()));
         }
@@ -414,7 +387,6 @@ final class IrsWire implements TransmitGateway {
                 receiptCount));
     }
 
-    /** SubmissionReceiptGrp getter names are not pinned by the jar parse; probe defensively. */
     private Instant probeReceiptTimestamp(Object receipt) {
         for (String getterName : RECEIPT_TIMESTAMP_GETTERS) {
             try {
@@ -424,7 +396,6 @@ final class IrsWire implements TransmitGateway {
                     return converted;
                 }
             } catch (ReflectiveOperationException | RuntimeException e) {
-                // try the next getter name
             }
         }
         return null;

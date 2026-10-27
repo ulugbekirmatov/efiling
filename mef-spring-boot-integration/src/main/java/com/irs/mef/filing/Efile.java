@@ -2,7 +2,6 @@ package com.irs.mef.filing;
 
 import java.time.ZoneId;
 
-/** The e-file namespace and the processing zone, each in one place. */
 final class Efile {
 
     static final String NAMESPACE = "http://www.irs.gov/efile";

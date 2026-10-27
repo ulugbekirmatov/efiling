@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** The reject codes preflight can reproduce. There is no force flag: a missing rule blocks the next live send. */
 public final class LocalRules {
 
     private static final List<LocalRule> ALL = List.of(
@@ -80,7 +79,7 @@ public final class LocalRules {
         }
 
         @Override
-        public String rejectedSample() {
+        public String rejectedSampleClasspathDir() {
             return "rejects/R0000-118-01";
         }
     }
@@ -107,7 +106,7 @@ public final class LocalRules {
         }
 
         @Override
-        public String rejectedSample() {
+        public String rejectedSampleClasspathDir() {
             return "rejects/R0000-244";
         }
     }
@@ -141,7 +140,7 @@ public final class LocalRules {
         }
 
         @Override
-        public String rejectedSample() {
+        public String rejectedSampleClasspathDir() {
             return "rejects/R0000-054-01";
         }
     }
@@ -171,7 +170,7 @@ public final class LocalRules {
         }
 
         @Override
-        public String rejectedSample() {
+        public String rejectedSampleClasspathDir() {
             return "rejects/X0000-008";
         }
     }

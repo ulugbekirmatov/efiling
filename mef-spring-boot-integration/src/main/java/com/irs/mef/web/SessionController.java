@@ -37,13 +37,11 @@ public class SessionController {
         return new SessionStatus(false, null, "Logged out");
     }
 
-    /** Local status only. This GET must not contact IRS. */
     @GetMapping
     public SessionStatus status() {
         return session.status();
     }
 
-    /** Offline keystore diagnostic. This GET must not contact IRS. */
     @GetMapping("/certificate")
     public CertificateDiagnostic certificate() {
         return session.certificate();

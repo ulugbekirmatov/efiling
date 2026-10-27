@@ -1,7 +1,5 @@
 import { TONES } from "../design-system/tones.js";
 
-// The send inspector painted every one of these names neutral. Attention was only
-// for a state string that contained "fault", and none of these do.
 const JOURNAL = Object.freeze({
   CREATED: TONES.neutral,
   TRANSMITTED: TONES.neutral,

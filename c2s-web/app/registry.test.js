@@ -16,7 +16,6 @@ function pageFiles(dir) {
   });
 }
 
-// app/page.js and app/air/page.js only redirect, so neither is a nav destination.
 function isRedirectOnly(file) {
   const text = fs.readFileSync(file, "utf8");
   return /\bredirect\(/.test(text) && !text.includes("<");

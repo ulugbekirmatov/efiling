@@ -5,7 +5,7 @@ import com.irs.mef.newsend.domain.NewSendManifestXml;
 import com.irs.mef.newsend.domain.NewSendSubmissionId;
 import com.irs.mef.newsend.domain.NewSendSubmitCommand;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +25,7 @@ class AtsScenarioSnapshotTest {
             "Stale snapshot. Regenerate with: mvn test -Dtest=AtsScenarioSnapshotTest -Dats.snapshots.update=true";
 
     @ParameterizedTest
-    @EnumSource(AtsScenario.class)
+    @MethodSource("allScenarios")
     void composedFormatsMatchSnapshots(AtsScenario scenario) throws IOException {
         ReportingAgentReturn ret = ReportingAgentReturn.compose(
                 ReportingAgentOriginatorStandIn.pyramosShaped(),
@@ -36,6 +36,10 @@ class AtsScenarioSnapshotTest {
         Path dir = scenario.clientBody().getParent();
         assertSnapshot(dir.resolve("composed-return.xml"), ret.xml());
         assertSnapshot(dir.resolve("manifest.xml"), manifest);
+    }
+
+    static java.util.List<AtsScenario> allScenarios() {
+        return AtsScenario.all();
     }
 
     private static void assertSnapshot(Path file, String produced) throws IOException {

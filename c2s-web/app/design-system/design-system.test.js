@@ -97,3 +97,32 @@ test("every static className used in app/ is defined in an app stylesheet", () =
     );
   assert.deepEqual(undefinedClasses, []);
 });
+
+function jsFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return entry.name === "node_modules" ? [] : jsFiles(full);
+    return entry.name.endsWith(".js") ? [full] : [];
+  });
+}
+
+test("a tone map or a TONES import lives only in states.js and tones.js", () => {
+  const allowed = new Set([
+    path.join(APP_DIR, "lib", "states.js"),
+    path.join(APP_DIR, "design-system", "tones.js"),
+  ]);
+  const offenders = jsFiles(APP_DIR)
+    .filter((file) => !allowed.has(file))
+    .flatMap((file) => {
+      const text = fs.readFileSync(file, "utf8");
+      const relative = path.relative(APP_DIR, file);
+      const hits = [...new Set(text.match(/\b[A-Za-z_$][\w$]*_TONE\b/g) || [])].map(
+        (name) => `${relative} defines ${name}`,
+      );
+      if (/\bimport\s*(?:TONES\b|\{[^}]*\bTONES\b[^}]*\})/.test(text)) {
+        hits.push(`${relative} imports TONES`);
+      }
+      return hits;
+    });
+  assert.deepEqual(offenders, []);
+});

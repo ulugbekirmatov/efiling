@@ -1,4 +1,4 @@
-// The /html skill's color-semantic code. Domain modules map their own states onto these names;
+// Color names. app/lib/states.js is the only map from a domain state onto these names.
 // components.css owns the colors behind each `tone-*` class.
 export const TONES = Object.freeze({
   attention: "attention", // needs a human: rejected, fault, risk

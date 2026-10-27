@@ -5,20 +5,20 @@
 # Reads identifiers from .env in this module directory; MEF_SOFTWARE_ID must be
 # 8 digits from the process environment or .env. This script never writes .env.
 #
-# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <1|2|3|4|940-1|940-2|940-3>
+# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <scenario id from scenarios.json>
 set -euo pipefail
 
 TEST_CLASS=ReportingAgentAtsScenarioTest
 SCENARIO="${1:-}"
-case "$SCENARIO" in
-  1|2|3|4|940-1|940-2|940-3) ;;
-  *)
-    echo "Usage: $0 <1|2|3|4|940-1|940-2|940-3> (got '${SCENARIO}')" >&2
-    exit 1
-    ;;
-esac
-
 MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(dirname "$MODULE_DIR")"
+KNOWN_IDS="$(jq -r '.scenarios[] | (.id // (.number | tostring))' \
+  "$REPO_DIR/test-scenarios/ats-ty2026/scenarios.json" "$REPO_DIR/test-scenarios/ats-ty2026-annual/scenarios.json")"
+if [ -z "$SCENARIO" ] || ! printf '%s\n' "$KNOWN_IDS" | grep -qxF -- "$SCENARIO"; then
+  echo "Usage: $0 <scenario id> (got '${SCENARIO}'). Ids in test-scenarios/*/scenarios.json: $(echo $KNOWN_IDS)" >&2
+  exit 1
+fi
+
 JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
 export JAVA_HOME
 export PATH="$JAVA_HOME/bin:/opt/homebrew/bin:$PATH"

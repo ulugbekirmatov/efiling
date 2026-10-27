@@ -47,10 +47,8 @@ test-scenarios/
 The Spring Boot project includes automated validation tests:
 
 ```bash
-cd mef-spring-boot-integration
-
-# Compose every TY2026 ATS scenario as a Reporting Agent return and validate it against the XSDs
-mvn test -Dtest=AtsScenarioComposeTest
+./mef preflight <id>
+./mef check
 ```
 
 ### Using xmllint (Command Line)
@@ -153,7 +151,8 @@ Integration tests that actually submit to IRS ATS require:
 - Enable one class at a time with `-Dmef.live.test=<simple class name>` (see `@LiveIrsTest`)
 
 ```bash
-mvn test -Dtest=Form941SubmissionTest -Dmef.live.test=Form941SubmissionTest
+./mef ats <id>
+./mef login
 ```
 
 ## Best Practices

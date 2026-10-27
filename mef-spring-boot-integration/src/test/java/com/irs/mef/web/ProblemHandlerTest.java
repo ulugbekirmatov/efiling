@@ -1,6 +1,7 @@
 package com.irs.mef.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.irs.mef.filing.ClientFiling;
 import com.irs.mef.filing.FilingDesk;
 import com.irs.mef.filing.IrsLoginException;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ import java.util.Map;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -61,5 +64,16 @@ class ProblemHandlerTest {
                 .andExpect(jsonPath("$.errorCode").value("FILING_INTERNAL"))
                 .andExpect(jsonPath("$.message").value("Internal error; see server logs"))
                 .andExpect(content().string(not(containsString("/var/secret"))));
+    }
+
+    @Test
+    void anOverLimitBodyIs400AndDoesNotReachTheDesk() throws Exception {
+        String xml = "x".repeat(ClientFiling.MAX_CLIENT_BODY_CHARS + 1);
+        String json = new ObjectMapper().writeValueAsString(Map.of("clientId", "orchid", "clientBody", xml));
+
+        mvc.perform(post("/mef/filings").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isBadRequest());
+
+        verify(desk, never()).file(any());
     }
 }

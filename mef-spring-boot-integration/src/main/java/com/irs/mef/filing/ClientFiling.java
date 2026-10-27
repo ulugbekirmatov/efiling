@@ -6,6 +6,9 @@ package com.irs.mef.filing;
  */
 public final class ClientFiling {
 
+    /** Hard cap on {@code clientBody}, in characters. {@code FilingProperties} starts at this value. */
+    public static final int MAX_CLIENT_BODY_CHARS = 8_000_000;
+
     private final ClientId clientId;
     private final ClientReturnBody body;
     private final String clientBodyXml;
@@ -17,6 +20,10 @@ public final class ClientFiling {
     }
 
     public static ClientFiling parse(String clientId, String clientBodyXml) {
+        if (clientBodyXml != null && clientBodyXml.length() > MAX_CLIENT_BODY_CHARS) {
+            throw new FilingValidationException("clientBody",
+                    "clientBody exceeds " + MAX_CLIENT_BODY_CHARS + " characters");
+        }
         if (clientBodyXml == null || clientBodyXml.isBlank()) {
             throw new FilingValidationException("clientBody", "clientBody is required");
         }

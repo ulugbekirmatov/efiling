@@ -218,63 +218,16 @@ mef:
       trust-store-type: JKS
 ```
 
-## Building the Application
+## Commands
 
-### Compile and Package
-
-```bash
-# Clean and build
-mvn clean package
-
-# Skip tests
-mvn clean package -DskipTests
-```
-
-### Build Output
-
-The build creates an executable JAR:
-```
-target/mef-spring-boot-integration-1.0.0.jar
-```
-
-## Running the Application
-
-### Using Maven
+From the repo root. Every verb except `ats` and `login` is offline and safe to repeat.
 
 ```bash
-# Run with Maven Spring Boot plugin
-mvn spring-boot:run
-```
-
-### Using Java JAR
-
-```bash
-# Run the packaged JAR
-java -jar target/mef-spring-boot-integration-1.0.0.jar
-```
-
-### With Custom Configuration
-
-```bash
-# Override configuration via command line
-java -jar target/mef-spring-boot-integration-1.0.0.jar \
-  --mef.sdk.environment=ATS \
-  --server.port=8081
-```
-
-### With JVM Arguments (Required for Java 17+)
-
-The application automatically sets required JVM arguments, but if running manually:
-
-```bash
-java \
-  -DA2A_TOOLKIT_HOME=./src/main/resources/mef_config \
-  -Djava.endorsed.dirs=./lib \
-  --add-opens java.base/java.lang=ALL-UNNAMED \
-  --add-exports java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED \
-  --add-exports java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED \
-  --add-exports java.xml.crypto/org.jcp.xml.dsig.internal.dom=ALL-UNNAMED \
-  -jar target/mef-spring-boot-integration-1.0.0.jar
+./mef check
+./mef scenarios
+./mef preflight <id>
+./mef ats <id>
+./mef login
 ```
 
 ## API Endpoints

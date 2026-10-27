@@ -218,8 +218,8 @@ This scenario tests:
 ### Run Automated Tests
 
 ```bash
-cd ../../mef-spring-boot-integration
-mvn test -Dtest=AtsScenarioComposeTest   # replaces the deleted Form941XmlGenerationTest
+./mef preflight 1
+./mef check
 ```
 
 ### Expected Test Results

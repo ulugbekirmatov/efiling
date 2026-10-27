@@ -16,7 +16,7 @@ class FilingProperties {
     private int sessionWaitSeconds = 30;
 
     /** Return XML size cap, in characters. */
-    private long maxReturnXmlChars = 8_000_000L;
+    private long maxReturnXmlChars = ClientFiling.MAX_CLIENT_BODY_CHARS;
 
     private Journal journal = new Journal();
 

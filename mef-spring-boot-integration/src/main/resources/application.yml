@@ -1,9 +1,16 @@
 spring:
   application:
     name: mef-spring-boot-integration
+  servlet:
+    multipart:
+      # Byte cap matching ClientFiling.MAX_CLIENT_BODY_CHARS.
+      max-request-size: 8000000
 
 server:
   port: 8080
+  tomcat:
+    # Byte cap matching ClientFiling.MAX_CLIENT_BODY_CHARS.
+    max-http-form-post-size: 8000000
   servlet:
     context-path: /api
 

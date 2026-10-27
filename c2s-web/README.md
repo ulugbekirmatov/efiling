@@ -24,12 +24,7 @@ Muted text uses `--g600`. The `/html` skill uses `--g500` for muted text, and th
 
 ## Run both
 
-Backend (from this folder):
-
-```bash
-cd ../mef-spring-boot-integration
-mvn spring-boot:run
-```
+MeF commands run from the repo root. `./mef check` is the offline suite. `./mef login` is the live login probe. `./mef ats <id>` sends one scenario.
 
 Frontend:
 
@@ -65,12 +60,7 @@ The pages read the scenario directories under `test-scenarios/ats-ty2026/` and `
 
 Set `MEF_REPO_ROOT` to override the repo root. Otherwise `app/scenarios/scenarioData.js` resolves it from its own file location.
 
-`composed-return.xml` and `manifest.xml` are regenerated with:
-
-```bash
-cd mef-spring-boot-integration
-mvn test -Dtest=AtsScenarioSnapshotTest -Dats.snapshots.update=true
-```
+`./mef preflight <id>` composes one scenario offline. `./mef check` compares `composed-return.xml` and `manifest.xml`.
 
 Scenario pages render per request, so regenerated snapshots show up on reload with no rebuild.
 
@@ -92,13 +82,7 @@ Live runs are written under `AIR_RUNS_DIR`. The default sits outside both the c2
 
 **Build the AIR jar first.** The default `AIR_JAR` is `redesign/air-a2a/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` under `AIR_REPO_ROOT`. A stale jar fails with `Invalid signature file digest for Manifest main attributes`. Readiness only checks that the jar file exists.
 
-From `AIR_REPO_ROOT`, rebuild with the `mvn package` command in redesign/air-a2a/java/README.md in the AIR repo and the `JAVA_HOME` it names.
-
-```bash
-export JAVA_HOME=/opt/homebrew/Cellar/openjdk/26.0.2.1/libexec/openjdk.jdk/Contents/Home
-export PATH="$JAVA_HOME/bin:$PATH"
-mvn -o -q -f redesign/air-a2a/java/pom.xml package
-```
+From `AIR_REPO_ROOT`, rebuild using the command in that repo's java README. MeF commands in this repo are `./mef`.
 
 From `c2s-web`, start the app if it is not running.
 

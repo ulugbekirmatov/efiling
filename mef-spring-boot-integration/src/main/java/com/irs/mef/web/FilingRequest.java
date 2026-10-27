@@ -1,5 +1,6 @@
 package com.irs.mef.web;
 
+import com.irs.mef.filing.ClientFiling;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -13,5 +14,6 @@ public record FilingRequest(
         String clientId,
 
         @NotBlank
+        @Size(max = ClientFiling.MAX_CLIENT_BODY_CHARS)
         String clientBody) {
 }

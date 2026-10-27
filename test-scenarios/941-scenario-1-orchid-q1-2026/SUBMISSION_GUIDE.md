@@ -57,8 +57,7 @@ The client certificate must be:
 ### Step 1: Verify Configuration
 
 ```bash
-cd mef-spring-boot-integration
-mvn clean test -Dtest=Form941SubmissionTest#test01_verifyConfiguration
+./mef preflight 1
 ```
 
 This verifies:
@@ -70,8 +69,7 @@ This verifies:
 ### Step 2: Run Full Submission Test
 
 ```bash
-cd mef-spring-boot-integration
-mvn test -Dtest=Form941SubmissionTest
+./mef ats 1
 ```
 
 This will:

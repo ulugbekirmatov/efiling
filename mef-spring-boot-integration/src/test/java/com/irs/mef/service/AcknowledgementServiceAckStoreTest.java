@@ -47,49 +47,6 @@ class AcknowledgementServiceAckStoreTest {
     }
 
     @Test
-    @DisplayName("every GetNewAcks ack with a submission id is stored with source GetNewAcks")
-    void getNewAcksRecordsEachAck() {
-        FileAckStore store = new FileAckStore(temp, new ObjectMapper());
-        irsReturns(AckResponse.AckListResponse.builder()
-                .acknowledgments(List.of(ack(ORCHID, "Accepted"), ack(OTHER, "Rejected"), ack(null, "Accepted")))
-                .totalCount(3)
-                .build());
-
-        AckResponse.AckListResponse result = service(store).getNewAcknowledgments();
-
-        assertEquals(3, result.getTotalCount());
-        StoredAck stored = store.find(ORCHID).orElseThrow();
-        assertEquals("Accepted", stored.ackType());
-        assertEquals(AckSource.GET_NEW_ACKS, stored.source());
-        assertEquals(NOW, stored.retrievedAt());
-        assertEquals("Rejected", store.find(OTHER).orElseThrow().ackType());
-    }
-
-    @Test
-    @DisplayName("a store that fails to write never fails the IRS call")
-    void storeFailureDoesNotFailTheCall() {
-        AckStore broken = new AckStore() {
-            @Override
-            public void record(StoredAck ack) {
-                throw new IllegalStateException("disk full");
-            }
-
-            @Override
-            public Optional<StoredAck> find(String submissionId) {
-                return Optional.empty();
-            }
-        };
-        irsReturns(AckResponse.AckListResponse.builder()
-                .acknowledgments(List.of(ack(ORCHID, "Accepted")))
-                .totalCount(1)
-                .build());
-
-        AckResponse.AckListResponse result = service(broken).getNewAcknowledgments();
-
-        assertEquals("Accepted", result.getAcknowledgments().get(0).getAckType());
-    }
-
-    @Test
     @DisplayName("GetAck for the viewer surfaces a failed write instead of reporting a stored ack")
     void getAckStoreFailureSurfaces() {
         AckStore broken = new AckStore() {

@@ -2,7 +2,8 @@ package com.irs.mef.inspector.api;
 
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
-import com.irs.mef.exception.MefException;
+import com.irs.mef.filing.IrsSession;
+import com.irs.mef.filing.IrsWire;
 import com.irs.mef.inspector.api.InspectorSendViews.ApiError;
 import com.irs.mef.inspector.api.InspectorSendViews.SendDetailView;
 import com.irs.mef.inspector.api.InspectorSendViews.SendSummaryView;
@@ -12,7 +13,6 @@ import com.irs.mef.inspector.ring.SnapshotId;
 import com.irs.mef.newsend.domain.NewSendSubmissionId;
 import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
 import com.irs.mef.newsend.journal.NewSendSubmissionJournal;
-import com.irs.mef.service.AcknowledgementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,23 +30,25 @@ import java.util.Optional;
 @Slf4j
 public class InspectorSendsController {
 
-    private static final String NOT_LOGGED_IN = "NOT_LOGGED_IN";
     private static final String ACK_NOT_FOUND = "ACK_NOT_FOUND";
     private static final String ACK_RETRIEVAL_FAILED = "ACK_RETRIEVAL_FAILED";
 
     private final SendSnapshotRing ring;
     private final NewSendSubmissionJournal journal;
     private final AckStore ackStore;
-    private final AcknowledgementService acknowledgementService;
+    private final IrsSession session;
+    private final IrsWire wire;
 
     public InspectorSendsController(SendSnapshotRing ring,
                                     NewSendSubmissionJournal journal,
                                     AckStore ackStore,
-                                    AcknowledgementService acknowledgementService) {
+                                    IrsSession session,
+                                    IrsWire wire) {
         this.ring = ring;
         this.journal = journal;
         this.ackStore = ackStore;
-        this.acknowledgementService = acknowledgementService;
+        this.session = session;
+        this.wire = wire;
     }
 
     @GetMapping
@@ -80,15 +82,18 @@ public class InspectorSendsController {
         if (id.isEmpty()) {
             return invalidSubmissionId();
         }
-        StoredAck ack;
         try {
-            ack = acknowledgementService.retrieveAndRecordAcknowledgment(id.get().value());
-        } catch (MefException e) {
-            return ackFailure(e.getErrorCode(), e.getMessage(), e);
+            Optional<StoredAck> found = session.call(ctx -> wire.getAck(ctx, id.get().value()));
+            if (found.isEmpty()) {
+                return error(HttpStatus.NOT_FOUND, ACK_NOT_FOUND,
+                        "The IRS has no acknowledgment for submission ID: " + id.get().value());
+            }
+            StoredAck ack = found.get();
+            ackStore.record(ack);
+            return ResponseEntity.ok(ack);
         } catch (RuntimeException e) {
             return ackFailure(ACK_RETRIEVAL_FAILED, e.getMessage(), e);
         }
-        return ResponseEntity.ok(ack);
     }
 
     private Optional<NewSendSubmissionRecord> journalRow(SnapshotId id) {
@@ -96,14 +101,8 @@ public class InspectorSendsController {
     }
 
     private static ResponseEntity<ApiError> ackFailure(String code, String message, RuntimeException cause) {
-        if (NOT_LOGGED_IN.equals(code)) {
-            return error(HttpStatus.CONFLICT, NOT_LOGGED_IN, message);
-        }
-        if (ACK_NOT_FOUND.equals(code)) {
-            return error(HttpStatus.NOT_FOUND, ACK_NOT_FOUND, message);
-        }
         log.warn("inspector: GetAck failed: {}", cause.toString());
-        return error(HttpStatus.BAD_GATEWAY, ACK_RETRIEVAL_FAILED,
+        return error(HttpStatus.BAD_GATEWAY, code,
                 message != null ? message : "Acknowledgment retrieval failed");
     }
 

@@ -99,13 +99,13 @@ Line 43-44 sets `A2A_TOOLKIT_HOME` to `${user.dir}/src/main/resources/mef_config
 | nested `Certificate` | 141 |
 | nested `Authentication` | 151 — etin, efin, username, password, asid |
 | nested `Endpoints` | 160 |
-| nested `EndpointConfig` (`getFullUrl` at 177) | 166 |
+| nested `EndpointConfig` (`getFullUrl` at 177) | 166 | deleted with the unused endpoint tree |
 | nested `Security` | 183 |
 
 `init()` only prints; the commented-out `ApplicationContext.setToolkitHome(...)` at line 76 means `mef.sdk.toolkit-home` is never actually pushed into the SDK — the SDK reads the system property set in `MefSpringBootApplication` instead.
 
 ### `com.irs.mef.config.RetryConfig`
-`src/main/java/com/irs/mef/config/RetryConfig.java`
+`src/main/java/com/irs/mef/config/RetryConfig.java` (deleted)
 
 | Method | Line |
 |---|---|
@@ -123,7 +123,7 @@ Exponential backoff: 5 s initial, ×3.0, capped at 60 s (lines 45-47). `SimpleRe
 Registered via `src/main/resources/META-INF/spring.factories`. Reads `.env` from `user.dir`, skips keys already present in the OS environment (line 50), and appends the map with `addLast` so real env vars win. Masks values whose key contains `PASSWORD` or `KEY` when echoing to stdout (lines 64-67).
 
 ### `com.irs.mef.service.MefClientService`
-`src/main/java/com/irs/mef/service/MefClientService.java` — the only holder of session state.
+`src/main/java/com/irs/mef/service/MefClientService.java` (deleted) — the only holder of session state.
 
 Session fields, lines 34-37: `currentSamlAssertion`, `currentSessionId`, `isLoggedIn`, `currentServiceContext`. Plain instance fields on a singleton bean — no synchronization, no per-caller isolation.
 
@@ -208,7 +208,7 @@ SDK classes via reflection:
 Only the **first** status record is read (line 91). Session-limit detection is a substring match on the message and its first-level cause (lines 120-122).
 
 ### `com.irs.mef.service.AcknowledgementService`
-`src/main/java/com/irs/mef/service/AcknowledgementService.java`
+`src/main/java/com/irs/mef/service/AcknowledgementService.java` (deleted)
 
 | Method | Line | Visibility |
 |---|---|---|
@@ -235,12 +235,12 @@ SDK classes via reflection:
 Because `getField` cannot distinguish "getter absent" from "value null", a renamed SDK getter degrades silently to a null field rather than an error.
 
 ### `com.irs.mef.exception.MefException`
-`src/main/java/com/irs/mef/exception/MefException.java` — extends `RuntimeException`; carries `errorCode` (constructors at 12, 18, 24, 30) and `detail`; getters at 36 and 40.
+`src/main/java/com/irs/mef/exception/MefException.java` (deleted) — extends `RuntimeException`; carries `errorCode` (constructors at 12, 18, 24, 30) and `detail`; getters at 36 and 40.
 
 Error codes in use: `LOGIN_FAILED`, `LOGOUT_FAILED`, `NOT_LOGGED_IN`, `KEYSTORE_NOT_FOUND`, `CERTIFICATE_NOT_CONFIGURED`, `ASID_NOT_CONFIGURED`, `SAML_CONVERSION_ERROR`, `FILE_NOT_FOUND`, `SUBMISSION_FAILED`, `MANIFEST_CREATION_FAILED`, `ARCHIVE_CREATION_FAILED`, `STATUS_QUERY_FAILED`, `NO_STATUS_FOUND`, `ACK_NOT_FOUND`, `ACK_RETRIEVAL_FAILED`, `ACK_PARSE_ERROR`, `CONFIG_ERROR`, `VALIDATION_ERROR`.
 
 ### `com.irs.mef.exception.GlobalExceptionHandler`
-`src/main/java/com/irs/mef/exception/GlobalExceptionHandler.java` — `@RestControllerAdvice`
+`src/main/java/com/irs/mef/exception/GlobalExceptionHandler.java` (deleted) — `@RestControllerAdvice`
 
 | Handler | Line | Status |
 |---|---|---|
@@ -274,7 +274,7 @@ Every `MefException` maps to 500, including `NOT_LOGGED_IN` and `FILE_NOT_FOUND`
 
 Base URL `http://localhost:8080/api` (`server.port: 8080`, `server.servlet.context-path: /api` in `application.yml:6-8`).
 
-### `MefAuthController` — `@RequestMapping("/mef/auth")`
+### `MefAuthController` — `@RequestMapping("/mef/auth")` (deleted; session routes are `SessionController`)
 
 | Method | Path | Handler (line) | Request | Response |
 |---|---|---|---|---|
@@ -359,7 +359,7 @@ The single-ack path (`getAcknowledgment` :68) is the same shape but calls `GetAc
 
 | Field | Set at | Read by |
 |---|---|---|
-| `currentServiceContext` | `MefClientService.java:172` | `SubmissionService:57`, `StatusService:51`, `AcknowledgementService:81/188/299` |
+| `currentServiceContext` | `MefClientService.java:172` | `SubmissionService:57`, `StatusService:51`, `AcknowledgementService:81/188/299` | deleted |
 | `isLoggedIn` | 173 (true), 236 (false) | guards in all four services + `/mef/auth/status` |
 | `currentSamlAssertion` | 170 | `LoginResponse` only |
 | `currentSessionId` | 171 | `/mef/auth/status`, `/test/form941` logging |
@@ -400,14 +400,14 @@ No expiry tracking, no re-login on IRS session timeout, no mutex — a second co
 | `logging.file.name` | 125 | `logs/mef-spring-boot.log` |
 | `management.endpoints.web.exposure.include` | 134 | `health,info` |
 
-The `mef.sdk.endpoints.*` and `mef.sdk.security.*` trees are bound into `MefSdkConfig` but never consulted at call time — the SDK resolves endpoints from `mef_config/config/*_endpoints.properties` and security from the XWSS XML files. Only `getBaseUrl()` reads them, and only for a startup log line (`MefClientService.java:43`).
+The `mef.sdk.endpoints.*` and `mef.sdk.security.*` trees are bound into `MefSdkConfig` but never consulted at call time — the SDK resolves endpoints from `mef_config/config/*_endpoints.properties` and security from the XWSS XML files. Only `getBaseUrl()` reads them, and only for a startup log line (`MefClientService.java:43`, deleted).
 
 ### Environment variables
 
 | Variable | Consumed at | Required |
 |---|---|---|
 | `MEF_ETIN` | `application.yml:57` | yes — login |
-| `MEF_ASID` | 69 | yes — login (`ASID_NOT_CONFIGURED` at `MefClientService.java:542`) |
+| `MEF_ASID` | 69 | yes — login (`ASID_NOT_CONFIGURED` at `MefClientService.java:542`, deleted) |
 | `MEF_EFIN` | 60 | for `/test/form941` (`SubmissionController.java:173`, deleted in 6e0bb7e) |
 | `MEF_KEYSTORE_PATH` | 43 | yes |
 | `MEF_KEYSTORE_PASSWORD` | 44 | yes |
@@ -556,13 +556,13 @@ Documentation drift (older docs vs reality):
 Defects worth acting on, roughly by severity:
 
 5. **`/test/form941` still belongs in a controller.** It now resolves the Orchid scenario XML relative to the repo root instead of a OneWell absolute path, but it remains a live ATS submit endpoint with no tenant field.
-6. **Logout now calls `LogoutClient`.** Local session is always cleared. Session expiry/refresh and a mutex around the singleton `ServiceContext` are still missing (`MefClientService` instance fields, defect 8).
-7. **The retry policy retries everything.** `RetryConfig.java:53-60` classifies `Exception.class` as retryable, so the `catch (MefException e) { throw e; }` "don't retry" blocks in `StatusService:111` and `AcknowledgementService:136/242/363` don't have their intended effect — `NOT_LOGGED_IN` and `ACK_NOT_FOUND` are retried three times across ~20 s of backoff.
-8. **Session state is unguarded shared mutable state** on a singleton (`MefClientService.java:34-37`). Concurrent requests share one `ServiceContext`; a second login silently swaps the context out from under in-flight calls. No expiry tracking or re-login on IRS session timeout.
-9. **`getAcknowledgmentsBySubmission` drains the ack queue.** GetNewAcks marks acknowledgments retrieved IRS-side; filtering client-side (`AcknowledgementService.java:341-343`) discards every non-matching ack permanently.
+6. **Logout now calls `LogoutClient`.** Local session is always cleared. Session expiry/refresh and a mutex around the singleton `ServiceContext` are still missing (`MefClientService` instance fields, defect 8, deleted).
+7. **The retry policy retries everything.** `RetryConfig.java:53-60` (deleted) classifies `Exception.class` as retryable, so the `catch (MefException e) { throw e; }` "don't retry" blocks in `StatusService:111` and `AcknowledgementService:136/242/363` don't have their intended effect — `NOT_LOGGED_IN` and `ACK_NOT_FOUND` are retried three times across ~20 s of backoff.
+8. **Session state is unguarded shared mutable state** on a singleton (`MefClientService.java:34-37`, deleted). Concurrent requests share one `ServiceContext`; a second login silently swaps the context out from under in-flight calls. No expiry tracking or re-login on IRS session timeout.
+9. **`getAcknowledgmentsBySubmission` drains the ack queue.** GetNewAcks marks acknowledgments retrieved IRS-side; filtering client-side (`AcknowledgementService.java:341-343`, deleted) discards every non-matching ack permanently.
 10. **`Form941SubmissionTest` is gated** by `@LiveIrsTest` (`-Dmef.live.test=Form941SubmissionTest`; each live class has its own value). A plain `mvn test` is offline-safe. (Test deleted in 6e0bb7e.)
 11. Stubs presented as working endpoints: `StatusService.getNewSubmissionsStatus()` :149 always returns `[]`; `SubmissionService.createSubmissionArchive()` :197 returns a path to a file it never creates. Both reachable over HTTP. Both were deleted in 6e0bb7e.
 12. Dead code: `getCertificateFile()` duplicated and unused in `SubmissionService:241`, `StatusService:206`, `AcknowledgementService:594`. `LoginRequest` bound by nothing. `MefSdkConfig.Authentication.username`/`password` and the entire `endpoints`/`security` trees never read at call time.
-13. `buildAckResponseReflection`'s `getField` lambda (`AcknowledgementService.java:424-431`) swallows all reflection errors into `null` — an SDK getter rename degrades to silently-empty response fields.
-14. Every `MefException` maps to HTTP 500 (`GlobalExceptionHandler.java:24-38`), including client-fault codes like `NOT_LOGGED_IN` (401/409) and `FILE_NOT_FOUND` (400).
+13. `buildAckResponseReflection`'s `getField` lambda (`AcknowledgementService.java:424-431`, deleted) swallows all reflection errors into `null` — an SDK getter rename degrades to silently-empty response fields.
+14. Every `MefException` maps to HTTP 500 (`GlobalExceptionHandler.java:24-38`, deleted), including client-fault codes like `NOT_LOGGED_IN` (401/409) and `FILE_NOT_FOUND` (400).
 15. PRD base URL disagrees between `application.yml:87` (`https://www.irs.gov`) and `prd_endpoints.properties` (`la.www4.irs.gov`). The properties file governs; the yml value is decorative but misleading.

@@ -18,7 +18,8 @@ class LiveIrsTestGuardTest {
 
     private static final Path TEST_SOURCES = Path.of("src/test/java");
     private static final String RETIRED_SWITCH = "mef.integration.test.enabled";
-    private static final String IRS_LOGIN_CALL = ".login(";
+    private static final String IRS_LOGIN_CALL = ".probe(";
+    private static final String LEGACY_LOGIN_CALL = ".login(";
     private static final String LIVE_ANNOTATION = "@LiveIrsTest";
 
     @Test
@@ -35,12 +36,15 @@ class LiveIrsTestGuardTest {
     @Test
     void everyTestThatLogsInToIrsIsALiveIrsTest() throws IOException {
         List<Path> offenders = testSources()
-                .filter(source -> read(source).contains(IRS_LOGIN_CALL))
+                .filter(source -> {
+                    String text = read(source);
+                    return text.contains(IRS_LOGIN_CALL) || text.contains(LEGACY_LOGIN_CALL);
+                })
                 .filter(source -> !read(source).contains(LIVE_ANNOTATION))
                 .toList();
 
         assertEquals(List.of(), offenders,
-                "These tests call MefClientService.login() without com.irs.mef.live.LiveIrsTest, "
+                "These tests call IrsSession.probe() or login() without com.irs.mef.live.LiveIrsTest, "
                         + "so a plain mvn test would contact IRS.");
     }
 

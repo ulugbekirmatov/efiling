@@ -29,7 +29,7 @@ This document details the complete implementation journey for submitting Form 94
    - Certificate-based authentication
    - SAML assertion retrieval (5,035 characters)
    - Session management with ServiceContext
-   - Implementation: `MefClientService.java:62-141`
+   - Implementation: `MefClientService.java:62-141` (deleted)
 
 2. **Submission ID Generation**
    - Correct format: `[0-9]{13}[a-z0-9]{7}` (20 chars total)

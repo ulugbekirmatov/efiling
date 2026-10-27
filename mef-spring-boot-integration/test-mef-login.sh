@@ -36,24 +36,24 @@ APP_PID=$!
 trap 'echo; echo "Stopping app (pid $APP_PID)"; kill "$APP_PID" 2>/dev/null || true' EXIT
 
 for _ in $(seq 1 "$STARTUP_WAIT_SECONDS"); do
-  curl -sf "$BASE_URL/mef/auth/status" > /dev/null 2>&1 && break
+  curl -sf "$BASE_URL/mef/session" > /dev/null 2>&1 && break
   sleep 1
 done
 
-echo; echo "== 1. Certificate diagnostics (keystore, alias, subject) =="
-curl -s "$BASE_URL/mef/auth/test-certificate" | jq '.'
+echo; echo "== 1. Certificate diagnostics (keystore, alias, subject; offline) =="
+curl -s "$BASE_URL/mef/session/certificate" | jq '.'
 
 echo; echo "== 2. IRS ATS login (certificate-only; ETIN/ASID from .env) =="
-curl -s "$BASE_URL/mef/auth/login" | jq '.'
+curl -s -X POST "$BASE_URL/mef/session/login" | jq '.'
 
 echo; echo "== 3. Session status =="
-curl -s "$BASE_URL/mef/auth/status" | jq '.'
+curl -s "$BASE_URL/mef/session" | jq '.'
 
 echo; echo "== 4. IRS logout (LogoutClient; must appear as /a2a/mef/Logout in a2a_sdk.log.*) =="
-curl -s "$BASE_URL/mef/auth/logout" | jq '.'
+curl -s -X POST "$BASE_URL/mef/session/logout" | jq '.'
 
 echo; echo "== 5. Session status after logout (loggedIn must be false) =="
-curl -s "$BASE_URL/mef/auth/status" | jq '.'
+curl -s "$BASE_URL/mef/session" | jq '.'
 
 echo
 echo "If login failed, the real SOAP fault is in a2a_sdk.log.* in this directory, not in the JSON above."

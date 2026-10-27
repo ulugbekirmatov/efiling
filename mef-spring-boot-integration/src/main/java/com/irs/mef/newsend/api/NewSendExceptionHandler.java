@@ -18,11 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
 
-/**
- * Scoped to the NewSend controller ONLY (assignableTypes) and ordered first, so the legacy
- * GlobalExceptionHandler — which maps every MefException to HTTP 500 — keeps its behavior for
- * legacy routes and nothing about legacy clients changes.
- */
+/** Scoped to the NewSend controller only. */
 @RestControllerAdvice(assignableTypes = NewSendSubmissionController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j

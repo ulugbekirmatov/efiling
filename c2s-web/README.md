@@ -12,7 +12,7 @@ Surfaces: `card`, `card lift`, `card-title`, `callout`, `callout attention`, `ca
 
 Data: `kv`, `table-wrap`, `data` (add `wide` at four columns or more), `nowrap`, `num`, `section-label`, `file-path`, `frame`. Render XML with `XmlCode` from `app/design-system/XmlCode.js`. Pass `tall` or `wrap` through its `className`.
 
-Status: `Badge` and `Chip` from `app/design-system/Badge.js`. Map each domain state to a tone in `app/design-system/tones.js`, then pass that tone in. The tones are `attention` (needs a human: rejected, fault, risk), `safe` (accepted, confirmed, correct), `neutral` (a highlight with no judgment), and `waiting` (not sent yet, missing, deprioritized). `app/scenarios/ui.js` maps `accepted` to `safe` and `ready` to `waiting`. `toneClass` returns `tone-attention`, `tone-safe`, `tone-neutral`, or `tone-waiting`. An unknown tone becomes `tone-waiting`.
+Status: `Badge` and `Chip` from `app/design-system/Badge.js`. Map each domain state to a tone in `app/design-system/tones.js`, then pass that tone in. The tones are `attention` (needs a human: rejected, fault, risk), `safe` (accepted, confirmed, correct), `neutral` (a highlight with no judgment), and `waiting` (not sent yet, missing, deprioritized). `app/scenarios/ui.js` maps `accepted` to `safe`, `ready` to `waiting`, and `partial` to `attention`. `toneClass` returns `tone-attention`, `tone-safe`, `tone-neutral`, or `tone-waiting`. An unknown tone becomes `tone-waiting`.
 
 Controls: `btn btn-primary`, `btn btn-secondary`, `btn-mini`, `tabs` and `tab` (`aria-selected="true"` on the open tab), `select-list` and `select-item` (`aria-current="true"` on the open row).
 
@@ -61,9 +61,9 @@ C2S QID/DID wiring is intentionally absent. Do not invent platform IDs here.
 
 Open http://localhost:3000/scenarios
 
-The pages read `test-scenarios/ats-ty2026/` on disk: `scenarios.json` and each scenario's XML, TSV, and PDF. The Spring Boot backend is not needed.
+The pages read the scenario directories under `test-scenarios/ats-ty2026/` and `test-scenarios/ats-ty2026-annual/`. Shared format text is `test-scenarios/ats-ty2026/formats.json` (and the annual directory's formats.json). Each scenario directory holds scenario.json plus the XML, TSV, and PDF. The Spring Boot backend is not needed.
 
-Set `MEF_REPO_ROOT` when `next dev` or `next build` does not run from `c2s-web`. The default repo root is the parent of `c2s-web`.
+Set `MEF_REPO_ROOT` to override the repo root. Otherwise `app/scenarios/scenarioData.js` resolves it from its own file location.
 
 `composed-return.xml` and `manifest.xml` are regenerated with:
 

@@ -1,0 +1,72 @@
+{
+  "title": "Daffodil Accounting, CPEO aggregate 941 with Schedule R and Form 8974",
+  "employer": {
+    "name": "Daffodil Accounting",
+    "ein": "003222220",
+    "nameControl": "DAFF",
+    "address": "222 6th Street, Kansas City, MO 64131"
+  },
+  "returnTypeCd": "941",
+  "quarter": "2026Q1",
+  "documents": [
+    "IRS941",
+    "IRS941ScheduleR",
+    "IRS8974"
+  ],
+  "pdf": "941-test-scenario-3-ty2026.pdf",
+  "status": {
+    "state": "ready",
+    "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file CPEO aggregate returns in production (Pub 5078 section 2.5.1)."
+  },
+  "summary": "A Certified Professional Employer Organization (CPEO) files an aggregate Q1 2026 Form 941 covering its own employees and one client. Schedule R splits the totals between the client and the CPEO. Form 8974 computes the client's small business payroll tax credit for research, which lowers the 941 tax and produces a refund.",
+  "tests": [
+    "CPEO aggregate filer checkbox, marked on both the 941 and Schedule R",
+    "Schedule R allocation for one client, rolling up through line 6 (client subtotal), line 8 (CPEO's own employees) and line 9 (totals that tie to the 941)",
+    "Form 8974 Part 1: a 2025 Form 1040 with Form 6765, $99.96 of credit already used, $500.04 remaining",
+    "Form 8974 Part 2: the social security and Medicare caps both bind, giving the $390.15 credit on 941 line 11",
+    "Line 16 'less than $2,500' checkbox",
+    "Overpayment of $390.15 with 'Send a refund' checked"
+  ],
+  "keyFigures": [
+    {
+      "label": "Wages, tips, and other compensation",
+      "line": "941 line 2",
+      "value": "10200.00"
+    },
+    {
+      "label": "Total social security and Medicare taxes",
+      "line": "941 line 5e",
+      "value": "1560.60"
+    },
+    {
+      "label": "Total taxes before adjustments",
+      "line": "941 line 6",
+      "value": "2760.60"
+    },
+    {
+      "label": "Payroll tax credit for research (Form 8974)",
+      "line": "941 line 11",
+      "value": "390.15"
+    },
+    {
+      "label": "Total taxes after adjustments and credits",
+      "line": "941 line 12",
+      "value": "2370.45"
+    },
+    {
+      "label": "Total deposits for the quarter",
+      "line": "941 line 13",
+      "value": "2760.60"
+    },
+    {
+      "label": "Overpayment (refund requested)",
+      "line": "941 line 15a",
+      "value": "390.15"
+    }
+  ],
+  "notes": [
+    "Form 8974 is filed under the client's identity (EIN 003333336, Marty Azalea), not the CPEO's EIN, because the research credit belongs to the client's own income tax return.",
+    "On Schedule R, line 8 (the CPEO's own employees) repeats the client's wage, withholding, social security and Medicare figures from line 6. Only the client takes the $390.15 credit, so line 8 total tax is $1,380.30 against the client's $990.15, and line 9 totals $2,370.45.",
+    "Form 8974 Part 1 column (d), 'EIN used on Form 6765', is blank on the PDF."
+  ]
+}

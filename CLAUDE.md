@@ -18,8 +18,8 @@ Spring Boot application (Java 17, Spring Boot 3.2.0, Maven) integrating the IRS 
 | `c2s/` | C2S platform context: how to write backend functions (Nashorn ES5), queries (QIDs), and page scripts that call them. Start at `c2s/README.md` |
 | `Version_17/A2A_Toolkit_Version17.0/` | IRS A2A Toolkit v17 (WSDL 10.A), the SDK the pom builds against. Only `MeF_Client_SDK/Java/dist/mef_client_sdk.zip` and the release notes are tracked; the rest of the 626 MB zip is gitignored |
 | `Version_16/A2A_Toolkit_Version16.0/` | IRS A2A Toolkit v16 (WSDL 10.9), superseded 2026-09-30. v17's Java SDK differs only in the `WSDL_VERSION`/`TOOLKIT_VERSION` constants and `MeFHeader.xsd` `WSDLVersionNum` fixed value |
-| `test-scenarios/ats-ty2026/` | TY2026 94x ATS scenarios 1-4: IRS PDF, `client-return-body.xml` (the Reporting Agent client body), `line-mapping.tsv` per scenario |
-| `test-scenarios/ats-ty2026-annual/` | TY2026 Form 940 ATS scenarios `940-1`..`940-3` (own `scenarios.json`). Element names are unverified guesses until the 2026v2.0 schema lands |
+| `test-scenarios/ats-ty2026/` | TY2026 94x ATS scenarios 1-4. Each scenario-<id>-<slug> directory holds the IRS PDF, `client-return-body.xml`, and `line-mapping.tsv` |
+| `test-scenarios/ats-ty2026-annual/` | TY2026 Form 940 ATS scenarios `940-1`..`940-3`. Element names are unverified guesses until the 2026v2.0 schema lands |
 | `Version_15/` | Older toolkit, reference only |
 | `94x-2026/` | IRS 94x XSD schemas + business rules, 2026 Q1–Q4 (note quarterly version churn v1.0→v4.0) |
 | `test-scenarios/` | ATS test scenario PDFs, hand-built Return XML, 941 XSDs (see its README) |

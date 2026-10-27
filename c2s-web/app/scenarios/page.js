@@ -15,14 +15,23 @@ function preparedKinds(loaded) {
   return kinds;
 }
 
+function periodLabel(scenario) {
+  return scenario.quarter || scenario.taxYear;
+}
+
 export default function ScenariosIndexPage() {
-  const registry = loadRegistry();
-  const cards = registry.scenarios.map((scenario) => ({
+  const { bundles, scenarios } = loadRegistry();
+  const cards = scenarios.map((scenario) => ({
     scenario,
-    loaded: loadScenario(scenario.number),
+    loaded: loadScenario(scenario.id),
+    bundle: bundles.find((item) => item.tyDir === scenario.tyDir),
   }));
-  const composed = registry.formats.find((format) => format.headerFields);
-  const headerFields = (composed && composed.headerFields) || [];
+  const taxYear =
+    bundles.length > 0 && bundles.every((bundle) => bundle.taxYear === bundles[0].taxYear)
+      ? bundles[0].taxYear
+      : bundles.map((bundle) => bundle.taxYear).join(", ");
+  const returnVersions = bundles.map((bundle) => bundle.returnVersion);
+  const legacy = bundles.flatMap((bundle) => bundle.legacy);
 
   return (
     <div className="page">
@@ -30,26 +39,27 @@ export default function ScenariosIndexPage() {
         <p className="eyebrow">Form 94x</p>
         <h1>ATS test scenarios</h1>
         <p className="intro">
-          TY{registry.taxYear} Form 94x ATS scenarios Pyramos files as a Reporting Agent.
-          Return version {registry.returnVersion}.
+          TY{taxYear} Form 94x ATS scenarios Pyramos files as a Reporting Agent.
+          Return {returnVersions.length === 1 ? "version" : "versions"} {returnVersions.join(" and ")}.
         </p>
       </header>
 
       <div className="scenario-grid">
-        {cards.map(({ scenario, loaded }) => {
+        {cards.map(({ scenario, loaded, bundle }) => {
           const kinds = loaded ? preparedKinds(loaded) : [];
+          const formats = bundle ? bundle.formats : [];
           return (
             <Link
-              key={scenario.number}
-              href={`/scenarios/${scenario.number}`}
+              key={scenario.id}
+              href={`/scenarios/${scenario.id}`}
               className="card lift scenario-card"
             >
-              <p className="section-label">Scenario {scenario.number}</p>
+              <p className="section-label">Scenario {scenario.id}</p>
               <h2 className="card-title">{scenario.title}</h2>
               <p>{scenario.employer.name}</p>
               <p className="mono">{formatEin(scenario.employer.ein)}</p>
               <p className="muted">
-                {scenario.returnTypeCd} · {scenario.quarter}
+                {scenario.returnTypeCd} · {periodLabel(scenario)}
               </p>
               <div className="row">
                 {scenario.documents.map((doc) => (
@@ -62,7 +72,7 @@ export default function ScenariosIndexPage() {
                 <StatusBadge status={scenario.status} />
               </div>
               <div className="row scenario-chips">
-                {registry.formats.map((format) => {
+                {formats.map((format) => {
                   const ready = kinds.some((kind) => kind.id === format.id);
                   return (
                     <Chip key={format.id} tone={ready ? undefined : "waiting"}>
@@ -84,61 +94,76 @@ export default function ScenariosIndexPage() {
         <p className="mono muted scenario-pipeline">
           client body → composed Return + manifest → submission archive
         </p>
-        <div className="scenario-grid">
-          {registry.formats.map((format) => (
-            <article key={format.id} className="card">
-              <h3 className="card-title">{format.title}</h3>
-              <p className="muted">{format.producedBy}</p>
-              <p>{format.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="scenario-section" aria-labelledby="header-fields-heading">
-        <h2 id="header-fields-heading">
-          ReturnHeader fields
-        </h2>
-        <div className="table-wrap">
-          <table className="data header-fields">
-            <thead>
-              <tr>
-                <th>Element</th>
-                <th>Source</th>
-                <th>From</th>
-              </tr>
-            </thead>
-            <tbody>
-              {headerFields.map((field) => (
-                <tr key={field.element}>
-                  <td className="mono">{field.element}</td>
-                  <td>
-                    <SourceBadge source={field.source} />
-                  </td>
-                  <td>{field.from}</td>
-                </tr>
+        {bundles.map((bundle) => (
+          <div key={bundle.tyDir}>
+            <p className="muted mono">{bundle.returnVersion}</p>
+            <div className="scenario-grid">
+              {bundle.formats.map((format) => (
+                <article key={format.id} className="card">
+                  <h3 className="card-title">{format.title}</h3>
+                  <p className="muted">{format.producedBy}</p>
+                  <p>{format.description}</p>
+                </article>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </div>
+        ))}
       </section>
 
-      <section className="scenario-section" aria-labelledby="legacy-heading">
-        <h2 id="legacy-heading">
-          Legacy and source-only
-        </h2>
-        <div className="scenario-grid">
-          {registry.legacy.map((item) => (
-            <article key={item.id} className="card">
-              <h3 className="card-title">
-                <Link href={`/scenarios/legacy/${item.id}`}>{item.title}</Link>
-              </h3>
-              <p>{item.description}</p>
-              <p className="file-path">{item.path}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {bundles.map((bundle) => {
+        const composed = bundle.formats.find((format) => format.headerFields);
+        const headerFields = (composed && composed.headerFields) || [];
+        if (headerFields.length === 0) return null;
+        const headingId = `header-fields-${bundle.tyDir}`;
+        return (
+          <section key={bundle.tyDir} className="scenario-section" aria-labelledby={headingId}>
+            <h2 id={headingId}>
+              ReturnHeader fields · {bundle.returnVersion}
+            </h2>
+            <div className="table-wrap">
+              <table className="data header-fields">
+                <thead>
+                  <tr>
+                    <th>Element</th>
+                    <th>Source</th>
+                    <th>From</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {headerFields.map((field) => (
+                    <tr key={field.element}>
+                      <td className="mono">{field.element}</td>
+                      <td>
+                        <SourceBadge source={field.source} />
+                      </td>
+                      <td>{field.from}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        );
+      })}
+
+      {legacy.length > 0 ? (
+        <section className="scenario-section" aria-labelledby="legacy-heading">
+          <h2 id="legacy-heading">
+            Legacy and source-only
+          </h2>
+          <div className="scenario-grid">
+            {legacy.map((item) => (
+              <article key={item.id} className="card">
+                <h3 className="card-title">
+                  <Link href={`/scenarios/legacy/${item.id}`}>{item.title}</Link>
+                </h3>
+                <p>{item.description}</p>
+                <p className="file-path">{item.path}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

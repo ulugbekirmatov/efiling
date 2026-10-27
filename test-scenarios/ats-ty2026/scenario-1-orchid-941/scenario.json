@@ -1,0 +1,67 @@
+{
+  "title": "Orchid Incorporated, baseline Form 941",
+  "employer": {
+    "name": "Orchid Incorporated",
+    "ein": "003000004",
+    "nameControl": "ORCH",
+    "address": "1st Test Street, Willow Grove, PA 19090"
+  },
+  "returnTypeCd": "941",
+  "quarter": "2026Q1",
+  "documents": [
+    "IRS941"
+  ],
+  "pdf": "941-test-scenario-1-ty2026.pdf",
+  "status": {
+    "state": "accepted",
+    "date": "2026-09-25",
+    "submissionId": "2378612026268yagqidh",
+    "note": "Accepted by IRS ATS. One passed 941 scenario earns the 94x quarterly pass (Pub 5078 section 3.5.1)."
+  },
+  "summary": "The simplest scenario in the set. A standalone Form 941 for Q1 2026 with 3 employees and $1,000 in wages, no adjustments, no credits, and no Schedule B. Deposits equal total tax, so the balance due is $0.00.",
+  "tests": [
+    "Baseline 941 computation: 3 employees, $1,000.00 wages, $100.00 federal income tax withheld (PDF p.2)",
+    "Line 5a social security ($1,000.00 x 0.124 = $124.00) and line 5c Medicare ($1,000.00 x 0.029 = $29.00)",
+    "Lines 6, 10 and 12 carry the total straight through, with no adjustments (lines 7-9) and no line 11 credit",
+    "Line 13 deposits equal line 12, so line 14 reports a $0.00 balance due and line 15 stays blank",
+    "Line 16 'less than $2,500' checkbox, so no Schedule B and documentCnt 1 (PDF p.3)",
+    "Parts 3 and 4 blank: no business closure, no seasonal employer, no third-party designee"
+  ],
+  "keyFigures": [
+    {
+      "label": "Wages, tips, and other compensation",
+      "line": "941 line 2",
+      "value": "1000.00"
+    },
+    {
+      "label": "Federal income tax withheld",
+      "line": "941 line 3",
+      "value": "100.00"
+    },
+    {
+      "label": "Total social security and Medicare taxes",
+      "line": "941 line 5e",
+      "value": "153.00"
+    },
+    {
+      "label": "Total tax after adjustments and credits",
+      "line": "941 line 12",
+      "value": "253.00"
+    },
+    {
+      "label": "Total deposits for the quarter",
+      "line": "941 line 13",
+      "value": "253.00"
+    },
+    {
+      "label": "Balance due",
+      "line": "941 line 14",
+      "value": "0.00"
+    }
+  ],
+  "notes": [
+    "The PDF cover page prints the EIN as 00-30000004, with an extra 0. The form itself on page 2 and the client body use 00-3000004.",
+    "Lines 5b and 5d (tips, Additional Medicare Tax wages) are blank and absent from the XML.",
+    "Scenario 4 corrects this return with a Form 941-X."
+  ]
+}

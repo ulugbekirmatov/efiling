@@ -1,0 +1,63 @@
+{
+  "title": "Zinnia Company, single-state Form 940 with a refund",
+  "employer": {
+    "name": "Zinnia Company",
+    "ein": "003000011",
+    "nameControl": "ZINN",
+    "address": "5000 Purple Road, Tucson, AZ 85641"
+  },
+  "returnTypeCd": "940",
+  "taxYear": "2026",
+  "documents": [
+    "IRS940"
+  ],
+  "pdf": "940-test-scenario-1-ty2026.pdf",
+  "status": {
+    "state": "ready",
+    "note": "Composed offline (AtsScenarioComposeTest). Schema validation waits for the 2026v2.0 bundle."
+  },
+  "summary": "A single-state (Arizona) Form 940 for 2026. $4,000 of payments above the $7,000 wage base come off $200,000 of payments, leaving $196,000 of taxable FUTA wages and $1,176 of tax. Deposits of $2,886 produce a $1,710 overpayment, refunded.",
+  "tests": [
+    "Line 1a single state (AZ), no Schedule A",
+    "Line 5 payments in excess of $7,000 flow through line 6 to line 7",
+    "Line 8 at the 0.006 net FUTA rate",
+    "Line 15a overpayment with 'Send a refund' on line 15b, no direct deposit",
+    "Part 5 quarterly liabilities (300/300/300/276) total line 12"
+  ],
+  "keyFigures": [
+    {
+      "label": "Total payments to all employees",
+      "line": "940 line 3",
+      "value": "200000.00"
+    },
+    {
+      "label": "Total taxable FUTA wages",
+      "line": "940 line 7",
+      "value": "196000.00"
+    },
+    {
+      "label": "FUTA tax after adjustments",
+      "line": "940 line 12",
+      "value": "1176.00"
+    },
+    {
+      "label": "FUTA tax deposited",
+      "line": "940 line 13",
+      "value": "2886.00"
+    },
+    {
+      "label": "Overpayment (refund requested)",
+      "line": "940 line 15a",
+      "value": "1710.00"
+    }
+  ],
+  "notes": [
+    "The city prints as 'TuFVRQ' in the PDF text layer (broken font map); the rendered page reads Tucson. ZIP 85641 is copied as printed.",
+    "Element-name rulings: line 1a SingleStateCd (other candidates OneStateCd, StateAbbreviationCd), line 5 PaymentsExceedingWageBaseAmt (TotalExcessPaymentsAmt), line 13 TotalTaxDepositAmt from IRS941 (FUTATaxDepositedAmt), line 15 OverpaymentGrp/OverpaidAmt/RefundOverpaymentInd from IRS941 (OverpaymentAmt/RefundInd), lines 16a-d TaxLiabilityQtr1Amt..Qtr4Amt after IRS941 TaxLiabilityMonth1Amt (FirstQuarter...Amt), line 17 TotalTaxLiabilityAmt (TotalYearLiabilityAmt).",
+    "No balance due and no requested payment date, so no payment record.",
+    "Responsible Party Current Indicator: Yes (PDF p.1). The composer's constant IRSResponsiblePrtyInfoCurrInd=true matches.",
+    "Signature Option: 'Use the signature method applicable to you' (PDF p.1). Part 7 is blank; Pyramos signs with ReportingAgentPINGrp.",
+    "Part 6 third-party designee: neither Yes nor No is checked and no designee is named (form page 2). The composer's DiscussWithThirdPartyNoInd=X is the only consistent header choice, since no designee exists to report.",
+    "Amounts are written with cents (200000.00), as the PDF prints them and as the 941 schema types them (USDecimalAmountNNType). One transcription wrote whole dollars; overruled."
+  ]
+}

@@ -39,7 +39,7 @@ function ElementPathCell({ path }) {
   );
 }
 
-export default function ScenarioTabs({ number, scenario, formats, documentGroups, hasPdf }) {
+export default function ScenarioTabs({ id, scenario, formats, documentGroups, hasPdf }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -143,7 +143,7 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
             </>
           ) : null}
           <div className="actions end">
-            <a href={`/scenarios/${number}/files/lineMapping?download=1`} className="btn-mini">
+            <a href={`/scenarios/${id}/files/lineMapping?download=1`} className="btn-mini">
               Download file
             </a>
           </div>
@@ -196,7 +196,7 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
             <button type="button" className="btn-mini" onClick={() => copyText(pretty)}>
               {copied ? "Copied" : "Copy formatted"}
             </button>
-            <a href={`/scenarios/${number}/files/${active}?download=1`} className="btn-mini">
+            <a href={`/scenarios/${id}/files/${active}?download=1`} className="btn-mini">
               Download file
             </a>
           </div>
@@ -212,11 +212,11 @@ export default function ScenarioTabs({ number, scenario, formats, documentGroups
     body = hasPdf ? (
       <>
         <div className="actions">
-          <a href={`/scenarios/${number}/files/pdf`} target="_blank" rel="noreferrer" className="btn-mini">
+          <a href={`/scenarios/${id}/files/pdf`} target="_blank" rel="noreferrer" className="btn-mini">
             Open in new tab
           </a>
         </div>
-        <iframe title="Source PDF" src={`/scenarios/${number}/files/pdf`} className="frame" />
+        <iframe title="Source PDF" src={`/scenarios/${id}/files/pdf`} className="frame" />
       </>
     ) : (
       <p className="callout waiting">Not prepared for this scenario</p>

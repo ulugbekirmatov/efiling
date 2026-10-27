@@ -1,21 +1,36 @@
 #!/bin/bash
 # Send one TY2026 94x ATS scenario to IRS ATS as a Reporting Agent (ReportingAgentAtsScenarioTest).
-# Quarterly scenarios: 1 Orchid 941, 2 Marigold 941 + Schedule B, 3 Daffodil 941 + Schedule R + 8974,
-# 4 Orchid 941-X. Annual scenarios: 940-1, 940-2, 940-3 (Form 940).
+# Scenario ids are the scenario-* directories under test-scenarios/.
 # Reads identifiers from .env in this module directory; MEF_SOFTWARE_ID must be
 # 8 digits from the process environment or .env. This script never writes .env.
 #
-# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <scenario id from scenarios.json>
+# Usage: MEF_SOFTWARE_ID=12345678 ./run-ra-ats-test.sh <scenario id>
 set -euo pipefail
 
 TEST_CLASS=ReportingAgentAtsScenarioTest
 SCENARIO="${1:-}"
 MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$MODULE_DIR")"
-KNOWN_IDS="$(jq -r '.scenarios[] | (.id // (.number | tostring))' \
-  "$REPO_DIR/test-scenarios/ats-ty2026/scenarios.json" "$REPO_DIR/test-scenarios/ats-ty2026-annual/scenarios.json")"
+
+# Plain numeric ids first, then form-prefixed ids such as 940-1.
+list_scenario_ids() {
+  local dir name numeric="" hyphenated=""
+  for dir in "$REPO_DIR"/test-scenarios/*/scenario-*; do
+    [ -d "$dir" ] || continue
+    name="$(basename "$dir")"
+    if [[ "$name" =~ ^scenario-([0-9]{3}-[0-9]+)-([A-Za-z][A-Za-z0-9-]*)$ ]]; then
+      hyphenated="${hyphenated}${BASH_REMATCH[1]}"$'\n'
+    elif [[ "$name" =~ ^scenario-([0-9]+)-([A-Za-z][A-Za-z0-9-]*)$ ]]; then
+      numeric="${numeric}${BASH_REMATCH[1]}"$'\n'
+    fi
+  done
+  printf '%s' "$numeric" | sed '/^$/d' | sort -n
+  printf '%s' "$hyphenated" | sed '/^$/d' | sort -t- -k1,1n -k2,2n
+}
+
+KNOWN_IDS="$(list_scenario_ids)"
 if [ -z "$SCENARIO" ] || ! printf '%s\n' "$KNOWN_IDS" | grep -qxF -- "$SCENARIO"; then
-  echo "Usage: $0 <scenario id> (got '${SCENARIO}'). Ids in test-scenarios/*/scenarios.json: $(echo $KNOWN_IDS)" >&2
+  echo "Usage: $0 <scenario id> (got '${SCENARIO}'). Ids in test-scenarios/*/scenario-*: $(echo $KNOWN_IDS)" >&2
   exit 1
 fi
 

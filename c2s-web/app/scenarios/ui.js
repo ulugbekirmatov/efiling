@@ -10,6 +10,7 @@ export function formatEin(ein) {
 export const STATUS_TONE = {
   accepted: TONES.safe,
   ready: TONES.waiting,
+  partial: TONES.attention,
 };
 
 export function statusLabel(status) {
@@ -21,6 +22,7 @@ export function statusLabel(status) {
     if (status.submissionId) parts.push(status.submissionId);
     return parts.join(" · ");
   }
+  if (status.state === "partial") return "Partial";
   return String(status.state);
 }
 

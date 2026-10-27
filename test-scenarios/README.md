@@ -93,7 +93,7 @@ Create a YAML config file in the Spring Boot test resources:
 
 ### Step 5: Create Test Class
 
-Add the scenario to the `AtsScenario` enum, which `AtsScenarioComposeTest` and `AtsScenarioSnapshotTest` iterate, and to `test-scenarios/ats-ty2026/scenarios.json`, the c2s-web registry. Do not start from the OneWell-era `Return941-Scenario1.xml`.
+Add a directory named scenario-<id>-<slug> under `test-scenarios/ats-ty2026/` (or `test-scenarios/ats-ty2026-annual/` for a 940), with scenario.json and `client-return-body.xml`. `AtsScenario` discovers it, and the c2s-web scenario pages read the same directories. Do not start from the OneWell-era `Return941-Scenario1.xml`.
 
 ### Step 6: Validate
 

@@ -1,0 +1,131 @@
+{
+  "taxYear": "2026",
+  "returnVersion": "2026v2.0",
+  "formats": [
+    {
+      "id": "clientBody",
+      "file": "client-return-body.xml",
+      "title": "Client return body",
+      "producedBy": "Hand-built from the IRS scenario PDF",
+      "description": "What one client company files: its Filer block (EIN, name, name control, address), the calendar-year tax period, and ReturnData with Form 940 and any schedule. It carries no Pyramos values. ClientReturnBody.load parses it, locks returnVersion to 2026v2.0, reads the taxYr attribute, and checks that ReturnData opens with IRS940. The 2026v2.0 schema package is not in the repo yet, so every IRS940, IRS940ScheduleA and IRS940ScheduleR element name is unverified; line-mapping.tsv marks each one."
+    },
+    {
+      "id": "lineMapping",
+      "file": "line-mapping.tsv",
+      "title": "Line mapping",
+      "producedBy": "Hand-built while reading the PDF",
+      "description": "One row per value in the client body: which form line it comes from, the XML element path, the value, the PDF page, a confidence, and the name source. confidence is known only for Filer elements, which come from the shared ReturnHeader94x.xsd. Every IRS940, IRS940ScheduleA and IRS940ScheduleR name is guess until the 2026v2.0 schema is bundled, including names copied from IRS941 or IRS941ScheduleR; the name source column records that sibling."
+    },
+    {
+      "id": "composedReturn",
+      "file": "composed-return.xml",
+      "title": "Composed Return",
+      "producedBy": "ReportingAgentReturn.compose (snapshot kept by AtsScenarioSnapshotTest)",
+      "description": "The full Return IRS receives. The composer wraps the client body in a ReturnHeader with OriginatorTypeCd ReportingAgent, a ReportingAgentPINGrp, and a ReportingAgent94XFilerGrp naming Pyramos. This snapshot uses stand-in originator values (EFIN 000000, PIN 00000, agent EIN 000000000) and a fixed clock of 2026-10-13T14:00Z. A live send fills those from MEF_EFIN, MEF_RA_PIN, MEF_SOFTWARE_ID and the other MEF_RA_* settings. The 940 snapshot is not schema-checked until the 2026v2.0 bundle lands.",
+      "headerFields": [
+        {
+          "element": "Return/@returnVersion",
+          "source": "client",
+          "from": "returnVersion attribute of the client body"
+        },
+        {
+          "element": "ReturnTypeCd",
+          "source": "client",
+          "from": "returnTypeCd attribute (940)"
+        },
+        {
+          "element": "ReturnTs",
+          "source": "generated",
+          "from": "composer clock, America/New_York, to the second"
+        },
+        {
+          "element": "SoftwareId",
+          "source": "pyramos",
+          "from": "MEF_SOFTWARE_ID"
+        },
+        {
+          "element": "MultSoftwarePackagesUsedInd",
+          "source": "generated",
+          "from": "always false"
+        },
+        {
+          "element": "AdditionalFilerInformation (refund product block)",
+          "source": "generated",
+          "from": "schema-required constants"
+        },
+        {
+          "element": "FilingSecurityInformation/IPAddress/IPv4AddressTxt",
+          "source": "pyramos",
+          "from": "MEF_RA_FILING_IP"
+        },
+        {
+          "element": "VendorControlNum",
+          "source": "generated",
+          "from": "hash of filer EIN and tax period"
+        },
+        {
+          "element": "AtSubmissionCreationDeviceId / AtSubmissionFilingDeviceId",
+          "source": "generated",
+          "from": "SHA-1 of \"pyramos-ats\" plus the filer EIN"
+        },
+        {
+          "element": "TaxYr",
+          "source": "client",
+          "from": "taxYr attribute"
+        },
+        {
+          "element": "Filer",
+          "source": "client",
+          "from": "the client body Filer block, copied as is"
+        },
+        {
+          "element": "OriginatorGrp/EFIN",
+          "source": "pyramos",
+          "from": "MEF_EFIN"
+        },
+        {
+          "element": "OriginatorGrp/OriginatorTypeCd",
+          "source": "generated",
+          "from": "always ReportingAgent"
+        },
+        {
+          "element": "ReportingAgentPINGrp/PIN",
+          "source": "pyramos",
+          "from": "MEF_RA_PIN"
+        },
+        {
+          "element": "ReportingAgentPINGrp/RAPINEnteredByCd",
+          "source": "generated",
+          "from": "always REPORTING AGENT"
+        },
+        {
+          "element": "ReportingAgentPINGrp/JuratDisclosureCd",
+          "source": "generated",
+          "from": "always REPORTING AGENT PIN"
+        },
+        {
+          "element": "IRSResponsiblePrtyInfoCurrInd, DiscussWithThirdPartyNoInd",
+          "source": "generated",
+          "from": "constants true and X"
+        },
+        {
+          "element": "ReportingAgent94XFilerGrp",
+          "source": "pyramos",
+          "from": "MEF_RA_EIN, MEF_RA_NAME, MEF_RA_NAME_CONTROL, MEF_RA_ADDRESS_LINE1, MEF_RA_CITY, MEF_RA_STATE, MEF_RA_ZIP"
+        },
+        {
+          "element": "ReturnData",
+          "source": "client",
+          "from": "the client body ReturnData, copied as is"
+        }
+      ]
+    },
+    {
+      "id": "manifest",
+      "file": "manifest.xml",
+      "title": "Manifest",
+      "producedBy": "NewSendManifestXml.render (snapshot kept by AtsScenarioSnapshotTest)",
+      "description": "The IRS submission manifest that travels next to the Return in the submission archive: SubmissionId, EFIN, TaxYr, GovernmentCd, FederalSubmissionTypeCd, the calendar-year tax period (2026-01-01 to 2026-12-31), and the client TIN. The snapshot uses the fixed submission id 0000002026286abc1234. A live send mints EFIN + yyyyDDD + 7 random characters."
+    }
+  ]
+}

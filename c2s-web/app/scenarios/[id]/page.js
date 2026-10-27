@@ -10,7 +10,7 @@ import "./scenario.css";
 export const dynamic = "force-dynamic";
 
 export default function ScenarioDetailPage({ params }) {
-  const loaded = loadScenario(params.number);
+  const loaded = loadScenario(params.id);
   if (!loaded) notFound();
   const { scenario, formats, lineMapping, hasPdf } = loaded;
 
@@ -19,10 +19,10 @@ export default function ScenarioDetailPage({ params }) {
       <p className="crumbs">
         <Link href="/scenarios">ATS test scenarios</Link>
         {" / "}
-        Scenario {scenario.number}
+        Scenario {scenario.id}
       </p>
       <header className="page-head">
-        <p className="eyebrow">Scenario {scenario.number}</p>
+        <p className="eyebrow">Scenario {scenario.id}</p>
         <h1>{scenario.title}</h1>
       </header>
       <section className="card scenario-employer" aria-label="Employer and status">
@@ -33,7 +33,7 @@ export default function ScenarioDetailPage({ params }) {
         </p>
         <p className="muted">{scenario.employer.address}</p>
         <p>
-          {scenario.returnTypeCd} · {scenario.quarter}
+          {scenario.returnTypeCd} · {scenario.quarter || scenario.taxYear}
         </p>
         <div className="row">
           {scenario.documents.map((doc) => (
@@ -52,7 +52,7 @@ export default function ScenarioDetailPage({ params }) {
       </section>
       <Suspense fallback={<p className="muted scenario-loading">Loading…</p>}>
         <ScenarioTabs
-          number={scenario.number}
+          id={scenario.id}
           scenario={scenario}
           formats={formats}
           documentGroups={groupByDocument(lineMapping)}

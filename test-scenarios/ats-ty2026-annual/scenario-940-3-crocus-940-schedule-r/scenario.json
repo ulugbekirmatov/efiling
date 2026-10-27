@@ -1,0 +1,67 @@
+{
+  "title": "Crocus Company Inc, Section 3504 agent aggregate Form 940 with Schedule R and a balance due",
+  "employer": {
+    "name": "Crocus Company Inc",
+    "ein": "003000002",
+    "nameControl": "CROC",
+    "address": "4th Flower Street, Houston, TX 77002"
+  },
+  "returnTypeCd": "940",
+  "taxYear": "2026",
+  "documents": [
+    "IRS940",
+    "IRS940ScheduleR"
+  ],
+  "pdf": "940-test-scenario-3-ty2026.pdf",
+  "status": {
+    "state": "partial",
+    "note": "Composed offline; schema validation waits for the 2026v2.0 bundle. The PDF asks for the $360.00 balance due to be paid with the return (requested payment date within 5 days of submission), and the composer emits no IRSPayment. Precedent: ATS accepted the Orchid 941-X (balance due, no IRSPayment) on 2026-10-14, so an unpaid send is likely accepted. Ask e-Help, or add IRSPayment before sending."
+  },
+  "summary": "A Section 3504 agent files an aggregate Form 940 for three clients and its own employees, all in Texas. Each of the four allocations is $140,000 of taxable FUTA wages, $840 of tax and $750 of deposits. Deposits of $3,000 against $3,360 of tax leave a $360 balance due.",
+  "tests": [
+    "Aggregate filer box 'Section 3504 agent' on both Form 940 and Schedule R",
+    "Schedule R client rows 1-3, subtotal line 16, own employees line 18, totals line 19",
+    "Schedule R line 19 ties to Form 940 lines 7, 12 and 13",
+    "Line 14 balance due of $360.00 (under $500, payable with the return)"
+  ],
+  "keyFigures": [
+    {
+      "label": "Total payments to all employees",
+      "line": "940 line 3",
+      "value": "560000.00"
+    },
+    {
+      "label": "FUTA tax after adjustments",
+      "line": "940 line 12",
+      "value": "3360.00"
+    },
+    {
+      "label": "FUTA tax deposited",
+      "line": "940 line 13",
+      "value": "3000.00"
+    },
+    {
+      "label": "Balance due",
+      "line": "940 line 14",
+      "value": "360.00"
+    },
+    {
+      "label": "Schedule R total taxable FUTA wages",
+      "line": "Schedule R line 19 col d",
+      "value": "560000.00"
+    }
+  ],
+  "notes": [
+    "Requested Payment Date: 'Must be within 5 days of the return submission date' (PDF p.1). The PDF gives no bank routing or account number. Paying the $360.00 with the return needs an IRSPayment document (routing, account, type, RequestedPaymentDt, payment amount) in ReturnData; the composer emits none. Sent as is, the return files with an unpaid balance.",
+    "Schedule R follows the 941 Schedule R structure verbatim: Section3504AgentInd, repeating ClientInformationGrp (EIN, then the 940-only state column, then ClientAllocationInformationGrp), SubtotalForClientGrp, AggregateEmployeeInfoGrp, TotalAggregateAndClientInfoGrp. One transcription used that structure; the other invented ClientAllocationGrp, ClientSubtotalGrp, EmployerOwnAmountsGrp and TotalsGrp.",
+    "Schedule R column amounts reuse the Form 940 line names (TotalTaxableFUTAWagesAmt, TotalFUTATaxAfterAdjustmentsAmt, TotalTaxDepositAmt), as 941 Schedule R reuses the IRS941 names. Columns c, e and f and line 17 are blank and omitted.",
+    "Schedule R column (h) is headed 'deposits plus any payment made with the return', yet line 19 is 3000.00, equal to line 13. The $360.00 balance is not allocated on Schedule R. The fixture keeps the printed values.",
+    "Schedule R line 18 column (h) prints '750 00' without the decimal mark; 2250.00 + 750.00 = 3000.00 confirms 750.00.",
+    "Client EIN 003000004 on Schedule R line 3 is also scenario 1's (941) Orchid EIN. It is IRS test data and is copied as printed.",
+    "Line 1a SingleStateCd; one transcription used a bare StateAbbreviationCd here, the other SingleStateCd. Lines 16a-d TaxLiabilityQtr1Amt..Qtr4Amt flat, with no wrapper group.",
+    "Responsible Party Current Indicator: Yes (PDF p.1). The composer's constant IRSResponsiblePrtyInfoCurrInd=true matches.",
+    "Signature Option: 'Use the signature method applicable to you' (PDF p.1). Part 7 is blank; Pyramos signs with ReportingAgentPINGrp.",
+    "Part 6 third-party designee: neither Yes nor No is checked and no designee is named (form page 2). The composer's DiscussWithThirdPartyNoInd=X is the only consistent header choice, since no designee exists to report.",
+    "Amounts are written with cents (200000.00), as the PDF prints them and as the 941 schema types them (USDecimalAmountNNType). One transcription wrote whole dollars; overruled."
+  ]
+}

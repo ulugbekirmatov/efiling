@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { loadRegistry, resolveScenarioFile } from "../../../scenarioData";
 
 export async function GET(request, { params }) {
-  const resolved = resolveScenarioFile(params.number, params.kind);
+  const resolved = resolveScenarioFile(params.id, params.kind);
   if (!resolved) {
     return new NextResponse("Not found", { status: 404 });
   }
@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
   let disposition = "inline";
   if (download) {
     const registry = loadRegistry();
-    const scenario = registry.scenarios.find((item) => item.number === Number(params.number));
+    const scenario = registry.scenarios.find((item) => item.id === params.id);
     const prefix = scenario ? scenario.dir : "scenario";
     disposition = `attachment; filename="${prefix}-${resolved.fileName}"`;
   }

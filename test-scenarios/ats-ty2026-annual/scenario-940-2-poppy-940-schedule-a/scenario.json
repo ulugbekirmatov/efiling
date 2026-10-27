@@ -1,0 +1,72 @@
+{
+  "title": "Poppy Company, multi-state Form 940 with Schedule A credit reduction",
+  "employer": {
+    "name": "Poppy Company",
+    "ein": "003000001",
+    "nameControl": "POPP",
+    "address": "1000 Black St, New York, NY 10005"
+  },
+  "returnTypeCd": "940",
+  "taxYear": "2026",
+  "documents": [
+    "IRS940",
+    "IRS940ScheduleA"
+  ],
+  "pdf": "940-test-scenario-2-ty2026.pdf",
+  "status": {
+    "state": "ready",
+    "note": "Composed offline (AtsScenarioComposeTest). Schema validation waits for the 2026v2.0 bundle."
+  },
+  "summary": "A multi-state employer (NY and VI) that paid wages in a credit-reduction state. $100,000 of retirement/pension payments are exempt, leaving $250,000 of taxable FUTA wages. Schedule A applies the Virgin Islands 0.045 credit reduction ($11,250), which raises the tax to $12,750. The $250 overpayment is applied to the next return.",
+  "tests": [
+    "Line 1b multi-state and line 2 credit-reduction checkboxes, both pointing to Schedule A",
+    "Line 4 exempt payments with only 4c (retirement/pension) checked",
+    "Schedule A: NY checked with no amounts, VI with wages x 0.045 = 11250.00",
+    "Line 11 equals the Schedule A total; line 12 = 1500.00 + 11250.00",
+    "Line 15b 'Apply to next return'",
+    "Two-document ReturnData linked by referenceDocumentId"
+  ],
+  "keyFigures": [
+    {
+      "label": "Total payments to all employees",
+      "line": "940 line 3",
+      "value": "350000.00"
+    },
+    {
+      "label": "Payments exempt from FUTA tax",
+      "line": "940 line 4",
+      "value": "100000.00"
+    },
+    {
+      "label": "Total taxable FUTA wages",
+      "line": "940 line 7",
+      "value": "250000.00"
+    },
+    {
+      "label": "Credit reduction",
+      "line": "940 line 11",
+      "value": "11250.00"
+    },
+    {
+      "label": "FUTA tax after adjustments",
+      "line": "940 line 12",
+      "value": "12750.00"
+    },
+    {
+      "label": "Overpayment (applied to next return)",
+      "line": "940 line 15a",
+      "value": "250.00"
+    }
+  ],
+  "notes": [
+    "Schedule A is modelled as one repeating StateGrp per checked state (NY bare, VI with wages, rate and reduction), as one transcription did. The other split NY into a bare code and VI into a CreditReductionGrp; one row shape per state follows the form.",
+    "Line 6 is SubtotalAmt in every scenario. The transcriptions used SubtotalAmt in scenario 1 but TotalExemptWagesAmt or TotalExemptPaymentsAmt here; line 6 is line 4 + line 5, not only exempt payments.",
+    "Line 4 is a flat ExemptPaymentsAmt followed by RetirementPensionInd, in form order. One transcription wrapped both in ExemptPaymentsGrp; there is no schema evidence for the wrapper.",
+    "Line 1b MultiStateInd (other candidate MultiStateEmployerInd); line 7 TotalTaxableFUTAWagesAmt (TotalTaxableWagesAmt); line 12 TotalFUTATaxAfterAdjustmentsAmt (FUTATaxAfterAdjustmentsAmt); line 15b ApplyOverpaymentNextReturnInd from IRS941 (ApplyToNextReturnInd).",
+    "No balance due and no requested payment date, so no payment record.",
+    "Responsible Party Current Indicator: Yes (PDF p.1). The composer's constant IRSResponsiblePrtyInfoCurrInd=true matches.",
+    "Signature Option: 'Use the signature method applicable to you' (PDF p.1). Part 7 is blank; Pyramos signs with ReportingAgentPINGrp.",
+    "Part 6 third-party designee: neither Yes nor No is checked and no designee is named (form page 2). The composer's DiscussWithThirdPartyNoInd=X is the only consistent header choice, since no designee exists to report.",
+    "Amounts are written with cents (200000.00), as the PDF prints them and as the 941 schema types them (USDecimalAmountNNType). One transcription wrote whole dollars; overruled."
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "title": "Marigold Corporation, semiweekly depositor with Schedule B",
+  "employer": {
+    "name": "Marigold Corporation",
+    "ein": "003333330",
+    "nameControl": "MARI",
+    "address": "2nd Test Street, Philadelephia, PA 19040"
+  },
+  "returnTypeCd": "941",
+  "quarter": "2026Q1",
+  "documents": [
+    "IRS941",
+    "IRS941ScheduleB"
+  ],
+  "pdf": "941-test-scenario-2-ty2026.pdf",
+  "status": {
+    "state": "ready",
+    "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file Schedule B returns in production (Pub 5078 section 2.5.1)."
+  },
+  "summary": "A Q1 2026 Form 941 for a semiweekly schedule depositor, so it carries a Schedule B with daily tax liabilities. It has 10 employees and $33,594 in wages. Deposits exceed the tax, and the employer asks for the overpayment as a refund.",
+  "tests": [
+    "Line 16 semiweekly depositor checkbox, which requires a Schedule B attachment",
+    "Schedule B daily liabilities across all three months (days 11 and 20, 1 and 18, 10 and 19)",
+    "Schedule B monthly and quarterly totals reconcile to 941 line 12 (8,715.89)",
+    "Social security (12.4%) and Medicare (2.9%) flowing into lines 5e, 6, 10 and 12",
+    "Overpayment of $284.11 on line 15a with 'Send a refund' checked on line 15b",
+    "Two-document ReturnData (IRS941 + IRS941ScheduleB) linked by documentId"
+  ],
+  "keyFigures": [
+    {
+      "label": "Wages, tips, and other compensation",
+      "line": "941 line 2",
+      "value": "33594.00"
+    },
+    {
+      "label": "Federal income tax withheld",
+      "line": "941 line 3",
+      "value": "3576.00"
+    },
+    {
+      "label": "Total social security and Medicare taxes",
+      "line": "941 line 5e",
+      "value": "5139.89"
+    },
+    {
+      "label": "Total tax after adjustments",
+      "line": "941 line 12",
+      "value": "8715.89"
+    },
+    {
+      "label": "Total deposits for the quarter",
+      "line": "941 line 13",
+      "value": "9000.00"
+    },
+    {
+      "label": "Overpayment (refund requested)",
+      "line": "941 line 15a",
+      "value": "284.11"
+    },
+    {
+      "label": "Total quarter tax liability",
+      "line": "Schedule B total",
+      "value": "8715.89"
+    }
+  ],
+  "notes": [
+    "The city is spelled 'Philadelephia' on page 1 of the Form 941. The client body keeps the typo on purpose, because it is IRS test data.",
+    "Lines 5b, 5d, 7-9 and 11 are blank on the form and absent from the XML.",
+    "The Schedule B quarter checkbox (Quarter 1) matches the 941 quarter."
+  ]
+}

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export const FORMAT_CONTENT_TYPES = {
   ".xml": "application/xml; charset=utf-8",
@@ -8,62 +9,138 @@ export const FORMAT_CONTENT_TYPES = {
   ".pdf": "application/pdf",
 };
 
-const ALLOWED_STATUS_STATES = new Set(["accepted", "ready"]);
+const ALLOWED_STATUS_STATES = new Set(["accepted", "ready", "partial"]);
+
+// id is digits, or a 3-digit form number, a hyphen, and digits. The slug starts with a letter.
+const SCENARIO_DIR = /^scenario-([0-9]{3}-[0-9]+|[0-9]+)-([A-Za-z][A-Za-z0-9-]*)$/;
+const CANONICAL_ID = /^(?:[1-9][0-9]{2}-[1-9][0-9]*|[1-9][0-9]*)$/;
 
 export function repoRoot() {
-  return process.env.MEF_REPO_ROOT || path.resolve(process.cwd(), "..");
-}
-
-function registryPath() {
-  return path.join(repoRoot(), "test-scenarios", "ats-ty2026", "scenarios.json");
-}
-
-function scenarioDirPath(dir) {
-  return path.join(repoRoot(), "test-scenarios", "ats-ty2026", dir);
-}
-
-function validateRegistry(registry) {
-  const scenarios = registry && registry.scenarios;
-  if (!Array.isArray(scenarios)) {
-    throw new Error("scenarios.json: scenarios is missing");
+  if (process.env.MEF_REPO_ROOT) return process.env.MEF_REPO_ROOT;
+  // Next bundles this file under c2s-web/.next-build, so a fixed ".." count is wrong there.
+  // Walk up from this module until the repo that holds both trees.
+  let dir = path.dirname(fileURLToPath(import.meta.url));
+  while (true) {
+    if (
+      fs.existsSync(path.join(dir, "test-scenarios")) &&
+      fs.existsSync(path.join(dir, "c2s-web"))
+    ) {
+      return dir;
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) {
+      throw new Error("Cannot resolve the repo root from scenarioData.js. Set MEF_REPO_ROOT.");
+    }
+    dir = parent;
   }
-  for (const scenario of scenarios) {
-    const label =
-      scenario && scenario.number != null ? `scenario ${scenario.number}` : "scenario (unknown)";
-    if (scenario == null || scenario.number == null) {
-      throw new Error(`${label}: missing number`);
-    }
-    if (!scenario.dir) {
-      throw new Error(`${label}: missing dir`);
-    }
-    if (!scenario.title) {
-      throw new Error(`${label}: missing title`);
-    }
-    if (!scenario.pdf) {
-      throw new Error(`${label}: missing pdf`);
-    }
-    const state = scenario.status && scenario.status.state;
-    if (!ALLOWED_STATUS_STATES.has(state)) {
-      throw new Error(`${label}: missing or invalid status.state`);
-    }
-  }
-  return registry;
 }
 
-export function loadRegistry() {
-  const filePath = registryPath();
+function parseScenarioDirName(name) {
+  const match = SCENARIO_DIR.exec(name);
+  if (!match) return null;
+  return { id: match[1], slug: match[2] };
+}
+
+/** Plain numeric ids (1, 2, 3, 4) sort before form-prefixed ids (940-1). */
+function compareIds(left, right) {
+  const leftPrefixed = left.includes("-");
+  const rightPrefixed = right.includes("-");
+  if (leftPrefixed !== rightPrefixed) return leftPrefixed ? 1 : -1;
+  const [leftMajor, leftMinor] = left.split("-");
+  const [rightMajor, rightMinor] = right.split("-");
+  const major = Number(leftMajor) - Number(rightMajor);
+  if (major !== 0 || leftMinor == null) return major;
+  return Number(leftMinor) - Number(rightMinor);
+}
+
+function readJson(filePath) {
   let raw;
   try {
     raw = fs.readFileSync(filePath, "utf8");
   } catch (err) {
     if (err && err.code === "ENOENT") {
-      throw new Error(
-        `${filePath} not found. Run from c2s-web or set MEF_REPO_ROOT.`
-      );
+      throw new Error(`${filePath} not found. Set MEF_REPO_ROOT.`);
     }
     throw err;
   }
-  return validateRegistry(JSON.parse(raw));
+  return JSON.parse(raw);
+}
+
+function validateScenario(entry, id) {
+  const label = `scenario ${id}`;
+  if (entry == null || typeof entry !== "object") {
+    throw new Error(`${label}: scenario.json is missing`);
+  }
+  if (!entry.title) {
+    throw new Error(`${label}: missing title`);
+  }
+  if (!entry.pdf) {
+    throw new Error(`${label}: missing pdf`);
+  }
+  const state = entry.status && entry.status.state;
+  if (!ALLOWED_STATUS_STATES.has(state)) {
+    throw new Error(`${label}: missing or invalid status.state`);
+  }
+}
+
+function loadBundles() {
+  const root = path.join(repoRoot(), "test-scenarios");
+  let tyNames;
+  try {
+    tyNames = fs.readdirSync(root);
+  } catch (err) {
+    if (err && err.code === "ENOENT") {
+      throw new Error(`${root} not found. Set MEF_REPO_ROOT.`);
+    }
+    throw err;
+  }
+  const bundles = [];
+  for (const tyName of tyNames.sort()) {
+    const tyPath = path.join(root, tyName);
+    if (!fs.statSync(tyPath).isDirectory()) continue;
+    const scenarioNames = fs
+      .readdirSync(tyPath, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && entry.name.startsWith("scenario-"))
+      .map((entry) => entry.name);
+    if (scenarioNames.length === 0) continue;
+    const formatsPath = path.join(tyPath, "formats.json");
+    const formatsDoc = readJson(formatsPath);
+    if (!Array.isArray(formatsDoc.formats)) {
+      throw new Error(`${formatsPath}: formats is missing`);
+    }
+    const scenarios = scenarioNames.map((dirName) => {
+      const parsed = parseScenarioDirName(dirName);
+      if (!parsed) {
+        throw new Error(`${path.join(tyPath, dirName)} does not match scenario-<id>-<slug>`);
+      }
+      const entry = readJson(path.join(tyPath, dirName, "scenario.json"));
+      validateScenario(entry, parsed.id);
+      return {
+        ...entry,
+        id: parsed.id,
+        slug: parsed.slug,
+        dir: dirName,
+        tyDir: tyName,
+      };
+    });
+    bundles.push({
+      tyDir: tyName,
+      taxYear: formatsDoc.taxYear,
+      returnVersion: formatsDoc.returnVersion,
+      formats: formatsDoc.formats,
+      legacy: formatsDoc.legacy || [],
+      scenarios,
+    });
+  }
+  return bundles;
+}
+
+export function loadRegistry() {
+  const bundles = loadBundles();
+  const scenarios = bundles
+    .flatMap((bundle) => bundle.scenarios)
+    .sort((left, right) => compareIds(left.id, right.id));
+  return { bundles, scenarios };
 }
 
 export function parseLineMapping(tsvText) {
@@ -111,27 +188,36 @@ function readUtf8IfPresent(absPath) {
   }
 }
 
-function asScenarioNumber(value) {
+function asScenarioId(value) {
   if (typeof value === "number") {
     if (!Number.isInteger(value) || value < 1) return null;
-    return value;
+    return String(value);
   }
-  if (typeof value !== "string" || !/^[1-9][0-9]*$/.test(value)) return null;
-  return parseInt(value, 10);
+  if (typeof value !== "string" || !CANONICAL_ID.test(value)) return null;
+  return value;
 }
 
 export function sendClientId(scenario) {
-  return `ats-scenario-${scenario.number}-${scenario.slug}`;
+  return `ats-scenario-${scenario.id}-${scenario.slug}`;
 }
 
-export function loadScenario(number) {
-  const num = asScenarioNumber(number);
-  if (num == null) return null;
+function scenarioDirPath(scenario) {
+  return path.join(repoRoot(), "test-scenarios", scenario.tyDir, scenario.dir);
+}
+
+function bundleFor(registry, scenario) {
+  return registry.bundles.find((bundle) => bundle.tyDir === scenario.tyDir);
+}
+
+export function loadScenario(rawId) {
+  const id = asScenarioId(rawId);
+  if (id == null) return null;
   const registry = loadRegistry();
-  const scenario = registry.scenarios.find((item) => item.number === num);
+  const scenario = registry.scenarios.find((item) => item.id === id);
   if (!scenario) return null;
-  const dirPath = scenarioDirPath(scenario.dir);
-  const formats = registry.formats.map((format) => ({
+  const bundle = bundleFor(registry, scenario);
+  const dirPath = scenarioDirPath(scenario);
+  const formats = bundle.formats.map((format) => ({
     ...format,
     content: readUtf8IfPresent(path.join(dirPath, format.file)),
   }));
@@ -150,34 +236,39 @@ function contentTypeForFileName(fileName) {
   return FORMAT_CONTENT_TYPES[ext] || null;
 }
 
-export function resolveScenarioFile(number, kind) {
+export function resolveScenarioFile(rawId, kind) {
   if (typeof kind !== "string") return null;
-  const num = asScenarioNumber(number);
-  if (num == null) return null;
+  const id = asScenarioId(rawId);
+  if (id == null) return null;
   const registry = loadRegistry();
-  const scenario = registry.scenarios.find((item) => item.number === num);
+  const scenario = registry.scenarios.find((item) => item.id === id);
   if (!scenario) return null;
+  const bundle = bundleFor(registry, scenario);
   let fileName = null;
   if (kind === "pdf") {
     fileName = scenario.pdf;
   } else {
-    const format = registry.formats.find((item) => item.id === kind);
+    const format = bundle.formats.find((item) => item.id === kind);
     if (!format) return null;
     fileName = format.file;
   }
   const contentType = contentTypeForFileName(fileName);
   if (!contentType) return null;
   return {
-    absPath: path.join(scenarioDirPath(scenario.dir), fileName),
+    absPath: path.join(scenarioDirPath(scenario), fileName),
     contentType,
     fileName,
   };
 }
 
+function legacyItems(registry) {
+  return registry.bundles.flatMap((bundle) => bundle.legacy);
+}
+
 export function resolveLegacyFile(id) {
   if (typeof id !== "string") return null;
   const registry = loadRegistry();
-  const item = (registry.legacy || []).find((entry) => entry.id === id);
+  const item = legacyItems(registry).find((entry) => entry.id === id);
   if (!item) return null;
   const fileName = path.basename(item.path);
   const contentType = contentTypeForFileName(fileName);
@@ -191,7 +282,7 @@ export function resolveLegacyFile(id) {
 
 export function loadLegacy(id) {
   const registry = loadRegistry();
-  const item = (registry.legacy || []).find((entry) => entry.id === id);
+  const item = legacyItems(registry).find((entry) => entry.id === id);
   if (!item) return null;
   const resolved = resolveLegacyFile(id);
   const exists = Boolean(resolved && fs.existsSync(resolved.absPath));

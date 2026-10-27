@@ -1,5 +1,6 @@
 package com.irs.mef.filing;
 
+import com.irs.mef.ats.AtsScenario;
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
 import com.irs.mef.config.MefSdkConfig;
@@ -60,6 +61,7 @@ class FilingDeskTest {
     private static FilingDesk desk(IrsSession session) {
         MefSdkConfig sdk = new MefSdkConfig();
         sdk.setEnvironment("ATS");
+        Clock clock = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);
         return new FilingDesk(
                 session,
                 sdk,
@@ -81,6 +83,7 @@ class FilingDeskTest {
                     }
                 },
                 mock(AckStore.class),
-                Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC));
+                clock,
+                new IrsWire(clock, NoOpSendSubmissionsWireTap.INSTANCE));
     }
 }

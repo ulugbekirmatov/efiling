@@ -45,7 +45,9 @@ class RepoGuardTest {
             "mef-spring-boot-integration/EFIN_ETIN_USAGE.md",
             "CLAUDE.md gotcha 4 (one EFIN in manifest, OriginatorGrp, and submission ID; R0000-054-01)",
             "mef-spring-boot-integration/PROJECT_SUMMARY.md", "CLAUDE.md and CODE_MAP.md",
-            "mef-spring-boot-integration/SETUP-COMPLETE.md", "CLAUDE.md, Build, Run, Test");
+            "mef-spring-boot-integration/SETUP-COMPLETE.md", "CLAUDE.md, Build, Run, Test",
+            "mef-spring-boot-integration/run-ra-ats-test.sh", "./mef ats",
+            "mef-spring-boot-integration/test-mef-login.sh", "./mef login");
 
     private static final Pattern ALLOW = Pattern.compile(
             "repo-guard:allow onewell-id reason=\"[^\"]+\" expires=(\\d{4}-\\d{2}-\\d{2}) approved-by=\\S+");

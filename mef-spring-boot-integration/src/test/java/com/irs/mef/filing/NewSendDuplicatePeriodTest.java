@@ -1,5 +1,6 @@
 package com.irs.mef.filing;
 
+import com.irs.mef.ats.AtsScenario;
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
 import com.irs.mef.config.MefSdkConfig;
@@ -61,6 +62,7 @@ class NewSendDuplicatePeriodTest {
         });
         MefSdkConfig sdk = new MefSdkConfig();
         sdk.setEnvironment("ATS");
+        Clock clock = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);
         TransmitGateway gateway = new TransmitGateway() {
             @Override
             public FilingOutcome transmit(Object serviceContext, Preflight.Cleared cleared) {
@@ -86,6 +88,7 @@ class NewSendDuplicatePeriodTest {
                 new XsdReturnValidator(),
                 gateway,
                 mock(AckStore.class),
-                Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC));
+                clock,
+                new IrsWire(clock, NoOpSendSubmissionsWireTap.INSTANCE));
     }
 }

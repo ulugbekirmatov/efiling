@@ -1,5 +1,6 @@
 package com.irs.mef.filing;
 
+import com.irs.mef.ats.AtsScenario;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -49,13 +50,14 @@ class ScenarioDirectoryTest {
     }
 
     @Test
-    void theShellScriptListsScenarioDirectories() throws IOException {
-        String script = Files.readString(AtsScenario.repoPath("mef-spring-boot-integration/run-ra-ats-test.sh"));
+    void mefDoesNotKeepItsOwnScenarioList() throws IOException {
+        String script = Files.readString(AtsScenario.repoRoot().resolve("mef"));
         String hardCoded = script.lines()
                 .filter(line -> line.matches("\\s*[0-9][0-9a-z|-]*\\)\\s*;;"))
                 .collect(Collectors.joining("\n"));
-        assertEquals("", hardCoded, "run-ra-ats-test.sh keeps its own scenario list");
-        assertFalse(script.contains("scenarios.json"), "run-ra-ats-test.sh still reads scenarios.json");
+        assertEquals("", hardCoded, "./mef keeps its own scenario list");
+        assertFalse(script.contains("scenarios.json"), "./mef still reads scenarios.json");
+        assertTrue(script.contains("scenario.json"), "./mef does not read scenario directories");
     }
 
     private static List<Path> scenarioDirs() throws IOException {

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.GregorianCalendar;
 import java.util.Date;
 import java.util.Calendar;
@@ -252,8 +254,31 @@ final class IrsWire implements TransmitGateway {
                 return classify(cause, filing);
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 // Method.invoke raises these BEFORE the target method runs — provably pre-wire.
-                throw new NewSendCompositionException(IrsFault.composition(e), e);
+                throw new CompositionException(IrsFault.composition(e), e);
             }
+        }
+    }
+
+    /**
+     * The SDK submission archive, built with no session. A failure here is pre-wire:
+     * preflight calls this before login so a bad archive never reaches IRS.
+     */
+    byte[] buildArchive(Preflight preflight) {
+        Assembled assembled = assemble(preflight.prepared(), preflight.manifestText());
+        try {
+            Object bytes = assembled.archive().getClass().getMethod("getBytes").invoke(assembled.archive());
+            if (!(bytes instanceof byte[] zip) || zip.length == 0) {
+                IllegalStateException empty = new IllegalStateException("submission archive was empty");
+                throw new CompositionException(IrsFault.composition(empty), empty);
+            }
+            return zip;
+        } catch (CompositionException e) {
+            throw e;
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            throw new CompositionException(IrsFault.composition(cause), cause);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new CompositionException(IrsFault.composition(e), e);
         }
     }
 
@@ -262,6 +287,21 @@ final class IrsWire implements TransmitGateway {
      * method resolution. A failure here provably precedes any network I/O.
      */
     private PreparedCall prepare(Filing filing, String manifestXml) {
+        Assembled assembled = assemble(filing, manifestXml);
+        try {
+            Class<?> clientClass = Class.forName(SEND_SUBMISSIONS_CLIENT);
+            Object client = clientClass.getDeclaredConstructor().newInstance();
+            Method invokeMethod = clientClass.getMethod("invoke",
+                    Class.forName(SERVICE_CONTEXT), Class.forName(SUBMISSION_CONTAINER));
+            return new PreparedCall(client, invokeMethod, assembled.container());
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new CompositionException(IrsFault.composition(e), e);
+        }
+    }
+
+    /** In-memory constructors ONLY: the file-based ones break SDK serialization. */
+    private Assembled assemble(Filing filing, String manifestXml) {
+        ensureToolkitHome();
         try {
             Class<?> submissionXmlClass = Class.forName(SUBMISSION_XML);
             Class<?> submissionManifestClass = Class.forName(SUBMISSION_MANIFEST);
@@ -270,7 +310,6 @@ final class IrsWire implements TransmitGateway {
             Class<?> postmarkedArchiveClass = Class.forName(POSTMARKED_ARCHIVE);
             Class<?> binaryAttachmentClass = Class.forName(BINARY_ATTACHMENT);
 
-            // In-memory constructors ONLY: the file-based ones break SDK serialization.
             Object submissionXml = submissionXmlClass.getConstructor(String.class, String.class)
                     .newInstance(RETURN_XML_FILENAME, filing.command().returnXml());
             Object manifest = submissionManifestClass.getConstructor(String.class, String.class)
@@ -292,18 +331,30 @@ final class IrsWire implements TransmitGateway {
             Method createContainer = submissionBuilderClass.getMethod("createSubmissionContainer",
                     postmarkedArray.getClass());
             Object container = createContainer.invoke(null, postmarkedArray);
-
-            Class<?> clientClass = Class.forName(SEND_SUBMISSIONS_CLIENT);
-            Object client = clientClass.getDeclaredConstructor().newInstance();
-            Method invokeMethod = clientClass.getMethod("invoke",
-                    Class.forName(SERVICE_CONTEXT), Class.forName(SUBMISSION_CONTAINER));
-
-            return new PreparedCall(client, invokeMethod, container);
+            return new Assembled(archive, container);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
-            throw new NewSendCompositionException(IrsFault.composition(cause), cause);
+            throw new CompositionException(IrsFault.composition(cause), cause);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            throw new NewSendCompositionException(IrsFault.composition(e), e);
+            throw new CompositionException(IrsFault.composition(e), e);
+        }
+    }
+
+    /**
+     * The SDK reads this when it materializes an archive. Preflight has no session to have set it.
+     */
+    private static void ensureToolkitHome() {
+        String existing = System.getProperty("A2A_TOOLKIT_HOME");
+        if (existing != null && !existing.isBlank()) {
+            return;
+        }
+        Path cwd = Path.of(System.getProperty("user.dir"));
+        Path home = cwd.resolve("src/main/resources/mef_config");
+        if (!Files.isDirectory(home)) {
+            home = cwd.resolve("mef-spring-boot-integration/src/main/resources/mef_config");
+        }
+        if (Files.isDirectory(home)) {
+            System.setProperty("A2A_TOOLKIT_HOME", home.toAbsolutePath().toString());
         }
     }
 
@@ -405,5 +456,8 @@ final class IrsWire implements TransmitGateway {
     }
 
     private record PreparedCall(Object client, Method invokeMethod, Object container) {
+    }
+
+    private record Assembled(Object archive, Object container) {
     }
 }

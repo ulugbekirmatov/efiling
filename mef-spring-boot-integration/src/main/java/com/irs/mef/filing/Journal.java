@@ -17,7 +17,7 @@ public interface Journal {
      * Must return only after the row survives process death (fsync for the file implementation).
      * A prior claim in ABANDONED state does not block — ABANDONED is the one key-releasing state.
      */
-    NewSendReservation reserve(SubmissionRecord created);
+    Reservation reserve(SubmissionRecord created);
 
     /** Apply a terminal wire outcome. Idempotent: re-applying the same outcome is a no-op. */
     void complete(SubmissionId submissionId, FilingOutcome outcome, Instant at);
@@ -35,12 +35,15 @@ public interface Journal {
      */
     List<SubmissionRecord> findFiledFor(Ein clientEin, FormSpec formType, TaxPeriod taxPeriod);
 
+    /** Every row whose client id matches. Callers pick the latest. */
+    List<SubmissionRecord> findByClientId(String clientId);
+
     /** Reservation result. AlreadyClaimed carries the existing row so the caller can answer without a second read. */
-    sealed interface NewSendReservation {
-        record Reserved(SubmissionRecord record) implements NewSendReservation {
+    sealed interface Reservation {
+        record Reserved(SubmissionRecord record) implements Reservation {
         }
 
-        record AlreadyClaimed(SubmissionRecord existing) implements NewSendReservation {
+        record AlreadyClaimed(SubmissionRecord existing) implements Reservation {
         }
     }
 }

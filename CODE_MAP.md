@@ -497,7 +497,7 @@ mvn clean package                 # with tests
 ```bash
 mvn test                                              # offline tests only (see gating caveat below)
 mvn test -Dtest=AtsScenarioComposeTest                # compose + XSD validation, no network
-./test-mef-login.sh                                   # live IRS ATS login probe (runs the app; MefLoginIntegrationTest deleted 2026-09-16)
+./mef login                                           # LIVE login probe, no send
 mvn test -Dtest=Form941SubmissionTest                 # @SpringBootTest, live ATS submit
 ```
 
@@ -538,7 +538,7 @@ curl http://localhost:8080/api/mef/auth/status
 curl http://localhost:8080/api/mef/acknowledgments/new
 ```
 
-`./test-mef-login.sh` wraps build + run + curl; `./test-certificate-config.sh` checks `.env` and keystore setup.
+`./mef login` is the live login probe; `./test-certificate-config.sh` checks `.env` and keystore setup.
 
 Logs land in `logs/mef-spring-boot.log` (`application.yml:125`), `audit_log.txt` (per `audit_log.properties`, written to the working directory — `application.yml:29` says `logs/mef_audit_log.txt`, but the SDK reads the properties file, so the yml value has no effect), and `java.util.logging` output per `logging.properties`.
 

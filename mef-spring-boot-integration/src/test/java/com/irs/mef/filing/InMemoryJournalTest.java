@@ -1,6 +1,6 @@
 package com.irs.mef.filing;
 
-import com.irs.mef.filing.Journal.NewSendReservation;
+import com.irs.mef.filing.Journal.Reservation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -29,12 +29,12 @@ class InMemoryJournalTest {
     @Test
     @DisplayName("a fresh key reserves; the same key is AlreadyClaimed with the original row")
     void reserveClaimsTheKey() {
-        NewSendReservation first = journal.reserve(created("2386892026090aaaa111", "key-1"));
-        NewSendReservation second = journal.reserve(created("2386892026090bbbb222", "key-1"));
+        Reservation first = journal.reserve(created("2386892026090aaaa111", "key-1"));
+        Reservation second = journal.reserve(created("2386892026090bbbb222", "key-1"));
 
-        assertInstanceOf(NewSendReservation.Reserved.class, first);
-        NewSendReservation.AlreadyClaimed claimed =
-                assertInstanceOf(NewSendReservation.AlreadyClaimed.class, second);
+        assertInstanceOf(Reservation.Reserved.class, first);
+        Reservation.AlreadyClaimed claimed =
+                assertInstanceOf(Reservation.AlreadyClaimed.class, second);
         assertEquals("2386892026090aaaa111", claimed.existing().submissionId().value());
     }
 
@@ -45,14 +45,14 @@ class InMemoryJournalTest {
         journal.reserve(record);
         journal.abandon(record.submissionId(), IrsFault.lockTimeout(), Instant.now());
 
-        assertInstanceOf(NewSendReservation.Reserved.class,
+        assertInstanceOf(Reservation.Reserved.class,
                 journal.reserve(created("2386892026090cccc333", "key-1")));
 
         SubmissionRecord transmittedRecord = created("2386892026090dddd444", "key-2");
         journal.reserve(transmittedRecord);
         journal.complete(transmittedRecord.submissionId(), transmitted(transmittedRecord), Instant.now());
 
-        assertInstanceOf(NewSendReservation.AlreadyClaimed.class,
+        assertInstanceOf(Reservation.AlreadyClaimed.class,
                 journal.reserve(created("2386892026090eeee555", "key-2")));
     }
 

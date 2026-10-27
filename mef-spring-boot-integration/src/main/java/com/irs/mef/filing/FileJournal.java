@@ -59,17 +59,17 @@ class FileJournal implements Journal {
     }
 
     @Override
-    public synchronized NewSendReservation reserve(SubmissionRecord created) {
+    public synchronized Reservation reserve(SubmissionRecord created) {
         String existingId = submissionIdByRequestKey.get(created.clientRequestId());
         if (existingId != null) {
             SubmissionRecord existing = bySubmissionId.get(existingId);
             if (existing != null && !existing.releasesIdempotencyKey()) {
-                return new NewSendReservation.AlreadyClaimed(existing);
+                return new Reservation.AlreadyClaimed(existing);
             }
         }
         append(created);
         index(created);
-        return new NewSendReservation.Reserved(created);
+        return new Reservation.Reserved(created);
     }
 
     @Override
@@ -105,6 +105,17 @@ class FileJournal implements Journal {
         List<SubmissionRecord> records = new ArrayList<>(ids.size());
         for (String id : ids) {
             records.add(bySubmissionId.get(id));
+        }
+        return records;
+    }
+
+    @Override
+    public synchronized List<SubmissionRecord> findByClientId(String clientId) {
+        List<SubmissionRecord> records = new ArrayList<>();
+        for (SubmissionRecord record : bySubmissionId.values()) {
+            if (record.clientId().equals(clientId)) {
+                records.add(record);
+            }
         }
         return records;
     }

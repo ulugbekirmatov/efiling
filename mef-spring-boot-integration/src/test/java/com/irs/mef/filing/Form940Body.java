@@ -1,5 +1,6 @@
 package com.irs.mef.filing;
 
+import com.irs.mef.ats.AtsScenario;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# One command surface. Offline except ats and login.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+
+usage() {
+  cat <<'EOF' >&2
+Usage:
+  ./mef check
+  ./mef scenarios
+  ./mef preflight <id>
+  ./mef ats <id>
+  ./mef login
+EOF
+  exit 2
+}
+
+doctor() {
+  if [[ ! -x "$JAVA_HOME/bin/java" ]]; then
+    echo "doctor: Java 17 not found at $JAVA_HOME" >&2
+    exit 1
+  fi
+  local version
+  version="$("$JAVA_HOME/bin/java" -version 2>&1 || true)"
+  if ! grep -q 'version "17\.' <<<"$version"; then
+    echo "doctor: JAVA_HOME is not Java 17" >&2
+    printf '%s\n' "$version" >&2
+    exit 1
+  fi
+  local m2="${HOME}/.m2/repository"
+  local jar
+  for jar in \
+    "$m2/gov/irs/mef/mef-client-sdk/17.0/mef-client-sdk-17.0.jar" \
+    "$m2/com/sun/xml/ws/webservices-api/4.0.4/webservices-api-4.0.4.jar" \
+    "$m2/com/sun/xml/ws/webservices-rt/4.0.4/webservices-rt-4.0.4.jar" \
+    "$m2/com/sun/xml/ws/webservices-extra/4.0.4/webservices-extra-4.0.4.jar" \
+    "$m2/com/sun/xml/ws/webservices-tools/4.0.4/webservices-tools-4.0.4.jar"
+  do
+    if [[ ! -f "$jar" ]]; then
+      echo "doctor: missing SDK jar $jar (see mef-spring-boot-integration/install-sdk-jars.sh)" >&2
+      exit 1
+    fi
+  done
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "doctor: jq is required" >&2
+    exit 1
+  fi
+  if ! command -v node >/dev/null 2>&1; then
+    echo "doctor: node is required" >&2
+    exit 1
+  fi
+}
+
+list_scenarios() {
+  local f dir id form title
+  shopt -s nullglob
+  for f in "$ROOT"/test-scenarios/*/scenario-*/scenario.json; do
+    dir="$(basename "$(dirname "$f")")"
+    if [[ $dir =~ ^scenario-([0-9]{3}-[0-9]+|[0-9]+)- ]]; then
+      id="${BASH_REMATCH[1]}"
+    else
+      echo "scenario directory does not match scenario-<id>-<slug>: $dir" >&2
+      exit 1
+    fi
+    form="$(jq -r '.returnTypeCd' "$f")"
+    title="$(jq -r '.title' "$f")"
+    printf '%s\t%s\t%s\n' "$id" "$form" "$title"
+  done
+}
+
+require_scenario() {
+  local id="$1" sid found=0
+  while IFS=$'\t' read -r sid _; do
+    if [[ "$sid" == "$id" ]]; then
+      found=1
+    fi
+  done < <(list_scenarios)
+  if [[ "$found" -ne 1 ]]; then
+    echo "unknown scenario: $id" >&2
+    usage
+  fi
+}
+
+verb="${1:-}"
+case "$verb" in
+  check)
+    [[ $# -eq 1 ]] || usage
+    doctor
+    ( cd "$ROOT/mef-spring-boot-integration" && mvn -B test )
+    ( cd "$ROOT/c2s-web" && npm test && npx next build )
+    ;;
+  scenarios)
+    [[ $# -eq 1 ]] || usage
+    list_scenarios | sort -t $'\t' -k1,1
+    ;;
+  preflight)
+    [[ $# -eq 2 ]] || usage
+    require_scenario "$2"
+    ( cd "$ROOT/mef-spring-boot-integration" && mvn -B test -Dsurefire.useFile=false -Dtest=AtsPreflightTest "-Dmef.ats.scenario=$2" )
+    ;;
+  ats)
+    [[ $# -eq 2 ]] || usage
+    require_scenario "$2"
+    cd "$ROOT/mef-spring-boot-integration"
+    rm -f target/ats-verdict.json
+    set +e
+    mvn -B test -Dtest=AtsRunTest -Dmef.live.test=AtsRunTest "-Dmef.ats.scenario=$2"
+    set -e
+    if [[ ! -f target/ats-verdict.json ]]; then
+      echo "ats: target/ats-verdict.json is missing" >&2
+      exit 3
+    fi
+    code="$(jq -r '.exitCode' target/ats-verdict.json)"
+    if [[ ! "$code" =~ ^[0-9]+$ ]]; then
+      echo "ats: verdict has no numeric exitCode" >&2
+      exit 3
+    fi
+    exit "$code"
+    ;;
+  login)
+    [[ $# -eq 1 ]] || usage
+    ( cd "$ROOT/mef-spring-boot-integration" && mvn -B test -Dtest=IrsLoginProbeTest -Dmef.live.test=IrsLoginProbeTest )
+    ;;
+  *)
+    usage
+    ;;
+esac

@@ -3,7 +3,7 @@ package com.irs.mef.filing;
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
 import com.irs.mef.config.MefSdkConfig;
-import com.irs.mef.filing.Journal.NewSendReservation;
+import com.irs.mef.filing.Journal.Reservation;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +38,12 @@ public class FilingDesk {
     private final TransmitGateway gateway;
     private final AckStore ackStore;
     private final Clock clock;
+    private final IrsWire wire;
     private final SecureRandom random = new SecureRandom();
 
     /**
-     * Offline. Composes, mints, renders the manifest, and XSD-validates the return.
-     * Never touches {@link IrsSession}.
+     * Offline. Composes, mints, renders the manifest, XSD-validates the return and the manifest,
+     * builds the SDK archive, and runs every {@link LocalRule}. Never touches {@link IrsSession}.
      */
     public Preflight preflight(ClientFiling filing) {
         if (filing.form().schema() instanceof SchemaBinding.Pending pending) {
@@ -69,7 +70,16 @@ public class FilingDesk {
         Filing prepared = new Filing(id, command, now);
         String manifest = ManifestXml.render(prepared);
         returnXmlValidator.validate(filing.form(), composed.xml());
-        return Preflight.of(filing, prepared, manifest);
+        String schemaReport = ManifestSchema.validate(manifest);
+        Preflight draft = Preflight.of(filing, prepared, manifest);
+        byte[] archive;
+        try {
+            archive = wire.buildArchive(draft);
+        } catch (CompositionException e) {
+            throw new FilingValidationException("archive",
+                    "submission archive could not be built: " + e.getMessage());
+        }
+        return draft.finish(archive, LocalRules.check(draft), schemaReport);
     }
 
     /**
@@ -84,11 +94,16 @@ public class FilingDesk {
         }
 
         Preflight preflight = preflight(filing);
+        if (!preflight.failures().isEmpty()) {
+            throw new FilingValidationException("preflight",
+                    "local rules failed: " + String.join(", ",
+                            preflight.failures().stream().map(RuleResult::irsCode).toList()));
+        }
         guardDuplicatePeriod(preflight.prepared(), environment);
 
-        NewSendReservation reservation = journal.reserve(
+        Reservation reservation = journal.reserve(
                 SubmissionRecord.created(preflight.prepared(), environment));
-        if (reservation instanceof NewSendReservation.AlreadyClaimed alreadyClaimed) {
+        if (reservation instanceof Reservation.AlreadyClaimed alreadyClaimed) {
             return replay(alreadyClaimed.existing(), environment);
         }
         return transmit(preflight, environment);
@@ -111,7 +126,7 @@ public class FilingDesk {
             FilingOutcome outcome;
             try {
                 outcome = session.call(ctx -> gateway.transmit(ctx, preflight.cleared()));
-            } catch (NewSendCompositionException e) {
+            } catch (CompositionException e) {
                 journal.abandon(submissionId, e.fault(), clock.instant());
                 throw new FilingValidationException("clientBody",
                         "The submission could not be composed: " + e.getMessage());

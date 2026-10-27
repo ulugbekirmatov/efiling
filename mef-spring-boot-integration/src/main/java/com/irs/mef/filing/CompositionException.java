@@ -6,11 +6,11 @@ package com.irs.mef.filing;
  * SDK method ran. Provably pre-wire: the IRS never saw anything, so the caller may abandon the
  * journal row and release the idempotency key.
  */
-class NewSendCompositionException extends RuntimeException {
+class CompositionException extends RuntimeException {
 
     private final transient IrsFault fault;
 
-    NewSendCompositionException(IrsFault fault, Throwable cause) {
+    CompositionException(IrsFault fault, Throwable cause) {
         super(fault.message(), cause);
         this.fault = fault;
     }

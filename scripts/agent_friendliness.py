@@ -15,7 +15,7 @@ def loc(paths):
     return n
 main = os.path.join(J, "src/main/java/com/irs/mef")
 legacy = [os.path.join(main, d) for d in ("controller", "service", "dto", "config", "exception")]
-current = [os.path.join(main, d) for d in ("newsend", "reportingagent", "inspector", "ack")]
+current = [os.path.join(main, d) for d in ("filing", "web", "inspector", "ack")]
 m = {}
 m["loc_legacy"] = loc(legacy); m["loc_current"] = loc(current)
 src_text = sh("git grep -h '' -- 'mef-spring-boot-integration/src' 'c2s-web/app' 'c2s-web/*.js' '*.sh' 2>/dev/null")
@@ -59,12 +59,12 @@ m["rule_rows"] = len(rows); m["rule_rows_docs_only"] = sum(1 for r in rows if re
 m["todo_or_commented_sdk_calls"] = len(re.findall(r"TODO|// .*Client\.invoke", sh(f"git grep -h -E 'TODO|^\\s*//.*Client\\.invoke' -- 'mef-spring-boot-integration/src/main'")))
 m["duplicate_private_helpers"] = len([k for k, v in __import__("collections").Counter(re.findall(r"private \w+ (\w+)\(", sh("git grep -h -E 'private \\w+ \\w+\\(' -- 'mef-spring-boot-integration/src/main/java/com/irs/mef/service'"))).items() if v > 1])
 m["http_routes_legacy"] = len(re.findall(r"@(Get|Post|Put|Delete)Mapping", sh("git grep -h -E '@(Get|Post|Put|Delete)Mapping' -- 'mef-spring-boot-integration/src/main/java/com/irs/mef/controller'")))
-m["http_routes_current"] = len(re.findall(r"@(Get|Post|Put|Delete)Mapping", sh("git grep -h -E '@(Get|Post|Put|Delete)Mapping' -- 'mef-spring-boot-integration/src/main/java/com/irs/mef/newsend' 'mef-spring-boot-integration/src/main/java/com/irs/mef/inspector'")))
+m["http_routes_current"] = len(re.findall(r"@(Get|Post|Put|Delete)Mapping", sh("git grep -h -E '@(Get|Post|Put|Delete)Mapping' -- 'mef-spring-boot-integration/src/main/java/com/irs/mef/web' 'mef-spring-boot-integration/src/main/java/com/irs/mef/inspector'")))
 # 6. tests per generation
 tests = sh("git ls-files -- 'mef-spring-boot-integration/src/test/**/*.java'").split()
 def imports(pkgs):
     return sum(1 for t in tests if re.search(r"import com\.irs\.mef\.(" + "|".join(pkgs) + r")\.", open(os.path.join(root, t), errors="replace").read()) or any(f"/{p}/" in t for p in pkgs))
-m["test_files"] = len(tests); m["test_files_touching_legacy"] = imports(["service", "controller", "dto"]); m["test_files_touching_current"] = imports(["newsend", "reportingagent", "inspector", "ack"])
+m["test_files"] = len(tests); m["test_files_touching_legacy"] = imports(["service", "controller", "dto"]); m["test_files_touching_current"] = imports(["filing", "web", "inspector", "ack"])
 # 7. onewell identifiers outside the guard's reach (docs)
 m["onewell_ids_in_md"] = len(sh("git grep -n -E '97661|238689|23868900' -- '*.md' ':!CLAUDE.md'").splitlines())
 print(f"{'metric':38s} value"); [print(f"{k:38s} {v}") for k, v in m.items()]

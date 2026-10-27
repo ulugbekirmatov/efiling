@@ -3,7 +3,7 @@ package com.irs.mef.ack;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.irs.mef.newsend.domain.NewSendSubmissionId;
+import com.irs.mef.filing.SubmissionId;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public final class FileAckStore implements AckStore {
 
     @Override
     public synchronized void record(StoredAck ack) {
-        String submissionId = new NewSendSubmissionId(ack.submissionId()).value();
+        String submissionId = new SubmissionId(ack.submissionId()).value();
         Path temp = root.resolve(submissionId + TEMP_SUFFIX);
         Path dest = root.resolve(submissionId + SUFFIX);
         try {
@@ -70,7 +70,7 @@ public final class FileAckStore implements AckStore {
 
     private static boolean isSubmissionId(String raw) {
         try {
-            new NewSendSubmissionId(raw);
+            new SubmissionId(raw);
             return true;
         } catch (RuntimeException e) {
             return false;

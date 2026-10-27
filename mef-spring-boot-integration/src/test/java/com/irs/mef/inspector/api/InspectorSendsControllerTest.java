@@ -7,14 +7,13 @@ import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.FileAckStore;
 import com.irs.mef.ack.StoredAck;
 import com.irs.mef.filing.IrsSession;
-import com.irs.mef.filing.IrsWire;
 import com.irs.mef.inspector.FixtureSnapshots;
 import com.irs.mef.inspector.ring.FileSendSnapshotRing;
-import com.irs.mef.newsend.domain.NewSendFiling;
-import com.irs.mef.newsend.domain.NewSendOutcome;
-import com.irs.mef.newsend.domain.NewSendReceipt;
-import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
-import com.irs.mef.newsend.journal.InMemoryNewSendSubmissionJournal;
+import com.irs.mef.filing.Filing;
+import com.irs.mef.filing.FilingOutcome;
+import com.irs.mef.filing.FilingReceipt;
+import com.irs.mef.filing.SubmissionRecord;
+import com.irs.mef.filing.InMemoryJournal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,19 +48,17 @@ class InspectorSendsControllerTest {
     Path temp;
 
     private FileSendSnapshotRing ring;
-    private InMemoryNewSendSubmissionJournal journal;
+    private InMemoryJournal journal;
     private FileAckStore ackStore;
     private IrsSession session;
-    private IrsWire wire;
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         ring = new FileSendSnapshotRing(temp.resolve("ring"), 20, new ObjectMapper());
-        journal = new InMemoryNewSendSubmissionJournal();
+        journal = new InMemoryJournal();
         ackStore = new FileAckStore(temp.resolve("acks"), new ObjectMapper());
         session = mock(IrsSession.class);
-        wire = mock(IrsWire.class);
         mvc = mvc(ackStore);
     }
 
@@ -70,7 +67,7 @@ class InspectorSendsControllerTest {
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
         return MockMvcBuilders.standaloneSetup(
-                        new InspectorSendsController(ring, journal, store, session, wire))
+                        new InspectorSendsController(ring, journal, store, session))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(bootLikeMapper))
                 .build();
     }
@@ -94,7 +91,7 @@ class InspectorSendsControllerTest {
                 .andExpect(jsonPath("$[0].state").value("TRANSMITTED"))
                 .andExpect(jsonPath("$[0].depositId").value("QG6CDEPOSIT1"))
                 .andExpect(jsonPath("$[0].ackType").value("Accepted"));
-        verifyNoInteractions(session, wire);
+        verifyNoInteractions(session);
     }
 
     @Test
@@ -173,7 +170,7 @@ class InspectorSendsControllerTest {
     void postAckReturnsStoredAck() throws Exception {
         StoredAck fresh = stored(ID, "Rejected", Instant.parse("2026-09-25T10:00:00Z"),
                 AckSource.GET_ACK, List.of("X0000-008"));
-        when(session.call(any())).thenReturn(Optional.of(fresh));
+        when(session.getAck(any())).thenReturn(Optional.of(fresh));
 
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isOk())
@@ -188,7 +185,7 @@ class InspectorSendsControllerTest {
     @Test
     @DisplayName("POST ack maps no ack yet to 404 and other IRS errors to 502")
     void postAckErrorMapping() throws Exception {
-        when(session.call(any()))
+        when(session.getAck(any()))
                 .thenReturn(Optional.empty())
                 .thenThrow(new IllegalStateException("Failed to parse acknowledgment response"))
                 .thenThrow(new RuntimeException("IRS session limit - retryable"));
@@ -219,7 +216,7 @@ class InspectorSendsControllerTest {
                 return java.util.Optional.empty();
             }
         };
-        when(session.call(any())).thenReturn(Optional.of(
+        when(session.getAck(any())).thenReturn(Optional.of(
                 stored(ID, "Accepted", Instant.parse("2026-09-25T10:00:00Z"), AckSource.GET_ACK, List.of())));
 
         mvc(broken).perform(post("/inspector/sends/" + ID + "/ack"))
@@ -234,15 +231,15 @@ class InspectorSendsControllerTest {
         mvc.perform(post("/inspector/sends/bad/ack"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_SUBMISSION_ID"));
-        verifyNoInteractions(session, wire);
+        verifyNoInteractions(session);
     }
 
     private void transmitted(String depositId) {
-        NewSendFiling filing = FixtureSnapshots.orchidFiling();
-        journal.reserve(NewSendSubmissionRecord.created(filing, "ATS"));
-        NewSendReceipt receipt = new NewSendReceipt(depositId, filing.submissionId(),
-                Instant.parse("2026-03-31T12:00:04Z"), NewSendReceipt.TimestampSource.IRS, 1);
-        journal.complete(filing.submissionId(), new NewSendOutcome.Transmitted(receipt),
+        Filing filing = FixtureSnapshots.orchidFiling();
+        journal.reserve(SubmissionRecord.created(filing, "ATS"));
+        FilingReceipt receipt = new FilingReceipt(depositId, filing.submissionId(),
+                Instant.parse("2026-03-31T12:00:04Z"), FilingReceipt.TimestampSource.IRS, 1);
+        journal.complete(filing.submissionId(), new FilingOutcome.Transmitted(receipt),
                 Instant.parse("2026-03-31T12:00:05Z"));
     }
 

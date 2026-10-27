@@ -1,9 +1,9 @@
 # NewSend design record — SendSubmissions v2
 
-Design record for the `com.irs.mef.newsend` vertical (architect workflow, 2026-08-31).
+Design record for the `com.irs.mef.filing` vertical (architect workflow, 2026-08-31).
 Four independent design candidates were produced in parallel, screened against design red flags,
 and synthesized; this document is the surviving rationale. The legacy
-`SubmissionController`/`SubmissionService` are untouched and keep their routes.
+`SubmissionController`/`SubmissionService` were later deleted in 6e0bb7e; when this record was written they still kept their routes.
 
 ## Problem
 
@@ -50,16 +50,16 @@ reconciliation, never auto-retried.
 
 ## Shape
 
-Package `com.irs.mef.newsend` — a self-contained vertical slice: `api/` (wire), `domain/` (pure),
+Package `com.irs.mef.filing` — a self-contained vertical slice: `api/` (wire), `domain/` (pure),
 `gateway/` (the only reflection), `journal/` (write-ahead log port + file/in-memory impls),
 `validate/` (XXE-hardened well-formedness + optional 941 XSD), `error/` (sealed hierarchy, each
 subtype owning its HTTP status). Happy path traces controller → service → gateway: three files.
 
-- **The submission id is the spine.** `NewSendSubmissionId` derives its own `Efin`; the manifest
+- **The submission id is the spine.** `SubmissionId` derives its own `Efin`; the manifest
   reads EFIN from there, so "manifest EFIN == first 6 chars of the id" is true by construction
   (per encode-lessons-in-structure). One `Instant` produces both the id's yyyyDDD and the
   postmark (single source of truth).
-- **Three wire outcomes, not two.** Sealed `NewSendOutcome` = `Transmitted | Rejected |
+- **Three wire outcomes, not two.** Sealed `FilingOutcome` = `Transmitted | Rejected |
   Indeterminate`. The gateway never throws for a wire fault — a fault is a value — so "it threw,
   therefore nothing happened" is inexpressible. Only a recognised `ServiceException` (a SOAP
   fault: IRS received and refused) becomes `Rejected`; everything else is `Indeterminate`.
@@ -146,9 +146,9 @@ parse lives on the wire DTO — one fewer hop).
 - Single-instance assumption: the session lock and the journal are per-JVM. Two replicas against
   one ETIN are not protected. Write the single-instance commitment down, or move the journal to a
   shared store first.
-- The session lock does not cover the legacy `SubmissionService`, which shares the same
-  `ServiceContext`. Interleaving is possible if both paths are exercised concurrently; the fix
-  (a gate inside `IrsSession`) means touching legacy — deferred deliberately.
+- The session lock did not cover the legacy `SubmissionService` (deleted in 6e0bb7e), which shared the same
+  `ServiceContext`. Interleaving was possible if both paths ran concurrently; the fix
+  (a gate inside `IrsSession`) was deferred in this record.
 - Which quarterly 941 schema version should XSD validation pin to, given the 2026 v1.0→v4.0
   churn? The bundled set is the one the offline tests already used.
 

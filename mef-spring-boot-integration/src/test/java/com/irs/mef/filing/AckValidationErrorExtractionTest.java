@@ -19,7 +19,7 @@ class AckValidationErrorExtractionTest {
     private static final String MSG_244 = "The IP Address ... must have a valid value.";
     private static final String MSG_248 = "If Form 94x, Refund Product Election Indicator must have a valid value.";
 
-    private final IrsWire wire = new IrsWire(Clock.fixed(NOW, ZoneOffset.UTC));
+    private final IrsWire wire = new IrsWire(Clock.fixed(NOW, ZoneOffset.UTC), NoOpSendSubmissionsWireTap.INSTANCE);
 
     @Test
     @DisplayName("rejected ack with two validation errors maps codes, messages, and details")

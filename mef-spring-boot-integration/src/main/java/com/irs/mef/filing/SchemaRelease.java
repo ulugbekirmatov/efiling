@@ -1,0 +1,27 @@
+package com.irs.mef.filing;
+
+/**
+ * An IRS 94x schema release: the Return returnVersion it stamps and the classpath root of its
+ * schema tree, copied verbatim so the tree's relative includes resolve unchanged.
+ */
+enum SchemaRelease {
+    Y2026Q1_V4("2026Q1v4.0", "schemas/94x/2026Q1v4.0/"),
+    Y2026_V2("2026v2.0", "schemas/94x/2026v2.0/");
+
+    private final String returnVersion;
+    private final String bundleRoot;
+
+    SchemaRelease(String returnVersion, String bundleRoot) {
+        this.returnVersion = returnVersion;
+        this.bundleRoot = bundleRoot;
+    }
+
+    String returnVersion() {
+        return returnVersion;
+    }
+
+    /** Classpath path of a file inside this release's bundle. */
+    String resolve(String pathInBundle) {
+        return bundleRoot + pathInBundle;
+    }
+}

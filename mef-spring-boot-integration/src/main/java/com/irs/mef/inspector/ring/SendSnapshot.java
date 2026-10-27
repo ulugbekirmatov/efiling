@@ -1,8 +1,8 @@
 package com.irs.mef.inspector.ring;
 
 import com.irs.mef.inspector.capture.SoapRedactor;
-import com.irs.mef.newsend.domain.FormType;
-import com.irs.mef.newsend.domain.TaxPeriod;
+import com.irs.mef.filing.FormType;
+import com.irs.mef.filing.TaxPeriod;
 
 import java.time.Instant;
 import java.util.Objects;

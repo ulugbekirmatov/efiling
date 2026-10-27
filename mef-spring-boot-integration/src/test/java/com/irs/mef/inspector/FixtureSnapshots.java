@@ -6,13 +6,13 @@ import com.irs.mef.inspector.ring.OmittedAttachment;
 import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SnapshotId;
 import com.irs.mef.inspector.ring.SoapCapture;
-import com.irs.mef.newsend.domain.Ein;
-import com.irs.mef.newsend.domain.FormType;
-import com.irs.mef.newsend.domain.NewSendFiling;
-import com.irs.mef.newsend.domain.NewSendManifestXml;
-import com.irs.mef.newsend.domain.NewSendSubmissionId;
-import com.irs.mef.newsend.domain.NewSendSubmitCommand;
-import com.irs.mef.newsend.domain.TaxPeriod;
+import com.irs.mef.filing.Ein;
+import com.irs.mef.filing.FormType;
+import com.irs.mef.filing.Filing;
+import com.irs.mef.filing.ManifestXml;
+import com.irs.mef.filing.SubmissionId;
+import com.irs.mef.filing.SubmitCommand;
+import com.irs.mef.filing.TaxPeriod;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -35,8 +35,8 @@ public final class FixtureSnapshots {
     private FixtureSnapshots() {
     }
 
-    public static NewSendFiling orchidFiling() {
-        NewSendSubmitCommand command = new NewSendSubmitCommand(
+    public static Filing orchidFiling() {
+        SubmitCommand command = new SubmitCommand(
                 "inspector-demo-1",
                 "orchid",
                 new Ein("003000004"),
@@ -44,14 +44,14 @@ public final class FixtureSnapshots {
                 new TaxPeriod(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31)),
                 RETURN_XML,
                 false);
-        return new NewSendFiling(
-                new NewSendSubmissionId(SUBMISSION_ID),
+        return new Filing(
+                new SubmissionId(SUBMISSION_ID),
                 command,
                 Instant.parse("2026-03-31T12:00:00Z"));
     }
 
     public static SendSnapshot orchidQ1() {
-        NewSendFiling filing = orchidFiling();
+        Filing filing = orchidFiling();
         CapturedXml returnXml = new CapturedXml(filing.command().returnXml());
         String redactedSoap = """
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -82,7 +82,7 @@ public final class FixtureSnapshots {
                 filing.command().clientRequestId(),
                 returnXml.sha256(),
                 returnXml,
-                new CapturedXml(NewSendManifestXml.render(filing)),
+                new CapturedXml(ManifestXml.render(filing)),
                 mime,
                 new SoapCapture.Missing("no inbound SOAP"));
     }

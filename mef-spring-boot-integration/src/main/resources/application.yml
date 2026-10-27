@@ -9,7 +9,7 @@ server:
 
 # MeF Client SDK Configuration
 mef:
-  # NewSend vertical (com.irs.mef.newsend) - write-ahead journal + submit safety
+  # NewSend vertical (com.irs.mef.filing) - write-ahead journal + submit safety
   newsend:
     journal:
       mode: file                             # file (default, durable) | memory (tests only)

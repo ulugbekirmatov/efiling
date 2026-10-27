@@ -1,0 +1,151 @@
+package com.irs.mef.filing;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HexFormat;
+import java.util.Objects;
+
+/** Package-private. The only place header XML is written. */
+final class ReturnComposerXml {
+
+    static final String NS = "http://www.irs.gov/efile";
+
+    /** TY2026 rules R0000-248/249 (941 and 941X) require these even on a return with no refund. */
+    private static final String REFUND_PRODUCT_ELECTED = "false";
+    private static final String REFUND_DISBURSEMENT_CD = "0";
+
+    private static final DateTimeFormatter RETURN_TS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+
+    private ReturnComposerXml() {}
+
+    static String render(ReportingAgentOriginator originator, ClientReturnBody client, OffsetDateTime returnTs) {
+        OffsetDateTime truncated = returnTs.withNano(0);
+        StringBuilder xml = new StringBuilder(4096);
+        xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        xml.append("<Return xmlns=\"").append(NS)
+                .append("\" xmlns:efile=\"").append(NS)
+                .append("\" returnVersion=\"")
+                .append(escape(client.returnVersion())).append("\">\n");
+        xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
+        element(xml, 2, "ReturnTypeCd", client.returnType().returnTypeCd());
+        element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
+        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.returnType().schemaRelease()).value());
+        element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
+        additionalFilerInformation(xml);
+        filingSecurity(xml, originator, client, truncated);
+        element(xml, 2, client.period().headerElement(), client.period().headerValue());
+        xml.append("    ").append(inDefaultNs(client.filerXml())).append('\n');
+        xml.append("    <OriginatorGrp>\n");
+        element(xml, 3, "EFIN", originator.efin().value());
+        element(xml, 3, "OriginatorTypeCd", ReturnComposer.ORIGINATOR_TYPE);
+        xml.append("    </OriginatorGrp>\n");
+        xml.append("    <ReportingAgentPINGrp>\n");
+        element(xml, 3, "PIN", originator.pin().value());
+        element(xml, 3, "RAPINEnteredByCd", ReturnComposer.RAPIN_ENTERED_BY);
+        element(xml, 3, "JuratDisclosureCd", ReturnComposer.JURAT);
+        xml.append("    </ReportingAgentPINGrp>\n");
+        element(xml, 2, "IRSResponsiblePrtyInfoCurrInd", "true");
+        element(xml, 2, "DiscussWithThirdPartyNoInd", "X");
+        reportingAgentFiler(xml, originator.identity());
+        xml.append("  </ReturnHeader>\n");
+        xml.append("  ").append(inDefaultNs(client.returnDataXml())).append('\n');
+        xml.append("</Return>\n");
+        return xml.toString();
+    }
+
+    /** LSSerializer repeats the default xmlns on spliced fragments. Children inherit Return's default ns. */
+    private static String inDefaultNs(String fragment) {
+        return fragment.replace(" xmlns=\"" + NS + "\"", "");
+    }
+
+    /**
+     * Schema-valid security block. DeviceIdType is 40 or 64 uppercase hex, not "DEVICE001".
+     * IPAddress is the complex IPv4AddressTxt wrapper, not a bare text node.
+     * VendorControlNum is 16 alphanumeric, derived from filer EIN + period (not a secret).
+     */
+    private static void additionalFilerInformation(StringBuilder xml) {
+        xml.append("    <AdditionalFilerInformation>\n");
+        xml.append("      <AtSubmissionFilingGrp>\n");
+        element(xml, 4, "RefundProductElectionInd", REFUND_PRODUCT_ELECTED);
+        xml.append("        <RefundDisbursementGrp>\n");
+        element(xml, 5, "RefundDisbursementCd", REFUND_DISBURSEMENT_CD);
+        xml.append("        </RefundDisbursementGrp>\n");
+        xml.append("      </AtSubmissionFilingGrp>\n");
+        xml.append("    </AdditionalFilerInformation>\n");
+    }
+
+    private static void filingSecurity(
+            StringBuilder xml, ReportingAgentOriginator originator, ClientReturnBody client, OffsetDateTime returnTs) {
+        Objects.requireNonNull(returnTs, "returnTs");
+        String deviceId = sha1HexUpper("pyramos-ats" + client.filerEin().value());
+        xml.append("    <FilingSecurityInformation>\n");
+        xml.append("      <IPAddress>\n");
+        element(xml, 4, "IPv4AddressTxt", originator.filingIpv4Address());
+        xml.append("      </IPAddress>\n");
+        element(xml, 3, "TotActiveTimePrepSubmissionTs", "1");
+        element(xml, 3, "VendorControlNum", vendorControl(client));
+        element(xml, 3, "AtSubmissionCreationDeviceId", deviceId);
+        element(xml, 3, "AtSubmissionFilingDeviceId", deviceId);
+        xml.append("    </FilingSecurityInformation>\n");
+    }
+
+    private static void reportingAgentFiler(StringBuilder xml, ReportingAgentIdentity identity) {
+        UsAddress address = identity.address();
+        xml.append("    <ReportingAgent94XFilerGrp>\n");
+        element(xml, 3, "EIN", identity.ein().value());
+        xml.append("      <BusinessName>\n");
+        element(xml, 4, "BusinessNameLine1Txt", identity.businessName());
+        xml.append("      </BusinessName>\n");
+        element(xml, 3, "BusinessNameControlTxt", identity.nameControl().value());
+        xml.append("      <USAddress>\n");
+        element(xml, 4, "AddressLine1Txt", address.line1());
+        element(xml, 4, "CityNm", address.city());
+        element(xml, 4, "StateAbbreviationCd", address.state());
+        element(xml, 4, "ZIPCd", address.zip());
+        xml.append("      </USAddress>\n");
+        xml.append("    </ReportingAgent94XFilerGrp>\n");
+    }
+
+    private static String vendorControl(ClientReturnBody client) {
+        String seed = client.filerEin().value()
+                + client.taxPeriod().begin()
+                + client.taxPeriod().end();
+        return sha256Hex(seed).substring(0, 16);
+    }
+
+    private static String sha1HexUpper(String seed) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-1").digest(seed.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().withUpperCase().formatHex(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-1 unavailable", e);
+        }
+    }
+
+    private static String sha256Hex(String seed) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(seed.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 unavailable", e);
+        }
+    }
+
+    private static void element(StringBuilder xml, int indent, String name, String value) {
+        xml.append("  ".repeat(indent))
+                .append('<').append(name).append('>')
+                .append(escape(value))
+                .append("</").append(name).append(">\n");
+    }
+
+    private static String escape(String text) {
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+}

@@ -1,8 +1,8 @@
 package com.irs.mef.inspector.ring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.irs.mef.newsend.domain.FormType;
-import com.irs.mef.newsend.domain.TaxPeriod;
+import com.irs.mef.filing.FormType;
+import com.irs.mef.filing.TaxPeriod;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

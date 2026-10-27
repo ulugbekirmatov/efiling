@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.time.Clock;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,7 +78,8 @@ class IrsSessionConcurrencyTest {
             logins.incrementAndGet();
             return new SessionLogin.Opened(new Object(), "sid");
         };
-        return new IrsSession(login, new MefSdkConfig());
+        return new IrsSession(login, new MefSdkConfig(),
+                new IrsWire(Clock.systemUTC(), NoOpSendSubmissionsWireTap.INSTANCE));
     }
 
     private static Runnable work(IrsSession session, CountDownLatch ready, CountDownLatch start,

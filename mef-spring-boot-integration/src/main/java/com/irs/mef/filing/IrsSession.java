@@ -1,5 +1,6 @@
 package com.irs.mef.filing;
 
+import com.irs.mef.ack.StoredAck;
 import com.irs.mef.config.MefSdkConfig;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -32,13 +34,15 @@ public final class IrsSession {
     private final ReentrantLock lock = new ReentrantLock(true);
     private final SessionLogin login;
     private final MefSdkConfig config;
+    private final IrsWire wire;
 
     private Object serviceContext;
     private String sessionId;
 
-    IrsSession(SessionLogin login, MefSdkConfig config) {
+    IrsSession(SessionLogin login, MefSdkConfig config, IrsWire wire) {
         this.login = login;
         this.config = config;
+        this.wire = wire;
     }
 
     public SessionStatus status() {
@@ -88,11 +92,16 @@ public final class IrsSession {
         }
     }
 
+    /** GetAck for one submission. The ServiceContext stays inside this package. */
+    public Optional<StoredAck> getAck(String submissionId) {
+        return call(ctx -> wire.getAck(ctx, submissionId));
+    }
+
     /**
      * Runs {@code body} with the current context, logging in first when there is no session.
      * Refuses inside a GET request before taking the lock or logging in: a GET route cannot reach IRS.
      */
-    public <T> T call(IrsCall<T> body) {
+    <T> T call(IrsCall<T> body) {
         Objects.requireNonNull(body, "body");
         refuseGet();
         lock.lock();

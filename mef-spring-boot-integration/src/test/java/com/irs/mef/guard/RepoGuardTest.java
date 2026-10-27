@@ -35,11 +35,11 @@ class RepoGuardTest {
     private static final Map<String, Integer> ONEWELL_ID_BASELINE = Map.of(
             "src/test/java/com/irs/mef/inspector/FixtureSnapshots.java", 1,
             "src/test/java/com/irs/mef/inspector/ring/FileSendSnapshotRingTest.java", 3,
-            "src/test/java/com/irs/mef/newsend/domain/NewSendManifestXmlTest.java", 3,
-            "src/test/java/com/irs/mef/newsend/domain/NewSendSubmissionIdTest.java", 2,
-            "src/test/java/com/irs/mef/newsend/journal/InMemoryNewSendSubmissionJournalTest.java", 9,
-            "src/test/java/com/irs/mef/reportingagent/ReportingAgentOriginatorStandIn.java", 1,
-            "src/test/java/com/irs/mef/reportingagent/ReportingAgentReturnTest.java", 2);
+            "src/test/java/com/irs/mef/filing/ManifestXmlTest.java", 3,
+            "src/test/java/com/irs/mef/filing/SubmissionIdTest.java", 2,
+            "src/test/java/com/irs/mef/filing/InMemoryJournalTest.java", 9,
+            "src/test/java/com/irs/mef/filing/ReportingAgentOriginatorStandIn.java", 1,
+            "src/test/java/com/irs/mef/filing/ReturnComposerTest.java", 2);
 
     /** Docs deleted because they taught superseded facts, mapped to what replaced them. */
     private static final Map<String, String> RETIRED_DOCS = Map.of(

@@ -6,7 +6,7 @@ import com.irs.mef.inspector.ring.OmittedAttachment;
 import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SnapshotSummary;
 import com.irs.mef.inspector.ring.SoapCapture;
-import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
+import com.irs.mef.filing.SubmissionRecord;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +29,7 @@ public final class InspectorSendViews {
             String ackType) {
 
         public static SendSummaryView of(SnapshotSummary summary,
-                                  Optional<NewSendSubmissionRecord> journalRow,
+                                  Optional<SubmissionRecord> journalRow,
                                   Optional<StoredAck> ack) {
             return new SendSummaryView(
                     summary.submissionId().value(),
@@ -60,7 +60,7 @@ public final class InspectorSendViews {
             StoredAck ack) {
 
         public static SendDetailView of(SendSnapshot snapshot,
-                                 Optional<NewSendSubmissionRecord> journalRow,
+                                 Optional<SubmissionRecord> journalRow,
                                  Optional<StoredAck> ack) {
             return new SendDetailView(
                     snapshot.submissionId().value(),
@@ -88,7 +88,7 @@ public final class InspectorSendViews {
             String faultCode,
             String faultMessage) {
 
-        public static TransmissionView of(NewSendSubmissionRecord row) {
+        public static TransmissionView of(SubmissionRecord row) {
             return new TransmissionView(
                     row.state().name(),
                     depositIdOf(row),
@@ -135,7 +135,7 @@ public final class InspectorSendViews {
     public record ApiError(String code, String message) {
     }
 
-    private static String depositIdOf(NewSendSubmissionRecord row) {
+    private static String depositIdOf(SubmissionRecord row) {
         return row.receipt() == null ? null : row.receipt().depositId();
     }
 }

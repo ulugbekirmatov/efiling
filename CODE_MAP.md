@@ -158,7 +158,7 @@ SDK classes via reflection:
 
 `logout()` (lines 215-236) calls `LogoutClient.invoke(ServiceContext)` by reflection (`invokeIrsLogout`, lines 242-255), then always `clearLocalSession()`. It returns `true` only when IRS confirmed; local state is cleared even on a fault so a dead SAML token is not reused.
 
-### `com.irs.mef.service.SubmissionService` (deleted in 6e0bb7e; replaced by `NewSendSubmissionService`)
+### `com.irs.mef.service.SubmissionService` (deleted in 6e0bb7e; replaced by `FilingDesk`)
 `src/main/java/com/irs/mef/service/SubmissionService.java` (deleted)
 
 | Method | Line | Visibility |

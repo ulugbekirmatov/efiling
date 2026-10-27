@@ -7,8 +7,8 @@ import com.irs.mef.inspector.capture.RingSendSubmissionsWireTap;
 import com.irs.mef.inspector.ring.EmptySendSnapshotRing;
 import com.irs.mef.inspector.ring.FileSendSnapshotRing;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
-import com.irs.mef.newsend.gateway.NoOpSendSubmissionsWireTap;
-import com.irs.mef.newsend.gateway.SendSubmissionsWireTap;
+import com.irs.mef.filing.NoOpSendSubmissionsWireTap;
+import com.irs.mef.filing.SendSubmissionsWireTap;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

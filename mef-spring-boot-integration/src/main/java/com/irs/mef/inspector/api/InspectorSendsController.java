@@ -3,16 +3,15 @@ package com.irs.mef.inspector.api;
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
 import com.irs.mef.filing.IrsSession;
-import com.irs.mef.filing.IrsWire;
 import com.irs.mef.inspector.api.InspectorSendViews.ApiError;
 import com.irs.mef.inspector.api.InspectorSendViews.SendDetailView;
 import com.irs.mef.inspector.api.InspectorSendViews.SendSummaryView;
 import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
 import com.irs.mef.inspector.ring.SnapshotId;
-import com.irs.mef.newsend.domain.NewSendSubmissionId;
-import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
-import com.irs.mef.newsend.journal.NewSendSubmissionJournal;
+import com.irs.mef.filing.SubmissionId;
+import com.irs.mef.filing.SubmissionRecord;
+import com.irs.mef.filing.Journal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,21 +33,17 @@ public class InspectorSendsController {
     private static final String ACK_RETRIEVAL_FAILED = "ACK_RETRIEVAL_FAILED";
 
     private final SendSnapshotRing ring;
-    private final NewSendSubmissionJournal journal;
+    private final Journal journal;
     private final AckStore ackStore;
     private final IrsSession session;
-    private final IrsWire wire;
-
     public InspectorSendsController(SendSnapshotRing ring,
-                                    NewSendSubmissionJournal journal,
+                                    Journal journal,
                                     AckStore ackStore,
-                                    IrsSession session,
-                                    IrsWire wire) {
+                                    IrsSession session) {
         this.ring = ring;
         this.journal = journal;
         this.ackStore = ackStore;
         this.session = session;
-        this.wire = wire;
     }
 
     @GetMapping
@@ -83,7 +78,7 @@ public class InspectorSendsController {
             return invalidSubmissionId();
         }
         try {
-            Optional<StoredAck> found = session.call(ctx -> wire.getAck(ctx, id.get().value()));
+            Optional<StoredAck> found = session.getAck(id.get().value());
             if (found.isEmpty()) {
                 return error(HttpStatus.NOT_FOUND, ACK_NOT_FOUND,
                         "The IRS has no acknowledgment for submission ID: " + id.get().value());
@@ -96,8 +91,8 @@ public class InspectorSendsController {
         }
     }
 
-    private Optional<NewSendSubmissionRecord> journalRow(SnapshotId id) {
-        return journal.findBySubmissionId(new NewSendSubmissionId(id.value()));
+    private Optional<SubmissionRecord> journalRow(SnapshotId id) {
+        return journal.findBySubmissionId(new SubmissionId(id.value()));
     }
 
     private static ResponseEntity<ApiError> ackFailure(String code, String message, RuntimeException cause) {

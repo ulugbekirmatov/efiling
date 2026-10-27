@@ -89,8 +89,8 @@ fi
 MVN_EXIT=0
 mvn -q test -Dtest="$TEST_CLASS" -Dmef.ats.scenario="$SCENARIO" -Dmef.live.test="$TEST_CLASS" -Dsurefire.failIfNoSpecifiedTests=false || MVN_EXIT=$?
 
-REPORT=target/surefire-reports/com.irs.mef.reportingagent.$TEST_CLASS.txt
-OUTPUT=target/surefire-reports/com.irs.mef.reportingagent.$TEST_CLASS-output.txt
+REPORT=target/surefire-reports/com.irs.mef.filing.$TEST_CLASS.txt
+OUTPUT=target/surefire-reports/com.irs.mef.filing.$TEST_CLASS-output.txt
 
 echo
 echo "== surefire report =="

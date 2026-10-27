@@ -61,7 +61,7 @@ public class FilingDesk {
         Instant now = clock.instant();
         SubmissionId id = SubmissionId.mint(originator, now, Efile.PROCESSING_ZONE, random);
         SubmitCommand command = new SubmitCommand(
-                contentKey(filing),
+                contentKey(mefSdkConfig.getEnvironment(), filing),
                 filing.clientId().value(),
                 filing.filer(),
                 filing.form(),
@@ -83,12 +83,13 @@ public class FilingDesk {
     }
 
     /**
-     * File one client body. Identical client id and body bytes return the journaled receipt
-     * and do not call the IRS, including after a rejection. A changed byte is a new filing.
+     * File one client body. TRANSMITTED and INDETERMINATE replay the journaled receipt and do
+     * not call the IRS. REJECTED releases the content key, so the same bytes reserve a new
+     * submission id and send again. A changed byte is a new filing.
      */
     public FilingReceipt file(ClientFiling filing) {
         String environment = mefSdkConfig.getEnvironment();
-        Optional<SubmissionRecord> prior = journal.findByClientRequestId(contentKey(filing));
+        Optional<SubmissionRecord> prior = journal.findByClientRequestId(contentKey(environment, filing));
         if (prior.isPresent() && !prior.get().releasesIdempotencyKey()) {
             return replay(prior.get(), environment);
         }
@@ -99,7 +100,7 @@ public class FilingDesk {
                     "local rules failed: " + String.join(", ",
                             preflight.failures().stream().map(RuleResult::irsCode).toList()));
         }
-        guardDuplicatePeriod(preflight.prepared(), environment);
+        guardDuplicatePeriod(preflight.prepared(), environment, filing.allowDuplicatePeriod());
 
         Reservation reservation = journal.reserve(
                 SubmissionRecord.created(preflight.prepared(), environment));
@@ -126,6 +127,9 @@ public class FilingDesk {
             FilingOutcome outcome;
             try {
                 outcome = session.call(ctx -> gateway.transmit(ctx, preflight.cleared()));
+            } catch (FilingBusyException busy) {
+                journal.abandon(submissionId, IrsFault.lockTimeout(), clock.instant());
+                throw busy;
             } catch (CompositionException e) {
                 journal.abandon(submissionId, e.fault(), clock.instant());
                 throw new FilingValidationException("clientBody",
@@ -184,25 +188,43 @@ public class FilingDesk {
         };
     }
 
-    /** Same EIN, form, and period already transmitted or still unresolved. A rejected period does not block. */
-    private void guardDuplicatePeriod(Filing filing, String environment) {
+    /**
+     * Same EIN, form, and period already transmitted or still unresolved.
+     * A SOAP rejection does not block. A TRANSMITTED row whose stored ack is Rejected does not
+     * block either: the IRS filed nothing. {@code allowDuplicatePeriod} skips the guard.
+     */
+    private void guardDuplicatePeriod(Filing filing, String environment, boolean allowDuplicatePeriod) {
+        if (allowDuplicatePeriod) {
+            return;
+        }
         SubmitCommand command = filing.command();
         List<String> blocking = journal
                 .findFiledFor(command.clientEin(), command.formType(), command.taxPeriod())
                 .stream()
                 .filter(record -> record.environment().equals(environment))
-                .filter(record -> record.state() == JournalState.CREATED
-                        || record.state() == JournalState.TRANSMITTED
-                        || record.state() == JournalState.INDETERMINATE)
+                .filter(this::blocksPeriod)
                 .map(record -> record.submissionId().value())
                 .toList();
         if (!blocking.isEmpty()) {
             throw new FilingDuplicateException("NEWSEND_PERIOD_ALREADY_FILED",
                     command.formType().code() + " for EIN " + command.clientEin().masked() + ", period "
                             + command.taxPeriod().begin() + ".." + command.taxPeriod().end()
-                            + " was already transmitted or is unresolved. Change the return to file a correction.",
+                            + " was already transmitted or is unresolved. Set allowDuplicatePeriod=true "
+                            + "to deliberately file again (e.g. a correction).",
                     blocking);
         }
+    }
+
+    private boolean blocksPeriod(SubmissionRecord record) {
+        if (record.state() == JournalState.CREATED || record.state() == JournalState.INDETERMINATE) {
+            return true;
+        }
+        if (record.state() != JournalState.TRANSMITTED) {
+            return false;
+        }
+        return ackStore.find(record.submissionId().value())
+                .map(ack -> !"Rejected".equals(ack.ackType()))
+                .orElse(true);
     }
 
     private boolean completeQuietly(SubmissionId submissionId, FilingOutcome outcome) {
@@ -234,12 +256,15 @@ public class FilingDesk {
     }
 
     /**
-     * SHA-256 of the client id, a zero byte, and the client body. The zero byte keeps two
-     * different splits of the same concatenation from sharing a key.
+     * SHA-256 of the environment, a zero byte, the client id, a zero byte, and the client body.
+     * The zero bytes keep two different splits of the same concatenation from sharing a key.
+     * The environment lets the same bytes be filed once in ATS and once in PRD.
      */
-    static String contentKey(ClientFiling filing) {
+    static String contentKey(String environment, ClientFiling filing) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(environment.getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
             digest.update(filing.clientId().value().getBytes(StandardCharsets.UTF_8));
             digest.update((byte) 0);
             digest.update(filing.clientBodyXml().getBytes(StandardCharsets.UTF_8));

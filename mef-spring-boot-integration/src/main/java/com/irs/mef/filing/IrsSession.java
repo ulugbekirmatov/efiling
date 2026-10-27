@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -35,14 +36,16 @@ public final class IrsSession {
     private final SessionLogin login;
     private final MefSdkConfig config;
     private final IrsWire wire;
+    private final int sessionWaitSeconds;
 
     private Object serviceContext;
     private String sessionId;
 
-    IrsSession(SessionLogin login, MefSdkConfig config, IrsWire wire) {
+    IrsSession(SessionLogin login, MefSdkConfig config, IrsWire wire, FilingProperties properties) {
         this.login = login;
         this.config = config;
         this.wire = wire;
+        this.sessionWaitSeconds = properties.getSessionWaitSeconds();
     }
 
     public SessionStatus status() {
@@ -100,11 +103,22 @@ public final class IrsSession {
     /**
      * Runs {@code body} with the current context, logging in first when there is no session.
      * Refuses inside a GET request before taking the lock or logging in: a GET route cannot reach IRS.
+     * Waits at most {@code mef.newsend.session-wait-seconds} for the lock, then throws before
+     * touching the context.
      */
     <T> T call(IrsCall<T> body) {
         Objects.requireNonNull(body, "body");
         refuseGet();
-        lock.lock();
+        boolean locked;
+        try {
+            locked = lock.tryLock(sessionWaitSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new FilingBusyException(sessionWaitSeconds);
+        }
+        if (!locked) {
+            throw new FilingBusyException(sessionWaitSeconds);
+        }
         try {
             if (serviceContext == null) {
                 open();

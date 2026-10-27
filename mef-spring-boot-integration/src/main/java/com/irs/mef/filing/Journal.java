@@ -15,7 +15,7 @@ public interface Journal {
     /**
      * Atomically claim the record's clientRequestId and durably persist the CREATED row.
      * Must return only after the row survives process death (fsync for the file implementation).
-     * A prior claim in ABANDONED state does not block — ABANDONED is the one key-releasing state.
+     * A prior claim in ABANDONED or REJECTED state does not block. Both release the key.
      */
     Reservation reserve(SubmissionRecord created);
 

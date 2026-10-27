@@ -34,7 +34,8 @@ public class FilingController {
     /** File one client body. 201 on first transmission, 200 when the same bytes were already journaled. */
     @PostMapping
     public ResponseEntity<?> file(@Valid @RequestBody FilingRequest request) {
-        FilingReceipt receipt = desk.file(ClientFiling.parse(request.clientId(), request.clientBody()));
+        FilingReceipt receipt = desk.file(ClientFiling.parse(
+                request.clientId(), request.clientBody(), request.allowDuplicatePeriod()));
         FilingOutcome outcome = receipt.outcome();
 
         if (outcome instanceof FilingOutcome.Transmitted) {

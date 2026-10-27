@@ -11,6 +11,7 @@ import org.springframework.mock.env.MockEnvironment;
 import java.nio.file.Files;
 import java.time.Clock;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -71,6 +72,8 @@ class AtsPreflightTest {
         System.out.println("----- return -----");
         System.out.write(preflight.returnXml());
         System.out.println();
+        assertTrue(preflight.failures().isEmpty(),
+                () -> "local rules failed: " + preflight.failures());
     }
 
     private static Originator originator(StringBuilder which) {

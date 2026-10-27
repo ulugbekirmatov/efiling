@@ -19,7 +19,7 @@ public sealed interface FilingOutcome {
         }
     }
 
-    /** IRS explicitly refused the container. Nothing was filed. A corrected re-file needs a NEW key. */
+    /** IRS explicitly refused the container. Nothing was filed. The same bytes may be sent again. */
     record Rejected(IrsFault fault) implements FilingOutcome {
         @Override
         public JournalState state() {

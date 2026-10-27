@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import java.util.List;
 
 /**
- * The request collides with a prior filing: the idempotency key is already claimed
- * (in flight, transmitted with a different payload, previously rejected) or the
- * (EIN, form, period) was already filed. Never safe to blindly resend.
+ * The request collides with a prior filing: the content key is already claimed
+ * (in flight, transmitted, or indeterminate) or the (EIN, form, period) was already
+ * filed. Never safe to blindly resend.
  */
 public final class FilingDuplicateException extends FilingException {
 

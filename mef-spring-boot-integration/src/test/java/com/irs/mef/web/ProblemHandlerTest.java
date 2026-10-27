@@ -7,6 +7,7 @@ import com.irs.mef.filing.IrsLoginException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -15,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,5 +77,21 @@ class ProblemHandlerTest {
                 .andExpect(status().isBadRequest());
 
         verify(desk, never()).file(any());
+    }
+
+    @Test
+    void allowDuplicatePeriodIsPassedToTheDesk() throws Exception {
+        when(desk.file(any())).thenThrow(new IrsLoginException("stop"));
+        String xml = Files.readString(Path.of(
+                "../test-scenarios/ats-ty2026/scenario-1-orchid-941/client-return-body.xml"));
+        String json = new ObjectMapper().writeValueAsString(Map.of(
+                "clientId", "orchid", "clientBody", xml, "allowDuplicatePeriod", true));
+
+        mvc.perform(post("/mef/filings").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isServiceUnavailable());
+
+        ArgumentCaptor<ClientFiling> captor = ArgumentCaptor.forClass(ClientFiling.class);
+        verify(desk).file(captor.capture());
+        assertEquals(true, captor.getValue().allowDuplicatePeriod());
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.irs.mef.ack.StoredAck;
 import com.irs.mef.filing.ClientFiling;
 import com.irs.mef.filing.FilingDesk;
+import com.irs.mef.filing.FilingException;
 import com.irs.mef.filing.FilingOutcome;
 import com.irs.mef.filing.FilingReceipt;
 import com.irs.mef.filing.FilingValidationException;
@@ -69,6 +70,9 @@ public final class AtsRun {
         } catch (FilingValidationException e) {
             return write(new AtsVerdict.PreflightFailed(List.of(
                     new RuleResult("preflight", false, e.getMessage()))));
+        } catch (FilingException e) {
+            return write(new AtsVerdict.NotSent(new FilingOutcome.Indeterminate(new IrsFault(
+                    e.errorCode(), e.getMessage(), null, null, null))));
         }
         if (!(receipt.outcome() instanceof FilingOutcome.Transmitted)) {
             return write(new AtsVerdict.NotSent(receipt.outcome()));

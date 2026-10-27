@@ -59,7 +59,7 @@ public record SubmissionRecord(
         return with(JournalState.INDETERMINATE, at, null, indeterminate.fault());
     }
 
-    /** Terminal ABANDONED — releases the idempotency key. Legal ONLY when nothing reached the wire. */
+    /** Terminal ABANDONED — releases the content key. Legal ONLY when nothing reached the wire. */
     SubmissionRecord abandoned(IrsFault abandonFault, Instant at) {
         if (state != JournalState.CREATED) {
             throw new IllegalStateException("Cannot abandon " + submissionId.value()
@@ -68,8 +68,12 @@ public record SubmissionRecord(
         return with(JournalState.ABANDONED, at, null, abandonFault);
     }
 
+    /**
+     * ABANDONED (nothing reached the wire) and REJECTED (SOAP fault; the IRS filed nothing)
+     * both release the content key. TRANSMITTED and INDETERMINATE keep it.
+     */
     boolean releasesIdempotencyKey() {
-        return state == JournalState.ABANDONED;
+        return state == JournalState.ABANDONED || state == JournalState.REJECTED;
     }
 
     private SubmissionRecord with(JournalState nextState, Instant at,

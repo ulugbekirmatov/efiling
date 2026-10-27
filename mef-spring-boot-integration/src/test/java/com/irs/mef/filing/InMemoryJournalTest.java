@@ -57,6 +57,20 @@ class InMemoryJournalTest {
     }
 
     @Test
+    @DisplayName("REJECTED releases the key the way ABANDONED does")
+    void rejectedReleasesTheKey() {
+        SubmissionRecord record = created("2378612026090aaaa111", "key-rejected");
+        journal.reserve(record);
+        journal.complete(record.submissionId(),
+                new FilingOutcome.Rejected(new IrsFault(
+                        "NEWSEND_IRS_REJECTED", "refused", null, null, null)),
+                Instant.parse("2026-03-31T12:02:00Z"));
+
+        assertInstanceOf(Reservation.Reserved.class,
+                journal.reserve(created("2378612026090bbbb222", "key-rejected")));
+    }
+
+    @Test
     @DisplayName("complete records the receipt and the terminal state")
     void completeStoresTheOutcome() {
         SubmissionRecord record = created("2386892026090aaaa111", "key-1");

@@ -183,11 +183,11 @@ class InspectorSendsControllerTest {
     }
 
     @Test
-    @DisplayName("POST ack maps no ack yet to 404 and other IRS errors to 502")
+    @DisplayName("POST ack maps no ack yet to 404 and other IRS errors to 502 without echoing the cause")
     void postAckErrorMapping() throws Exception {
         when(session.getAck(any()))
                 .thenReturn(Optional.empty())
-                .thenThrow(new IllegalStateException("Failed to parse acknowledgment response"))
+                .thenThrow(new IllegalStateException("Keystore file does not exist at: /secret/pyramos.p12"))
                 .thenThrow(new RuntimeException("IRS session limit - retryable"));
 
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
@@ -196,7 +196,7 @@ class InspectorSendsControllerTest {
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"))
-                .andExpect(jsonPath("$.message").value("Failed to parse acknowledgment response"));
+                .andExpect(jsonPath("$.message").value("Acknowledgment retrieval failed; see server logs"));
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"));
@@ -222,7 +222,7 @@ class InspectorSendsControllerTest {
         mvc(broken).perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"))
-                .andExpect(jsonPath("$.message").value("disk full"));
+                .andExpect(jsonPath("$.message").value("Acknowledgment retrieval failed; see server logs"));
     }
 
     @Test

@@ -87,7 +87,7 @@ public class InspectorSendsController {
             ackStore.record(ack);
             return ResponseEntity.ok(ack);
         } catch (RuntimeException e) {
-            return ackFailure(ACK_RETRIEVAL_FAILED, e.getMessage(), e);
+            return ackFailure(e);
         }
     }
 
@@ -95,10 +95,11 @@ public class InspectorSendsController {
         return journal.findBySubmissionId(new SubmissionId(id.value()));
     }
 
-    private static ResponseEntity<ApiError> ackFailure(String code, String message, RuntimeException cause) {
+    /** The cause can name the keystore path, so it stays in the server log. */
+    private static ResponseEntity<ApiError> ackFailure(RuntimeException cause) {
         log.warn("inspector: GetAck failed: {}", cause.toString());
-        return error(HttpStatus.BAD_GATEWAY, code,
-                message != null ? message : "Acknowledgment retrieval failed");
+        return error(HttpStatus.BAD_GATEWAY, ACK_RETRIEVAL_FAILED,
+                "Acknowledgment retrieval failed; see server logs");
     }
 
     private static ResponseEntity<ApiError> invalidSubmissionId() {

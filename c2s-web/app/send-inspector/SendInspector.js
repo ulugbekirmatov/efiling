@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "../design-system/Badge";
-import { TONES, toneClass } from "../design-system/tones";
+import { toneClass } from "../design-system/tones";
+import { toneFor } from "../lib/states.js";
 import XmlCode from "../design-system/XmlCode";
 import {
   fetchAck,
@@ -34,18 +35,6 @@ function formatLocalTime(iso) {
 
 // A warn asks the operator to do something next (log in, wait); an error is a failed call.
 const NOTICE_CLASS = { error: "attention", warn: "" };
-
-function stateTone(state) {
-  if (!state) return TONES.waiting;
-  if (/fault/i.test(state)) return TONES.attention;
-  return TONES.neutral;
-}
-
-function ackTone(ackType) {
-  if (/^accept/i.test(ackType || "")) return TONES.safe;
-  if (/^reject/i.test(ackType || "")) return TONES.attention;
-  return TONES.waiting;
-}
 
 function errorRows(ack) {
   const codes = (ack && ack.errorCodes) || [];
@@ -341,10 +330,10 @@ export default function SendInspector() {
                     {formatLocalTime(send.capturedAt)}
                   </div>
                   <div className="row inspector-badges">
-                    <Badge tone={stateTone(send.state)}>
+                    <Badge tone={toneFor("mef.journal", send.state)}>
                       {send.state || "no state"}
                     </Badge>
-                    <Badge tone={ackTone(send.ackType)}>{send.ackType || "no ack"}</Badge>
+                    <Badge tone={toneFor("mef.ack", send.ackType)}>{send.ackType || "no ack"}</Badge>
                   </div>
                 </button>
               );
@@ -400,7 +389,7 @@ export default function SendInspector() {
                 <h2 className="section-label">IRS acknowledgment</h2>
                 {ack ? (
                   <>
-                    <span className={`badge lg inspector-hero ${toneClass(ackTone(ack.ackType))}`}>
+                    <span className={`badge lg inspector-hero ${toneClass(toneFor("mef.ack", ack.ackType))}`}>
                       {ack.ackType || "unknown"}
                     </span>
                     <dl className="kv">
@@ -460,7 +449,7 @@ export default function SendInspector() {
                 <div className="row inspector-actions">
                   <span>
                     IRS session:{" "}
-                    <Badge tone={loggedIn ? TONES.safe : TONES.waiting}>
+                    <Badge tone={loggedIn ? "safe" : "waiting"}>
                       {loggedIn ? "logged in" : "not logged in"}
                     </Badge>
                     {session && session.message ? ` — ${session.message}` : ""}

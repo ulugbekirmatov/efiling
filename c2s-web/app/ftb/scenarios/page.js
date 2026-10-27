@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listScenarios } from "../lib/ftbCatalog";
-import { formLabel, stateLabel, stateTone } from "../lib/ftbStates";
+import { formLabel, stateLabel } from "../lib/ftbStates";
+import { toneFor } from "../../lib/states.js";
 import { Badge, Chip } from "../../design-system/Badge";
 import "./ftb-scenarios.css";
 
@@ -14,7 +15,7 @@ function ScenarioCard({ scenario }) {
       <h2 className="card-title">{formLabel(scenario.formKind)}</h2>
       <p>{scenario.purpose}</p>
       <div className="row ftb-scenarios-chips">
-        <Badge tone={stateTone(scenario.state)}>{stateLabel(scenario.state)}</Badge>
+        <Badge tone={toneFor("ftb.state", scenario.state)}>{stateLabel(scenario.state)}</Badge>
         <Chip tone={checksTone}>
           {scenario.checksPassed} of {scenario.checksTotal} checks
         </Chip>

@@ -3,13 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadScenario } from "../../lib/ftbCatalog";
 import { Badge, Chip } from "../../../design-system/Badge";
-import { formLabel, stateLabel, stateTone } from "../../lib/ftbStates";
+import { formLabel, stateLabel } from "../../lib/ftbStates";
+import { toneFor } from "../../../lib/states.js";
 import FtbScenarioTabs from "./FtbScenarioTabs";
 import "./ftb-scenario.css";
 
 export const dynamic = "force-dynamic";
-
-const ATTENTION_STATES = new Set(["rejected", "accepted_with_errors", "needs_recovery"]);
 
 function ledgerLine(ledger) {
   const parts = [`State ${ledger.state}`];
@@ -24,7 +23,8 @@ export default function FtbScenarioPage({ params }) {
   if (!loaded) notFound();
   const { scenario, meta } = loaded;
   const failed = scenario.checks.some((check) => !check.ok);
-  const attention = ATTENTION_STATES.has(scenario.state) || failed;
+  const tone = toneFor("ftb.state", scenario.state);
+  const attention = tone === "attention" || failed;
   const waiting = scenario.state === "blocked" || scenario.blocked;
   const calloutClass = `callout${attention ? " attention" : waiting ? " waiting" : ""}`;
 
@@ -42,7 +42,7 @@ export default function FtbScenarioPage({ params }) {
       </header>
       <section className="card ftb-scenario-summary" aria-label="Scenario summary">
         <div className="row">
-          <Badge tone={stateTone(scenario.state)}>{stateLabel(scenario.state)}</Badge>
+          <Badge tone={tone}>{stateLabel(scenario.state)}</Badge>
           <Chip>{formLabel(scenario.formKind)}</Chip>
           <Chip>{scenario.recordIds.length} records</Chip>
           {scenario.correctionOf ? <Chip>Corrects {scenario.correctionOf}</Chip> : null}

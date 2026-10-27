@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "../../design-system/Badge";
-import { TONES, toneClass } from "../../design-system/tones";
+import { toneClass } from "../../design-system/tones";
 import XmlCode from "../../design-system/XmlCode";
 import { confirmCode } from "../lib/runModel.js";
 import {
@@ -471,7 +471,7 @@ export default function AirTransmissions() {
 
                 <div className="row air-transmissions-readiness" aria-label="Readiness">
                   {readinessItems(readiness).map((item) => (
-                    <Badge key={item.key} tone={item.ok ? TONES.safe : TONES.waiting}>
+                    <Badge key={item.key} tone={item.ok ? "safe" : "waiting"}>
                       {item.ok || !item.envVar ? item.label : `${item.label} · ${item.envVar}`}
                     </Badge>
                   ))}

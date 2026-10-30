@@ -1,0 +1,69 @@
+package com.irs.mef.returnpdf;
+
+import com.irs.mef.ats.AtsScenario;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class Form941SheetTest {
+
+    private static final String PAGE1 = "topmostSubform[0].Page1[0].";
+
+    @Test
+    void zeroBalanceDueIsPrintedNotDropped() throws IOException {
+        Map<String, String> values = form941(composed(AtsScenario.ORCHID_941));
+
+        assertThat(values).containsKey(PAGE1 + "f1_53[0]");
+    }
+
+    @Test
+    void orchidRendersTwoFlattenedPagesOfTheIrsForm() throws IOException {
+        byte[] pdf = ReturnPdf.render(composed(AtsScenario.ORCHID_941));
+
+        try (PDDocument document = Loader.loadPDF(pdf)) {
+            assertThat(document.getNumberOfPages()).isEqualTo(2);
+            assertThat(document.getDocumentCatalog().getAcroForm().getFields()).isEmpty();
+            assertThat(new PDFTextStripper().getText(document))
+                    .contains("Employer’s QUARTERLY Federal Tax Return")
+                    .contains("Orchid");
+        }
+    }
+
+    @Test
+    void aSentValueWithNoBoxFailsTheRender() throws IOException {
+        String withExtra = composed(AtsScenario.ORCHID_941)
+                .replace("<EmployeeCnt>", "<UnmappedTestAmt>1.00</UnmappedTestAmt><EmployeeCnt>");
+
+        assertThatThrownBy(() -> ReturnPdf.fill(withExtra))
+                .isInstanceOf(ReturnPdfException.class)
+                .hasMessageContaining("IRS941/UnmappedTestAmt");
+    }
+
+    @Test
+    void theReportingAgentPinNeverReachesPaper() throws IOException {
+        String xml = composed(AtsScenario.ORCHID_941);
+        String pin = xml.substring(xml.indexOf("<PIN>") + "<PIN>".length(), xml.indexOf("</PIN>"));
+
+        assertThat(form941(xml)).doesNotContainValue(pin);
+    }
+
+    private static Map<String, String> form941(String xml) {
+        return ReturnPdf.fill(xml).stream()
+                .filter(form -> form.form() == IrsForm.IRS941)
+                .findFirst()
+                .orElseThrow()
+                .values();
+    }
+
+    static String composed(AtsScenario scenario) throws IOException {
+        return Files.readString(scenario.clientBody().resolveSibling("composed-return.xml"));
+    }
+}

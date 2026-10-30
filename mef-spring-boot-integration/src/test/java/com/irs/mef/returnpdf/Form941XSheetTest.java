@@ -75,6 +75,16 @@ class Form941XSheetTest {
     }
 
     @Test
+    void line7CopiesItsDifferenceIntoColumn4SoLine23Foots() throws IOException {
+        Map<String, String> values = form941x(Form941SheetTest.composed(AtsScenario.ORCHID_941X));
+
+        assertThat(values)
+                .containsEntry(PAGE2 + "f2_12[0]", "150")
+                .containsEntry(PAGE2 + "f2_14[0]", "150")
+                .containsEntry(PAGE2 + "f2_15[0]", "00");
+    }
+
+    @Test
     void orchidRendersTheFivePageReturn() throws IOException {
         byte[] pdf = ReturnPdf.render(Form941SheetTest.composed(AtsScenario.ORCHID_941X));
 

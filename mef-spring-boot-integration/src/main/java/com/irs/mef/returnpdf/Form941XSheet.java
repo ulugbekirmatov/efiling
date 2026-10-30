@@ -159,48 +159,58 @@ final class Form941XSheet {
     }
 
     private static void corrections(ReturnXml.Node form, Fields fields) {
-        line(form, fields, "WagesAmt", F2, 2, false);
-        line(form, fields, "FederalIncomeTaxWithheldAmt", F2, 8, false);
-        line(form, fields, "SocialSecurityTaxCashWagesAmt", F2, 16, true);
-        line(form, fields, "TaxableSocSecTipsAmt", F2, 40, true);
-        line(form, fields, "TaxableMedicareWagesTipsAmt", F2, 48, true);
-        line(form, fields, "TxblWageTipsSubjAddnlMedcrAmt", F2, 56, true);
-        line(form, fields, "TaxOnUnreportedTips3121qAmt", F2, 64, false);
-        line(form, fields, "TaxAdjustmentsAmt", F2, 72, false);
-        line(form, fields, "PayrollTaxCreditAmt", F2, 80, true);
-        line(form, fields, "NrfdblCrQlfySLFMLWagesAmt", F2, 88, true);
-        line(form, fields, "NrfdblCrQlfySLFMLWagesAftrAmt", F2, 104, true);
-        line(form, fields, "NrfdblCOBRAPremiumSubsidyAmt", F2, 112, true);
+        line(form, fields, "WagesAmt", F2, 2, Column4.NONE);
+        line(form, fields, "FederalIncomeTaxWithheldAmt", F2, 8, Column4.COPY_COLUMN_3);
+        line(form, fields, "SocialSecurityTaxCashWagesAmt", F2, 16, Column4.TAX);
+        line(form, fields, "TaxableSocSecTipsAmt", F2, 40, Column4.TAX);
+        line(form, fields, "TaxableMedicareWagesTipsAmt", F2, 48, Column4.TAX);
+        line(form, fields, "TxblWageTipsSubjAddnlMedcrAmt", F2, 56, Column4.TAX);
+        line(form, fields, "TaxOnUnreportedTips3121qAmt", F2, 64, Column4.COPY_COLUMN_3);
+        line(form, fields, "TaxAdjustmentsAmt", F2, 72, Column4.COPY_COLUMN_3);
+        line(form, fields, "PayrollTaxCreditAmt", F2, 80, Column4.TAX);
+        line(form, fields, "NrfdblCrQlfySLFMLWagesAmt", F2, 88, Column4.TAX);
+        line(form, fields, "NrfdblCrQlfySLFMLWagesAftrAmt", F2, 104, Column4.TAX);
+        line(form, fields, "NrfdblCOBRAPremiumSubsidyAmt", F2, 112, Column4.TAX);
         count(form, fields, CORRECTED + "COBRAPremiumSubsidyRcpntCnt", F2 + "120[0]");
         count(form, fields, ORIGINAL + "COBRAPremiumSubsidyRcpntCnt", F2 + "121[0]");
         count(form, fields, DIFFERENCE + "COBRAPremiumSubsidyRcpntCnt", F2 + "122[0]");
-        line(form, fields, "SpclAddnWgsFedIncmTaxAmt", F2, 123, true);
-        line(form, fields, "SpclAddnWgsSSTAmt", F2, 131, true);
-        line(form, fields, "SpclAddnWgsMedcrTaxAmt", F2, 139, true);
-        line(form, fields, "SpclAddnWgsAddnlMedcrTaxAmt", F3, 1, true);
+        line(form, fields, "SpclAddnWgsFedIncmTaxAmt", F2, 123, Column4.TAX);
+        line(form, fields, "SpclAddnWgsSSTAmt", F2, 131, Column4.TAX);
+        line(form, fields, "SpclAddnWgsMedcrTaxAmt", F2, 139, Column4.TAX);
+        line(form, fields, "SpclAddnWgsAddnlMedcrTaxAmt", F3, 1, Column4.TAX);
         money(form, fields, TAX + "CombinedTaxAmt", F3 + "9[0]", F3 + "10[0]");
-        line(form, fields, "RfdblCrQlfySLFMLWagesAmt", F3, 19, true);
-        line(form, fields, "RfdblCrQlfySLFMLWagesAftrAmt", F3, 35, true);
-        line(form, fields, "RfdblCOBRAPremiumSubsidyAmt", F3, 43, true);
+        line(form, fields, "RfdblCrQlfySLFMLWagesAmt", F3, 19, Column4.TAX);
+        line(form, fields, "RfdblCrQlfySLFMLWagesAftrAmt", F3, 35, Column4.TAX);
+        line(form, fields, "RfdblCOBRAPremiumSubsidyAmt", F3, 43, Column4.TAX);
         money(form, fields, TAX + "TotalAmt", F3 + "51[0]", F3 + "52[0]");
-        line(form, fields, "QHPExpnssSSQlfyPdSLWageAmt", F3, 53, false);
-        line(form, fields, "QHPExpnssSSQlfyPdFMLWageAmt", F3, 59, false);
-        line(form, fields, "QlfySLWgsAftrAmt", F4, 19, false);
-        line(form, fields, "QHPExpnssQlfySLWgsAftrAmt", F4, 25, false);
-        line(form, fields, "CrtnBrgnAgrmtQlfySLWgsAftrAmt", F4, 31, false);
-        line(form, fields, "QlfyFMLWgsAftrAmt", F4, 37, false);
-        line(form, fields, "QHPExpnssQlfyFMLWgsAftrAmt", F4, 43, false);
-        line(form, fields, "CrtnBrgnAgrmtQlfyFMLWgsAftrAmt", F4, 49, false);
+        line(form, fields, "QHPExpnssSSQlfyPdSLWageAmt", F3, 53, Column4.NONE);
+        line(form, fields, "QHPExpnssSSQlfyPdFMLWageAmt", F3, 59, Column4.NONE);
+        line(form, fields, "QlfySLWgsAftrAmt", F4, 19, Column4.NONE);
+        line(form, fields, "QHPExpnssQlfySLWgsAftrAmt", F4, 25, Column4.NONE);
+        line(form, fields, "CrtnBrgnAgrmtQlfySLWgsAftrAmt", F4, 31, Column4.NONE);
+        line(form, fields, "QlfyFMLWgsAftrAmt", F4, 37, Column4.NONE);
+        line(form, fields, "QHPExpnssQlfyFMLWgsAftrAmt", F4, 43, Column4.NONE);
+        line(form, fields, "CrtnBrgnAgrmtQlfyFMLWgsAftrAmt", F4, 49, Column4.NONE);
     }
 
-    /** Columns are dollar box then cents box. {@code tax} lines also have column 4. */
+    /** What a correction line's column 4 holds on paper. */
+    private enum Column4 {
+        NONE,
+        TAX,
+        /** Lines 7, 14, and 15 print "Copy Column 3 here"; the XSD sends no column 4 for them. */
+        COPY_COLUMN_3
+    }
+
+    /** Columns are dollar box then cents box, columns 1 to 4 left to right. */
     private static void line(ReturnXml.Node form, Fields fields, String element, String prefix, int start,
-            boolean tax) {
+            Column4 column4) {
         money(form, fields, CORRECTED + element, prefix, start);
         money(form, fields, ORIGINAL + element, prefix, start + 2);
         money(form, fields, DIFFERENCE + element, prefix, start + 4);
-        if (tax) {
-            money(form, fields, TAX + element, prefix, start + 6);
+        switch (column4) {
+            case TAX -> money(form, fields, TAX + element, prefix, start + 6);
+            case COPY_COLUMN_3 -> money(form, fields, DIFFERENCE + element, prefix, start + 6);
+            case NONE -> { }
         }
     }
 

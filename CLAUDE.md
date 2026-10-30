@@ -8,6 +8,7 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 ./mef check              offline suite. Safe to repeat. Refuses a JDK other than 17.
 ./mef scenarios          id, form, title
 ./mef preflight <id>     offline compose and validate. Never logs in.
+./mef pdf <id>           offline paper copy on the IRS forms. <id> is a scenario or a captured submission id.
 ./mef ats <id>           LIVE send to ATS. Exit 0 only when the ack is Accepted.
 ./mef login              LIVE login probe, no send.
 ```
@@ -23,6 +24,7 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 | Journal states | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/JournalState.java` |
 | Idempotency and replay | `FilingDesk.file` in `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/FilingDesk.java` |
 | Scenario list | `test-scenarios/*/scenario-*/scenario.json` |
+| Paper copy: which MeF document prints on which IRS PDF | `mef-spring-boot-integration/src/main/java/com/irs/mef/returnpdf/IrsForm.java` |
 | Web state to tone | `c2s-web/app/lib/states.js` |
 | Web page list | `c2s-web/app/registry.js` |
 | Web state contract | `c2s-web/generated/mef-facts.json` |
@@ -34,6 +36,7 @@ DocBlocksTest writes the three blocks below. Do not hand-edit them. `docs.update
 <!-- generated:routes -->
 GET /api/inspector/sends
 GET /api/inspector/sends/{submissionId}
+GET /api/inspector/sends/{submissionId}/pdf
 GET /api/mef/filings/{submissionId}
 GET /api/mef/session
 GET /api/mef/session/certificate
@@ -126,6 +129,7 @@ When the operator corrects you, fix the mistake and add a row here. If the row a
 | Submission ID is `EFIN + yyyyDDD + 7 [a-z0-9]` | `SubmissionId`; `SubmissionIdTest` |
 | Only `FilingDesk` reaches IRS; every SDK call holds the one session lock; a GET never reaches IRS | package-private `IrsWire`/`IrsSession.call` in `com.irs.mef.filing`; `IrsSessionConcurrencyTest`; `GetRoutesNeverReachIrsTest` |
 | A form without a bundled schema cannot be sent | `FormSpec` `SchemaBinding.Pending`; preflight refuses it |
+| The paper copy never drops a value we sent, and never prints the RA PIN | `ReturnXml.requireAllPrinted` fails the render; `Form941SheetTest` |
 | No live send after a reject until each reject code has a local rule | `RejectLedger` inside `AtsRun`; `RejectLedgerTest`, `LocalRulesTest` |
 | `./mef ats` exits 0 only on an Accepted ack | `AtsVerdict.exitCode`; `AtsVerdictTest` |
 | The scenario directories are the only scenario list | `ScenarioDirectoryTest` |

@@ -12,6 +12,7 @@ Usage:
   ./mef check
   ./mef scenarios
   ./mef preflight <id>
+  ./mef pdf <id>
   ./mef ats <id>
   ./mef login
 EOF
@@ -100,6 +101,23 @@ case "$verb" in
     [[ $# -eq 2 ]] || usage
     require_scenario "$2"
     ( cd "$ROOT/mef-spring-boot-integration" && mvn -B test -Dsurefire.useFile=false -Dtest=AtsPreflightTest "-Dmef.ats.scenario=$2" )
+    ;;
+  pdf)
+    [[ $# -eq 2 ]] || usage
+    if [[ "$2" =~ ^[0-9]{13}[a-z0-9]{7}$ ]]; then
+      xml="$ROOT/mef-spring-boot-integration/data/inspector-ring/$2/return.xml"
+      if [[ ! -f "$xml" ]]; then
+        echo "pdf: submission $2 is not in the local send ring" >&2
+        exit 1
+      fi
+    else
+      require_scenario "$2"
+      xml="$(ls "$ROOT"/test-scenarios/*/scenario-"$2"-*/composed-return.xml)"
+    fi
+    out="$ROOT/reports/pdf/$2.pdf"
+    mkdir -p "$(dirname "$out")"
+    ( cd "$ROOT/mef-spring-boot-integration" && mvn -B -q test -Dsurefire.useFile=false -Dtest=ReturnPdfVerbTest "-Dmef.pdf.in=$xml" "-Dmef.pdf.out=$out" )
+    echo "$out"
     ;;
   ats)
     [[ $# -eq 2 ]] || usage

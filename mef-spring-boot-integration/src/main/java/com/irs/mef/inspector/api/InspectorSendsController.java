@@ -12,8 +12,12 @@ import com.irs.mef.inspector.ring.SnapshotId;
 import com.irs.mef.filing.SubmissionId;
 import com.irs.mef.filing.SubmissionRecord;
 import com.irs.mef.filing.Journal;
+import com.irs.mef.returnpdf.ReturnPdf;
+import com.irs.mef.returnpdf.ReturnPdfException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,6 +73,29 @@ public class InspectorSendsController {
         }
         return ResponseEntity.ok(SendDetailView.of(
                 snapshot.get(), journalRow(id.get()), ackStore.find(id.get().value())));
+    }
+
+    /** The paper copy of the exact Return XML this send carried, on the official IRS forms. */
+    @GetMapping("/{submissionId}/pdf")
+    public ResponseEntity<?> pdf(@PathVariable String submissionId) {
+        Optional<SnapshotId> id = SnapshotId.tryParse(submissionId);
+        if (id.isEmpty()) {
+            return invalidSubmissionId();
+        }
+        Optional<SendSnapshot> snapshot = ring.get(id.get());
+        if (snapshot.isEmpty()) {
+            return error(HttpStatus.NOT_FOUND, "SEND_NOT_FOUND",
+                    "Submission " + id.get().value() + " is not in the local send ring");
+        }
+        try {
+            byte[] pdf = ReturnPdf.render(snapshot.get().returnXml().original());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + id.get().value() + ".pdf\"")
+                    .body(pdf);
+        } catch (ReturnPdfException e) {
+            return error(HttpStatus.UNPROCESSABLE_ENTITY, "PDF_NOT_PRINTABLE", e.getMessage());
+        }
     }
 
     @PostMapping("/{submissionId}/ack")

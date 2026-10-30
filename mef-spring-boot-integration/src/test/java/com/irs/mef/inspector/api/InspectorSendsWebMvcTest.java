@@ -3,7 +3,11 @@ package com.irs.mef.inspector.api;
 import com.irs.mef.ack.AckSource;
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
+import com.irs.mef.ats.AtsScenario;
 import com.irs.mef.filing.IrsSession;
+import com.irs.mef.inspector.FixtureSnapshots;
+import com.irs.mef.inspector.ring.CapturedXml;
+import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
 import com.irs.mef.filing.Journal;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +17,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,6 +68,40 @@ class InspectorSendsWebMvcTest {
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"));
+    }
+
+    @Test
+    @DisplayName("a captured send prints as a PDF of the IRS forms")
+    void capturedSendPrintsAsPdf() throws Exception {
+        String orchid = Files.readString(AtsScenario.ORCHID_941.clientBody().resolveSibling("composed-return.xml"));
+        when(ring.get(any())).thenReturn(Optional.of(withReturnXml(FixtureSnapshots.orchidQ1(), orchid)));
+
+        mvc.perform(get("/inspector/sends/" + FixtureSnapshots.SUBMISSION_ID + "/pdf"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(result -> org.assertj.core.api.Assertions
+                        .assertThat(new String(result.getResponse().getContentAsByteArray(), 0, 5)).isEqualTo("%PDF-"));
+    }
+
+    @Test
+    @DisplayName("a send outside the ring is 404 and a Return the renderer cannot print is 422")
+    void missingAndUnprintableSends() throws Exception {
+        when(ring.get(any())).thenReturn(Optional.empty());
+        mvc.perform(get("/inspector/sends/" + ID + "/pdf"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("SEND_NOT_FOUND"));
+
+        when(ring.get(any())).thenReturn(Optional.of(FixtureSnapshots.orchidQ1()));
+        mvc.perform(get("/inspector/sends/" + FixtureSnapshots.SUBMISSION_ID + "/pdf"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("PDF_NOT_PRINTABLE"));
+    }
+
+    private static SendSnapshot withReturnXml(SendSnapshot base, String returnXml) {
+        CapturedXml captured = new CapturedXml(returnXml);
+        return new SendSnapshot(base.submissionId(), base.capturedAt(), base.environment(), base.einMasked(),
+                base.formType(), base.taxPeriod(), base.clientRequestId(), captured.sha256(), captured,
+                base.manifestXml(), base.mimeRequest(), base.soapResponse());
     }
 
     private static StoredAck stored(String ackType) {

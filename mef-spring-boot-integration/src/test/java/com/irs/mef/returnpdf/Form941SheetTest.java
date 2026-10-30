@@ -16,6 +16,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class Form941SheetTest {
 
     private static final String PAGE1 = "topmostSubform[0].Page1[0].";
+    private static final String PAGE2 = "topmostSubform[0].Page2[0].";
+
+    @Test
+    void marigoldLinesLandInTheirBoxes() throws IOException {
+        Map<String, String> values = form941(composed(AtsScenario.MARIGOLD_941_SCHEDULE_B));
+
+        assertThat(values).containsEntry(PAGE1 + "Header[0].EntityArea[0].f1_1[0]", "00")
+                .containsEntry(PAGE1 + "Header[0].EntityArea[0].f1_2[0]", "3333330")
+                .containsEntry(PAGE1 + "Header[0].EntityArea[0].f1_3[0]", "Marigold Corporation")
+                .containsEntry(PAGE1 + "Header[0].ReportForQuarter[0].c1_1[0]", "1")
+                .containsEntry(PAGE1 + "f1_12[0]", "10")
+                .containsEntry(PAGE1 + "f1_13[0]", "33,594")
+                .containsEntry(PAGE1 + "f1_14[0]", "00")
+                .containsEntry(PAGE1 + "f1_19[0]", "4,165")
+                .containsEntry(PAGE1 + "f1_20[0]", "66")
+                .containsEntry(PAGE1 + "f1_49[0]", "8,715")
+                .containsEntry(PAGE1 + "f1_50[0]", "89")
+                .containsEntry(PAGE1 + "f1_55[0]", "284")
+                .containsEntry(PAGE1 + "f1_56[0]", "11")
+                .containsEntry(PAGE1 + "c1_4[1]", "2")
+                .containsEntry(PAGE2 + "c2_1[2]", "3")
+                .containsEntry(PAGE2 + "c2_4[1]", "2");
+    }
 
     @Test
     void zeroBalanceDueIsPrintedNotDropped() throws IOException {

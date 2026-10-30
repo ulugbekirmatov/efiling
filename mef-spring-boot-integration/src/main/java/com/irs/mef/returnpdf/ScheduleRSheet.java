@@ -257,7 +257,9 @@ final class ScheduleRSheet {
     }
 
     private static String field(int formNo, String parent, int number) {
-        return ROOT + parent + ".f" + formNo + "_" + number + "[0]";
+        // f941sr.pdf misnames continuation line 2, column (q): f8_168 between f2_167 and f2_169.
+        String prefix = formNo == 2 && number == 168 ? "f8_" : "f" + formNo + "_";
+        return ROOT + parent + "." + prefix + number + "[0]";
     }
 
     private record Pair(String dollars, String cents) {}

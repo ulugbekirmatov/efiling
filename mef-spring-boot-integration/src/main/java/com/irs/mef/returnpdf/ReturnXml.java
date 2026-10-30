@@ -36,7 +36,8 @@ final class ReturnXml {
 
     /** MeF links documents with these; no IRS form has a box for them. */
     private static final Set<String> LINKAGE_ATTRIBUTES = Set.of(
-            "documentId", "referenceDocumentId", "referenceDocumentName", "softwareId", "softwareVersionNum");
+            "documentId", "documentName", "referenceDocumentId", "referenceDocumentName", "softwareId",
+            "softwareVersionNum");
 
     private final String returnVersion;
     private final Node header;

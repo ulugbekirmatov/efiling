@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 enum IrsForm {
     IRS941("f941.pdf", 2, Form941Sheet::fill),
     IRS941ScheduleB("f941sb.pdf", 1, ScheduleBSheet::fill),
-    IRS941ScheduleR("f941sr.pdf", Integer.MAX_VALUE, ScheduleRSheet::fill),
+    IRS941ScheduleR("f941sr.pdf", 2, ScheduleRSheet::fill),
     IRS8974("f8974.pdf", Integer.MAX_VALUE, Form8974Sheet::fill),
     IRS941X("f941x.pdf", Integer.MAX_VALUE, Form941XSheet::fill);
 

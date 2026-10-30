@@ -47,10 +47,8 @@ test-scenarios/
 The Spring Boot project includes automated validation tests:
 
 ```bash
-cd mef-spring-boot-integration
-
-# Compose every TY2026 ATS scenario as a Reporting Agent return and validate it against the XSDs
-mvn test -Dtest=AtsScenarioComposeTest
+./mef preflight <id>
+./mef check
 ```
 
 ### Using xmllint (Command Line)
@@ -93,7 +91,7 @@ Create a YAML config file in the Spring Boot test resources:
 
 ### Step 5: Create Test Class
 
-Add the scenario to the `AtsScenario` enum, which `AtsScenarioComposeTest` and `AtsScenarioSnapshotTest` iterate, and to `test-scenarios/ats-ty2026/scenarios.json`, the c2s-web registry. Do not start from the OneWell-era `Return941-Scenario1.xml`.
+Add a directory named scenario-<id>-<slug> under `test-scenarios/ats-ty2026/` (or `test-scenarios/ats-ty2026-annual/` for a 940), with scenario.json and `client-return-body.xml`. `AtsScenario` discovers it, and the c2s-web scenario pages read the same directories. Do not start from the OneWell-era `Return941-Scenario1.xml`.
 
 ### Step 6: Validate
 
@@ -153,7 +151,8 @@ Integration tests that actually submit to IRS ATS require:
 - Enable one class at a time with `-Dmef.live.test=<simple class name>` (see `@LiveIrsTest`)
 
 ```bash
-mvn test -Dtest=Form941SubmissionTest -Dmef.live.test=Form941SubmissionTest
+./mef ats <id>
+./mef login
 ```
 
 ## Best Practices
@@ -195,7 +194,7 @@ Ensure:
 - **IRS MeF Documentation**: https://www.irs.gov/e-file-providers/modernized-e-file-mef-guide-for-software-developers
 - **Schema Downloads**: https://www.irs.gov/e-file-providers/current-valid-xml-schemas-and-business-rules
 - **Spring Boot Project**: `../mef-spring-boot-integration/`
-- **Implementation Plan**: `../.claude/plans/curious-finding-clover.md`
+- **Implementation Plan**: curious-finding-clover.md (a local plan file, not tracked)
 
 ## Support
 

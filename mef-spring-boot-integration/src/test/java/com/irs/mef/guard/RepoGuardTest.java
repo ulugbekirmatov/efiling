@@ -35,18 +35,24 @@ class RepoGuardTest {
     private static final Map<String, Integer> ONEWELL_ID_BASELINE = Map.of(
             "src/test/java/com/irs/mef/inspector/FixtureSnapshots.java", 1,
             "src/test/java/com/irs/mef/inspector/ring/FileSendSnapshotRingTest.java", 3,
-            "src/test/java/com/irs/mef/newsend/domain/NewSendManifestXmlTest.java", 3,
-            "src/test/java/com/irs/mef/newsend/domain/NewSendSubmissionIdTest.java", 2,
-            "src/test/java/com/irs/mef/newsend/journal/InMemoryNewSendSubmissionJournalTest.java", 9,
-            "src/test/java/com/irs/mef/reportingagent/ReportingAgentOriginatorStandIn.java", 1,
-            "src/test/java/com/irs/mef/reportingagent/ReportingAgentReturnTest.java", 2);
+            "src/test/java/com/irs/mef/filing/SubmissionIdTest.java", 2,
+            "src/test/java/com/irs/mef/filing/InMemoryJournalTest.java", 9,
+            "src/test/java/com/irs/mef/filing/ReportingAgentOriginatorStandIn.java", 1,
+            "src/test/java/com/irs/mef/filing/ReturnComposerTest.java", 1);
 
     /** Docs deleted because they taught superseded facts, mapped to what replaced them. */
     private static final Map<String, String> RETIRED_DOCS = Map.of(
             "mef-spring-boot-integration/EFIN_ETIN_USAGE.md",
-            "CLAUDE.md gotcha 4 (one EFIN in manifest, OriginatorGrp, and submission ID; R0000-054-01)",
-            "mef-spring-boot-integration/PROJECT_SUMMARY.md", "CLAUDE.md and CODE_MAP.md",
-            "mef-spring-boot-integration/SETUP-COMPLETE.md", "CLAUDE.md, Build, Run, Test");
+            "CLAUDE.md (one EFIN in the id, the manifest, and OriginatorGrp; R0000-054-01)",
+            "mef-spring-boot-integration/PROJECT_SUMMARY.md", "CLAUDE.md",
+            "mef-spring-boot-integration/SETUP-COMPLETE.md", "CLAUDE.md",
+            "mef-spring-boot-integration/run-ra-ats-test.sh", "./mef ats",
+            "mef-spring-boot-integration/test-mef-login.sh", "./mef login",
+            "CODE_MAP.md", "CLAUDE.md",
+            "mef-spring-boot-integration/FORM_941_SUBMISSION_IMPLEMENTATION.md", "CLAUDE.md and SubmissionId",
+            "mef-spring-boot-integration/STATUS_AND_ACK_SERVICES_DOCUMENTATION.md", "CLAUDE.md and StoredAck",
+            "mef-spring-boot-integration/NEWSEND_DESIGN.md",
+            "mef-spring-boot-integration/src/main/java/com/irs/mef/filing/package-info.java");
 
     private static final Pattern ALLOW = Pattern.compile(
             "repo-guard:allow onewell-id reason=\"[^\"]+\" expires=(\\d{4}-\\d{2}-\\d{2}) approved-by=\\S+");

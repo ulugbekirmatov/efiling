@@ -24,4 +24,4 @@ A block tagged `js browser` skips the ES5 check. A block tagged `js nocheck` sho
 
 ## What these docs do not cover
 
-They do not describe the MeF service itself. See the repo root `CLAUDE.md` and `CODE_MAP.md` for that. They do not settle how C2S and the MeF service exchange data. That decision is open and is laid out in [integration.md](integration.md).
+They do not describe the MeF service itself. See the repo root `CLAUDE.md` for that. They do not settle how C2S and the MeF service exchange data. That decision is open and is laid out in [integration.md](integration.md).

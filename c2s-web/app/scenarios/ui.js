@@ -1,16 +1,11 @@
 import { Badge } from "../design-system/Badge";
-import { TONES } from "../design-system/tones";
+import { toneFor } from "../lib/states.js";
 
 export function formatEin(ein) {
   const digits = String(ein || "").replace(/\D/g, "");
   if (digits.length !== 9) return String(ein || "");
   return `${digits.slice(0, 2)}-${digits.slice(2)}`;
 }
-
-export const STATUS_TONE = {
-  accepted: TONES.safe,
-  ready: TONES.waiting,
-};
 
 export function statusLabel(status) {
   if (!status) return "";
@@ -21,19 +16,14 @@ export function statusLabel(status) {
     if (status.submissionId) parts.push(status.submissionId);
     return parts.join(" · ");
   }
+  if (status.state === "partial") return "Partial";
   return String(status.state);
 }
 
 export function StatusBadge({ status }) {
-  return <Badge tone={STATUS_TONE[status && status.state]}>{statusLabel(status)}</Badge>;
+  return <Badge tone={toneFor("mef.scenario", status && status.state)}>{statusLabel(status)}</Badge>;
 }
 
-export const SOURCE_TONE = {
-  client: TONES.neutral,
-  pyramos: TONES.safe,
-  generated: TONES.waiting,
-};
-
 export function SourceBadge({ source }) {
-  return <Badge tone={SOURCE_TONE[source]}>{source}</Badge>;
+  return <Badge tone={toneFor("mef.headerSource", source)}>{source}</Badge>;
 }

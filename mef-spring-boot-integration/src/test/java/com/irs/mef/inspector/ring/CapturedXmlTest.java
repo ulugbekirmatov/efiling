@@ -1,7 +1,7 @@
 package com.irs.mef.inspector.ring;
 
 import com.irs.mef.inspector.FixtureSnapshots;
-import com.irs.mef.newsend.domain.NewSendSubmitCommand;
+import com.irs.mef.filing.SubmitCommand;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +14,13 @@ class CapturedXmlTest {
     @DisplayName("sha256 is of packed original UTF-8, never pretty()")
     void hashIsOfOriginalNotPretty() {
         CapturedXml xml = new CapturedXml(FixtureSnapshots.RETURN_XML);
-        String expected = new NewSendSubmitCommand(
+        String expected = new SubmitCommand(
                 "inspector-demo-1", "orchid",
-                new com.irs.mef.newsend.domain.Ein("003000004"),
-                com.irs.mef.newsend.domain.FormType.F941,
-                new com.irs.mef.newsend.domain.TaxPeriod(
+                new com.irs.mef.filing.Ein("003000004"),
+                com.irs.mef.filing.FormSpec.F941,
+                new com.irs.mef.filing.TaxPeriod(
                         java.time.LocalDate.of(2026, 1, 1), java.time.LocalDate.of(2026, 3, 31)),
-                FixtureSnapshots.RETURN_XML, false).returnXmlSha256();
+                FixtureSnapshots.RETURN_XML).returnXmlSha256();
         assertEquals(expected, xml.sha256());
         assertEquals(com.irs.mef.inspector.Sha256Hex.ofUtf8(xml.original()), xml.sha256(),
                 "sha256() must hash original(), never pretty()");

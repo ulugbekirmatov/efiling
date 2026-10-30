@@ -1,128 +1,112 @@
-# CLAUDE.md
+Act with ./mef; every verb except ats and login is offline and safe to repeat.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e-File (MeF) system through the A2A Client SDK v17 (WSDL 10.A), as Pyramos Software LLC, a Reporting Agent filing for other companies. The Java app is `mef-spring-boot-integration/`; `c2s-web/` is the operator UI; `c2s/` explains the C2S platform (start at `c2s/README.md`); `test-scenarios/` holds the ATS scenarios; `94x-2026/` holds IRS schemas and business rules; `Version_17/` holds the SDK zip (`mef-spring-boot-integration/install-sdk-jars.sh` puts its five jars into `~/.m2`).
 
-## Project Overview
+## Commands
 
-Spring Boot application (Java 17, Spring Boot 3.2.0, Maven) integrating the IRS Modernized e-File (MeF) Client SDK v17 (WSDL 10.A) for Application-to-Application (A2A) e-filing of employment tax returns (Form 94x family, primarily 941). Main code lives in `mef-spring-boot-integration/`.
+```
+./mef check              offline suite. Safe to repeat. Refuses a JDK other than 17.
+./mef scenarios          id, form, title
+./mef preflight <id>     offline compose and validate. Never logs in.
+./mef pdf <id>           offline paper copy on the IRS forms. <id> is a scenario or a captured submission id.
+./mef ats <id>           LIVE send to ATS. Exit 0 only when the ack is Accepted.
+./mef login              LIVE login probe, no send.
+```
 
-**Project phase (as of 2026-08):** The integration was originally built and proven against IRS ATS for **OneWell** (ETIN 97661 / EFIN 238689 / ASID 23868900 — all OneWell values, all being replaced). The project is now being re-implemented for **Pyramos Software LLC**, which holds the IRS **Reporting Agent** role and will e-file on behalf of *other companies*. That changes both the IRS enrollment (new EFIN/ETIN/ASID under Pyramos, Reporting Agent + Transmitter provider options) and the code (multi-tenant filers, `ReportingAgent` originator type, `ReportingAgentPINGrp` signature, per-client Form 8655 authorizations). See `CODE_MAP.md` for the code map and `mef-efiling-onboarding.html` for the end-to-end IRS onboarding guide.
+## Where facts live
 
-**Pyramos onboarding status:** the IdenTrust IGC device certificate is already issued (`Pyramos Software Certificates/`: `O=Pyramos Software LLC, CN=c2s.pahealthmanagement.org`, issued by IGC Device CA 2, valid 2026-08-21 → 2027-08-21). The e-file application (EFIN/ETIN), Automated Enrollment (ASID + cert registration), keystore wiring, and ATS re-testing are still to do.
-
-## Repository Layout
-
-| Path | Contents |
+| Fact | File |
 |---|---|
-| `mef-spring-boot-integration/` | The Spring Boot app |
-| `c2s/` | C2S platform context: how to write backend functions (Nashorn ES5), queries (QIDs), and page scripts that call them. Start at `c2s/README.md` |
-| `Version_17/A2A_Toolkit_Version17.0/` | IRS A2A Toolkit v17 (WSDL 10.A), the SDK the pom builds against. Only `MeF_Client_SDK/Java/dist/mef_client_sdk.zip` and the release notes are tracked; the rest of the 626 MB zip is gitignored |
-| `Version_16/A2A_Toolkit_Version16.0/` | IRS A2A Toolkit v16 (WSDL 10.9), superseded 2026-09-30. v17's Java SDK differs only in the `WSDL_VERSION`/`TOOLKIT_VERSION` constants and `MeFHeader.xsd` `WSDLVersionNum` fixed value |
-| `test-scenarios/ats-ty2026/` | TY2026 94x ATS scenarios 1-4: IRS PDF, `client-return-body.xml` (the Reporting Agent client body), `line-mapping.tsv` per scenario |
-| `test-scenarios/ats-ty2026-annual/` | TY2026 Form 940 ATS scenarios `940-1`..`940-3` (own `scenarios.json`). Element names are unverified guesses until the 2026v2.0 schema lands |
-| `Version_15/` | Older toolkit, reference only |
-| `94x-2026/` | IRS 94x XSD schemas + business rules, 2026 Q1–Q4 (note quarterly version churn v1.0→v4.0) |
-| `test-scenarios/` | ATS test scenario PDFs, hand-built Return XML, 941 XSDs (see its README) |
-| `Pyramos Software Certificates/` | Pyramos IdenTrust cert material: private key, CSR, issued cert, CA chain |
-| `Root.txt`, `SubCA1.txt` | IdenTrust Global Common Root CA 1 + IGC Device CA 2 chain |
-| `create-pkcs12.sh`, `verify-pkcs12.sh` | Keystore assembly/verification (contain stale hardcoded paths — fix before use) |
-| `mef-efiling-onboarding.html` | 7-phase IRS MeF onboarding guide (e-Services → e-file app → cert → AE → keystore → ATS → PRD) |
-| `identrust-igc-certificate-guide.html` | IdenTrust IGC certificate deep-dive (CSR → PKCS12 → IRS registration) |
+| EFIN, PIN, software IDs, filing IP | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/Originator.java` |
+| IRS session | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/IrsSession.java` |
+| Per-form facts (940, 941, 941-X) | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/FormSpec.java` |
+| Schema release and returnVersion | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/SchemaRelease.java` |
+| Journal states | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/JournalState.java` |
+| Idempotency and replay | `FilingDesk.file` in `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/FilingDesk.java` |
+| Scenario list | `test-scenarios/*/scenario-*/scenario.json` |
+| Paper copy: which MeF document prints on which IRS PDF | `mef-spring-boot-integration/src/main/java/com/irs/mef/returnpdf/IrsForm.java` |
+| Web state to tone | `c2s-web/app/lib/states.js` |
+| Web page list | `c2s-web/app/registry.js` |
+| Web state contract | `c2s-web/generated/mef-facts.json` |
 
-## Build, Run, Test
+DocBlocksTest writes the three blocks below. Do not hand-edit them. `docs.update=true` rewrites them.
 
-```bash
-cd mef-spring-boot-integration
-export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home   # maven-enforcer fails the build on any other JDK
+## Routes
 
-mvn clean package               # build
-mvn clean package -DskipTests   # build without tests
-mvn spring-boot:run             # run (JVM flags + A2A_TOOLKIT_HOME are preconfigured in pom.xml)
-mvn test -Dtest=AtsScenarioComposeTest            # single test class (offline)
-./test-mef-login.sh                               # live ATS login probe (runs the app, GET /mef/auth/login; green 2026-09-16)
-```
+<!-- generated:routes -->
+GET /api/inspector/sends
+GET /api/inspector/sends/{submissionId}
+GET /api/inspector/sends/{submissionId}/pdf
+GET /api/mef/filings/{submissionId}
+GET /api/mef/session
+GET /api/mef/session/certificate
+POST /api/inspector/sends/{submissionId}/ack
+POST /api/mef/filings
+POST /api/mef/session/login
+POST /api/mef/session/logout
+<!-- /generated -->
 
-**Live IRS tests:** a class that logs in to IRS carries `@LiveIrsTest` (`src/test/java/com/irs/mef/live/`) and runs only when `-Dmef.live.test=<its simple class name>`, so one flag arms one class. `LiveIrsTestGuardTest` fails `mvn test` if a test calls `.login(` without the annotation or uses the retired `mef.integration.test.enabled` switch. Send one ATS scenario with `./run-ra-ats-test.sh <1-4|940-1|940-2|940-3>` (it passes `-Dmef.ats.scenario=<n>`; the test has no default and fails without it). The pom's surefire block sets the `--add-opens` flags; the live test sets `A2A_TOOLKIT_HOME` itself. The login probe is `test-mef-login.sh`. A plain `mvn test` is offline-safe. CI (`.github/workflows/test.yml`) runs `mvn -B test` and, in `c2s-web/`, `npm test` plus `npx next build` on every push and PR.
+## Environment variables
 
-**⚠️ Build prerequisites (installed 2026-09-16 via `brew install openjdk@17 maven`; `JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`):** the pom declares the SDK and Metro stack as ordinary Maven coordinates, but **five of them are not on Maven Central**: `gov.irs.mef:mef-client-sdk:17.0` and the four `com.sun.xml.ws:webservices-{api,rt,extra,tools}:4.0.4` jars. All five ship inside the SDK zip; install them into `~/.m2` once per machine with `mef-spring-boot-integration/install-sdk-jars.sh` (CI runs the same script, `.github/workflows/test.yml`). `org.apache.santuario:xmlsec:4.0.2` does resolve from Central. There is **no `lib/` directory** in the repo.
+<!-- generated:env -->
+MEF_ASID
+MEF_EFIN
+MEF_ETIN
+MEF_KEYSTORE_PASSWORD
+MEF_KEYSTORE_PATH
+MEF_KEY_ALIAS
+MEF_RA_ADDRESS_LINE1
+MEF_RA_CITY
+MEF_RA_EIN
+MEF_RA_FILING_IP
+MEF_RA_NAME
+MEF_RA_NAME_CONTROL
+MEF_RA_PIN
+MEF_RA_STATE
+MEF_RA_ZIP
+MEF_SOFTWARE_ID
+MEF_SOFTWARE_ID_ANNUAL
+<!-- /generated -->
 
-When running a packaged JAR manually, these JVM args are mandatory for Java 17 + Metro/JAX-WS:
+## Scenarios
 
-```bash
-java \
-  -DA2A_TOOLKIT_HOME=./src/main/resources/mef_config \
-  --add-opens java.base/java.lang=ALL-UNNAMED \
-  --add-exports java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED \
-  --add-exports java.xml.crypto/com.sun.org.apache.xml.internal.security=ALL-UNNAMED \
-  --add-exports java.xml.crypto/org.jcp.xml.dsig.internal.dom=ALL-UNNAMED \
-  -jar target/mef-spring-boot-integration-1.0.0.jar
-```
+<!-- generated:scenarios -->
+| id | form | title |
+|---|---|---|
+| 1 | 941 | Orchid Incorporated, baseline Form 941 |
+| 2 | 941 | Marigold Corporation, semiweekly depositor with Schedule B |
+| 3 | 941 | Daffodil Accounting, CPEO aggregate 941 with Schedule R and Form 8974 |
+| 4 | 941X | Orchid Incorporated, Form 941-X correcting scenario 1 |
+| 940-1 | 940 | Zinnia Company, single-state Form 940 with a refund |
+| 940-2 | 940 | Poppy Company, multi-state Form 940 with Schedule A credit reduction |
+| 940-3 | 940 | Crocus Company Inc, Section 3504 agent aggregate Form 940 with Schedule R and a balance due |
+<!-- /generated -->
 
-XML validation without the app: `cd test-scenarios/schemas/941 && xmllint --noout --schema Return941.xsd ../../941-scenario-1-orchid-q1-2026/Return941-Scenario1.xml`
+## Pyramos
 
-## Architecture
+Pyramos Software LLC files 94x returns as a Reporting Agent for other companies. The device certificate is in `Pyramos Software Certificates/` (`O=Pyramos Software LLC`, `CN=c2s.pahealthmanagement.org`, IGC Device CA 2, valid 2026-08-21 to 2027-08-21). Renew it before 2027-08-21.
 
-Standard layers under `src/main/java/com/irs/mef/`: `controller/` (REST), `service/` (SDK calls), `dto/`, `config/`, `exception/`. Server on `:8080`, context path `/api`.
+Sends use EFIN 237861. EFIN 102192 starts with 10, and `Originator` refuses that prefix (R0000-118-01). ETINs: 44753 (Transmitter, production), 44754 (Software Developer, test; this one for ATS), 44762 (Online Provider). ASID 10219201. Quarterly software ID 26996214. The values live in `mef-spring-boot-integration/.env` (gitignored).
 
-**The central pattern — reflection for every SDK call.** All MeF SDK invocations go through `Class.forName("gov.irs.mef...")` + `getMethod().invoke()` to sidestep Java 17 module-access problems with the Metro stack. Follow this pattern for any new SDK operation (model: `MefClientService.login`).
+ATS accepted the four quarterly scenarios under EFIN 237861: scenario 1 Orchid 941 `2378612026268yagqidh` (2026-09-25); scenario 2 Marigold 941 `2378612026287enq7gwn`, scenario 3 Daffodil 941 `237861202628741tq062`, scenario 4 Orchid 941-X `2378612026287svv97c5` (2026-10-14). Acks are in `mef-spring-boot-integration/data/ack-store/`.
 
-**Session model.** `MefClientService` performs certificate-only login (`LoginClient.invoke(ctx, keystoreFile, keystorePassword, keyAlias)`), extracts the SAML token, and stores the **`ServiceContext` as a singleton instance field**. Every subsequent SDK call MUST reuse `getCurrentServiceContext()` — a fresh `ServiceContext` invalidates the IRS session. State is not thread-safe and has no expiry handling. `logout()` now calls `LogoutClient.invoke` by reflection and always clears local state afterward.
+Form 940 is pending on `FormSpec` until the 2026v2.0 bundle is copied into the schema resources. Preflight refuses it with that reason, and `AtsScenarioComposeTest` skips with the same text. To open it: copy the bundle (e-Services SOR mailbox) verbatim to `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, switch `FormSpec.F940` to `Bundled` with the real path, and fix the guessed element names in the three 940 fixtures until the skipped tests pass. A quarterly pass does not open annual testing; call e-Help (866-255-0654). Annual returns need `MEF_SOFTWARE_ID_ANNUAL`.
 
-**Submission pipeline** (`SubmissionService`): return XML string → in-memory `SubmissionXML` → generated manifest XML → `SubmissionBuilder.createIRSSubmissionArchive` → `PostmarkedSubmissionArchive` → container → `SendSubmissionsClient.invoke` → Deposit ID.
+Not yet built: per-client Form 8655 authorization. Any caller of `POST /api/mef/filings` can file any EIN under the Reporting Agent PIN, and the app has no authentication.
 
-**Config flow:** `MefSdkConfig` binds `mef.sdk.*` from `application.yml`; secrets come from env vars or a `.env` file loaded by `DotenvEnvironmentPostProcessor` (system env wins). SDK-owned config (endpoints, XWSS security, transport, logging) lives in `src/main/resources/mef_config/config/` and is selected via `A2A_TOOLKIT_HOME`.
+## Hard-won
 
-### Implementation status (verified 2026-08-28)
-
-Working against ATS: **Login** (`MefClientService.java:69-203`), **Logout** (`LogoutClient.invoke` via reflection, `MefClientService.java:215-255`), **SendSubmissions** (`SubmissionService.java:39-186`, manifest at `:272-311`), **GetSubmissionStatus** (`StatusService.java:38-142`), **GetNewAcks** (`AcknowledgementService.java:175-273`), **GetAck** (`AcknowledgementService.java:68-167` — its "ackId" param is really the submission ID), acks-by-submission via client-side filtering (`:286-394`), certificate diagnostics (`MefClientService.java:342-568`, `GET /mef/auth/test-certificate`).
-
-Stubbed / broken — do not trust these endpoints: **GetNewSubmissionsStatus** (returns an empty list, `StatusService.java:149-199`), **createSubmissionArchive** (fabricates a path, `SubmissionService.java:197-234`). `/test/form941` now resolves the Orchid scenario XML relative to the repo root.
-
-Other traps: `RetryConfig` retries **every** `Exception` (including `MefException`s like `NOT_LOGGED_IN`) despite in-service "don't retry" comments; `getAcknowledgmentsBySubmission` drains the IRS ack queue (GetNewAcks marks acks retrieved server-side) and discards non-matching acks; every `MefException` maps to HTTP 500. Full defect list and per-class map with verified line numbers: `CODE_MAP.md` §7.
-
-## Hard-Won Gotchas (do not rediscover these)
-
-1. **Submission ID:** exactly 20 chars, `[0-9]{13}[a-z0-9]{7}` = 6-digit EFIN + **`yyyyDDD` (year + day-of-year)** + 7 lowercase alphanumerics. The date must be the **current processing year**, not the tax-period year (`MEF00004` otherwise). `SUBMISSION_ID_FORMAT.md` is the authority; `FORM_941_SUBMISSION_IMPLEMENTATION.md` still teaches a superseded `YYYYmDD` format — ignore that part. Correct live code: `SubmissionController.java:206-211`.
-2. **In-memory SDK objects only:** file-based `SubmissionXML`/`SubmissionManifest` constructors break serialization (`InMemoryMethodOnFileBasedInstanceException`). Always `new SubmissionXML(filename, contentString)`.
-3. **Manifest is mandatory** (`MeFClientSDK000004` if null): SubmissionId, EFIN, GovernmentCd, FederalSubmissionTypeCd, TaxPeriodBeginDt/EndDt, TIN. `FederalSubmissionTypeCd` is currently hardcoded to `941` (`SubmissionService.java:288`).
-4. **One EFIN, three places; the ETIN only logs in.** The originator EFIN prefixes the submission ID, fills the manifest `<EFIN>`, and goes in `OriginatorGrp`. R0000-054-01 rejects a manifest EFIN that differs from `OriginatorGrp`, and `ReportingAgentAtsGate` refuses the mismatch. The ETIN authenticates the A2A session and nothing else. The old two-number model (ETIN in the manifest) was wrong, and its doc is deleted.
-5. **Status/ack payloads arrive as MTOM ZIP attachments**, not in the SOAP body — the SDK unpacks them.
-6. **IRS needs ~2–5 minutes** after submission before status/acks exist; earlier queries return `NO_STATUS_FOUND`/empty.
-7. **Debugging:** IRS errors surface as generic `ErrorExceptionDetail`; the real SOAP fault is only in `a2a_sdk.log.*` (project root, rotating, level FINEST). App log: `logs/mef-spring-boot.log`.
-8. **Ack data quality:** EFIN may return `999999`, TIN/amounts often null — **EIN is the reliable identifier** for employer returns.
-9. `sdk-reference/extracted/` contains **no `.class` files on a fresh clone** (gitignored) — only WSDLs survive. Regenerate with `sdk-reference/scripts/generate-sdk-docs.sh` before relying on it.
-
-## Configuration
-
-Env vars (or `.env`, gitignored): `MEF_ETIN`, `MEF_EFIN`, `MEF_ASID`, `MEF_KEYSTORE_PATH`, `MEF_KEYSTORE_PASSWORD`, `MEF_KEYSTORE_TYPE` (default `PKCS12`), `MEF_KEY_ALIAS`, `MEF_KEY_PASSWORD`, `MEF_SOFTWARE_ID` (94x quarterly package), `MEF_SOFTWARE_ID_ANNUAL` (94x annual package, 940; IRS issues it separately), optional `MEF_TRUSTSTORE_PATH`/`MEF_TRUSTSTORE_PASSWORD`, `A2A_TOOLKIT_HOME`. `MEF_USERNAME`/`MEF_PASSWORD` are declared but unused — authentication is certificate-only. No `.env` currently exists; recreate it with Pyramos values once issued.
-
-Environment selection: `mef.sdk.environment` = `ATS` (test, `la.alt.www4.irs.gov`) or `PRD`. Known inconsistency: `application.yml` lists PRD as `www.irs.gov` while the SDK's `prd_endpoints.properties` uses `la.www4.irs.gov` — the SDK properties win; reconcile before production.
-
-## SDK Reference
-
-Consult before implementing any SDK operation — never guess SDK APIs:
-- `mef-spring-boot-integration/sdk-reference/docs/` — `SDK_API_REFERENCE.md`, `SDK_QUICK_REF.md`, `SDK_WSDL_GUIDE.md`
-- `sdk-reference/extracted/META-INF/wsdl/` — WSDLs (`MeFTransmitterServicesMTOM.wsdl`, `MeFMSIServices.wsdl`). Extracted from an older SDK: v17's WSDLs are byte-identical, but its `MeFHeader.xsd` pins `WSDLVersionNum` to 10.A, not 10.9
-- `javap -classpath <path-to-mef_client_sdk.jar> -public gov.irs.mef.services.transmitter.SendSubmissionsClient` for exact signatures
-
-Key packages: `gov.irs.mef.services.msi.*` (Login/Logout), `gov.irs.mef.services.transmitter.*` (Submit/Status/Ack), `gov.irs.mef.services.data.*`, `gov.irs.a2a.mef.mefheader.*`.
-
-## Pyramos Reporting Agent Work (current focus)
-
-What must change relative to the OneWell build:
-
-1. **New IRS identifiers** — issued (2026-09): EFIN 102192, ETINs 44753 (Transmitter, Production type), 44754 (Software Developer, Test — use this one for ATS), 44762 (Online Provider); ASID 10219201 (active, both ETINs attached); Reporting Agent PIN issued; TY2026 94x quarterly Software ID 26996214 (on the accepted 2026-09-25 send; TY2027 needs a new `2799NNNN` ID, Pub 5078 §2.4). Values live in `mef-spring-boot-integration/.env` (gitignored). ⚠️ **EFIN 102192 starts with 10**, and rule R0000-118-01 forces `OriginatorTypeCd=OnlineFiler` for EFINs starting 10/21/32/44/53 — a `ReportingAgent` return under this EFIN is rejected, so `ReportingAgentOriginator` refuses these prefixes; sends use the non-online EFIN 237861. OneWell values (97661 / 238689 / 23868900) purged from `test-mef-login.sh`, `Form941SubmissionTest.java` and `SubmissionController.java` on 2026-09-16; `MefLoginIntegrationTest.java` (OneWell values, nonexistent keystore path, direct SDK imports) was deleted the same day; the live login probe is `test-mef-login.sh` against the running app, green against ATS on 2026-09-16 (SAML for ASID 10219201). EIN 003000004 is Orchid, the IRS ATS scenario-1 employer, not a OneWell value; it stays.
-   **ATS status (2026-10-14):** all four TY2026 94x quarterly scenarios **Accepted** under EFIN 237861 (the non-online EFIN in `.env`): scenario 1 Orchid 941 `2378612026268yagqidh` (2026-09-25); scenario 2 Marigold 941 + Schedule B `2378612026287enq7gwn`, scenario 3 Daffodil CPEO 941 + Schedule R + Form 8974 `237861202628741tq062`, scenario 4 Orchid 941-X `2378612026287svv97c5` (all 2026-10-14, first try). Acks are stored in `mef-spring-boot-integration/data/ack-store/`. Pub 5078 §3.5.1: one passed 941 scenario earns 94x quarterly Pass; e-Help (866-255-0654) records it.
-   **Annual (Form 940):** a quarterly pass does not cover 940/943/944/945; call e-Help to open annual testing. Annual returns use returnVersion `2026v2.0` (ATS from 2026-11-01; `2026v1.0` is ATS-only and expires 2026-10-31), header `TaxYr` instead of `QuarterEndingDt`. `SchemaRelease` owns version + bundle per form. The 2026v2.0 schema is distributed only via the e-Services SOR mailbox; copy it verbatim to `src/main/resources/schemas/94x/2026v2.0/`, fix `FormType.F940`'s path-in-bundle (a placeholder), correct the guessed element names in the three 940 fixtures until `AtsScenarioComposeTest.anAnnual940ReturnIsSchemaValid` stops skipping, then regenerate snapshots (`-Dats.snapshots.update=true`). Until then a 940 can't be sent: the validator throws on the missing bundle, and the live test refuses before login (`SchemaPreflight`).
-2. **Return header changes** (see `94x-2026/.../ReturnHeader94x.xsd`): `OriginatorTypeCd` = `ReportingAgent` (currently `OnlineFiler`), replace `OnlineFilerPINGrp` with `ReportingAgentPINGrp` (`PIN`, `RAPINEnteredByCd=REPORTING AGENT`, `JuratDisclosureCd=REPORTING AGENT PIN`), add `ReportingAgent94XFilerGrp` identifying Pyramos alongside the per-client `<Filer>`.
-3. **Multi-tenancy**: per-client EIN/name/address/tax period in submissions, a client model with Form 8655 authorization status, and persistence of submission ↔ deposit ID ↔ status ↔ acknowledgment per client (IRS retention requirement). Today there is no persistence and `SubmitRequest` has no tenant field.
-4. **Session hygiene**: `LogoutClient` is wired. Session expiry/refresh and a mutex around the singleton `ServiceContext` are still required at Reporting Agent volume.
-5. **Certificate**: build the PKCS12 from `Pyramos Software Certificates/` (cert + SubCA1 + Root chain), register it in Automated Enrollment against the new ASID. Note both the old OneWell cert and the new Pyramos cert share `CN=c2s.pahealthmanagement.org` — only the `O=` differs; don't mix them up. Cert renewal due before 2027-08-21.
-
-## Documentation Authority Notes
-
-- `SUBMISSION_ID_FORMAT.md` — correct (day-of-year format). Overrides the submission-ID section of `FORM_941_SUBMISSION_IMPLEMENTATION.md`.
-- `STATUS_AND_ACK_SERVICES_DOCUMENTATION.md` — SOAP request/response specs for status/ack services.
+- A submission id is the EFIN, the processing-date `yyyyDDD` (not the tax year), and 7 `[a-z0-9]`. `SubmissionIdTest` holds it.
+- That same EFIN is in the id, the manifest, and OriginatorGrp. `ManifestXmlTest` holds it. The ETIN only authenticates. `IrsSession` holds the session.
+- `IrsWire` builds the SDK submission from a filename and the XML string, and every `gov.irs` call there is reflective (`Class.forName`, then `invoke`).
+- `FilingDesk` does not retry SendSubmissions. Identical client bytes replay the journaled receipt. The state machine is `JournalState`; the replay rule is on `FilingDesk.file`.
+- The SOAP fault text is only in `a2a_sdk.log.*`. `IrsFault` carries that hint.
+- An online-filer EFIN prefix, or a filing IP that is not a routable IPv4, is refused at startup. `OriginatorTest` holds it.
+- IRS needs about 2 to 5 minutes after a send before an ack exists; an earlier GetAck finds nothing.
+- Ack data quality: the EFIN may come back `999999` and TIN or amounts may be null. The EIN is the reliable identifier.
+- Status and ack payloads arrive as MTOM ZIP attachments, not in the SOAP body; the SDK unpacks them.
+- Never guess an SDK API: read `mef-spring-boot-integration/sdk-reference/docs/` first. `sdk-reference/extracted/` has no class files on a fresh clone; `mef-spring-boot-integration/sdk-reference/scripts/generate-sdk-docs.sh` regenerates them.
+- `application.yml` names PRD as `www.irs.gov` while the SDK's `prd_endpoints.properties` uses `la.www4.irs.gov`. The SDK properties win; reconcile before production.
 
 ## Environment & Artifacts
 
@@ -137,19 +121,25 @@ When the operator corrects you, fix the mistake and add a row here. If the row a
 
 | Rule | Enforced by |
 |---|---|
-| A test that logs in to IRS runs only alone, armed by its own class name | `@LiveIrsTest` + `LiveIrsTestGuardTest` (fails on `.login(` without the annotation, or on the retired `mef.integration.test.enabled`) |
-| `mvn test` stays green and offline | `.github/workflows/test.yml` runs it on every push and PR |
-| Build and test on Java 17 only | `maven-enforcer-plugin` in `pom.xml` (`[17,18)`) |
-| Text files use LF; vendor drops and captures stay byte-exact | `.gitattributes` |
+| A test that logs in to IRS runs only alone, armed by its own class name | `@LiveIrsTest` + `LiveIrsTestGuardTest` (fails if a test calls `.probe(` or `.login(` without the annotation, or on the retired `mef.integration.test.enabled`) |
 | No OneWell identifiers (97661 / 238689 / 23868900) in new code or scripts | `RepoGuardTest.oneWellIdentifiersDoNotSpread` (per-file ratchet; line exceptions need `reason`, `expires`, `approved-by`) |
 | Superseded docs stay deleted | `RepoGuardTest.retiredDocsStayDeleted` |
-| Reporting Agent EFIN must not start 10/21/32/44/53 (R0000-118-01); filing IP must be a routable IPv4 (R0000-244) | `ReportingAgentOriginator` constructor + `ReportingAgentOriginatorTest` |
-| One EFIN in submission ID, manifest, and `OriginatorGrp` (R0000-054-01) | `ReportingAgentAtsGate.open` + `NewSendManifestXmlTest` |
-| Submission ID is `EFIN + yyyyDDD + 7 [a-z0-9]` | `NewSendSubmissionId` on the newsend path. **Not enforced** on the legacy `SubmissionController` path, which builds it inline |
+| Reporting Agent EFIN must not start 10/21/32/44/53 (R0000-118-01); filing IP must be a routable IPv4 (R0000-244) | `Originator` constructor + `OriginatorTest` |
+| One EFIN in submission ID, manifest, and `OriginatorGrp` (R0000-054-01) | `SubmissionId.mint` and the composer both read `Originator`; `ManifestXmlTest` |
+| Submission ID is `EFIN + yyyyDDD + 7 [a-z0-9]` | `SubmissionId`; `SubmissionIdTest` |
+| Only `FilingDesk` reaches IRS; every SDK call holds the one session lock; a GET never reaches IRS | package-private `IrsWire`/`IrsSession.call` in `com.irs.mef.filing`; `IrsSessionConcurrencyTest`; `GetRoutesNeverReachIrsTest` |
+| A form without a bundled schema cannot be sent | `FormSpec` `SchemaBinding.Pending`; preflight refuses it |
+| The paper copy never drops a value we sent, and never prints the RA PIN | `ReturnXml.requireAllPrinted` fails the render; `Form941SheetTest` |
+| No live send after a reject until each reject code has a local rule | `RejectLedger` inside `AtsRun`; `RejectLedgerTest`, `LocalRulesTest` |
+| `./mef ats` exits 0 only on an Accepted ack | `AtsVerdict.exitCode`; `AtsVerdictTest` |
+| The scenario directories are the only scenario list | `ScenarioDirectoryTest` |
+| Docs name no deleted symbol or path, carry no raw build commands, and generated blocks match the code | `DocReferenceGuardTest`, `DocCommandGuardTest`, `DocBlocksTest` |
+| The web state contract matches the Java states; one tone table; one page list | `ContractExportTest`, `c2s-web/app/lib/states.test.js`, `c2s-web/app/design-system/design-system.test.js`, `c2s-web/app/registry.test.js` |
+| The offline suite stays green on every push and PR | `.github/workflows/test.yml` |
+| Build and test on Java 17 only | `maven-enforcer-plugin` in `mef-spring-boot-integration/pom.xml`; `./mef check` doctor |
+| Text files use LF; vendor drops and captures stay byte-exact | `.gitattributes` |
+| `next build` must not break a running `next dev` | `c2s-web/next.config.js` picks `distDir` by phase |
 | Never visit the TaxBandits website (taxbandits.com, any subdomain), by any tool or delegate; use IRS/SSA primary sources | `~/.claude/hooks/taxbandits-gate.sh` (PreToolUse deny on WebFetch, WebSearch, browser navigation, and shell fetches naming the domain) plus `permissions.deny` WebFetch rules in `~/.claude/settings.json`. A grok/Cursor brief is not gated: docs only |
-| `next build` must not break a running `next dev` | `c2s-web/next.config.js` picks `distDir` by phase (`.next` for dev, `.next-build` for build/start), so they share nothing |
-| Personal identifiers and session credentials are masked in one place before anything reaches the browser; a sibling repo's script is loaded through one helper | `c2s-web/app/lib/redact.guard.test.js` fails on a second copy outside `app/lib/redact.js` or `app/lib/nodeRequire.js`; each catalog's boundary test asserts its raw SSNs are absent from the payload |
-| `npm test` and `npx next build` in `c2s-web` stay green | `.github/workflows/test.yml` job `c2s-web-test` on every push and PR; `node --test` discovery, so a new test file needs no list entry |
+| Personal identifiers and session credentials are masked in one place before anything reaches the browser; a sibling repo's script is loaded through one helper | `c2s-web/app/lib/redact.guard.test.js` fails on a second copy outside `c2s-web/app/lib/redact.js` or `c2s-web/app/lib/nodeRequire.js`; each catalog's boundary test asserts its raw SSNs are absent from the payload |
 | Search the repo for a reject code before debugging it | Docs only (judgment) |
 | Reports go to the repo root or `reports/`; migrations check rollout phases first; Basecamp todos are deduped | Docs only (judgment) |
-

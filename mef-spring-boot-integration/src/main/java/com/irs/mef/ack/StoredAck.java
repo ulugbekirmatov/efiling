@@ -1,7 +1,5 @@
 package com.irs.mef.ack;
 
-import com.irs.mef.dto.AckResponse;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -45,38 +43,5 @@ public record StoredAck(
         Objects.requireNonNull(source, "source");
         errorCodes = errorCodes == null ? List.of() : List.copyOf(errorCodes);
         errorMessages = errorMessages == null ? List.of() : List.copyOf(errorMessages);
-    }
-
-    public static StoredAck from(AckResponse ack, Instant retrievedAt, AckSource source) {
-        return new StoredAck(
-                ack.getAckId(),
-                ack.getSubmissionId(),
-                retrievedAt,
-                source,
-                ack.getAckType(),
-                ack.getTimestamp(),
-                ack.getAckFilePath(),
-                ack.getErrorCodes(),
-                ack.getErrorMessages(),
-                ack.getDetails(),
-                ack.getEfin(),
-                ack.getEin(),
-                ack.getTin(),
-                ack.getTaxableIncomeAmt(),
-                ack.getTotalTaxAmt(),
-                ack.getBalanceDueAmt(),
-                ack.getExpectedRefundAmt(),
-                ack.getNetIncomeLossAmt(),
-                ack.getTaxYear(),
-                ack.getSubmissionType(),
-                ack.getSubmissionCategoryCode(),
-                ack.getElectronicPostmarkTs(),
-                ack.getIrsReceivedDate(),
-                ack.getTaxPeriodEndDate(),
-                ack.getIrsSubmissionId(),
-                ack.getReceiptId(),
-                ack.getPaymentRequestCode(),
-                ack.getHasValidationErrors(),
-                ack.getHasValidationAlerts());
     }
 }

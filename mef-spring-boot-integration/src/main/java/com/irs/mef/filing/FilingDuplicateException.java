@@ -1,0 +1,36 @@
+package com.irs.mef.filing;
+
+import org.springframework.http.HttpStatus;
+
+import java.util.List;
+
+public final class FilingDuplicateException extends FilingException {
+
+    private final String errorCode;
+    private final List<String> conflictingSubmissionIds;
+
+    FilingDuplicateException(String errorCode, String message, List<String> conflictingSubmissionIds) {
+        super(message);
+        this.errorCode = errorCode;
+        this.conflictingSubmissionIds = List.copyOf(conflictingSubmissionIds);
+    }
+
+    public List<String> conflictingSubmissionIds() {
+        return conflictingSubmissionIds;
+    }
+
+    @Override
+    public HttpStatus status() {
+        return HttpStatus.CONFLICT;
+    }
+
+    @Override
+    public String errorCode() {
+        return errorCode;
+    }
+
+    @Override
+    public boolean resubmitSafe() {
+        return false;
+    }
+}

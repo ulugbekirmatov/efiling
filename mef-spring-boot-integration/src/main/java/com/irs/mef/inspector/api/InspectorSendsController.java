@@ -2,19 +2,22 @@ package com.irs.mef.inspector.api;
 
 import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.StoredAck;
-import com.irs.mef.exception.MefException;
+import com.irs.mef.filing.IrsSession;
 import com.irs.mef.inspector.api.InspectorSendViews.ApiError;
 import com.irs.mef.inspector.api.InspectorSendViews.SendDetailView;
 import com.irs.mef.inspector.api.InspectorSendViews.SendSummaryView;
 import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
 import com.irs.mef.inspector.ring.SnapshotId;
-import com.irs.mef.newsend.domain.NewSendSubmissionId;
-import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
-import com.irs.mef.newsend.journal.NewSendSubmissionJournal;
-import com.irs.mef.service.AcknowledgementService;
+import com.irs.mef.filing.SubmissionId;
+import com.irs.mef.filing.SubmissionRecord;
+import com.irs.mef.filing.Journal;
+import com.irs.mef.returnpdf.ReturnPdf;
+import com.irs.mef.returnpdf.ReturnPdfException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,23 +33,21 @@ import java.util.Optional;
 @Slf4j
 public class InspectorSendsController {
 
-    private static final String NOT_LOGGED_IN = "NOT_LOGGED_IN";
     private static final String ACK_NOT_FOUND = "ACK_NOT_FOUND";
     private static final String ACK_RETRIEVAL_FAILED = "ACK_RETRIEVAL_FAILED";
 
     private final SendSnapshotRing ring;
-    private final NewSendSubmissionJournal journal;
+    private final Journal journal;
     private final AckStore ackStore;
-    private final AcknowledgementService acknowledgementService;
-
+    private final IrsSession session;
     public InspectorSendsController(SendSnapshotRing ring,
-                                    NewSendSubmissionJournal journal,
+                                    Journal journal,
                                     AckStore ackStore,
-                                    AcknowledgementService acknowledgementService) {
+                                    IrsSession session) {
         this.ring = ring;
         this.journal = journal;
         this.ackStore = ackStore;
-        this.acknowledgementService = acknowledgementService;
+        this.session = session;
     }
 
     @GetMapping
@@ -74,37 +75,57 @@ public class InspectorSendsController {
                 snapshot.get(), journalRow(id.get()), ackStore.find(id.get().value())));
     }
 
+    @GetMapping("/{submissionId}/pdf")
+    public ResponseEntity<?> pdf(@PathVariable String submissionId) {
+        Optional<SnapshotId> id = SnapshotId.tryParse(submissionId);
+        if (id.isEmpty()) {
+            return invalidSubmissionId();
+        }
+        Optional<SendSnapshot> snapshot = ring.get(id.get());
+        if (snapshot.isEmpty()) {
+            return error(HttpStatus.NOT_FOUND, "SEND_NOT_FOUND",
+                    "Submission " + id.get().value() + " is not in the local send ring");
+        }
+        try {
+            byte[] pdf = ReturnPdf.render(snapshot.get().returnXml().original());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + id.get().value() + ".pdf\"")
+                    .body(pdf);
+        } catch (ReturnPdfException e) {
+            return error(HttpStatus.UNPROCESSABLE_ENTITY, "PDF_NOT_PRINTABLE", e.getMessage());
+        }
+    }
+
     @PostMapping("/{submissionId}/ack")
     public ResponseEntity<?> retrieveAck(@PathVariable String submissionId) {
         Optional<SnapshotId> id = SnapshotId.tryParse(submissionId);
         if (id.isEmpty()) {
             return invalidSubmissionId();
         }
-        StoredAck ack;
         try {
-            ack = acknowledgementService.retrieveAndRecordAcknowledgment(id.get().value());
-        } catch (MefException e) {
-            return ackFailure(e.getErrorCode(), e.getMessage(), e);
+            Optional<StoredAck> found = session.getAck(id.get().value());
+            if (found.isEmpty()) {
+                return error(HttpStatus.NOT_FOUND, ACK_NOT_FOUND,
+                        "The IRS has no acknowledgment for submission ID: " + id.get().value());
+            }
+            StoredAck ack = found.get();
+            ackStore.record(ack);
+            return ResponseEntity.ok(ack);
         } catch (RuntimeException e) {
-            return ackFailure(ACK_RETRIEVAL_FAILED, e.getMessage(), e);
+            return ackFailure(e);
         }
-        return ResponseEntity.ok(ack);
     }
 
-    private Optional<NewSendSubmissionRecord> journalRow(SnapshotId id) {
-        return journal.findBySubmissionId(new NewSendSubmissionId(id.value()));
+    private Optional<SubmissionRecord> journalRow(SnapshotId id) {
+        return journal.findBySubmissionId(new SubmissionId(id.value()));
     }
 
-    private static ResponseEntity<ApiError> ackFailure(String code, String message, RuntimeException cause) {
-        if (NOT_LOGGED_IN.equals(code)) {
-            return error(HttpStatus.CONFLICT, NOT_LOGGED_IN, message);
-        }
-        if (ACK_NOT_FOUND.equals(code)) {
-            return error(HttpStatus.NOT_FOUND, ACK_NOT_FOUND, message);
-        }
+    /** The cause can name the keystore path, so it stays in the server log. */
+    private static ResponseEntity<ApiError> ackFailure(RuntimeException cause) {
         log.warn("inspector: GetAck failed: {}", cause.toString());
         return error(HttpStatus.BAD_GATEWAY, ACK_RETRIEVAL_FAILED,
-                message != null ? message : "Acknowledgment retrieval failed");
+                "Acknowledgment retrieval failed; see server logs");
     }
 
     private static ResponseEntity<ApiError> invalidSubmissionId() {

@@ -1,0 +1,32 @@
+package com.irs.mef.filing;
+
+
+import java.util.Map;
+
+/**
+ * Schema-valid literals for offline tests. These are XSD stand-ins, not Pyramos enrollment values,
+ * and must never be used on the ATS path.
+ */
+final class ReportingAgentOriginatorStandIn {
+
+    private ReportingAgentOriginatorStandIn() {}
+
+    static Originator pyramosShaped() {
+        // EFIN 000000 is legal EFINType; NOT 238689 (OneWell). Not IRS-issued.
+        // PIN 00000 is legal PINType; NOT 1234567890 (OnlineFiler SignatureType).
+        // SoftwareId 00000000 is legal; NOT 12345678.
+        // Agent EIN 000000000 is legal EINType; NOT 003000004 (Orchid filer).
+        return new Originator(
+                new Efin("000000"),
+                new ReportingAgentPin("00000"),
+                new SoftwareIds(Map.of(
+                        SchemaRelease.Y2026Q1_V4, new SoftwareId("00000000"),
+                        SchemaRelease.Y2026_V2, new SoftwareId("00000000"))),
+                "192.0.2.1",
+                new ReportingAgentIdentity(
+                        new Ein("000000000"),
+                        "PYRAMOS SOFTWARE LLC",
+                        new NameControl("PYRA"),
+                        new UsAddress("100 Market Street", "Philadelphia", "PA", "19103")));
+    }
+}

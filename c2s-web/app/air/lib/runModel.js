@@ -1,3 +1,5 @@
+import { toneFor } from "../../lib/states.js";
+
 export const RUN_ID_RE = /^[0-9]{8}T[0-9]{6}Z-[a-z0-9-]{1,40}-[0-9a-f]{6}$/;
 
 export function isRunId(value) {
@@ -29,16 +31,16 @@ export const EXIT = { TOOK: 0, CHANNEL_FAILURE: 1, LOCAL_GUARD: 2, REJECTED_OR_N
 
 // One row per state a run can be in. `sent`: the bytes may have reached IRS, so the UTID is spent.
 export const STAGES = {
-  composed: { label: "Composed, not sent", tone: "waiting", sent: false, next: "Validate, preview, then submit to AATS." },
-  blocked: { label: "Blocked before send", tone: "attention", sent: false, next: "A local guard stopped the send. Read the message, fix the setup, submit again." },
-  sending: { label: "Sending", tone: "waiting", sent: true, next: "A submit is running. If it never finishes, compose a new run; this UTID may have reached IRS." },
-  fault: { label: "Failed, may have reached IRS", tone: "attention", sent: true, next: "Read the message and any TPE code. Compose a new run before sending again." },
-  PROCESSING: { label: "Processing", tone: "waiting", sent: true, next: "Wait 10 minutes, then check status. Do not resubmit." },
-  ACCEPTED: { label: "Accepted", tone: "safe", sent: true, next: "Record the Receipt ID. The scenario is done." },
-  ACCEPTED_WITH_ERRORS: { label: "Accepted with errors", tone: "attention", sent: true, next: "Read the errors, fix the data, follow the AATS correction steps." },
-  PARTIALLY_ACCEPTED: { label: "Partially accepted", tone: "attention", sent: true, next: "Read the errors, fix the data, follow the AATS correction steps." },
-  REJECTED: { label: "Rejected", tone: "attention", sent: true, next: "Read the errors, fix the data, compose a new run, submit it." },
-  NOT_FOUND: { label: "Not found", tone: "attention", sent: true, next: "Check the Receipt ID and that this run's session was the one submitted." },
+  composed: { label: "Composed, not sent", tone: toneFor("air.stage", "composed"), sent: false, next: "Validate, preview, then submit to AATS." },
+  blocked: { label: "Blocked before send", tone: toneFor("air.stage", "blocked"), sent: false, next: "A local guard stopped the send. Read the message, fix the setup, submit again." },
+  sending: { label: "Sending", tone: toneFor("air.stage", "sending"), sent: true, next: "A submit is running. If it never finishes, compose a new run; this UTID may have reached IRS." },
+  fault: { label: "Failed, may have reached IRS", tone: toneFor("air.stage", "fault"), sent: true, next: "Read the message and any TPE code. Compose a new run before sending again." },
+  PROCESSING: { label: "Processing", tone: toneFor("air.stage", "PROCESSING"), sent: true, next: "Wait 10 minutes, then check status. Do not resubmit." },
+  ACCEPTED: { label: "Accepted", tone: toneFor("air.stage", "ACCEPTED"), sent: true, next: "Record the Receipt ID. The scenario is done." },
+  ACCEPTED_WITH_ERRORS: { label: "Accepted with errors", tone: toneFor("air.stage", "ACCEPTED_WITH_ERRORS"), sent: true, next: "Read the errors, fix the data, follow the AATS correction steps." },
+  PARTIALLY_ACCEPTED: { label: "Partially accepted", tone: toneFor("air.stage", "PARTIALLY_ACCEPTED"), sent: true, next: "Read the errors, fix the data, follow the AATS correction steps." },
+  REJECTED: { label: "Rejected", tone: toneFor("air.stage", "REJECTED"), sent: true, next: "Read the errors, fix the data, compose a new run, submit it." },
+  NOT_FOUND: { label: "Not found", tone: toneFor("air.stage", "NOT_FOUND"), sent: true, next: "Check the Receipt ID and that this run's session was the one submitted." },
 };
 
 // TransmissionStatus.java, the only values the Java CLI prints in `status`.

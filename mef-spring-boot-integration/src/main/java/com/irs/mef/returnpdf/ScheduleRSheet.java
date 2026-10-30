@@ -23,6 +23,7 @@ final class ScheduleRSheet {
     private static final int DOLLARS_MAX = 10;
     private static final int CENTS_MAX = 3;
     private static final int TEXT_MAX = 10;
+    private static final int FIRST_PAGE_CLIENTS = 5;
 
     /** Page 1 lines 1–5, then the continuation sheet's lines 1–8. */
     private static final List<ClientRow> CLIENT_ROWS = List.of(
@@ -97,12 +98,16 @@ final class ScheduleRSheet {
     static void fill(ReturnXml.Node header, ReturnXml.Node form, Fields fields) {
         Filer filer = Filer.read(header);
         Quarter quarter = Quarter.read(header);
-        headers(filer, quarter, form, fields);
-        form.notPrinted("@documentName", "MeF document name; Schedule R has no box for it");
+        String attachedTo = header.text("ReturnTypeCd")
+                .orElseThrow(() -> new ReturnPdfException("ReturnHeader has no ReturnTypeCd"));
         List<ReturnXml.Node> clients = form.all("ClientInformationGrp");
         if (clients.size() > CLIENT_ROWS.size()) {
             throw new ReturnPdfException("IRS941ScheduleR lists " + clients.size()
                     + " clients and f941sr.pdf has " + CLIENT_ROWS.size() + " client rows");
+        }
+        headers(PAGE1, "1", filer, quarter, attachedTo, form, fields);
+        if (clients.size() > FIRST_PAGE_CLIENTS) {
+            headers(PAGE2, "2", filer, quarter, attachedTo, form, fields);
         }
         for (int i = 0; i < clients.size(); i++) {
             client(clients.get(i), CLIENT_ROWS.get(i), fields);
@@ -112,29 +117,24 @@ final class ScheduleRSheet {
         group(form, "TotalAggregateAndClientInfoGrp", LINE_9, fields);
     }
 
-    private static void headers(Filer filer, Quarter quarter, ReturnXml.Node form, Fields fields) {
-        identity(PAGE1 + "EINAndName[0].f1_1[0]", PAGE1 + "EINAndName[0].f1_2[0]",
-                PAGE1 + "EINAndName[0].f1_3[0]", filer, fields);
-        typeAndQuarter(form, quarter, fields, PAGE1 + "EINAndName[0].c1_1",
-                PAGE1 + "ReportForBox[0].f1_4[0]", PAGE1 + "ReportForBox[0].c1_2");
-        identity(PAGE2 + "EINAndName[0].f2_3[0]", PAGE2 + "EINAndName[0].f2_4[0]",
-                PAGE2 + "EINAndName[0].f2_5[0]", filer, fields);
-        typeAndQuarter(form, quarter, fields, PAGE2 + "EINAndName[0].c2_1",
-                PAGE2 + "ReportForBox[0].f2_6[0]", PAGE2 + "ReportForBox[0].c2_2");
-    }
-
-    private static void identity(String einPrefix, String einSerial, String name, Filer filer, Fields fields) {
-        fields.ein(einPrefix, einSerial, filer.ein());
-        fields.text(name, filer.name());
-    }
-
-    private static void typeAndQuarter(ReturnXml.Node form, Quarter quarter, Fields fields,
-            String typeBox, String year, String quarterBox) {
-        fields.check(typeBox + "[0]", "1", form.checked("Section3504AgentInd"));
-        fields.check(typeBox + "[1]", "2", form.checked("CPEOInd"));
-        fields.check(typeBox + "[2]", "3", form.checked("OtherThirdPartyInd"));
-        fields.text(year, Integer.toString(quarter.year()));
-        fields.check(quarterBox + "[" + (quarter.number() - 1) + "]", quarter.checkboxValue(), true);
+    /** Every page repeats the filer block. {@code pageNumber} is the digit IRS uses in that page's field names. */
+    private static void headers(String page, String pageNumber, Filer filer, Quarter quarter, String attachedTo,
+            ReturnXml.Node form, Fields fields) {
+        String box = "c" + pageNumber + "_";
+        String field = "f" + pageNumber + "_";
+        int fieldBase = "1".equals(pageNumber) ? 1 : 3;
+        fields.ein(page + "EINAndName[0]." + field + fieldBase + "[0]",
+                page + "EINAndName[0]." + field + (fieldBase + 1) + "[0]", filer.ein());
+        fields.text(page + "EINAndName[0]." + field + (fieldBase + 2) + "[0]", filer.name());
+        fields.check(page + "EINAndName[0]." + box + "1[0]", "1", form.checked("Section3504AgentInd"));
+        fields.check(page + "EINAndName[0]." + box + "1[1]", "2", form.checked("CPEOInd"));
+        fields.check(page + "EINAndName[0]." + box + "1[2]", "3", form.checked("OtherThirdPartyInd"));
+        fields.text(page + "ReportForBox[0]." + field + (fieldBase + 3) + "[0]", Integer.toString(quarter.year()));
+        fields.check(page + "ReportForBox[0]." + box + "2[" + (quarter.number() - 1) + "]",
+                quarter.checkboxValue(), true);
+        boolean correction = "941X".equals(attachedTo);
+        fields.check(page + "ThisScheduleBox[0]." + box + "3[" + (correction ? 1 : 0) + "]",
+                correction ? "2" : "1", true);
     }
 
     private static void client(ReturnXml.Node client, ClientRow row, Fields fields) {
@@ -142,12 +142,10 @@ final class ScheduleRSheet {
         fields.text(row.wageType(), client.text("WagesTypeCd"));
         client.child("ClientAllocationInformationGrp")
                 .ifPresent(group -> allocation(group, row.amounts(), fields));
-        client.text("ClientAllocationInformationGrp");
     }
 
     private static void group(ReturnXml.Node form, String name, Allocation line, Fields fields) {
         form.child(name).ifPresent(group -> allocation(group, line, fields));
-        form.text(name);
     }
 
     private static void allocation(ReturnXml.Node group, Allocation line, Fields fields) {

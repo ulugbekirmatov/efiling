@@ -80,7 +80,6 @@ final class Form941XSheet {
         header.notPrinted("DiscussWithThirdPartyNoInd", "Form 941-X has no third-party designee");
         header.notPrinted("DiscussWithThirdPartyYesGrp", "Form 941-X has no third-party designee");
         form.notPrinted("DirectDepositGrp", "f941x.pdf has no direct-deposit boxes");
-        form.notPrinted("@documentName", "IRS internal-use attribute; f941x.pdf has no box for it");
     }
 
     private static void entity(Filer filer, Fields fields) {

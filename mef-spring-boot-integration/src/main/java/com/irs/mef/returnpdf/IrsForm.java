@@ -9,27 +9,21 @@ import java.util.stream.Collectors;
  * element, owns its IRS PDF, and owns the sheet that maps the document onto that PDF's fields.
  */
 enum IrsForm {
-    IRS941("f941.pdf", 2, Form941Sheet::fill),
-    IRS941ScheduleB("f941sb.pdf", 1, ScheduleBSheet::fill),
-    IRS941ScheduleR("f941sr.pdf", 2, ScheduleRSheet::fill),
-    IRS8974("f8974.pdf", Integer.MAX_VALUE, Form8974Sheet::fill),
-    IRS941X("f941x.pdf", 5, Form941XSheet::fill);
+    IRS941("f941.pdf", Form941Sheet::fill),
+    IRS941ScheduleB("f941sb.pdf", ScheduleBSheet::fill),
+    IRS941ScheduleR("f941sr.pdf", ScheduleRSheet::fill),
+    IRS8974("f8974.pdf", Form8974Sheet::fill),
+    IRS941X("f941x.pdf", Form941XSheet::fill);
 
     /** Schema release (Return/@returnVersion) to the IRS PDF revisions bundled for it. */
     private static final Map<String, String> TEMPLATE_DIRECTORY_BY_RETURN_VERSION = Map.of(
             "2026Q1v4.0", "irs-forms/2026/");
 
     private final String templateFile;
-    private final int pagesKept;
     private final Sheet sheet;
 
-    /**
-     * @param pagesKept leading pages of the IRS PDF that belong to the return; the 941's third page
-     *                  is the 941-V payment voucher, which an e-filed return does not carry
-     */
-    IrsForm(String templateFile, int pagesKept, Sheet sheet) {
+    IrsForm(String templateFile, Sheet sheet) {
         this.templateFile = templateFile;
-        this.pagesKept = pagesKept;
         this.sheet = sheet;
     }
 
@@ -50,10 +44,6 @@ enum IrsForm {
         Fields fields = new Fields();
         sheet.fill(header, document, fields);
         return new FilledForm(this, directory + templateFile, fields.values());
-    }
-
-    int pagesKept() {
-        return pagesKept;
     }
 
     @FunctionalInterface

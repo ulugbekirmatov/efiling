@@ -22,8 +22,7 @@ final class Form8974Sheet {
     private Form8974Sheet() {}
 
     static void fill(ReturnXml.Node header, ReturnXml.Node form, Fields fields) {
-        // The header filer is the employment-tax return. This form's employer block is its own EIN.
-        Filer.read(header);
+        // The employer block is this form's own EIN and name, the client the credit belongs to.
         Quarter quarter = Quarter.read(header);
         employer(form, fields);
         String returnType = header.text("ReturnTypeCd")
@@ -34,16 +33,11 @@ final class Form8974Sheet {
         if (attached == 0) {
             fields.check(PAGE1 + "c1_2[" + (quarter.number() - 1) + "]", quarter.checkboxValue(), true);
         }
-        header.notPrinted("DiscussWithThirdPartyYesGrp", "f8974.pdf has no third-party designee");
-        header.notPrinted("DiscussWithThirdPartyNoInd", "f8974.pdf has no third-party designee");
-        header.notPrinted("PaidPreparerInformationGrp", "f8974.pdf has no paid preparer block");
-        header.notPrinted("TaxYr", "the calendar year box is the year of QuarterEndingDt");
         part1(form, fields);
         part2(form, fields);
     }
 
     private static void employer(ReturnXml.Node form, Fields fields) {
-        form.notPrinted("@documentName", "IRS internal attribute; f8974.pdf has no box for it");
         fields.ein(ENTITY + "f1_1[0]", ENTITY + "f1_2[0]",
                 form.text("EIN").orElseThrow(() -> new ReturnPdfException("IRS8974 has no EIN")));
         fields.text(ENTITY + "f1_3[0]", businessName(form));

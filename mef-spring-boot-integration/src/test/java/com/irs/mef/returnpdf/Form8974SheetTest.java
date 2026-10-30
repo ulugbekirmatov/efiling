@@ -62,11 +62,11 @@ class Form8974SheetTest {
     }
 
     @Test
-    void daffodilRendersOneFlattenedPage() throws IOException {
+    void daffodilRendersFormsInReturnDataOrder() throws IOException {
         byte[] pdf = ReturnPdf.render(sample());
 
         try (PDDocument document = Loader.loadPDF(pdf)) {
-            assertThat(document.getNumberOfPages()).isEqualTo(1);
+            assertThat(document.getNumberOfPages()).as("941 (2), Schedule R (1), 8974 (1)").isEqualTo(4);
             assertThat(document.getDocumentCatalog().getAcroForm().getFields()).isEmpty();
             assertThat(new PDFTextStripper().getText(document))
                     .contains("Qualified Small Business Payroll Tax Credit")
@@ -82,22 +82,8 @@ class Form8974SheetTest {
                 .values();
     }
 
-    /**
-     * The composed scenario also carries Form 941 and Schedule R. Schedule R has no sheet yet, so
-     * the render under test is the header plus this IRS8974.
-     */
     private static String sample() throws IOException {
-        String composed = Files.readString(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974.clientBody()
+        return Files.readString(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974.clientBody()
                 .resolveSibling("composed-return.xml"));
-        int form = composed.indexOf("<IRS8974 ");
-        int data = composed.indexOf("<ReturnData ");
-        if (form < 0 || data < 0) {
-            throw new IllegalStateException("composed return has no IRS8974");
-        }
-        int formEnd = composed.indexOf("</IRS8974>", form) + "</IRS8974>".length();
-        return composed.substring(0, data)
-                + "<ReturnData documentCnt=\"1\">\n    "
-                + composed.substring(form, formEnd)
-                + "\n  </ReturnData>\n</Return>\n";
     }
 }

@@ -1,19 +1,12 @@
 package com.irs.mef.returnpdf;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 /**
- * IRS941ScheduleR onto f941sr.pdf (Rev. March 2024). Clients fill page 1 lines 1-5, then
- * continuation lines 1-8, in document order. The schema has no element for line 7 or the
- * continuation subtotal (it says the repeating group replaces them), so those boxes stay blank.
- * SubtotalForClientGrp is line 6, AggregateEmployeeInfoGrp is line 8, and
- * TotalAggregateAndClientInfoGrp is line 9.
+ * The schema has no element for line 7 or the continuation subtotal (it says the repeating group
+ * replaces them), so those boxes stay blank.
  */
 final class ScheduleRSheet {
 
@@ -21,11 +14,9 @@ final class ScheduleRSheet {
     private static final String PAGE1 = ROOT + "Page1[0].";
     private static final String PAGE2 = ROOT + "Page2[0].";
     private static final int DOLLARS_MAX = 10;
-    private static final int CENTS_MAX = 3;
     private static final int TEXT_MAX = 10;
     private static final int FIRST_PAGE_CLIENTS = 5;
 
-    /** Page 1 lines 1–5, then the continuation sheet's lines 1–8. */
     private static final List<ClientRow> CLIENT_ROWS = List.of(
             client(1, "Page1[0]", "Row1[0]",
                     new int[] {5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
@@ -117,7 +108,6 @@ final class ScheduleRSheet {
         group(form, "TotalAggregateAndClientInfoGrp", LINE_9, fields);
     }
 
-    /** Every page repeats the filer block. {@code pageNumber} is the digit IRS uses in that page's field names. */
     private static void headers(String page, String pageNumber, Filer filer, Quarter quarter, String attachedTo,
             ReturnXml.Node form, Fields fields) {
         String box = "c" + pageNumber + "_";
@@ -179,33 +169,10 @@ final class ScheduleRSheet {
     }
 
     private static void money(Fields fields, Pair pair, Optional<String> amount) {
-        amount.ifPresent(raw -> {
-            String[] split = dollarsAndCents(raw);
-            if (split[0].length() > DOLLARS_MAX || split[1].length() > CENTS_MAX) {
-                throw new ReturnPdfException(raw + " does not fit " + pair.dollars());
-            }
+        amount.map(Fields::dollarsText).filter(text -> text.length() > DOLLARS_MAX).ifPresent(text -> {
+            throw new ReturnPdfException(text + " does not fit " + pair.dollars());
         });
         fields.money(pair.dollars(), pair.cents(), amount);
-    }
-
-    /** Same split {@link Fields#money} writes, so a too-long amount fails before the field clips it. */
-    private static String[] dollarsAndCents(String raw) {
-        try {
-            BigDecimal value = new BigDecimal(raw).setScale(2, RoundingMode.UNNECESSARY);
-            BigDecimal dollars = value.abs().setScale(0, RoundingMode.DOWN);
-            String cents = value.abs().subtract(dollars).movePointRight(2)
-                    .setScale(0, RoundingMode.UNNECESSARY).toPlainString();
-            return new String[] {
-                    (value.signum() < 0 ? "-" : "") + thousands().format(dollars),
-                    cents.length() == 1 ? "0" + cents : cents
-            };
-        } catch (NumberFormatException | ArithmeticException e) {
-            throw new ReturnPdfException("Not a two-decimal amount: " + raw, e);
-        }
-    }
-
-    private static DecimalFormat thousands() {
-        return new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
     }
 
     private static ClientRow client(int formNo, String page, String row, int[] columnsAtoI, int[] columnsJtoQ,
@@ -222,11 +189,6 @@ final class ScheduleRSheet {
         return allocation(1, employeesParent, columnsAtoI, 0, "Page1[0]", row, columnsJtoQ, columnsRtoY);
     }
 
-    /**
-     * {@code origin} is column (c) inside {@code columnsAtoI}. The skipped slots are the reserved
-     * paper columns the schema does not send: (f) on the first band, (m) on the second, (s) (t)
-     * and (v) on the third.
-     */
     private static Allocation allocation(int formNo, String aiParent, int[] ai, int origin, String page, String row,
             int[] jq, int[] ry) {
         String jqParent = page + ".Table_ColJ-Q[0]." + row;

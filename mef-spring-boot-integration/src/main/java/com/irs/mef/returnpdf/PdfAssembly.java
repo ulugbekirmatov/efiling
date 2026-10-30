@@ -13,11 +13,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Fills each IRS PDF, flattens it so the copy cannot be edited, and concatenates the forms.
- * Trailing pages that received no value are dropped: the 941-V voucher behind Form 941, and a
- * Schedule R continuation sheet when every client fits on page 1.
- */
 final class PdfAssembly {
 
     private PdfAssembly() {}

@@ -75,7 +75,6 @@ public class InspectorSendsController {
                 snapshot.get(), journalRow(id.get()), ackStore.find(id.get().value())));
     }
 
-    /** The paper copy of the exact Return XML this send carried, on the official IRS forms. */
     @GetMapping("/{submissionId}/pdf")
     public ResponseEntity<?> pdf(@PathVariable String submissionId) {
         Optional<SnapshotId> id = SnapshotId.tryParse(submissionId);

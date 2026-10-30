@@ -3,7 +3,6 @@ package com.irs.mef.returnpdf;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 
-/** The calendar quarter a 941-family return reports, from ReturnHeader/QuarterEndingDt (yyyy-MM). */
 record Quarter(int year, int number) {
 
     private static final int MONTHS_PER_QUARTER = 3;

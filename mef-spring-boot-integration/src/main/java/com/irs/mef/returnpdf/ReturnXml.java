@@ -26,10 +26,6 @@ final class ReturnXml {
 
     static final String NAMESPACE = "http://www.irs.gov/efile";
 
-    /**
-     * Header values a paper form shows. The rest of the header is transmission plumbing, and the
-     * Reporting Agent PIN group is the signature itself, which never goes on a copy.
-     */
     private static final Set<String> PRINTED_HEADER_ELEMENTS = Set.of(
             "Filer", "QuarterEndingDt", "TaxYr", "DiscussWithThirdPartyYesGrp", "DiscussWithThirdPartyNoInd",
             "PaidPreparerInformationGrp");
@@ -94,7 +90,6 @@ final class ReturnXml {
         }
     }
 
-    /** Leaf element text and non-linkage attributes: the values a reader of the paper copy would expect. */
     private static void collectValues(Element element, Set<org.w3c.dom.Node> into) {
         NamedNodeMap attributes = element.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
@@ -181,7 +176,6 @@ final class ReturnXml {
             return element.getLocalName();
         }
 
-        /** The value at {@code path}, marked printed. Empty when the Return omits it. */
         Optional<String> text(String path) {
             return find(path).map(found -> {
                 unprinted.remove(found);
@@ -189,12 +183,10 @@ final class ReturnXml {
             });
         }
 
-        /** A CheckboxType value ("X"), marked printed. */
         boolean checked(String path) {
             return text(path).map("X"::equals).orElse(false);
         }
 
-        /** Every child element named {@code localName}, in document order. */
         List<Node> all(String localName) {
             return children(element).stream()
                     .filter(child -> localName.equals(child.getLocalName()))

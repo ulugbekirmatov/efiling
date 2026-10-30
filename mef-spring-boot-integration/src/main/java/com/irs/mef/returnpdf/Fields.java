@@ -10,11 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Field values for one IRS form, keyed by the PDF's fully qualified field name. Knows how IRS boxes
- * split a value: dollars and cents in two fields, an EIN across comb or per-digit fields, a
- * checkbox set by its on-state name.
- */
 final class Fields {
 
     private static final int CENTS_SCALE = 2;
@@ -35,9 +30,18 @@ final class Fields {
             BigDecimal dollars = value.abs().setScale(0, RoundingMode.DOWN);
             String cents = value.abs().subtract(dollars).movePointRight(CENTS_SCALE)
                     .setScale(0, RoundingMode.UNNECESSARY).toPlainString();
-            put(dollarsField, (value.signum() < 0 ? "-" : "") + thousands().format(dollars));
+            put(dollarsField, dollarsText(value));
             put(centsField, cents.length() == 1 ? "0" + cents : cents);
         });
+    }
+
+    /** The text {@link #money} writes into the dollars box, for sheets that check it fits first. */
+    static String dollarsText(String amount) {
+        return dollarsText(parseAmount(amount));
+    }
+
+    private static String dollarsText(BigDecimal value) {
+        return (value.signum() < 0 ? "-" : "") + thousands().format(value.abs().setScale(0, RoundingMode.DOWN));
     }
 
     void check(String field, String onValue, boolean checked) {
@@ -46,7 +50,6 @@ final class Fields {
         }
     }
 
-    /** One character per field, for forms that draw a box per digit. */
     void perCharacter(List<String> fieldsInOrder, String value) {
         if (value.length() != fieldsInOrder.size()) {
             throw new ReturnPdfException(value.length() + " characters do not fit " + fieldsInOrder.size() + " boxes");
@@ -56,7 +59,6 @@ final class Fields {
         }
     }
 
-    /** EIN prefix (2 digits) and serial (7 digits), the split every 94x form prints. */
     void ein(String prefixField, String serialField, String ein) {
         put(prefixField, ein.substring(0, 2));
         put(serialField, ein.substring(2));

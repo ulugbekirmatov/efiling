@@ -86,7 +86,6 @@
             <version>4.0.2</version>
         </dependency>
 
-        <!-- Fills the official IRS fillable PDFs for the paper copy of each return -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>

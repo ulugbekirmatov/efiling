@@ -3,11 +3,6 @@ package com.irs.mef.returnpdf;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-/**
- * IRS941 onto f941.pdf (Rev. March 2026). Field names come from the IRS PDF; line numbers come
- * from the LineNumber annotations in IRS941.xsd. Part 5 stays blank: a Reporting Agent signs with
- * the RA PIN, and the PIN never goes on a copy.
- */
 final class Form941Sheet {
 
     private static final String PAGE1 = "topmostSubform[0].Page1[0].";
@@ -126,7 +121,6 @@ final class Form941Sheet {
         header.notPrinted(preparer + "SignatureDt", "f941.pdf has no fillable preparer date; it is signed by hand");
     }
 
-    /** Page 1 amounts sit in consecutive fields: dollars in f1_n, cents in f1_(n+1). */
     private static void money(ReturnXml.Node form, Fields fields, String path, int dollarsField) {
         fields.money(PAGE1 + "f1_" + dollarsField + "[0]", PAGE1 + "f1_" + (dollarsField + 1) + "[0]", form.text(path));
     }

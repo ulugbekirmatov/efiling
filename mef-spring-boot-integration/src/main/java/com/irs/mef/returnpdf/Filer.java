@@ -4,10 +4,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * The employer block every 94x form prints, read once from ReturnHeader/Filer. A foreign address
- * leaves {@code state} empty and fills {@code country} and {@code province}.
- */
 record Filer(
         String ein,
         String name,

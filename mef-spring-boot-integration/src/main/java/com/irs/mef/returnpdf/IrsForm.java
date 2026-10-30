@@ -4,10 +4,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * The one list of printable MeF documents. Each constant is named exactly as its ReturnData
- * element, owns its IRS PDF, and owns the sheet that maps the document onto that PDF's fields.
- */
 enum IrsForm {
     IRS941("f941.pdf", Form941Sheet::fill),
     IRS941ScheduleB("f941sb.pdf", ScheduleBSheet::fill),
@@ -15,7 +11,6 @@ enum IrsForm {
     IRS8974("f8974.pdf", Form8974Sheet::fill),
     IRS941X("f941x.pdf", Form941XSheet::fill);
 
-    /** Schema release (Return/@returnVersion) to the IRS PDF revisions bundled for it. */
     private static final Map<String, String> TEMPLATE_DIRECTORY_BY_RETURN_VERSION = Map.of(
             "2026Q1v4.0", "irs-forms/2026/");
 

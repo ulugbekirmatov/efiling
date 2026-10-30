@@ -7,10 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * IRS8974 onto f8974.pdf (Rev. December 2024). Line numbers come from the LineNumber annotations
- * in IRS8974.xsd.
- */
 final class Form8974Sheet {
 
     private static final String PAGE1 = "topmostSubform[0].Page1[0].";
@@ -22,7 +18,6 @@ final class Form8974Sheet {
     private Form8974Sheet() {}
 
     static void fill(ReturnXml.Node header, ReturnXml.Node form, Fields fields) {
-        // The employer block is this form's own EIN and name, the client the credit belongs to.
         Quarter quarter = Quarter.read(header);
         employer(form, fields);
         String returnType = header.text("ReturnTypeCd")
@@ -52,7 +47,6 @@ final class Form8974Sheet {
                 .filter(joined -> !joined.isEmpty());
     }
 
-    /** The 941 checkbox is the whole 941 series, so 941-X shares box 0. */
     private static int attachedBox(String returnType) {
         if (returnType.startsWith("941")) {
             return 0;
@@ -131,7 +125,6 @@ final class Form8974Sheet {
         return value < 10 ? "0" + value : Integer.toString(value);
     }
 
-    /** Column (d) is one field of length 10, an EIN with its hyphen. */
     private static String hyphenatedEin(String ein) {
         return ein.substring(0, 2) + "-" + ein.substring(2);
     }

@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * IRS941ScheduleB onto f941sb.pdf (Rev. March 2024). The PDF names a column of the month
+ * The PDF names a column of the month
  * (Day1-8, Day9-16, Day17-24, Day25-31), not the day, and the atlas lists dollars then cents
  * down that column. Those columns are consecutive days, so the field numbers run in day order
- * from f1_15, one pair per day, then the month total. Month 2's first cents box is f1_80_.
+ * from f1_15, one pair per day, then the month total.
  */
 final class ScheduleBSheet {
 
@@ -19,7 +19,6 @@ final class ScheduleBSheet {
     private static final int COLUMN_DAYS = 8;
     private static final int FIRST_DAY_FIELD = 15;
     private static final int PAIR = 2;
-    /** Day pairs plus the month-total pair that follows them in the atlas. */
     private static final int FIELDS_PER_MONTH = DAYS * PAIR + PAIR;
 
     private ScheduleBSheet() {}
@@ -73,7 +72,6 @@ final class ScheduleBSheet {
         }
     }
 
-    /** Day 1–8, 9–16, 17–24, then 25–31. Day 25 starts a column of seven. */
     private static String column(int day) {
         int start = ((day - 1) / COLUMN_DAYS) * COLUMN_DAYS + 1;
         int end = Math.min(start + COLUMN_DAYS - 1, DAYS);

@@ -18,7 +18,6 @@ public final class ReturnPdf {
         return PdfAssembly.assemble(fill(returnXml));
     }
 
-    /** The pure half of {@link #render}: which IRS form gets which field values. */
     static List<FilledForm> fill(String returnXml) {
         ReturnXml parsed = ReturnXml.parse(returnXml);
         List<FilledForm> forms = parsed.documents().stream()

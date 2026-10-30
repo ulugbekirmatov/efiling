@@ -7,7 +7,6 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-/** The body of {@code ./mef pdf <id>}: one Return XML in, its paper copy out. Offline. */
 class ReturnPdfVerbTest {
 
     @Test

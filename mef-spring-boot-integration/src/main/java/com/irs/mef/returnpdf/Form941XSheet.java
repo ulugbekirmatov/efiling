@@ -14,11 +14,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.Optional;
 
-/**
- * IRS941X onto f941x.pdf (Rev. April 2026). Field names come from the IRS PDF; line numbers come
- * from the LineNumber annotations in IRS941X.xsd. The signature stays blank: a Reporting Agent
- * signs with the RA PIN, and the PIN never goes on a copy.
- */
 final class Form941XSheet {
 
     private static final String PAGE1 = "topmostSubform[0].Page1[0].";
@@ -43,9 +38,7 @@ final class Form941XSheet {
      * single-line value is clipped once it is wider than the widget minus 3pt.
      */
     private static final float CLIP_INSET = 3f;
-    /** Dollar boxes on every correction line are 50.40pt wide. */
     private static final float DOLLARS_WIDTH = 50.40f;
-    /** Line 18d is a count, three boxes of 72pt, with no cents and no column 4. */
     private static final float COUNT_WIDTH = 72f;
 
     private static final float NAME_WIDTH = 248.60f;
@@ -125,7 +118,6 @@ final class Form941XSheet {
         });
     }
 
-    /** Pages 2–5 repeat the name, EIN, correcting quarter, and calendar year. */
     private static void runningHeader(Filer filer, Quarter quarter, ReturnXml.Node form, Fields fields) {
         for (int page = 2; page <= 5; page++) {
             String base = "topmostSubform[0].Page" + page + "[0].";
@@ -193,7 +185,6 @@ final class Form941XSheet {
         line(form, fields, "CrtnBrgnAgrmtQlfyFMLWgsAftrAmt", F4, 49, Column4.NONE);
     }
 
-    /** What a correction line's column 4 holds on paper. */
     private enum Column4 {
         NONE,
         TAX,
@@ -201,7 +192,6 @@ final class Form941XSheet {
         COPY_COLUMN_3
     }
 
-    /** Columns are dollar box then cents box, columns 1 to 4 left to right. */
     private static void line(ReturnXml.Node form, Fields fields, String element, String prefix, int start,
             Column4 column4) {
         money(form, fields, CORRECTED + element, prefix, start);
@@ -220,7 +210,7 @@ final class Form941XSheet {
 
     private static void money(ReturnXml.Node form, Fields fields, String path, String dollarsField, String centsField) {
         Optional<String> amount = form.text(path);
-        amount.map(Form941XSheet::dollarsText).ifPresent(text -> requireFits(text, DOLLARS_WIDTH));
+        amount.map(Fields::dollarsText).ifPresent(text -> requireFits(text, DOLLARS_WIDTH));
         fields.money(dollarsField, centsField, amount);
     }
 
@@ -256,19 +246,6 @@ final class Form941XSheet {
         fields.text(PAGE5 + "f5_12[0]", header.text(preparer + "PreparerUSAddress/StateAbbreviationCd"));
         fields.text(PAGE5 + "f5_13[0]", header.text(preparer + "PreparerUSAddress/ZIPCd"));
         header.notPrinted(preparer + "SignatureDt", "f941x.pdf has no fillable preparer date; it is signed by hand");
-    }
-
-    /** Same dollars text {@link Fields#money} writes, checked against the 50.40pt box before it is stored. */
-    private static String dollarsText(String raw) {
-        BigDecimal value;
-        try {
-            value = new BigDecimal(raw).setScale(2, RoundingMode.UNNECESSARY);
-        } catch (NumberFormatException | ArithmeticException e) {
-            throw new ReturnPdfException("Not a two-decimal amount: " + raw, e);
-        }
-        BigDecimal dollars = value.abs().setScale(0, RoundingMode.DOWN);
-        DecimalFormat format = new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US));
-        return (value.signum() < 0 ? "-" : "") + format.format(dollars);
     }
 
     private static void text(Fields fields, String field, Optional<String> value, float widgetWidth) {

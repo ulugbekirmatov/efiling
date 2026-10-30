@@ -21,14 +21,8 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Places every Schedule R cell by the IRS PDF's own coordinates. Thirteen clients and the line 6,
- * 8, and 9 rows carry amounts that encode their row and column letter, so a field that is real but
- * belongs to another row or column shows up as a geometry mismatch.
- */
 class ScheduleRGeometryTest {
 
-    /** Schema order of ScheduleRAllocationType; the letter is the paper column. */
     private static final List<Map.Entry<String, Character>> COLUMNS = List.of(
             Map.entry("EmployeeCnt", 'c'), Map.entry("WagesAmt", 'd'), Map.entry("FederalIncomeTaxWithheldAmt", 'e'),
             Map.entry("TotalSocialSecurityTaxTipAmt", 'g'), Map.entry("TaxOnMedicareWagesTipsAmt", 'h'),
@@ -119,7 +113,6 @@ class ScheduleRGeometryTest {
                 .isEqualTo(cell.row() > 5 && cell.row() <= CLIENTS ? 1 : 0));
     }
 
-    /** Dollars fields and counts carry "{row}{column number:02}"; cents fields and EINs are skipped. */
     private static java.util.Optional<int[]> decode(String printed) {
         String digits = printed.replace(",", "");
         if (!digits.matches("\\d{3,4}")) {

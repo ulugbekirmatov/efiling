@@ -13,7 +13,7 @@ enum IrsForm {
     IRS941ScheduleB("f941sb.pdf", 1, ScheduleBSheet::fill),
     IRS941ScheduleR("f941sr.pdf", 2, ScheduleRSheet::fill),
     IRS8974("f8974.pdf", Integer.MAX_VALUE, Form8974Sheet::fill),
-    IRS941X("f941x.pdf", Integer.MAX_VALUE, Form941XSheet::fill);
+    IRS941X("f941x.pdf", 5, Form941XSheet::fill);
 
     /** Schema release (Return/@returnVersion) to the IRS PDF revisions bundled for it. */
     private static final Map<String, String> TEMPLATE_DIRECTORY_BY_RETURN_VERSION = Map.of(

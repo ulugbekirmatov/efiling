@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema – Form 945A Annual Record of Federal Tax Liability</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+			<ReleaseDate>September 24 2026</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- =============================================================== -->
+	<!-- ======================= IRS Form 945-A ======================== -->
+	<!-- =============================================================== -->
+
+	<xsd:element name="IRS945A">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 945-A</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS945AType">
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS945A">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+		<!-- Uniqueness constraint for 'MonthCd' in IRS945A -->
+		<xsd:unique name="IRS945AMonthCd">
+			<xsd:selector xpath="efile:MonthlyTaxLiabilityGrp" />
+			<xsd:field xpath="efile:MonthCd" />
+		</xsd:unique>
+	</xsd:element>
+
+	<xsd:complexType name="IRS945AType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 945-A</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+
+			<xsd:element name="MonthlyTaxLiabilityGrp" maxOccurs="12">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Month Code -->
+						<xsd:element name="MonthCd">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Month Code</Description>
+									<LineNumber>A to L</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:enumeration value="JANUARY"/>
+									<xsd:enumeration value="FEBRUARY"/>
+									<xsd:enumeration value="MARCH"/>
+									<xsd:enumeration value="APRIL"/>
+									<xsd:enumeration value="MAY"/>
+									<xsd:enumeration value="JUNE"/>
+									<xsd:enumeration value="JULY"/>
+									<xsd:enumeration value="AUGUST"/>
+									<xsd:enumeration value="SEPTEMBER"/>
+									<xsd:enumeration value="OCTOBER"/>
+									<xsd:enumeration value="NOVEMBER"/>
+									<xsd:enumeration value="DECEMBER"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="DailyTaxLiabilityDetail" maxOccurs="31">
+							<xsd:complexType>
+								<xsd:sequence>
+
+									<!-- Day Number -->
+									<xsd:element name="DayNum">
+										<xsd:annotation>
+											<xsd:documentation>
+												<Description>Day Number</Description>
+												<LineNumber>A to L, 1 to 31</LineNumber>
+											</xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction base="IntegerNNType">
+												<xsd:minInclusive value="1"/>
+											   	<xsd:maxInclusive value="31"/>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<!-- Tax Liability Amount -->
+									<xsd:element name="TaxLiabilityAmt" type="USDecimalAmountType">
+										<xsd:annotation>
+											<xsd:documentation>
+												<Description>Tax Liability Amount</Description>
+												<LineNumber>A to L, 1 to 31</LineNumber>
+											</xsd:documentation>
+										</xsd:annotation>
+									</xsd:element>
+
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+
+						<!-- Total Monthly Liability Amount -->
+						<xsd:element name="TotalMonthlyLiabilityAmt" type="USDecimalAmountType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Total Monthly Liability Amount</Description>
+									<LineNumber>A to L</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+					</xsd:sequence>
+				</xsd:complexType>
+
+				<!-- Uniqueness constraint for 'DayNum' in each occurrence of 'MonthlyTaxLiabilityGrp' -->
+				<xsd:unique name="IRS945ADayNum">
+					<xsd:selector xpath="efile:DailyTaxLiabilityDetail" />
+					<xsd:field xpath="efile:DayNum" />
+				</xsd:unique>
+			</xsd:element>
+
+			<!-- Total Tax Liability Amount -->
+			<xsd:element name="TotalTaxLiabilityAmt" type="USDecimalAmountType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Liability Amount</Description>
+						<LineNumber>M</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+						
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

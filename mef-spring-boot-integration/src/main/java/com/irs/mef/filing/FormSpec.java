@@ -5,8 +5,7 @@ import java.util.stream.Collectors;
 
 public enum FormSpec {
     F940("940", "IRS940", PeriodKind.TAX_YEAR,
-            new SchemaBinding.Pending(SchemaRelease.Y2026_V2,
-                    "2026v2.0 bundle arrives via the e-Services SOR mailbox; element names in 940 fixtures are unverified")),
+            new SchemaBinding.Bundled(SchemaRelease.Y2026_V2, "EmploymentTax/940/Return940.xsd")),
     F941("941", "IRS941", PeriodKind.QUARTER,
             new SchemaBinding.Bundled(SchemaRelease.Y2026Q1_V4, "EmploymentTax/941/Return941.xsd")),
     F941X("941X", "IRS941X", PeriodKind.QUARTER,

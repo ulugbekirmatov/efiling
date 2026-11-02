@@ -118,18 +118,6 @@ class FilingDeskTest {
         assertEquals("NEWSEND_SESSION_BUSY", rows.get(0).fault().code());
     }
 
-    @Test
-    void preflightRefusesAPending940WithItsReason() throws Exception {
-        FilingDesk desk = desk(mock(IrsSession.class));
-        String body = Files.readString(AtsScenario.ZINNIA_940.clientBody());
-        SchemaBinding.Pending pending = (SchemaBinding.Pending) FormSpec.F940.schema();
-
-        FilingValidationException refused = assertThrows(FilingValidationException.class,
-                () -> desk.preflight(ClientFiling.parse("zinnia", body)));
-
-        assertEquals(pending.why(), refused.getMessage());
-    }
-
     @SuppressWarnings("unchecked")
     private static IrsSession sessionThatRuns(AtomicInteger irsCalls) {
         IrsSession session = mock(IrsSession.class);

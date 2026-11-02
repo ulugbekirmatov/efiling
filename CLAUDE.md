@@ -90,7 +90,7 @@ Sends use EFIN 237861. EFIN 102192 starts with 10, and `Originator` refuses that
 
 ATS accepted the four quarterly scenarios under EFIN 237861: scenario 1 Orchid 941 `2378612026268yagqidh` (2026-09-25); scenario 2 Marigold 941 `2378612026287enq7gwn`, scenario 3 Daffodil 941 `237861202628741tq062`, scenario 4 Orchid 941-X `2378612026287svv97c5` (2026-10-14). Acks are in `mef-spring-boot-integration/data/ack-store/`.
 
-Form 940 is pending on `FormSpec` until the 2026v2.0 bundle is copied into the schema resources. Preflight refuses it with that reason, and `AtsScenarioComposeTest` skips with the same text. To open it: copy the bundle (e-Services SOR mailbox) verbatim to `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, switch `FormSpec.F940` to `Bundled` with the real path, and fix the guessed element names in the three 940 fixtures until the skipped tests pass. A quarterly pass does not open annual testing; call e-Help (866-255-0654). Annual returns need `MEF_SOFTWARE_ID_ANNUAL`.
+Form 940 validates against the IRS 2026v2.0 annual bundle in `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, copied verbatim from the e-Services SOR mailbox drop in `94x-2026/`. The three 940 scenarios preflight clean, and each `line-mapping.tsv` cites the XSD `LineNumber` behind every element. No 940 has been sent. A live 940 needs `MEF_SOFTWARE_ID_ANNUAL` (IRS issues a separate Software ID for the annual 94x package; `SoftwareIds` refuses a 940 without it), and a quarterly pass does not open annual testing; call e-Help (866-255-0654).
 
 Not yet built: per-client Form 8655 authorization. Any caller of `POST /api/mef/filings` can file any EIN under the Reporting Agent PIN, and the app has no authentication.
 

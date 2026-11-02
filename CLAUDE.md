@@ -128,7 +128,7 @@ When the operator corrects you, fix the mistake and add a row here. If the row a
 | One EFIN in submission ID, manifest, and `OriginatorGrp` (R0000-054-01) | `SubmissionId.mint` and the composer both read `Originator`; `ManifestXmlTest` |
 | Submission ID is `EFIN + yyyyDDD + 7 [a-z0-9]` | `SubmissionId`; `SubmissionIdTest` |
 | Only `FilingDesk` reaches IRS; every SDK call holds the one session lock; a GET never reaches IRS | package-private `IrsWire`/`IrsSession.call` in `com.irs.mef.filing`; `IrsSessionConcurrencyTest`; `GetRoutesNeverReachIrsTest` |
-| A form without a bundled schema cannot be sent | `FormSpec` `SchemaBinding.Pending`; preflight refuses it |
+| A form without a bundled schema cannot be sent | `FormSpec` takes a `SchemaBinding` (release plus XSD path) for every form; `XsdReturnValidator` refuses a path missing from the classpath; `AtsScenarioComposeTest` validates every scenario |
 | The paper copy never drops a value we sent, and never prints the RA PIN | `ReturnXml.requireAllPrinted` fails the render; `Form941SheetTest` |
 | No live send after a reject until each reject code has a local rule | `RejectLedger` inside `AtsRun`; `RejectLedgerTest`, `LocalRulesTest` |
 | `./mef ats` exits 0 only on an Accepted ack | `AtsVerdict.exitCode`; `AtsVerdictTest` |

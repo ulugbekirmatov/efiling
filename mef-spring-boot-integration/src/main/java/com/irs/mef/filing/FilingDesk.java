@@ -38,9 +38,6 @@ public class FilingDesk {
     private final SecureRandom random = new SecureRandom();
 
     public Preflight preflight(ClientFiling filing) {
-        if (filing.form().schema() instanceof SchemaBinding.Pending pending) {
-            throw new FilingValidationException("form", pending.why());
-        }
         if (filing.clientBodyXml().length() > properties.getMaxReturnXmlChars()) {
             throw new FilingValidationException("clientBody",
                     "clientBody exceeds " + properties.getMaxReturnXmlChars() + " characters");

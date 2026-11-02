@@ -17,13 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
  * Offline. Every ATS scenario fixture composes into a Return with the header and manifest a
- * Reporting Agent filing of that form needs. Quarterly returns must also pass the app's own
- * validator in ENFORCE mode; annual 940 returns do once the 2026v2.0 schemas are bundled.
+ * Reporting Agent filing of that form needs, and passes the app's own validator in ENFORCE mode
+ * against its form's bundled schema release.
  * A missing fixture fails, naming its path.
  */
 class AtsScenarioComposeTest {
@@ -73,7 +72,6 @@ class AtsScenarioComposeTest {
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
     void composesAnAnnual940Return(AtsScenario scenario, String filerEin, List<String> documents) {
-        skipIfPending(FormSpec.F940);
         ReturnComposer ret = compose(scenario);
 
         ReturnComposer.Structure header = ret.structure();
@@ -89,14 +87,7 @@ class AtsScenarioComposeTest {
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
     void anAnnual940ReturnIsSchemaValid(AtsScenario scenario, String filerEin, List<String> documents) {
-        skipIfPending(FormSpec.F940);
         VALIDATOR.validate(FormSpec.F940, compose(scenario).xml());
-    }
-
-    private static void skipIfPending(FormSpec form) {
-        if (form.schema() instanceof SchemaBinding.Pending pending) {
-            assumeTrue(false, pending.why());
-        }
     }
 
     private static ReturnComposer compose(AtsScenario scenario) {

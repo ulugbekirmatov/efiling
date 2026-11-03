@@ -15,7 +15,7 @@
   "pdf": "940-test-scenario-2-ty2026.pdf",
   "status": {
     "state": "ready",
-    "note": "Composed offline (AtsScenarioComposeTest). Schema validation waits for the 2026v2.0 bundle."
+    "note": "Composed offline and schema-valid against the 2026v2.0 bundle (AtsScenarioComposeTest)."
   },
   "summary": "A multi-state employer (NY and VI) that paid wages in a credit-reduction state. $100,000 of retirement/pension payments are exempt, leaving $250,000 of taxable FUTA wages. Schedule A applies the Virgin Islands 0.045 credit reduction ($11,250), which raises the tax to $12,750. The $250 overpayment is applied to the next return.",
   "tests": [
@@ -59,14 +59,14 @@
     }
   ],
   "notes": [
-    "Schedule A is modelled as one repeating StateGrp per checked state (NY bare, VI with wages, rate and reduction), as one transcription did. The other split NY into a bare code and VI into a CreditReductionGrp; one row shape per state follows the form.",
-    "Line 6 is SubtotalAmt in every scenario. The transcriptions used SubtotalAmt in scenario 1 but TotalExemptWagesAmt or TotalExemptPaymentsAmt here; line 6 is line 4 + line 5, not only exempt payments.",
-    "Line 4 is a flat ExemptPaymentsAmt followed by RetirementPensionInd, in form order. One transcription wrapped both in ExemptPaymentsGrp; there is no schema evidence for the wrapper.",
-    "Line 1b MultiStateInd (other candidate MultiStateEmployerInd); line 7 TotalTaxableFUTAWagesAmt (TotalTaxableWagesAmt); line 12 TotalFUTATaxAfterAdjustmentsAmt (FUTATaxAfterAdjustmentsAmt); line 15b ApplyOverpaymentNextReturnInd from IRS941 (ApplyToNextReturnInd).",
+    "Schedule A is one CreditReductionGrp per checked state (NY bare, VI with wages, rate and reduction), as IRS940ScheduleA.xsd defines it. F940-001-02 needs at least two FUTAStateCd entries when line 1b is checked.",
+    "Schedule A requires TotalCreditReductionWagesAmt, which the paper form has no box for. It is 250000.00, the VI FUTA taxable wages (SA-F940-002-02: not above line 7).",
+    "Line 4 is ExemptWagesAmt followed by RetirementPensionInd (line 4c), in schema order. Line 6 is TotalExemptWagesAmt (line 4 + line 5).",
+    "Lines 1b and 2 are MultiStateInd and CreditReductionStateInd, each referencing IRS940ScheduleA. Line 11 is TotalCreditReductionAmt and equals Schedule A (F940-010, SA-F940-007-01). Line 15b is ApplyOverpaymentNextReturnInd.",
     "No balance due and no requested payment date, so no payment record.",
     "Responsible Party Current Indicator: Yes (PDF p.1). The composer's constant IRSResponsiblePrtyInfoCurrInd=true matches.",
     "Signature Option: 'Use the signature method applicable to you' (PDF p.1). Part 7 is blank; Pyramos signs with ReportingAgentPINGrp.",
     "Part 6 third-party designee: neither Yes nor No is checked and no designee is named (form page 2). The composer's DiscussWithThirdPartyNoInd=X is the only consistent header choice, since no designee exists to report.",
-    "Amounts are written with cents (200000.00), as the PDF prints them and as the 941 schema types them (USDecimalAmountNNType). One transcription wrote whole dollars; overruled."
+    "Amounts are written with cents (200000.00), as the PDF prints them (USDecimalAmountNNType)."
   ]
 }

@@ -31,11 +31,7 @@ class XsdReturnValidator implements ReturnValidator {
     @Override
     public void validate(FormSpec form, String returnXml) {
         assertWellFormed(returnXml);
-        if (form.schema() instanceof SchemaBinding.Pending pending) {
-            throw new FilingValidationException("form", pending.why());
-        }
-        SchemaBinding.Bundled bundled = (SchemaBinding.Bundled) form.schema();
-        String schemaRoot = bundled.release().resolve(bundled.pathInBundle());
+        String schemaRoot = form.schema().resource();
         requireBundled(schemaRoot);
         List<String> errors = schemaErrors(form, schemaRoot, returnXml);
         if (errors.isEmpty()) {

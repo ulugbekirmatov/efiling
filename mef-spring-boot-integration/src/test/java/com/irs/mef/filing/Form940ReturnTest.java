@@ -15,14 +15,6 @@ class Form940ReturnTest {
     private static final Clock FIXED = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);
 
     @Test
-    void aPending940IsRefusedWithItsReason() {
-        SchemaBinding.Pending pending = (SchemaBinding.Pending) FormSpec.F940.schema();
-        FilingValidationException refused = assertThrows(FilingValidationException.class,
-                () -> new XsdReturnValidator().validate(FormSpec.F940, "<Return/>"));
-        assertEquals(pending.why(), refused.getMessage());
-    }
-
-    @Test
     void a940IsRefusedWhenOnlyTheQuarterlySoftwareIdIsConfigured() {
         Originator standIn = ReportingAgentOriginatorStandIn.pyramosShaped();
         Originator quarterlyOnly = new Originator(standIn.efin(), standIn.pin(),

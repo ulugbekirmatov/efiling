@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema – Form 940 Schedule A Multi-State Employer and Credit Reduction Information</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+			<ReleaseDate>September 24 2026</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ==================================================================== -->
+	<!-- ====================== IRS Form 940 Schedule A ===================== -->
+	<!-- ==================================================================== -->
+
+	<xsd:element name="IRS940ScheduleA">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 940 Schedule A</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS940ScheduleAType">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS940ScheduleA">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS940ScheduleAType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 940 Schedule A</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+
+			<xsd:element name="CreditReductionGrp" maxOccurs="53">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Federal Unemployment Tax State Code -->
+						<xsd:element name="FUTAStateCd" type="FUTAStateCdType">
+									<xsd:annotation>
+								<xsd:documentation>
+									<Description>Federal Unemployment Tax State Code</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Total Taxable FUTA Wages Amount -->
+						<xsd:element name="TotalTaxableFUTAWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Total Taxable FUTA Wages Amount</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Credit Reduction Rate -->
+						<xsd:element name="CreditReductionRt" type="RatioType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Credit Reduction Rate</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Credit Reduction Amount -->
+						<xsd:element name="CreditReductionAmt" type="USDecimalAmountNNType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Credit Reduction Amount</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Total Credit Reduction Wages Amount -->
+			<xsd:element name="TotalCreditReductionWagesAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Credit Reduction Wages Amount</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Credit Reduction Amount -->
+			<xsd:element name="TotalCreditReductionAmt" type="USDecimalAmountNNType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Exempt Wages Amount</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

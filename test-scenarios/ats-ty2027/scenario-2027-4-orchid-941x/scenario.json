@@ -13,8 +13,10 @@
   ],
   "pdf": "ty-2027-f941x-ats-scenario-4.pdf",
   "status": {
-    "state": "ready",
-    "note": "Composed and schema-valid offline against the 2027Q1v2.0 bundle (AtsScenarioComposeTest). Not sent yet. The SoftwareId comes from MEF_SOFTWARE_ID_2027."
+    "state": "accepted",
+    "date": "2026-11-03",
+    "submissionId": "2378612026307qe8dxko",
+    "note": "Accepted by IRS ATS on the first ack poll with returnVersion 2027Q1v2.0 and Software ID 27998441 (MEF_SOFTWARE_ID_2027). Sent 2026-11-03 for a quarter ending 2027-03-31, so ATS did not enforce R0000-191."
   },
   "summary": "A Form 941-X (Rev. April 2027) that corrects Orchid's Q1 2027 Form 941. Wages, social security wages and Medicare wages were underreported by $1,500 each, and federal income tax withheld by $150. It uses the adjusted-return process (line 1), not the claim process, and $379.50 of additional tax is owed.",
   "tests": [

@@ -90,7 +90,7 @@ Sends use EFIN 237861. EFIN 102192 starts with 10, and `Originator` refuses that
 
 ATS accepted the four quarterly scenarios under EFIN 237861: scenario 1 Orchid 941 `2378612026268yagqidh` (2026-09-25); scenario 2 Marigold 941 `2378612026287enq7gwn`, scenario 3 Daffodil 941 `237861202628741tq062`, scenario 4 Orchid 941-X `2378612026287svv97c5` (2026-10-14). Acks are in `mef-spring-boot-integration/data/ack-store/`.
 
-Form 940 is pending on `FormSpec` until the 2026v2.0 bundle is copied into the schema resources. Preflight refuses it with that reason, and `AtsScenarioComposeTest` skips with the same text. To open it: copy the bundle (e-Services SOR mailbox) verbatim to `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, switch `FormSpec.F940` to `Bundled` with the real path, and fix the guessed element names in the three 940 fixtures until the skipped tests pass. A quarterly pass does not open annual testing; call e-Help (866-255-0654). Annual returns need `MEF_SOFTWARE_ID_ANNUAL`.
+Form 940 validates against the IRS 2026v2.0 annual bundle in `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, copied verbatim from the e-Services SOR mailbox drop in `94x-2026/`. The three 940 scenarios preflight clean, and each `line-mapping.tsv` cites the XSD `LineNumber` behind every element. No 940 has been sent. A live 940 needs `MEF_SOFTWARE_ID_ANNUAL` (IRS issues a separate Software ID for the annual 94x package; `SoftwareIds` refuses a 940 without it), and a quarterly pass does not open annual testing; call e-Help (866-255-0654).
 
 Not yet built: per-client Form 8655 authorization. Any caller of `POST /api/mef/filings` can file any EIN under the Reporting Agent PIN, and the app has no authentication.
 
@@ -128,7 +128,7 @@ When the operator corrects you, fix the mistake and add a row here. If the row a
 | One EFIN in submission ID, manifest, and `OriginatorGrp` (R0000-054-01) | `SubmissionId.mint` and the composer both read `Originator`; `ManifestXmlTest` |
 | Submission ID is `EFIN + yyyyDDD + 7 [a-z0-9]` | `SubmissionId`; `SubmissionIdTest` |
 | Only `FilingDesk` reaches IRS; every SDK call holds the one session lock; a GET never reaches IRS | package-private `IrsWire`/`IrsSession.call` in `com.irs.mef.filing`; `IrsSessionConcurrencyTest`; `GetRoutesNeverReachIrsTest` |
-| A form without a bundled schema cannot be sent | `FormSpec` `SchemaBinding.Pending`; preflight refuses it |
+| A form without a bundled schema cannot be sent | `FormSpec` takes a `SchemaBinding` (release plus XSD path) for every form; `XsdReturnValidator` refuses a path missing from the classpath; `AtsScenarioComposeTest` validates every scenario |
 | The paper copy never drops a value we sent, and never prints the RA PIN | `ReturnXml.requireAllPrinted` fails the render; `Form941SheetTest` |
 | No live send after a reject until each reject code has a local rule | `RejectLedger` inside `AtsRun`; `RejectLedgerTest`, `LocalRulesTest` |
 | `./mef ats` exits 0 only on an Accepted ack | `AtsVerdict.exitCode`; `AtsVerdictTest` |

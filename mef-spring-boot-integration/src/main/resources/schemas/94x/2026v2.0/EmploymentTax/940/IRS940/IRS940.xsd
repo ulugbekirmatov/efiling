@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema – Form 940 Employer's Annual Federal Unemployment (FUTA) Tax Return</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+			<ReleaseDate>September 24 2026</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ====================================================================== -->
+	<!-- ======================= IRS Form 940 ================================= -->
+	<!-- ====================================================================== -->
+
+	<xsd:element name="IRS940">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 940</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS940Type">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS940">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentId" type="IdListType">
+						<xsd:annotation>
+							<xsd:documentation>List of document ID's of forms, schedules, supporting info. etc. attached to this form</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentName" type="StringType" fixed="BinaryAttachment GeneralDependencySmall FinalPayrollInformationStatement IRS940ScheduleR">
+					</xsd:attribute>
+
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS940Type">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 940</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+
+			<!-- Spanish Language Indicator -->
+			<xsd:element name="SpanishLanguageInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Spanish Language Indicator</Description>
+						<LineNumber></LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Type of Return -->
+			<!-- Amended Return Indicator -->
+			<xsd:element name="AmendedReturnInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Amended Return Indicator</Description>
+						<LineNumber>a</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Successor Employer Indicator -->
+			<xsd:element name="SuccessorEmployerInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Successor Employer Indicator</Description>
+						<LineNumber>b</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- No Payments To Employees Indicator -->
+			<xsd:element name="NoPaymentsToEmployeesInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>No Payments To Employees Indicator</Description>
+						<LineNumber>c</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Future Filing Not Required Indicator -->
+			<xsd:element name="FutureFilingNotRequiredInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Future Filing Not Required Indicator</Description>
+						<LineNumber>d</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Aggregate Return Indicator -->
+			<xsd:choice minOccurs="0">
+				<!-- Section 3504 Agent Indicator -->
+				<xsd:element name="Section3504AgentInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Section 3504 Agent Indicator</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- Certified Professional Employer Organization (CPEO) Indicator -->
+				<xsd:element name="CPEOInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Certified Professional Employer Organization (CPEO) Indicator</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- Other Third Party Indicator -->
+				<xsd:element name="OtherThirdPartyInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Other Third Party Indicator</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			
+			<!-- Part 1:  Tell us about your return -->
+
+			<xsd:choice minOccurs="0">
+
+				<!-- Federal Unemployment Tax State Code -->
+				<xsd:element name="FUTAStateCd" type="FUTAStateCdType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Federal Unemployment Tax State Code</Description>
+							<LineNumber>1a</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Multi-State Indicator -->
+				<xsd:element name="MultiStateInd">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Multi-State Indicator</Description>
+							<LineNumber>1b</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:simpleContent>
+							<xsd:extension base="CheckboxType">
+								<xsd:attribute name="referenceDocumentId" type="IdListType" />
+								<xsd:attribute name="referenceDocumentName" type="StringType" fixed="IRS940ScheduleA" />
+							</xsd:extension>
+						</xsd:simpleContent>
+					</xsd:complexType>
+				</xsd:element>
+
+			</xsd:choice>
+
+			<!-- Credit Reduction State Indicator -->
+			<xsd:element name="CreditReductionStateInd" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Credit Reduction State Indicator</Description>
+						<LineNumber>2</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="CheckboxType">
+							<xsd:attribute name="referenceDocumentId" type="IdListType" />
+							<xsd:attribute name="referenceDocumentName" type="StringType" fixed="IRS940ScheduleA" />
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Part 2:  Determine your FUTA tax before adjustments -->
+
+			<!-- Wages Amount -->
+			<xsd:element name="WagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Wages Amount</Description>
+						<LineNumber>3</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Exempt Wages Amount -->
+			<xsd:element name="ExemptWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Exempt Wages Amount</Description>
+						<LineNumber>4</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Fringe Benefits Indicator -->
+			<xsd:element name="FringeBenefitsInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Fringe Benefits Indicator</Description>
+						<LineNumber>4a</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Group Term Life Insurance Indicator -->
+			<xsd:element name="GroupTermLifeInsuranceInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Group Term Life Insurance Indicator</Description>
+						<LineNumber>4b</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Retirement Pension Indicator -->
+			<xsd:element name="RetirementPensionInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Retirement Pension Indicator</Description>
+						<LineNumber>4c</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Dependent Care Indicator -->
+			<xsd:element name="DependentCareInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Dependent Care Indicator</Description>
+						<LineNumber>4d</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Other Indicator -->
+			<xsd:element name="OtherInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Other Indicator</Description>
+						<LineNumber>4e</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Wages Over Limit Amount -->
+			<xsd:element name="WagesOverLimitAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Wages Over Limit Amount</Description>
+						<LineNumber>5</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Exempt Wages Amount -->
+			<xsd:element name="TotalExemptWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Exempt Wages Amount</Description>
+						<LineNumber>6</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Taxable Wages Amount -->
+			<xsd:element name="TotalTaxableWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Taxable Wages Amount</Description>
+						<LineNumber>7</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- FUTA Tax Before Adjustment Amount -->
+			<xsd:element name="FUTATaxBeforeAdjustmentAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>FUTA Tax Before Adjustment Amount</Description>
+						<LineNumber>8</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Part 3:  Determine your adjustments  -->
+
+			<!-- Maximum Credit Amount -->
+			<xsd:element name="MaximumCreditAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Maximum Credit Amount</Description>
+						<LineNumber>9</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Federal Unemployment Tax Adjustment Amount -->
+			<xsd:element name="FUTAAdjustmentAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Unemployment Tax Adjustment Amount</Description>
+						<LineNumber>10</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Credit Reduction Amount -->
+			<xsd:element name="TotalCreditReductionAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Credit Reduction Amount</Description>
+						<LineNumber>11</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Part 4:  Determine your FUTA tax and balance due or overpayment  -->
+
+			<!-- FUTA Tax After Adjustment Amount -->
+			<xsd:element name="FUTATaxAfterAdjustmentAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>FUTA Tax After Adjustment Amount</Description>
+						<LineNumber>12</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Tax Deposit Amount -->
+			<xsd:element name="TotalTaxDepositAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Deposit Amount</Description>
+						<LineNumber>13</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:choice minOccurs="0">
+
+				<!-- Balance Due Amount -->
+				<xsd:element name="BalanceDueAmt" type="USDecimalAmountNNType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Balance Due Amount</Description>
+							<LineNumber>14</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<xsd:element name="OverpaymentGrp" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+
+							<!-- Overpaid Amount -->
+							<xsd:element name="OverpaidAmt" type="USDecimalAmountNNType" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>Overpaid Amount</Description>
+										<LineNumber>15a</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+
+							<xsd:choice>
+								<!-- Apply Overpayment Next Return Indicator -->
+								<xsd:element name="ApplyOverpaymentNextReturnInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Apply Overpayment Next Return Indicator</Description>
+											<LineNumber>15b</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+								<!-- Refund Overpayment Indicator -->
+								<xsd:element name="RefundOverpaymentInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Refund Overpayment Indicator</Description>
+											<LineNumber>15b</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+							</xsd:choice>
+
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+
+			</xsd:choice>
+
+			<!-- Direct Deposit Group -->
+			<xsd:element name="DirectDepositGrp" type="DirectDepositGrpType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Direct Deposit Group</Description>
+						<LineNumber>15c-e</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Part 5:  Report your FUTA tax liability by quarter only if line 12 is more than $500 -->
+
+			<!-- First Quarter Tax Liability Amount -->
+			<xsd:element name="FirstQuarterTaxLiabilityAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>First Quarter Tax Liability Amount</Description>
+						<LineNumber>16a</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Second Quarter Tax Liability Amount -->
+			<xsd:element name="SecondQuarterTaxLiabilityAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Second Quarter Tax Liability Amount</Description>
+						<LineNumber>16b</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Third Quarter Tax Liability Amount -->
+			<xsd:element name="ThirdQuarterTaxLiabilityAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Third Quarter Tax Liability Amount</Description>
+						<LineNumber>16c</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Fourth Quarter Tax Liability Amount -->
+			<xsd:element name="FourthQuarterTaxLiabilityAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Fourth Quarter Tax Liability Amount</Description>
+						<LineNumber>16d</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Tax Liability Amount -->
+			<xsd:element name="TotalTaxLiabilityAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Liability Amount</Description>
+						<LineNumber>17</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- (Part 6 is included in the Return Header)-->
+			<!-- (Part 7 is included in the Return Header)-->
+
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

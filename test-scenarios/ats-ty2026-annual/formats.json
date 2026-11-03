@@ -7,21 +7,21 @@
       "file": "client-return-body.xml",
       "title": "Client return body",
       "producedBy": "Hand-built from the IRS scenario PDF",
-      "description": "What one client company files: its Filer block (EIN, name, name control, address), the calendar-year tax period, and ReturnData with Form 940 and any schedule. It carries no Pyramos values. ClientReturnBody.load parses it, locks returnVersion to 2026v2.0, reads the taxYr attribute, and checks that ReturnData opens with IRS940. The 2026v2.0 schema package is not in the repo yet, so every IRS940, IRS940ScheduleA and IRS940ScheduleR element name is unverified; line-mapping.tsv marks each one."
+      "description": "What one client company files: its Filer block (EIN, name, name control, address), the calendar-year tax period, and ReturnData with Form 940 and any schedule. It carries no Pyramos values. ClientReturnBody.load parses it, locks returnVersion to 2026v2.0, reads the taxYr attribute, and checks that ReturnData opens with IRS940."
     },
     {
       "id": "lineMapping",
       "file": "line-mapping.tsv",
       "title": "Line mapping",
       "producedBy": "Hand-built while reading the PDF",
-      "description": "One row per value in the client body: which form line it comes from, the XML element path, the value, the PDF page, a confidence, and the name source. confidence is known only for Filer elements, which come from the shared ReturnHeader94x.xsd. Every IRS940, IRS940ScheduleA and IRS940ScheduleR name is guess until the 2026v2.0 schema is bundled, including names copied from IRS941 or IRS941ScheduleR; the name source column records that sibling."
+      "description": "One row per value in the client body: which form line it comes from, the XML element path, the value, the PDF page, a confidence, and the name source. Every element is known: Filer elements come from ReturnHeader94x.xsd, IRS940, IRS940ScheduleA and IRS940ScheduleR elements from the 2026v2.0 schemas, with the XSD LineNumber cited."
     },
     {
       "id": "composedReturn",
       "file": "composed-return.xml",
       "title": "Composed Return",
       "producedBy": "ReportingAgentReturn.compose (snapshot kept by AtsScenarioSnapshotTest)",
-      "description": "The full Return IRS receives. The composer wraps the client body in a ReturnHeader with OriginatorTypeCd ReportingAgent, a ReportingAgentPINGrp, and a ReportingAgent94XFilerGrp naming Pyramos. This snapshot uses stand-in originator values (EFIN 000000, PIN 00000, agent EIN 000000000) and a fixed clock of 2026-10-13T14:00Z. A live send fills those from MEF_EFIN, MEF_RA_PIN, MEF_SOFTWARE_ID and the other MEF_RA_* settings. The 940 snapshot is not schema-checked until the 2026v2.0 bundle lands.",
+      "description": "The full Return IRS receives. The composer wraps the client body in a ReturnHeader with OriginatorTypeCd ReportingAgent, a ReportingAgentPINGrp, and a ReportingAgent94XFilerGrp naming Pyramos. This snapshot uses stand-in originator values (EFIN 000000, PIN 00000, agent EIN 000000000) and a fixed clock of 2026-10-13T14:00Z. A live send fills those from MEF_EFIN, MEF_RA_PIN, MEF_SOFTWARE_ID and the other MEF_RA_* settings.",
       "headerFields": [
         {
           "element": "Return/@returnVersion",

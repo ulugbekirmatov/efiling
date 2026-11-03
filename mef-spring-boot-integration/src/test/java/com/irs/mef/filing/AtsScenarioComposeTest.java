@@ -30,15 +30,29 @@ class AtsScenarioComposeTest {
     private static final Clock FIXED = Clock.fixed(Instant.parse("2026-10-13T14:00:00Z"), ZoneOffset.UTC);
     private static final XsdReturnValidator VALIDATOR = new XsdReturnValidator();
 
+    /** The schema release and SoftwareId stand-in the composer picks for a tax year. */
+    private record Release(int taxYear, String returnVersion, String softwareId) {
+        static final Release TY2026 = new Release(2026, "2026Q1v4.0", "00000000");
+        static final Release TY2027 = new Release(2027, "2027Q1v2.0", "00000027");
+    }
+
     static Stream<Arguments> quarterlyScenarios() {
         return Stream.of(
-                arguments(AtsScenario.ORCHID_941, "941", FormSpec.F941, "003000004",
+                arguments(AtsScenario.ORCHID_941, Release.TY2026, "941", FormSpec.F941, "003000004",
                         List.of("IRS941")),
-                arguments(AtsScenario.MARIGOLD_941_SCHEDULE_B, "941", FormSpec.F941, "003333330",
+                arguments(AtsScenario.MARIGOLD_941_SCHEDULE_B, Release.TY2026, "941", FormSpec.F941, "003333330",
                         List.of("IRS941", "IRS941ScheduleB")),
-                arguments(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974, "941", FormSpec.F941, "003222220",
+                arguments(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974, Release.TY2026, "941", FormSpec.F941, "003222220",
                         List.of("IRS941", "IRS941ScheduleR", "IRS8974")),
-                arguments(AtsScenario.ORCHID_941X, "941X", FormSpec.F941X, "003000004",
+                arguments(AtsScenario.ORCHID_941X, Release.TY2026, "941X", FormSpec.F941X, "003000004",
+                        List.of("IRS941X")),
+                arguments(AtsScenario.ORCHID_941_TY2027, Release.TY2027, "941", FormSpec.F941, "003000004",
+                        List.of("IRS941")),
+                arguments(AtsScenario.MARIGOLD_941_SCHEDULE_B_TY2027, Release.TY2027, "941", FormSpec.F941, "003333330",
+                        List.of("IRS941", "IRS941ScheduleB")),
+                arguments(AtsScenario.DAFFODIL_941_SCHEDULE_R_8974_TY2027, Release.TY2027, "941", FormSpec.F941, "003222220",
+                        List.of("IRS941", "IRS941ScheduleR", "IRS8974")),
+                arguments(AtsScenario.ORCHID_941X_TY2027, Release.TY2027, "941X", FormSpec.F941X, "003000004",
                         List.of("IRS941X")));
     }
 
@@ -52,6 +66,7 @@ class AtsScenarioComposeTest {
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("quarterlyScenarios")
     void composesAValidQuarterlyReturnComposer(AtsScenario scenario,
+                                                     Release release,
                                                      String returnTypeCd,
                                                      FormSpec formType,
                                                      String filerEin,
@@ -62,36 +77,13 @@ class AtsScenarioComposeTest {
 
         ReturnComposer.Structure header = ret.structure();
         assertReportingAgentHeader(header, returnTypeCd, filerEin);
-        assertEquals("2026Q1v4.0", header.returnVersion());
+        assertEquals(release.returnVersion(), header.returnVersion());
         assertEquals("QuarterEndingDt", header.periodElement(), "EMPL-002-01 requires QuarterEndingDt on 941 and 941X");
-        assertEquals("2026-03", header.periodValue());
+        assertEquals(release.taxYear() + "-03", header.periodValue());
+        assertTrue(ret.xml().contains("<SoftwareId>" + release.softwareId() + "</SoftwareId>"), ret.xml());
         assertDocuments(ret, documents);
-        assertSubmitCommandAndManifest(ret, scenario, formType, filerEin, LocalDate.of(2026, 3, 31));
-    }
-
-    @Test
-    void composesTheTy2027Form941XAgainstThe2027Q1Release() {
-        ReturnComposer ret = compose(AtsScenario.ORCHID_941X_TY2027);
-
-        VALIDATOR.validate(FormSpec.F941X, schemaOf(AtsScenario.ORCHID_941X_TY2027), ret.xml());
-
-        ReturnComposer.Structure header = ret.structure();
-        assertReportingAgentHeader(header, "941X", "003000004");
-        assertEquals("2027Q1v2.0", header.returnVersion());
-        assertEquals("QuarterEndingDt", header.periodElement());
-        assertEquals("2027-03", header.periodValue());
-        assertTrue(ret.xml().contains("<SoftwareId>00000027</SoftwareId>"), ret.xml());
-        assertDocuments(ret, List.of("IRS941X"));
-    }
-
-    @Test
-    void the2026Form941XStillValidatesAgainst2026Q1v4() {
-        ReturnComposer ret = compose(AtsScenario.ORCHID_941X);
-
-        VALIDATOR.validate(FormSpec.F941X, schemaOf(AtsScenario.ORCHID_941X), ret.xml());
-
-        assertEquals("2026Q1v4.0", ret.structure().returnVersion());
-        assertTrue(ret.xml().contains("<SoftwareId>00000000</SoftwareId>"), ret.xml());
+        assertSubmitCommandAndManifest(ret, scenario, formType, filerEin,
+                LocalDate.of(release.taxYear(), 1, 1), LocalDate.of(release.taxYear(), 3, 31));
     }
 
     @ParameterizedTest(name = "scenario {0}")
@@ -106,7 +98,8 @@ class AtsScenarioComposeTest {
         assertEquals("2026", header.periodValue());
         assertFalse(ret.xml().contains("QuarterEndingDt"), ret.xml());
         assertDocuments(ret, documents);
-        assertSubmitCommandAndManifest(ret, scenario, FormSpec.F940, filerEin, LocalDate.of(2026, 12, 31));
+        assertSubmitCommandAndManifest(ret, scenario, FormSpec.F940, filerEin,
+                LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
     }
 
     @ParameterizedTest(name = "scenario {0}")
@@ -149,11 +142,12 @@ class AtsScenarioComposeTest {
                                                        AtsScenario scenario,
                                                        FormSpec formType,
                                                        String filerEin,
+                                                       LocalDate periodBegin,
                                                        LocalDate periodEnd) {
         SubmitCommand command = ret.toSubmitCommand("key", scenario.clientId());
         assertEquals(formType, command.formType());
         assertEquals(filerEin, command.clientEin().value());
-        assertEquals(LocalDate.of(2026, 1, 1), command.taxPeriod().begin());
+        assertEquals(periodBegin, command.taxPeriod().begin());
         assertEquals(periodEnd, command.taxPeriod().end());
 
         String manifest = ManifestXml.render(new Filing(
@@ -179,7 +173,7 @@ class AtsScenarioComposeTest {
     void anUnknownScenarioIdIsRefused() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> AtsScenario.byId("5"));
-        assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4, 940-1, 940-2, 940-3, 2027-4", ex.getMessage());
+        assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4, 940-1, 940-2, 940-3, 2027-1, 2027-2, 2027-3, 2027-4", ex.getMessage());
     }
 
     /** The journal and the c2s-web viewer group sends by this clientId; it must not drift. */

@@ -95,7 +95,7 @@ case "$verb" in
     ;;
   scenarios)
     [[ $# -eq 1 ]] || usage
-    list_scenarios | sort -t $'\t' -k1,1
+    list_scenarios | sort -t $'\t' -k1,1V
     ;;
   preflight)
     [[ $# -eq 2 ]] || usage

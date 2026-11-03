@@ -25,6 +25,9 @@ public record AtsScenario(String id, String shortName, String fixture, String fo
     public static final AtsScenario MARIGOLD_941_SCHEDULE_B = byId("2");
     public static final AtsScenario DAFFODIL_941_SCHEDULE_R_8974 = byId("3");
     public static final AtsScenario ORCHID_941X = byId("4");
+    public static final AtsScenario ORCHID_941_TY2027 = byId("2027-1");
+    public static final AtsScenario MARIGOLD_941_SCHEDULE_B_TY2027 = byId("2027-2");
+    public static final AtsScenario DAFFODIL_941_SCHEDULE_R_8974_TY2027 = byId("2027-3");
     public static final AtsScenario ORCHID_941X_TY2027 = byId("2027-4");
     public static final AtsScenario ZINNIA_940 = byId("940-1");
     public static final AtsScenario POPPY_940_SCHEDULE_A = byId("940-2");

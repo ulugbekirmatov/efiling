@@ -13,8 +13,10 @@
   ],
   "pdf": "941-test-scenario-1-ty2027.pdf",
   "status": {
-    "state": "ready",
-    "note": "Composed and schema-valid offline (AtsScenarioComposeTest) against 2027Q1v2.0. Not yet sent."
+    "state": "accepted",
+    "date": "2026-11-03",
+    "submissionId": "2378612026307fihd1kt",
+    "note": "Accepted by IRS ATS on the first ack poll (ack E4KF2LW38MDJSLGND16NRM6PGN87N052Q5HRPC09N62SQ) with returnVersion 2027Q1v2.0 and Software ID 27998441 (MEF_SOFTWARE_ID_2027). Sent 2026-11-03 for the quarter ending 2027-03-31, so ATS did not enforce R0000-191."
   },
   "summary": "The simplest scenario in the set. A standalone Form 941 for Q1 2027 with 3 employees and $1,000 in wages, no adjustments, no credits, and no Schedule B. Deposits equal total tax, so the balance due is $0.00.",
   "tests": [

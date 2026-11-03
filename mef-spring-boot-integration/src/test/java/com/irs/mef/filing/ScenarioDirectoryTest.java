@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ScenarioDirectoryTest {
     private static final Pattern SCENARIO_DIR = Pattern.compile(
-            "^scenario-(?<id>[0-9]{3}-[0-9]+|[0-9]+)-(?<slug>[A-Za-z][A-Za-z0-9-]*)$");
-    private static final List<String> IDS = List.of("1", "2", "3", "4", "940-1", "940-2", "940-3");
+            "^scenario-(?<id>[0-9]{3,4}-[0-9]+|[0-9]+)-(?<slug>[A-Za-z][A-Za-z0-9-]*)$");
+    private static final List<String> IDS = List.of("1", "2", "3", "4", "940-1", "940-2", "940-3", "2027-4");
 
     @Test
     void everyScenarioDirectoryMatchesTheContract() throws IOException {

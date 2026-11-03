@@ -69,6 +69,31 @@ class AtsScenarioComposeTest {
         assertSubmitCommandAndManifest(ret, scenario, formType, filerEin, LocalDate.of(2026, 3, 31));
     }
 
+    @Test
+    void composesTheTy2027Form941XAgainstThe2027Q1Release() {
+        ReturnComposer ret = compose(AtsScenario.ORCHID_941X_TY2027);
+
+        VALIDATOR.validate(FormSpec.F941X, schemaOf(AtsScenario.ORCHID_941X_TY2027), ret.xml());
+
+        ReturnComposer.Structure header = ret.structure();
+        assertReportingAgentHeader(header, "941X", "003000004");
+        assertEquals("2027Q1v2.0", header.returnVersion());
+        assertEquals("QuarterEndingDt", header.periodElement());
+        assertEquals("2027-03", header.periodValue());
+        assertTrue(ret.xml().contains("<SoftwareId>00000027</SoftwareId>"), ret.xml());
+        assertDocuments(ret, List.of("IRS941X"));
+    }
+
+    @Test
+    void the2026Form941XStillValidatesAgainst2026Q1v4() {
+        ReturnComposer ret = compose(AtsScenario.ORCHID_941X);
+
+        VALIDATOR.validate(FormSpec.F941X, schemaOf(AtsScenario.ORCHID_941X), ret.xml());
+
+        assertEquals("2026Q1v4.0", ret.structure().returnVersion());
+        assertTrue(ret.xml().contains("<SoftwareId>00000000</SoftwareId>"), ret.xml());
+    }
+
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
     void composesAnAnnual940Return(AtsScenario scenario, String filerEin, List<String> documents) {
@@ -154,7 +179,7 @@ class AtsScenarioComposeTest {
     void anUnknownScenarioIdIsRefused() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> AtsScenario.byId("5"));
-        assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4, 940-1, 940-2, 940-3", ex.getMessage());
+        assertEquals("Unknown ATS scenario '5'. Must be one of: 1, 2, 3, 4, 940-1, 940-2, 940-3, 2027-4", ex.getMessage());
     }
 
     /** The journal and the c2s-web viewer group sends by this clientId; it must not drift. */

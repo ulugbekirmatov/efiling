@@ -60,7 +60,7 @@ list_scenarios() {
   shopt -s nullglob
   for f in "$ROOT"/test-scenarios/*/scenario-*/scenario.json; do
     dir="$(basename "$(dirname "$f")")"
-    if [[ $dir =~ ^scenario-([0-9]{3}-[0-9]+|[0-9]+)- ]]; then
+    if [[ $dir =~ ^scenario-([0-9]{3,4}-[0-9]+|[0-9]+)- ]]; then
       id="${BASH_REMATCH[1]}"
     else
       echo "scenario directory does not match scenario-<id>-<slug>: $dir" >&2

@@ -12,6 +12,7 @@ package com.irs.mef.filing;
  *   CREATED ── SOAP fault ─────────&gt; REJECTED        (key reusable: nothing was filed)
  *   CREATED ── anything else ──────&gt; INDETERMINATE   (terminal; replay, no IRS call)
  *   CREATED ── JVM crash ──────────&gt; INDETERMINATE   (applied by the journal on startup replay)
+ *   CREATED ── write fails ────────&gt; CREATED         (stays open until restart; repeats get NEWSEND_KEY_UNRESOLVED)
  * </pre>
  */
 public enum JournalState {

@@ -31,6 +31,7 @@ final class ClientReturnBody {
     private final String returnDataXml;
     private final TaxPeriod taxPeriod;
     private final ReportingPeriod period;
+    private final SchemaBinding schema;
 
     private ClientReturnBody(FormSpec returnType,
                              Ein filerEin,
@@ -45,6 +46,7 @@ final class ClientReturnBody {
         this.taxPeriod = Objects.requireNonNull(taxPeriod);
         this.period = Objects.requireNonNull(period);
         period.requireMatches(taxPeriod);
+        this.schema = returnType.schemaFor(taxPeriod.begin().getYear());
     }
 
     FormSpec form() {
@@ -63,8 +65,12 @@ final class ClientReturnBody {
         return period;
     }
 
+    SchemaBinding schema() {
+        return schema;
+    }
+
     String returnVersion() {
-        return returnType.returnVersion();
+        return schema.release().returnVersion();
     }
 
     String filerXml() {

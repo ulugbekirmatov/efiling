@@ -91,7 +91,7 @@ Create a YAML config file in the Spring Boot test resources:
 
 ### Step 5: Create Test Class
 
-Add a directory named scenario-<id>-<slug> under `test-scenarios/ats-ty2026/` (or `test-scenarios/ats-ty2026-annual/` for a 940), with scenario.json and `client-return-body.xml`. `AtsScenario` discovers it, and the c2s-web scenario pages read the same directories. Do not start from the OneWell-era `Return941-Scenario1.xml`.
+Add a directory named scenario-<id>-<slug> under `test-scenarios/ats-ty2026/` (or `test-scenarios/ats-ty2026-annual/` for a 940, or `test-scenarios/ats-ty2027/` for a TY2027 quarterly return, whose id carries the tax year, such as `2027-4`), with scenario.json and `client-return-body.xml`. `AtsScenario` discovers it, and the c2s-web scenario pages read the same directories. Do not start from the OneWell-era `Return941-Scenario1.xml`.
 
 ### Step 6: Validate
 

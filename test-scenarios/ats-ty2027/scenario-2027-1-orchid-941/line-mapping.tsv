@@ -1,0 +1,22 @@
+document	form line	element path	value	pdf page
+Filer	header	EIN	003000004	2
+Filer	header	BusinessName/BusinessNameLine1Txt	Orchid Incorporated	2
+Filer	header	BusinessNameControlTxt	ORCH	2
+Filer	header	USAddress/AddressLine1Txt	1st Test Street	2
+Filer	header	USAddress/CityNm	Willow Grove	2
+Filer	header	USAddress/StateAbbreviationCd	PA	2
+Filer	header	USAddress/ZIPCd	19090	2
+IRS941	line 1	EmployeeCnt	3	2
+IRS941	line 2	WagesAmt	1000.00	2
+IRS941	line 3	FederalIncomeTaxWithheldAmt	100.00	2
+IRS941	line 5a col 1	SocialSecurityWageAndTaxGrp/SocialSecurityTaxCashWagesAmt	1000.00	2
+IRS941	line 5a col 2	SocialSecurityWageAndTaxGrp/SocialSecurityTaxAmt	124.00	2
+IRS941	line 5c col 1	MedicareWageTipsAndTaxGrp/TaxableMedicareWagesTipsAmt	1000.00	2
+IRS941	line 5c col 2	MedicareWageTipsAndTaxGrp/TaxOnMedicareWagesTipsAmt	29.00	2
+IRS941	line 5e	TotalSSMdcrTaxAmt	153.00	2
+IRS941	line 6	TotalTaxBeforeAdjustmentAmt	253.00	2
+IRS941	line 10	TotalTaxAfterAdjustmentAmt	253.00	2
+IRS941	line 12	TotalTaxAmt	253.00	2
+IRS941	line 13	TotalTaxDepositAmt	253.00	2
+IRS941	line 14	BalanceDueAmt	0.00	2
+IRS941	line 16	TotalTaxLessThanLimitAmtInd	X	3

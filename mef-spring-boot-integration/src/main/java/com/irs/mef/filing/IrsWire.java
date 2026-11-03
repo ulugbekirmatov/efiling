@@ -328,7 +328,8 @@ final class IrsWire implements TransmitGateway {
         }
     }
 
-    private static void ensureToolkitHome() {
+    /** The SDK reads A2A_TOOLKIT_HOME in a static initializer; any first SDK touch, send or keystore, must set it. */
+    static void ensureToolkitHome() {
         String existing = System.getProperty("A2A_TOOLKIT_HOME");
         if (existing != null && !existing.isBlank()) {
             return;

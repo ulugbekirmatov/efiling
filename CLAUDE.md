@@ -44,6 +44,8 @@ POST /api/inspector/sends/{submissionId}/ack
 POST /api/mef/filings
 POST /api/mef/session/login
 POST /api/mef/session/logout
+POST /api/mef/wage-files
+POST /api/mef/wage-files/{id}/receipt
 <!-- /generated -->
 
 ## Environment variables

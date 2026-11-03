@@ -35,7 +35,7 @@ The tool writes `~/ssnvs/out/<ein>/` and prints one line with the counts and the
 - `ssnvs.txt` holds one 130-character record per person sent. `ssnvs.zip` is also written when there are more than 500 records. Upload the zip in that case.
 - `holdbacks.csv` lists each person not sent, by employee id, with the reason (`NO_SSN`, `SSN_SHAPE_NEVER_ISSUED`, `W2_FIELDS_BLANK_OR_DISAGREE`, `DUPLICATE_SSN`, and others).
 - `notes.csv` lists people sent with a flag to review, such as `FIRST_MIDDLE_SPLIT_GUESSED` or `SSN_DIFFERS_FROM_HR`.
-- `manifest.json` maps each record's control id to the employee and the W-2 form ids. It holds no SSN, name, or birth date.
+- `~/ssnvs/out/<ein>/manifest.json` maps each record's control id to the employee and the W-2 form ids. It holds no SSN, name, or birth date.
 
 Exit code 0 means everyone was sent. Exit code 2 means you have holdbacks or a refused file to look at. Exit code 1 means the CSV could not be read, and the message names the line and the column.
 

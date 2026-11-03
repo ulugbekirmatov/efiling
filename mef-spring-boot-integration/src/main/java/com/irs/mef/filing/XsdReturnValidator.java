@@ -26,14 +26,14 @@ class XsdReturnValidator implements ReturnValidator {
 
     private static final int MAX_REPORTED_ERRORS = 5;
 
-    private final Map<FormSpec, Schema> schemaCache = new ConcurrentHashMap<>();
+    private final Map<SchemaBinding, Schema> schemaCache = new ConcurrentHashMap<>();
 
     @Override
-    public void validate(FormSpec form, String returnXml) {
+    public void validate(FormSpec form, SchemaBinding binding, String returnXml) {
         assertWellFormed(returnXml);
-        String schemaRoot = form.schema().resource();
+        String schemaRoot = binding.resource();
         requireBundled(schemaRoot);
-        List<String> errors = schemaErrors(form, schemaRoot, returnXml);
+        List<String> errors = schemaErrors(binding, schemaRoot, returnXml);
         if (errors.isEmpty()) {
             return;
         }
@@ -60,8 +60,8 @@ class XsdReturnValidator implements ReturnValidator {
         }
     }
 
-    private List<String> schemaErrors(FormSpec formType, String schemaRoot, String returnXml) {
-        Schema schema = schemaCache.computeIfAbsent(formType, ignored -> loadSchema(schemaRoot));
+    private List<String> schemaErrors(SchemaBinding binding, String schemaRoot, String returnXml) {
+        Schema schema = schemaCache.computeIfAbsent(binding, ignored -> loadSchema(schemaRoot));
         List<String> errors = new ArrayList<>();
         try {
             Validator validator = schema.newValidator();

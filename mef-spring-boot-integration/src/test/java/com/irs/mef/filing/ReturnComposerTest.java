@@ -23,7 +23,7 @@ class ReturnComposerTest {
         ReturnComposer ret = ReturnComposer.compose(
                 standIn, orchid, Clock.system(ZoneId.of("America/New_York")));
 
-        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.root(FormSpec.F941));
+        XmlValidator.ValidationResult xsd = XmlValidator.validate(ret.xml(), ClasspathSchemas.root(orchid.schema()));
         assertTrue(xsd.isValid(), xsd::report);
 
         ReturnComposer.Structure s = ret.structure();

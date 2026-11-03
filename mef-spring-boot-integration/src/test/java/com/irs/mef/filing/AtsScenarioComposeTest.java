@@ -58,7 +58,7 @@ class AtsScenarioComposeTest {
                                                      List<String> documents) {
         ReturnComposer ret = compose(scenario);
 
-        VALIDATOR.validate(formType, ret.xml());
+        VALIDATOR.validate(formType, schemaOf(scenario), ret.xml());
 
         ReturnComposer.Structure header = ret.structure();
         assertReportingAgentHeader(header, returnTypeCd, filerEin);
@@ -87,7 +87,11 @@ class AtsScenarioComposeTest {
     @ParameterizedTest(name = "scenario {0}")
     @MethodSource("annualScenarios")
     void anAnnual940ReturnIsSchemaValid(AtsScenario scenario, String filerEin, List<String> documents) {
-        VALIDATOR.validate(FormSpec.F940, compose(scenario).xml());
+        VALIDATOR.validate(FormSpec.F940, schemaOf(scenario), compose(scenario).xml());
+    }
+
+    private static SchemaBinding schemaOf(AtsScenario scenario) {
+        return ClientReturnBody.load(scenario.clientBody()).schema();
     }
 
     private static ReturnComposer compose(AtsScenario scenario) {
@@ -142,7 +146,7 @@ class AtsScenarioComposeTest {
                 ClientReturnBody.load(AtsScenario.ORCHID_941.clientBody()), FIXED);
 
         FilingValidationException ex = assertThrows(FilingValidationException.class,
-                () -> VALIDATOR.validate(FormSpec.F941X, scenario1.xml()));
+                () -> VALIDATOR.validate(FormSpec.F941X, FormSpec.F941X.schemaFor(2026), scenario1.xml()));
         assertTrue(ex.getMessage().startsWith("Return XML failed 941X schema validation: "), ex.getMessage());
     }
 

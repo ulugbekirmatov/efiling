@@ -4,7 +4,7 @@ name: test
 # unless -Dmef.live.test names one, so this workflow never contacts IRS.
 on:
   push:
-    branches: [main]
+    branches: [feature/agent-friendly]
   pull_request:
 
 permissions:

@@ -2,7 +2,6 @@ package com.irs.mef.ack;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.irs.mef.dto.AckResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,16 +28,9 @@ class FileAckStoreTest {
     @DisplayName("a recorded ack reads back field for field")
     void roundTrip() {
         FileAckStore store = new FileAckStore(temp, new ObjectMapper());
-        StoredAck ack = StoredAck.from(AckResponse.builder()
-                .submissionId(SUBMISSION_ID)
-                .ackType("Rejected")
-                .errorCodes(List.of("X0000-008"))
-                .errorMessages(List.of("bad originator"))
-                .ein("003000004")
-                .totalTaxAmt(1234L)
-                .hasValidationErrors(true)
-                .hasValidationAlerts(false)
-                .build(), Instant.parse("2026-09-25T09:26:34Z"), AckSource.GET_ACK);
+        StoredAck ack = stored(SUBMISSION_ID, "Rejected", Instant.parse("2026-09-25T09:26:34Z"),
+                AckSource.GET_ACK, List.of("X0000-008"), List.of("bad originator"),
+                "003000004", 1234L, true, false);
 
         store.record(ack);
         Optional<StoredAck> loaded = store.find(SUBMISSION_ID);
@@ -84,15 +76,24 @@ class FileAckStoreTest {
 
         assertTrue(store.find(SUBMISSION_ID).isEmpty());
         assertTrue(store.find("../../etc/passwd").isEmpty());
-        assertThrows(RuntimeException.class, () -> store.record(StoredAck.from(AckResponse.builder()
-                .submissionId("../escape").build(), Instant.EPOCH, AckSource.GET_ACK)));
+        assertThrows(RuntimeException.class, () -> store.record(stored(
+                "../escape", "Accepted", Instant.EPOCH, AckSource.GET_ACK,
+                null, null, null, null, null, null)));
         assertFalse(Files.exists(temp.resolve("../escape.json")));
     }
 
     private static StoredAck ack(String ackType, String retrievedAt, AckSource source) {
-        return StoredAck.from(AckResponse.builder()
-                .submissionId(SUBMISSION_ID)
-                .ackType(ackType)
-                .build(), Instant.parse(retrievedAt), source);
+        return stored(SUBMISSION_ID, ackType, Instant.parse(retrievedAt), source,
+                null, null, null, null, null, null);
+    }
+
+    private static StoredAck stored(String submissionId, String ackType, Instant retrievedAt, AckSource source,
+                                    List<String> errorCodes, List<String> errorMessages, String ein,
+                                    Long totalTaxAmt, Boolean hasValidationErrors, Boolean hasValidationAlerts) {
+        return new StoredAck(
+                null, submissionId, retrievedAt, source, ackType, null, null,
+                errorCodes, errorMessages, null, null, ein, null, null, totalTaxAmt,
+                null, null, null, null, null, null, null, null, null, null, null, null,
+                hasValidationErrors, hasValidationAlerts);
     }
 }

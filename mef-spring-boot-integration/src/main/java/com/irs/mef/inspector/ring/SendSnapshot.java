@@ -1,8 +1,8 @@
 package com.irs.mef.inspector.ring;
 
 import com.irs.mef.inspector.capture.SoapRedactor;
-import com.irs.mef.newsend.domain.FormType;
-import com.irs.mef.newsend.domain.TaxPeriod;
+import com.irs.mef.filing.FormSpec;
+import com.irs.mef.filing.TaxPeriod;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -18,7 +18,7 @@ public record SendSnapshot(
         Instant capturedAt,
         String environment,
         String einMasked,
-        FormType formType,
+        FormSpec formType,
         TaxPeriod taxPeriod,
         String clientRequestId,
         String returnXmlSha256,

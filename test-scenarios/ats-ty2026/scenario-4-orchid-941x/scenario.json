@@ -1,0 +1,66 @@
+{
+  "title": "Orchid Incorporated, Form 941-X correcting scenario 1",
+  "employer": {
+    "name": "Orchid Incorporated",
+    "ein": "003000004",
+    "nameControl": "ORCH",
+    "address": "1st Test St, Willow Grove, PA 19090"
+  },
+  "returnTypeCd": "941X",
+  "quarter": "2026Q1",
+  "documents": [
+    "IRS941X"
+  ],
+  "pdf": "ty-2026-f941x-ats-scenario-4.pdf",
+  "status": {
+    "state": "ready",
+    "note": "Composed and schema-valid offline (AtsScenarioComposeTest). Send after ATS reopens on 2026-10-13, and only if Pyramos will file 941-X corrections in production (Pub 5078 section 2.5.1)."
+  },
+  "summary": "A Form 941-X that corrects Orchid's Q1 2026 Form 941 from scenario 1. The original return underreported wages, social security wages and Medicare wages by $1,500 each, and federal income tax withheld by $150. It uses the adjusted-return process (line 1), not the claim process, and $379.50 of additional tax is owed.",
+  "tests": [
+    "Return being corrected: Form 941, quarter 1, calendar year 2026, errors discovered 05/21/2026",
+    "Part 1 line 1, the adjusted employment tax return process (underreported tax). Line 2, the claim, is unchecked.",
+    "Part 2 line 3 (W-2/W-2c filed) and line 4a (employees repaid) certifications",
+    "Correction columns: 1 corrected, 2 originally reported, 3 difference, 4 tax correction",
+    "Line 8 social security correction at 0.124 ($186.00) and line 12 Medicare correction at 0.029 ($43.50)",
+    "Line 23 sum of column 4 ($379.50) and line 27 total amount owed ($379.50)"
+  ],
+  "keyFigures": [
+    {
+      "label": "Wages: corrected / original / difference",
+      "line": "941-X line 6",
+      "value": "2500.00 / 1000.00 / 1500.00"
+    },
+    {
+      "label": "Federal income tax withheld correction",
+      "line": "941-X line 7",
+      "value": "150.00"
+    },
+    {
+      "label": "Social security tax correction",
+      "line": "941-X line 8",
+      "value": "186.00"
+    },
+    {
+      "label": "Medicare tax correction",
+      "line": "941-X line 12",
+      "value": "43.50"
+    },
+    {
+      "label": "Combined tax correction",
+      "line": "941-X line 23",
+      "value": "379.50"
+    },
+    {
+      "label": "Total amount owed",
+      "line": "941-X line 27",
+      "value": "379.50"
+    }
+  ],
+  "notes": [
+    "Column 2 (originally reported) matches scenario 1's 941 exactly: $1,000 wages, $100 withheld, $1,000 social security and Medicare wages.",
+    "The IRS PDF has 4 pages, although page 1 says to complete all five. Page 5 (Part 4 explanation, Part 5 signature) is missing, so CorrectionsExplanationTxt is written by us and cannot be checked against the PDF.",
+    "Page 1 of the PDF enters calendar year 2026, but the running header on pages 2-4 shows 2025. The client body uses 2026, which matches the tax period.",
+    "The address here is '1st Test St', while scenario 1 uses '1st Test Street'. Each fixture follows its own PDF."
+  ]
+}

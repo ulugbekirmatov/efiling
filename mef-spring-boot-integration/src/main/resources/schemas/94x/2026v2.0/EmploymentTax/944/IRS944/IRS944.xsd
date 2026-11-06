@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema – Form 944 Employer's ANNUAL Federal Tax Return</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+			<ReleaseDate>September 24 2026</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- =================================================================== -->
+	<!-- ========================== IRS Form 944 =========================== -->
+	<!-- =================================================================== -->
+
+	<xsd:element name="IRS944">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 944</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS944Type">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS944">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentId" type="IdListType">
+						<xsd:annotation>
+							<xsd:documentation>List of document ID's of forms, schedules, supporting info. etc. attached to this form</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentName" type="StringType" fixed="BinaryAttachment GeneralDependencySmall IRS945A FinalPayrollInformationStatement TransferOfBusinessStatement IRS941ScheduleD">
+					</xsd:attribute>
+
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS944Type">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 944</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+
+			<!-- Part 1:  Answer these questions for this year -->
+			<!-- Wages Amount -->
+			<xsd:element name="WagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Wages Amount</Description>
+						<LineNumber>1</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Federal Income Tax Withheld Amount -->
+			<xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Income Tax Withheld Amount</Description>
+						<LineNumber>2</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Wages Not Subject To Social Security Medicare Tax Indicator -->
+			<xsd:element name="WagesNotSubjToSSMedcrTaxInd" type="CheckboxType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Wages Not Subject To Social Security Medicare Tax Indicator</Description>
+						<LineNumber>3</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="SocialSecurityWageAndTaxGrp" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Social Security Tax Cash Wages Amount -->
+						<xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Social Security Tax Cash Wages Amount</Description>
+									<LineNumber>4a, Column 1</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Social Security Tax Amount -->
+						<xsd:element name="SocialSecurityTaxAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Social Security Tax Amount</Description>
+									<LineNumber>4a, Column 2</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		
+			<xsd:element name="SocialSecurityTipsAndTaxGrp" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Taxable Social Security Tips Amount -->
+						<xsd:element name="TaxableSocSecTipsAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Taxable Social Security Tips Amount</Description>
+									<LineNumber>4b, Column 1</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Tax On Social Security Tips Amount -->
+						<xsd:element name="TaxOnSocialSecurityTipsAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Tax On Social Security Tips Amount</Description>
+									<LineNumber>4b, Column 2</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="MedicareWageTipsAndTaxGrp" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Taxable Medicare Wages Tips Amount -->
+						<xsd:element name="TaxableMedicareWagesTipsAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Taxable Medicare Wages Tips Amount</Description>
+									<LineNumber>4c, Column 1</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Tax On Medicare Wages Tips Amount -->
+						<xsd:element name="TaxOnMedicareWagesTipsAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Tax On Medicare Wages Tips Amount</Description>
+									<LineNumber>4c, Column 2</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="AddnlMedicareWageTipsAndTaxGrp" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Taxable Wages and Tips Subject to Additional Medicare Amount -->
+						<xsd:element name="TxblWageTipsSubjAddnlMedcrAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Taxable Wages and Tips Subject to Additional Medicare Amount</Description>
+									<LineNumber>4d, Column 1</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Tax On Wages and Tips Subject to Additional Medicare Amount -->
+						<xsd:element name="TaxOnWageTipsSubjAddnlMedcrAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Tax On Wages and Tips Subject to Additional Medicare Amount</Description>
+									<LineNumber>4d, Column 2</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+				</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Total Social Security Medicare Tax Amount -->
+			<xsd:element name="TotalSSMdcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Social Security Medicare Tax Amount</Description>
+						<LineNumber>4e</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Tax Before Adjustment Amount -->
+			<xsd:element name="TotalTaxBeforeAdjustmentAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Before Adjustment Amount</Description>
+						<LineNumber>5</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Current Year Adjustment Amount -->
+			<xsd:element name="CurrentYearAdjustmentAmt" type="USDecimalAmountType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Current Year Adjustment Amount</Description>
+						<LineNumber>6</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Tax After Adjustment Amount -->
+			<xsd:element name="TotalTaxAfterAdjustmentAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax After Adjustment Amount</Description>
+						<LineNumber>7</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Payroll Tax Credit Amount -->
+			<xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+						<LineNumber>8</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="USDecimalAmountNNType">
+							<xsd:attribute name="referenceDocumentId" type="IdListType"/>
+							<xsd:attribute name="referenceDocumentName" type="StringType" fixed="IRS8974"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+							
+			<!-- Total Tax Amount -->
+			<xsd:element name="TotalTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Amount</Description>
+						<LineNumber>9</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<!-- Total Tax Deposit Amount -->
+			<xsd:element name="TotalTaxDepositAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Deposit Amount</Description>
+						<LineNumber>10</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		
+			<xsd:choice minOccurs="0">
+
+				<!-- Balance Due Amount -->
+				<xsd:element name="BalanceDueAmt" type="USDecimalAmountNNType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Balance Due Amount</Description>
+							<LineNumber>11</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+	
+				<xsd:element name="OverpaymentGrp" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+
+							<!-- Overpaid Amount -->
+							<xsd:element name="OverpaidAmt" type="USDecimalAmountNNType">
+								<xsd:annotation>
+									<xsd:documentation>
+										<Description>Overpaid Amount</Description>
+										<LineNumber>12a</LineNumber>
+									</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+
+							<xsd:choice>
+
+								<!-- Apply Overpayment Next Return Indicator -->
+								<xsd:element name="ApplyOverpaymentNextReturnInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Apply Overpayment Next Return Indicator</Description>
+											<LineNumber>12b</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+
+								<!-- Refund Overpayment Indicator -->
+								<xsd:element name="RefundOverpaymentInd" type="CheckboxType">
+									<xsd:annotation>
+										<xsd:documentation>
+											<Description>Refund Overpayment Indicator</Description>
+											<LineNumber>12b</LineNumber>
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:element>
+
+							</xsd:choice>
+	
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+
+			</xsd:choice>
+			
+			<!-- Direct Deposit Group -->
+			<xsd:element name="DirectDepositGrp" type="DirectDepositGrpType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Direct Deposit Group</Description>
+						<LineNumber>12c-e</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Part 2: Tell us about your deposit schedule and tax liability for this year -->
+
+			<xsd:choice minOccurs="0">
+
+				<!-- Annual Depositor Indicator -->
+				<xsd:element name="AnnualDepositorInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Annual Depositor Indicator</Description>
+							<LineNumber>13</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+				<!-- Monthly Depositor Indicator -->
+				<xsd:element name="MonthlyDepositorInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Monthly Schedule Depositor Indicator</Description>
+							<LineNumber>13</LineNumber>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+
+			</xsd:choice>
+
+			<xsd:element name="TaxLiabilityMonthlyDetailGrp" minOccurs="0" maxOccurs="12">
+				<xsd:complexType>
+					<xsd:sequence>
+
+						<!-- Month Code -->
+						<xsd:element name="MonthCd">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Month Code</Description>
+									<LineNumber>13a to 13l</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:enumeration value="JANUARY"/>
+									<xsd:enumeration value="FEBRUARY"/>
+									<xsd:enumeration value="MARCH"/>
+									<xsd:enumeration value="APRIL"/>
+									<xsd:enumeration value="MAY"/>
+									<xsd:enumeration value="JUNE"/>
+									<xsd:enumeration value="JULY"/>
+									<xsd:enumeration value="AUGUST"/>
+									<xsd:enumeration value="SEPTEMBER"/>
+									<xsd:enumeration value="OCTOBER"/>
+									<xsd:enumeration value="NOVEMBER"/>
+									<xsd:enumeration value="DECEMBER"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<!-- Tax Liability Amount -->
+						<xsd:element name="TaxLiabilityAmt" type="USDecimalAmountNNType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Tax Liability Amount</Description>
+									<LineNumber>13a to 13l</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- Total Tax Liability Amount -->
+			<xsd:element name="TotalTaxLiabilityAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Liability Amount</Description>
+						<LineNumber>13m</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Part 3: Tell us about your business. If any question does NOT apply to your business, leave it blank. -->
+
+			<xsd:element name="BusinessClosedGrp" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+	
+						<!-- Future Filing Not Required Indicator -->
+						<xsd:element name="FutureFilingNotRequiredInd" type="CheckboxType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Future Filing Not Required Indicator</Description>
+									<LineNumber>14</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+						<!-- Final Wages Paid Date -->
+						<xsd:element name="FinalWagesPaidDt" type="DateType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Final Wages Paid Date</Description>
+									<LineNumber>14</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		
+			<!-- Part 4: May we speak with your third-party designee?-->
+			<!-- Part 5: Sign here.-->
+
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

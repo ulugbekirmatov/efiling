@@ -1,0 +1,191 @@
+package com.irs.mef.filing;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * A complete schema-shaped 94x Return whose originator is a Reporting Agent.
+ * Constructed only by {@link #compose}. Callers cannot pass OriginatorTypeCd.
+ *
+ * Hidden: header element order, PIN-group enumerations, FilingSecurityInformation
+ * (IPv4 wrapper, hex device ids, 16-char vendor control), binaryAttachmentCnt=0,
+ * MultSoftwarePackagesUsedInd=false, omission of IPTimezoneCd, required
+ * ReportingAgent94XFilerGrp, absence of OnlineFilerPINGrp.
+ *
+ * Exposed: xml string, structure probe, NewSend command. The tax body is the
+ * client's; the header is Pyramos's.
+ */
+final class ReturnComposer {
+
+    static final String ORIGINATOR_TYPE = "ReportingAgent";
+    static final String RAPIN_ENTERED_BY = "REPORTING AGENT";
+    static final String JURAT = "REPORTING AGENT PIN";
+
+    private static final String NS = Efile.NAMESPACE;
+    private static final String PERIOD_ELEMENT =
+            "/efile:Return/efile:ReturnHeader/*[self::efile:QuarterEndingDt or self::efile:TaxYr]";
+
+    private final Originator originator;
+    private final ClientReturnBody client;
+    private final String xml;
+
+    private ReturnComposer(Originator originator, ClientReturnBody client, String xml) {
+        this.originator = originator;
+        this.client = client;
+        this.xml = xml;
+    }
+
+    static ReturnComposer compose(
+            Originator originator,
+            ClientReturnBody client,
+            Clock clock) {
+        Objects.requireNonNull(originator);
+        Objects.requireNonNull(client);
+        Objects.requireNonNull(clock);
+        OffsetDateTime returnTs = OffsetDateTime.now(clock.withZone(Efile.PROCESSING_ZONE));
+        String xml = ReturnComposerXml.render(originator, client, returnTs);
+        return new ReturnComposer(originator, client, xml);
+    }
+
+    String xml() {
+        return xml;
+    }
+
+    Ein clientEin() {
+        return client.filerEin();
+    }
+
+    TaxPeriod taxPeriod() {
+        return client.taxPeriod();
+    }
+
+    /**
+     * EIN, form, period, and XML come from this object — they cannot disagree.
+     * Form type comes from the client body's return type. Submission id is still minted by NewSend.
+     */
+    SubmitCommand toSubmitCommand(String idempotencyKey, String clientId) {
+        return new SubmitCommand(
+                idempotencyKey,
+                clientId,
+                client.filerEin(),
+                client.form(),
+                client.taxPeriod(),
+                xml);
+    }
+
+    Structure structure() {
+        try {
+            Document document = parseHardened(xml);
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            xpath.setNamespaceContext(new EfileNamespace());
+            return new Structure(
+                    attribute(xpath, document, "/efile:Return/@returnVersion"),
+                    text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:ReturnTypeCd"),
+                    text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:OriginatorGrp/efile:OriginatorTypeCd"),
+                    new Efin(text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:OriginatorGrp/efile:EFIN")),
+                    exists(xpath, document, "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp"),
+                    exists(xpath, document, "/efile:Return/efile:ReturnHeader/efile:OnlineFilerPINGrp"),
+                    exists(xpath, document, "/efile:Return/efile:ReturnHeader/efile:PractitionerPINGrp"),
+                    exists(xpath, document, "/efile:Return/efile:ReturnHeader/efile:ReportingAgent94XFilerGrp"),
+                    new Ein(text(xpath, document,
+                            "/efile:Return/efile:ReturnHeader/efile:ReportingAgent94XFilerGrp/efile:EIN")),
+                    new Ein(text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:Filer/efile:EIN")),
+                    text(xpath, document, "/efile:Return/efile:ReturnHeader/efile:SoftwareId"),
+                    text(xpath, document,
+                            "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp/efile:RAPINEnteredByCd"),
+                    text(xpath, document,
+                            "/efile:Return/efile:ReturnHeader/efile:ReportingAgentPINGrp/efile:JuratDisclosureCd"),
+                    text(xpath, document, "local-name(" + PERIOD_ELEMENT + ")"),
+                    text(xpath, document, PERIOD_ELEMENT));
+        } catch (ReportingAgentValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ReportingAgentValidationException("xml", "Could not probe Return structure: " + e.getMessage());
+        }
+    }
+
+    private static Document parseHardened(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        try {
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        } catch (IllegalArgumentException ignored) {
+            // Parser does not support JAXP external-access attributes.
+        }
+        return factory.newDocumentBuilder()
+                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static String text(XPath xpath, Document document, String expression) throws XPathExpressionException {
+        String value = xpath.evaluate(expression, document);
+        if (value == null || value.isBlank()) {
+            throw new ReportingAgentValidationException("xml", "Missing " + expression);
+        }
+        return value.trim();
+    }
+
+    private static String attribute(XPath xpath, Document document, String expression) throws XPathExpressionException {
+        return text(xpath, document, expression);
+    }
+
+    private static boolean exists(XPath xpath, Document document, String expression) throws XPathExpressionException {
+        NodeList nodes = (NodeList) xpath.evaluate(expression, document, XPathConstants.NODESET);
+        return nodes != null && nodes.getLength() > 0;
+    }
+
+    record Structure(
+            String returnVersion,
+            String returnTypeCd,
+            String originatorTypeCd,
+            Efin originatorEfin,
+            boolean hasReportingAgentPinGrp,
+            boolean hasOnlineFilerPinGrp,
+            boolean hasPractitionerPinGrp,
+            boolean hasReportingAgent94XFilerGrp,
+            Ein agentEin,
+            Ein filerEin,
+            String softwareId,
+            String rapinEnteredByCd,
+            String juratDisclosureCd,
+            String periodElement,
+            String periodValue) {}
+
+    private static final class EfileNamespace implements NamespaceContext {
+        @Override
+        public String getNamespaceURI(String prefix) {
+            return "efile".equals(prefix) ? NS : XMLConstants.NULL_NS_URI;
+        }
+
+        @Override
+        public String getPrefix(String namespaceURI) {
+            return NS.equals(namespaceURI) ? "efile" : null;
+        }
+
+        @Override
+        public Iterator<String> getPrefixes(String namespaceURI) {
+            return List.of("efile").iterator();
+        }
+    }
+}

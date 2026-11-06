@@ -64,27 +64,27 @@
   <ReturnData documentCnt="2">
     <IRS940 documentId="IRS940" referenceDocumentId="IRS940ScheduleA">
       <!-- Line 1b: Multi-state employer (complete Schedule A) -->
-      <MultiStateInd>X</MultiStateInd>
+      <MultiStateInd referenceDocumentId="IRS940ScheduleA" referenceDocumentName="IRS940ScheduleA">X</MultiStateInd>
       <!-- Line 2: Paid wages in a state subject to credit reduction (complete Schedule A) -->
-      <CreditReductionStateInd>X</CreditReductionStateInd>
+      <CreditReductionStateInd referenceDocumentId="IRS940ScheduleA" referenceDocumentName="IRS940ScheduleA">X</CreditReductionStateInd>
       <!-- Line 3: Total payments to all employees -->
-      <TotalPaymentsToAllEmployeesAmt>350000.00</TotalPaymentsToAllEmployeesAmt>
+      <WagesAmt>350000.00</WagesAmt>
       <!-- Line 4: Payments exempt from FUTA tax -->
-      <ExemptPaymentsAmt>100000.00</ExemptPaymentsAmt>
+      <ExemptWagesAmt>100000.00</ExemptWagesAmt>
       <!-- Line 4c: Exempt payment type, retirement/pension -->
       <RetirementPensionInd>X</RetirementPensionInd>
       <!-- Line 5: Payments in excess of $7,000 (blank on the form) -->
       <!-- Line 6: Subtotal (line 4 + line 5) -->
-      <SubtotalAmt>100000.00</SubtotalAmt>
+      <TotalExemptWagesAmt>100000.00</TotalExemptWagesAmt>
       <!-- Line 7: Total taxable FUTA wages (line 3 - line 6) -->
-      <TotalTaxableFUTAWagesAmt>250000.00</TotalTaxableFUTAWagesAmt>
+      <TotalTaxableWagesAmt>250000.00</TotalTaxableWagesAmt>
       <!-- Line 8: FUTA tax before adjustments (line 7 x 0.006) -->
-      <FUTATaxBeforeAdjustmentsAmt>1500.00</FUTATaxBeforeAdjustmentsAmt>
+      <FUTATaxBeforeAdjustmentAmt>1500.00</FUTATaxBeforeAdjustmentAmt>
       <!-- Lines 9-10: Adjustments (blank on the form) -->
       <!-- Line 11: Credit reduction, total from Schedule A -->
       <TotalCreditReductionAmt>11250.00</TotalCreditReductionAmt>
       <!-- Line 12: Total FUTA tax after adjustments (lines 8 + 9 + 10 + 11) -->
-      <TotalFUTATaxAfterAdjustmentsAmt>12750.00</TotalFUTATaxAfterAdjustmentsAmt>
+      <FUTATaxAfterAdjustmentAmt>12750.00</FUTATaxAfterAdjustmentAmt>
       <!-- Line 13: FUTA tax deposited for the year -->
       <TotalTaxDepositAmt>13000.00</TotalTaxDepositAmt>
       <!-- Line 15a-b: Overpayment, applied to the next return -->
@@ -93,28 +93,30 @@
         <ApplyOverpaymentNextReturnInd>X</ApplyOverpaymentNextReturnInd>
       </OverpaymentGrp>
       <!-- Line 16a: FUTA tax liability, 1st quarter -->
-      <TaxLiabilityQtr1Amt>375.00</TaxLiabilityQtr1Amt>
+      <FirstQuarterTaxLiabilityAmt>375.00</FirstQuarterTaxLiabilityAmt>
       <!-- Line 16b: FUTA tax liability, 2nd quarter -->
-      <TaxLiabilityQtr2Amt>375.00</TaxLiabilityQtr2Amt>
+      <SecondQuarterTaxLiabilityAmt>375.00</SecondQuarterTaxLiabilityAmt>
       <!-- Line 16c: FUTA tax liability, 3rd quarter -->
-      <TaxLiabilityQtr3Amt>375.00</TaxLiabilityQtr3Amt>
+      <ThirdQuarterTaxLiabilityAmt>375.00</ThirdQuarterTaxLiabilityAmt>
       <!-- Line 16d: FUTA tax liability, 4th quarter -->
-      <TaxLiabilityQtr4Amt>11625.00</TaxLiabilityQtr4Amt>
+      <FourthQuarterTaxLiabilityAmt>11625.00</FourthQuarterTaxLiabilityAmt>
       <!-- Line 17: Total tax liability for the year (lines 16a-16d) -->
       <TotalTaxLiabilityAmt>12750.00</TotalTaxLiabilityAmt>
     </IRS940>
     <IRS940ScheduleA documentId="IRS940ScheduleA">
       <!-- NY: state unemployment tax paid, no credit reduction -->
-      <StateGrp>
-        <StateAbbreviationCd>NY</StateAbbreviationCd>
-      </StateGrp>
+      <CreditReductionGrp>
+        <FUTAStateCd>NY</FUTAStateCd>
+      </CreditReductionGrp>
       <!-- VI: state unemployment tax paid, credit reduction state -->
-      <StateGrp>
-        <StateAbbreviationCd>VI</StateAbbreviationCd>
-        <FUTATaxableWagesAmt>250000.00</FUTATaxableWagesAmt>
+      <CreditReductionGrp>
+        <FUTAStateCd>VI</FUTAStateCd>
+        <TotalTaxableFUTAWagesAmt>250000.00</TotalTaxableFUTAWagesAmt>
         <CreditReductionRt>0.045</CreditReductionRt>
         <CreditReductionAmt>11250.00</CreditReductionAmt>
-      </StateGrp>
+      </CreditReductionGrp>
+      <!-- Total credit reduction wages: the schema requires it, the paper form has no box; equals the VI FUTA taxable wages -->
+      <TotalCreditReductionWagesAmt>250000.00</TotalCreditReductionWagesAmt>
       <!-- Total credit reduction, carried to Form 940 line 11 -->
       <TotalCreditReductionAmt>11250.00</TotalCreditReductionAmt>
     </IRS940ScheduleA>

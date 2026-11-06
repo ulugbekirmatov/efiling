@@ -59,13 +59,13 @@ export function fetchAck(id) {
 }
 
 export function getSession() {
-  return request("/backend/mef/auth/status");
+  return request("/backend/mef/session");
 }
 
 export function login() {
-  return request("/backend/mef/auth/login");
+  return request("/backend/mef/session/login", { method: "POST" });
 }
 
 export function logout() {
-  return request("/backend/mef/auth/logout");
+  return request("/backend/mef/session/logout", { method: "POST" });
 }

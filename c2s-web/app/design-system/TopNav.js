@@ -2,30 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PAGES } from "../registry";
 
-const LINKS = [
-  {
-    label: "MeF",
-    links: [
-      { href: "/send-inspector", label: "Send inspector" },
-      { href: "/scenarios", label: "Test scenarios" },
-    ],
-  },
-  {
-    label: "AIR",
-    links: [
-      { href: "/air/transmissions", label: "Transmissions" },
-      { href: "/air/scenarios", label: "AATS scenarios" },
-    ],
-  },
-  {
-    label: "FTB",
-    links: [
-      { href: "/ftb/scenarios", label: "Test scenarios" },
-      { href: "/ftb/operator-page", label: "Operator page PR" },
-    ],
-  },
-];
+const GROUPS = [];
+for (const page of PAGES) {
+  const found = GROUPS.find((group) => group.label === page.group);
+  if (found) found.links.push(page);
+  else GROUPS.push({ label: page.group, links: [page] });
+}
 
 function isCurrent(pathname, href) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -39,7 +23,7 @@ export default function TopNav() {
         C2S operator
       </Link>
       <div className="topnav-links">
-        {LINKS.map((group) => (
+        {GROUPS.map((group) => (
           <div key={group.label} className="topnav-group">
             <span className="topnav-group-label">{group.label}</span>
             {group.links.map(({ href, label }) => (

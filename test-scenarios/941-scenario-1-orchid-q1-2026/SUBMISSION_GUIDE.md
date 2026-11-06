@@ -57,8 +57,7 @@ The client certificate must be:
 ### Step 1: Verify Configuration
 
 ```bash
-cd mef-spring-boot-integration
-mvn clean test -Dtest=Form941SubmissionTest#test01_verifyConfiguration
+./mef preflight 1
 ```
 
 This verifies:
@@ -70,8 +69,7 @@ This verifies:
 ### Step 2: Run Full Submission Test
 
 ```bash
-cd mef-spring-boot-integration
-mvn test -Dtest=Form941SubmissionTest
+./mef ats 1
 ```
 
 This will:
@@ -134,7 +132,7 @@ curl -X GET "http://localhost:8080/api/mef/submissions/{submissionId}/status"
 curl -X GET "http://localhost:8080/api/mef/acknowledgments/new"
 ```
 
-Note: These endpoints will need implementation. See `StatusService.java` and `AcknowledgementService.java`.
+Note: These endpoints will need implementation. See `StatusService.java` and `AcknowledgementService.java`. (deleted in 6e0bb7e)
 
 ## Troubleshooting
 
@@ -165,7 +163,7 @@ Note: These endpoints will need implementation. See `StatusService.java` and `Ac
 
 **Error:** XML schema validation failed
 - **Solution:** Should not happen - XML is pre-validated. If it does:
-  1. Re-run `Form941XmlGenerationTest` to verify XML
+  1. Re-run the XML schema validation (the old `Form941XmlGenerationTest` was deleted in 5355a43; see `AtsScenarioComposeTest`)
   2. Check IRS schema version matches (2026Q1v4.0)
 
 ## IRS Response Codes

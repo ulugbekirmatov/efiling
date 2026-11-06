@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * - Authentication (Login/Logout) with IRS MeF servers
  * - Submit tax returns (SendSubmissions)
  * - Query submission status (GetSubmissionStatus)
- * - Retrieve acknowledgments (GetAck, GetNewAcks)
+ * - Retrieve acknowledgments (GetAck)
  *
  * @author MeF Integration Team
  * @version 1.0.0

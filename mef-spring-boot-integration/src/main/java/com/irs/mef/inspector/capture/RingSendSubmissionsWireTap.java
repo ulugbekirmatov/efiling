@@ -3,8 +3,8 @@ package com.irs.mef.inspector.capture;
 import com.irs.mef.inspector.ring.MimeRequest;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
 import com.irs.mef.inspector.ring.SoapCapture;
-import com.irs.mef.newsend.domain.NewSendFiling;
-import com.irs.mef.newsend.gateway.SendSubmissionsWireTap;
+import com.irs.mef.filing.Filing;
+import com.irs.mef.filing.SendSubmissionsWireTap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Clock;
@@ -31,12 +31,12 @@ public final class RingSendSubmissionsWireTap implements SendSubmissionsWireTap 
     }
 
     @Override
-    public Session open(NewSendFiling filing) {
+    public Session open(Filing filing) {
         try {
             return new CaptureSession(filing, ring, mimeTap, clock, environment, maxXmlBytes);
         } catch (RuntimeException e) {
             log.warn("inspector: open failed, using no-op session: {}", e.toString());
-            return com.irs.mef.newsend.gateway.NoOpSendSubmissionsWireTap.INSTANCE.open(filing);
+            return com.irs.mef.filing.NoOpSendSubmissionsWireTap.INSTANCE.open(filing);
         }
     }
 }

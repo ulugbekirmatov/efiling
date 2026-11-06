@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema – Form 943 Schedule R Allocation Schedule for Aggregate Form 943 Filers</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+			<ReleaseDate>September 24 2026</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+
+	<!-- ==================================================================== -->
+	<!-- ====================== IRS Form 943 Schedule R ===================== -->
+	<!-- ==================================================================== -->
+
+	<xsd:element name="IRS943ScheduleR">
+		<xsd:annotation>
+			<xsd:documentation>IRS Form 943 Schedule R</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="IRS943ScheduleRType">
+
+					<xsd:attributeGroup ref="DocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+					<xsd:attribute name="documentName" type="xsd:string" fixed="IRS943ScheduleR">
+						<xsd:annotation>
+							<xsd:documentation>IRS internal use only. To avoid error in the return, do not include the attribute name or value.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentId" type="IdListType">
+						<xsd:annotation>
+							<xsd:documentation>List of document ID's of forms, schedules, supporting info. etc. attached to this form</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="referenceDocumentName" type="StringType" fixed="GeneralDependencySmall">
+					</xsd:attribute>
+
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="IRS943ScheduleRType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Form 943 Schedule R</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			
+			<!-- Type of filer -->
+			<xsd:choice minOccurs="0">
+				<xsd:element name="Section3504AgentInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Section 3504 Agent</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="CPEOInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Certified Professional Employer Organization (CPEO)</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="OtherThirdPartyInd" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Other Third Party</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>				
+			</xsd:choice>
+			
+			<xsd:element name="CalendarYr" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Calendar Year</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="YearType">
+						<xsd:enumeration value="2024" />
+						<xsd:enumeration value="2025" />
+						<xsd:enumeration value="2026" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			
+			<!-- Payer Information Group -->
+			<xsd:element name="PayerInformationGrp" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Payer Information Group</Description>
+						<LineNumber>Lines 1 and up, Columns (a)-(i)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+					
+						<!-- Employer Identification Number -->
+						<xsd:element name="EIN" type="EINType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Employer Identification Number</Description>
+									<LineNumber>Line 1 and up, Column (a)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>			
+						<xsd:element name="WagesTypeCd" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>(CPEO Use Only) Type of wages, tips, and other compensation</Description>
+									<LineNumber>Line 1 and up, Column (b)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:enumeration value="A" />
+									<xsd:enumeration value="B" />
+									<xsd:enumeration value="C" />
+									<xsd:enumeration value="D" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<!-- Payer Allocation Information Group -->
+						<xsd:element name="PayerAllocationInfoGrp" type="PayerAllocationInfoGrpType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Payer Allocation Information Group</Description>
+									<LineNumber>Line 1 and up, Columns (c) to (j)</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+			<!-- Subtotal Payer Allocation Information Group -->
+			<xsd:element name="SubtlPayerAllocationInfoGrp" type="PayerAllocationInfoGrpType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Subtotal Payer Allocation Information Group</Description>
+						<LineNumber>11</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+						
+			<!-- Agricultural Employee Information Group -->
+			<xsd:element name="AgriculturalEmployeeInfoGrp" type="PayerAllocationInfoGrpType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Agricultural Employee Information Group</Description>
+						<LineNumber>13</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Payer Allocation Information Group -->
+			<xsd:element name="TotalPayerAllocationInfoGrp" type="PayerAllocationInfoGrpType">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Payer Allocation Information Group</Description>
+						<LineNumber>14</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<!-- Type Used for Line 1 and up, Columns (c) to (j) -->
+	<xsd:complexType name="PayerAllocationInfoGrpType">
+		<xsd:sequence>
+	
+			<!-- Employee Count -->
+			<xsd:element name="EmployeeCnt">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Employee Count</Description>
+						<LineNumber>Line 1 and up, Column (c)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="IntegerNNType">
+						<xsd:totalDigits value="7" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			
+			<!-- Social Security Tax Cash Wages Amount -->
+			<xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Social Security Tax Cash Wages Amount</Description>
+						<LineNumber>Line 1 and up, Column (d)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+												
+			<!-- Medicare Tax Cash Wages Amount -->
+			<xsd:element name="MedicareTaxCashWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Medicare Tax Cash Wages Amount</Description>
+						<LineNumber>Line 1 and up, Column (e)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Total Medicare Tax Cash Wages Addnl Wh Amount -->
+			<xsd:element name="TotMedcrTaxCashWagesAddnlWhAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Medicare Tax Cash Wages Addnl Wh Amount</Description>
+						<LineNumber>Line 1 and up, Column (f)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			
+			<!-- Federal Income Tax Withheld Amount -->
+			<xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Federal Income Tax Withheld Amount</Description>
+						<LineNumber>Line 1 and up, Column (g)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+	
+			<!-- Payroll Tax Credit Amount -->
+			<xsd:element name="PayrollTaxCreditAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Payroll Tax Credit Amount</Description>
+						<LineNumber>Line 1 and up, Column (h)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+				
+			<!-- Total Tax After Adjustments And Nonrefundable Credits -->
+			<xsd:element name="TotalTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax After Adjustments And Nonrefundable Credits</Description>
+						<LineNumber>Line 1 and up, Column (i)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+				
+			<!-- Total Tax Deposit Amount -->
+			<xsd:element name="TotalTaxDepositAmt" type="USDecimalAmountNNType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Total Tax Deposit Amount</Description>
+						<LineNumber>Lines 1 and up, Column (j)</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>	
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

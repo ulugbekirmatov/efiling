@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.irs.gov/efile" xmlns="http://www.irs.gov/efile" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>IRS e-file Schema - Return data schema for 943 (943PR) return</Description>
+			<TaxYear>2026</TaxYear>
+			<MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+			<ReleaseDate>September 24 2026</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:include schemaLocation="../../Common/efileTypes.xsd" />
+	<xsd:include schemaLocation="../../Common/BinaryAttachment.xsd" />
+	<xsd:include schemaLocation="IRS943/IRS943.xsd" />
+	<xsd:include schemaLocation="IRS943A/IRS943A.xsd" />
+	<xsd:include schemaLocation="IRS943ScheduleR/IRS943ScheduleR.xsd" />
+	<!-- Common Dependencies (supporting info, schedules, computations, and such) -->
+	<xsd:include schemaLocation="../Common/Dependencies/FinalPayrollInformationStatement.xsd" />
+	<xsd:include schemaLocation="../../CorporateIncomeTax/Common/Dependencies/GeneralDependencySmall.xsd" />
+	<xsd:include schemaLocation="../../CorporateIncomeTax/Common/Dependencies/IRSPayment.xsd" />
+	<xsd:include schemaLocation="../Common/IRS8974/IRS8974.xsd" />
+	<xsd:include schemaLocation="../Common/Dependencies/TransferOfBusinessStatement.xsd" />
+	<xsd:include schemaLocation="../../Shared/Dependencies/ScannedPaperReturnUniqueDataStatement.xsd" />
+	
+	<!-- Return 943 -->
+	<xsd:element name="ReturnData">
+		<xsd:annotation>
+			<xsd:documentation>943 Return Contents</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<!-- Form 943 -->
+				<xsd:element ref="IRS943"/>
+				<!-- Form 943-A -->
+				<xsd:element ref="IRS943A" minOccurs="0"/>
+				<!-- Form 943 Schedule R -->
+				<xsd:element ref="IRS943ScheduleR" minOccurs="0"/>
+			    <!-- List of Dependencies by form -->
+				<!-- Scanned Paper Return (SPR) Unique Data Statement -->
+				<xsd:element ref="SPRUniqueDataStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Scanned Paper Return (SPR) Unique Data Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- IRS Payment -->
+				<xsd:element ref="IRSPayment" minOccurs="0" maxOccurs="unbounded"/>
+				<!-- General Dependency Small for any Form/Schedule -->
+				<xsd:element ref="GeneralDependencySmall" minOccurs="0" maxOccurs="100">
+					<xsd:annotation>
+						<xsd:documentation>General Dependency Small (attachment not identified on the form or instructions)</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- Binary Attachment -->
+				<xsd:element ref="BinaryAttachment" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>Binary Attachment</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- Form 8974 (common) -->
+				<xsd:element ref="IRS8974" minOccurs="0" maxOccurs="unbounded"/>
+				<!-- Final Payroll Information Statement (common) -->
+				<xsd:element ref="FinalPayrollInfoStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Final Payroll Information Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- Transfer Of Business Statement (common) -->
+				<xsd:element ref="TransferOfBusinessStatement" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Transfer Of Business Statement</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+
+			<xsd:attributeGroup ref="ReturnDataAttributes">
+				<xsd:annotation>
+					<xsd:documentation>Common return data attributes</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attributeGroup>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

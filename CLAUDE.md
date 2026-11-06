@@ -1,4 +1,4 @@
-Act with ./mef; every verb except ats and login is offline and safe to repeat.
+Act with ./mef; every verb except ats, login, and checkbook is offline and safe to repeat.
 
 Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e-File (MeF) system through the A2A Client SDK v17 (WSDL 10.A), as Pyramos Software LLC, a Reporting Agent filing for other companies. The Java app is `mef-spring-boot-integration/`; `c2s-web/` is the operator UI; `c2s/` explains the C2S platform (start at `c2s/README.md`); `test-scenarios/` holds the ATS scenarios; `94x-2026/` holds IRS schemas and business rules; `Version_17/` holds the SDK zip (`mef-spring-boot-integration/install-sdk-jars.sh` puts its five jars into `~/.m2`).
 
@@ -11,6 +11,7 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 ./mef pdf <id>           offline paper copy on the IRS forms. <id> is a scenario or a captured submission id.
 ./mef ats <id>           LIVE send to ATS. Exit 0 only when the ack is Accepted.
 ./mef login              LIVE login probe, no send.
+./mef checkbook          LIVE Checkbook sandbox: one $1.00 digital check, then read it back.
 ```
 
 ## Where facts live
@@ -52,6 +53,8 @@ POST /api/mef/wage-files/{id}/receipt
 
 <!-- generated:env -->
 MEF_ASID
+MEF_CHECKBOOK_PUBLISHABLE_KEY
+MEF_CHECKBOOK_SECRET_KEY
 MEF_EFIN
 MEF_ETIN
 MEF_KEYSTORE_PASSWORD

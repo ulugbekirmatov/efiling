@@ -52,6 +52,11 @@ mef:
       etin: ${MEF_ETIN:}
       asid: ${MEF_ASID:}
 
+# Checkbook.io sandbox (com.irs.mef.checkbook). Blank keys are fine until a call is made.
+checkbook:
+  publishable-key: ${MEF_CHECKBOOK_PUBLISHABLE_KEY:}
+  secret-key: ${MEF_CHECKBOOK_SECRET_KEY:}
+
 # Logging configuration
 logging:
   level:

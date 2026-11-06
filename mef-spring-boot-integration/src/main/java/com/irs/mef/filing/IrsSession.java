@@ -184,6 +184,7 @@ public final class IrsSession {
     }
 
     private static KeyStore loadKeyStore(File file, String password) throws Exception {
+        IrsWire.ensureToolkitHome();
         Class<?> keyStoreUtil = Class.forName("gov.irs.mef.services.util.KeyStoreUtil");
         Method load = keyStoreUtil.getMethod("loadKeyStore", File.class, char[].class);
         return (KeyStore) load.invoke(null, file, password.toCharArray());

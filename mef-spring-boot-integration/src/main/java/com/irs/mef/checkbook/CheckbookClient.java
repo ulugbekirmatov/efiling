@@ -44,7 +44,7 @@ public class CheckbookClient {
                 .uri("/check/digital")
                 .header(IDEMPOTENCY_KEY_HEADER, idempotencyKey)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
+                .body(toJsonBytes(request))
                 .retrieve()
                 .body(CheckbookCheck.class);
     }
@@ -57,6 +57,14 @@ public class CheckbookClient {
                 .body(CheckbookCheck.class);
     }
 
+    public byte[] getAttachment(String checkId) {
+        requireKeys();
+        return http.get()
+                .uri("/check/{id}/attachment", checkId)
+                .retrieve()
+                .body(byte[].class);
+    }
+
     public List<CheckbookCheck> listChecks() {
         requireKeys();
         CheckList list = http.get()
@@ -64,6 +72,15 @@ public class CheckbookClient {
                 .retrieve()
                 .body(CheckList.class);
         return list == null || list.checks() == null ? List.of() : list.checks();
+    }
+
+    // Checkbook rejects a chunked body ("Fields must be in JSON body"); a byte[] body carries a Content-Length.
+    private byte[] toJsonBytes(Object body) {
+        try {
+            return json.writeValueAsBytes(body);
+        } catch (IOException unserializable) {
+            throw new IllegalArgumentException("cannot serialize Checkbook request body", unserializable);
+        }
     }
 
     private void requireKeys() {

@@ -8,8 +8,10 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
+import java.util.Base64;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,7 +38,7 @@ class CheckbookClientTest {
     }
 
     private static DigitalCheckRequest oneDollar() {
-        return new DigitalCheckRequest("Pyramos Sandbox Probe", "r@example.com", new BigDecimal("1.00"), null);
+        return new DigitalCheckRequest("Pyramos Sandbox Probe", "r@example.com", new BigDecimal("1.00"), null, null);
     }
 
     @Test
@@ -107,9 +109,59 @@ class CheckbookClientTest {
     @Test
     void requestRejectsAmountsBelowOneCentOrFinerThanACent() {
         assertThrows(IllegalArgumentException.class,
-                () -> new DigitalCheckRequest("n", "r@example.com", BigDecimal.ZERO, null));
+                () -> new DigitalCheckRequest("n", "r@example.com", BigDecimal.ZERO, null, null));
         assertThrows(IllegalArgumentException.class,
-                () -> new DigitalCheckRequest("n", "r@example.com", new BigDecimal("1.001"), null));
+                () -> new DigitalCheckRequest("n", "r@example.com", new BigDecimal("1.001"), null, null));
+    }
+
+    @Test
+    void sendsTheAttachmentFilenameAndBase64Content() {
+        byte[] pdf = {'%', 'P', 'D', 'F', 0, 1, 2, (byte) 0xFF};
+        DigitalCheckRequest request = new DigitalCheckRequest("Pyramos Sandbox Probe", "r@example.com",
+                new BigDecimal("1.00"), null, new CheckAttachment("w2.pdf", pdf));
+        server.expect(requestTo(SANDBOX + "/check/digital"))
+                .andExpect(jsonPath("$.attachment.filename").value("w2.pdf"))
+                .andExpect(jsonPath("$.attachment.content").value(Base64.getEncoder().encodeToString(pdf)))
+                .andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(CHECK_JSON));
+
+        client("pub", "sec").sendDigitalCheck(request, "key-4");
+
+        server.verify();
+    }
+
+    @Test
+    void omitsTheAttachmentKeyWhenThereIsNone() {
+        server.expect(requestTo(SANDBOX + "/check/digital"))
+                .andExpect(jsonPath("$.attachment").doesNotExist())
+                .andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(CHECK_JSON));
+
+        client("pub", "sec").sendDigitalCheck(oneDollar(), "key-5");
+
+        server.verify();
+    }
+
+    @Test
+    void getsTheAttachmentBytes() {
+        byte[] pdf = {'%', 'P', 'D', 'F', 7};
+        server.expect(requestTo(SANDBOX + "/check/abc123/attachment"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "pub:sec"))
+                .andRespond(withSuccess(pdf, MediaType.APPLICATION_PDF));
+
+        byte[] received = client("pub", "sec").getAttachment("abc123");
+
+        assertArrayEquals(pdf, received);
+        server.verify();
+    }
+
+    @Test
+    void attachmentRejectsBlankOrTooLongFilenameAndEmptyContent() {
+        byte[] content = {1};
+        assertThrows(IllegalArgumentException.class, () -> new CheckAttachment(" ", content));
+        assertThrows(IllegalArgumentException.class,
+                () -> new CheckAttachment("x".repeat(CheckAttachment.MAX_FILENAME_LENGTH + 1), content));
+        assertThrows(IllegalArgumentException.class, () -> new CheckAttachment("a.pdf", new byte[0]));
+        assertThrows(IllegalArgumentException.class, () -> new CheckAttachment("a.pdf", null));
     }
 
     @Test

@@ -3,5 +3,5 @@ package com.irs.mef.filing;
 
 interface ReturnValidator {
 
-    void validate(FormSpec form, String returnXml);
+    void validate(FormSpec form, SchemaBinding schema, String returnXml);
 }

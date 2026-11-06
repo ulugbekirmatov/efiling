@@ -1,0 +1,66 @@
+{
+  "title": "Orchid Incorporated, Form 941-X correcting TY2027 scenario 1",
+  "employer": {
+    "name": "Orchid Incorporated",
+    "ein": "003000004",
+    "nameControl": "ORCH",
+    "address": "1st Test Street, Willow Grove, PA 19090"
+  },
+  "returnTypeCd": "941X",
+  "quarter": "2027Q1",
+  "documents": [
+    "IRS941X"
+  ],
+  "pdf": "ty-2027-f941x-ats-scenario-4.pdf",
+  "status": {
+    "state": "accepted",
+    "date": "2026-11-03",
+    "submissionId": "2378612026307qe8dxko",
+    "note": "Accepted by IRS ATS on the first ack poll with returnVersion 2027Q1v2.0 and Software ID 27998441 (MEF_SOFTWARE_ID_2027). Sent 2026-11-03 for a quarter ending 2027-03-31, so ATS did not enforce R0000-191."
+  },
+  "summary": "A Form 941-X (Rev. April 2027) that corrects Orchid's Q1 2027 Form 941. Wages, social security wages and Medicare wages were underreported by $1,500 each, and federal income tax withheld by $150. It uses the adjusted-return process (line 1), not the claim process, and $379.50 of additional tax is owed.",
+  "tests": [
+    "Return being corrected: quarter 1, calendar year 2027, errors discovered 05/15/2027",
+    "Part 1 line 1, the adjusted employment tax return process (underreported tax). Line 2, the claim, is unchecked.",
+    "Part 2 line 3 (W-2/W-2c filed) and line 4a (employees repaid) certifications",
+    "Correction columns: 1 corrected, 2 originally reported, 3 difference, 4 tax correction",
+    "Line 8 social security correction at 0.124 ($186.00) and line 10 Medicare correction at 0.029 ($43.50)",
+    "Line 19a total of column 4 ($379.50), the amount owed",
+    "Line 22 explanation text, exactly as printed on the scenario PDF"
+  ],
+  "keyFigures": [
+    {
+      "label": "Wages: corrected / original / difference",
+      "line": "941-X line 6",
+      "value": "2500.00 / 1000.00 / 1500.00"
+    },
+    {
+      "label": "Federal income tax withheld correction",
+      "line": "941-X line 7",
+      "value": "150.00"
+    },
+    {
+      "label": "Social security tax correction",
+      "line": "941-X line 8",
+      "value": "186.00"
+    },
+    {
+      "label": "Medicare tax correction",
+      "line": "941-X line 10",
+      "value": "43.50"
+    },
+    {
+      "label": "Total amount owed",
+      "line": "941-X line 19a",
+      "value": "379.50"
+    }
+  ],
+  "notes": [
+    "The April 2027 revision renumbers Part 3. Medicare wages are line 10 (line 12 in the 2026 form), and the total is line 19a (line 27 in the 2026 form). The schema drops CombinedTaxAmt, so TotalAmt carries the 19a total.",
+    "The 941-SS checkbox is gone: the 2027 schema has no Form941CorrectionInd, so the client body does not carry a return-being-corrected element.",
+    "Column 2 repeats the 2026 scenario's originally reported amounts: $1,000 wages, $100 withheld, $1,000 social security and Medicare wages.",
+    "The scenario PDF has 4 pages and prints the line 22 explanation as 'correcting underreported tax amounts'. CorrectionsExplanationTxt uses that text.",
+    "The PDF note says ATS opens with schema 2026v1.0 and this scenario is available from 11/01/2026 with 2026v2.0. The bundled 2027Q1v2.0 release is the one the IRS quarterly package names for TY2027, so confirm the accepted returnVersion with the first ATS response.",
+    "Business rule R0000-191 (the quarter ending date must be before the received date) is active in the 2027 rule set. A quarter ending 2027-03 lies in the future today, and ATS has not been tested with a future quarter."
+  ]
+}

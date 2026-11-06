@@ -11,8 +11,8 @@ export const FORMAT_CONTENT_TYPES = {
 
 const ALLOWED_STATUS_STATES = new Set(["accepted", "ready", "partial"]);
 
-const SCENARIO_DIR = /^scenario-([0-9]{3}-[0-9]+|[0-9]+)-([A-Za-z][A-Za-z0-9-]*)$/;
-const CANONICAL_ID = /^(?:[1-9][0-9]{2}-[1-9][0-9]*|[1-9][0-9]*)$/;
+const SCENARIO_DIR = /^scenario-([0-9]{3,4}-[0-9]+|[0-9]+)-([A-Za-z][A-Za-z0-9-]*)$/;
+const CANONICAL_ID = /^(?:[1-9][0-9]{2,3}-[1-9][0-9]*|[1-9][0-9]*)$/;
 
 export function repoRoot() {
   if (process.env.MEF_REPO_ROOT) return process.env.MEF_REPO_ROOT;

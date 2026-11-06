@@ -21,7 +21,8 @@ final class ReportingAgentOriginatorStandIn {
                 new ReportingAgentPin("00000"),
                 new SoftwareIds(Map.of(
                         SchemaRelease.Y2026Q1_V4, new SoftwareId("00000000"),
-                        SchemaRelease.Y2026_V2, new SoftwareId("00000000"))),
+                        SchemaRelease.Y2026_V2, new SoftwareId("00000000"),
+                        SchemaRelease.Y2027Q1_V2, new SoftwareId("00000027"))),
                 "192.0.2.1",
                 new ReportingAgentIdentity(
                         new Ein("000000000"),

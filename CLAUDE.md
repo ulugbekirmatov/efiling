@@ -65,6 +65,7 @@ MEF_RA_PIN
 MEF_RA_STATE
 MEF_RA_ZIP
 MEF_SOFTWARE_ID
+MEF_SOFTWARE_ID_2027
 MEF_SOFTWARE_ID_ANNUAL
 <!-- /generated -->
 
@@ -80,17 +81,21 @@ MEF_SOFTWARE_ID_ANNUAL
 | 940-1 | 940 | Zinnia Company, single-state Form 940 with a refund |
 | 940-2 | 940 | Poppy Company, multi-state Form 940 with Schedule A credit reduction |
 | 940-3 | 940 | Crocus Company Inc, Section 3504 agent aggregate Form 940 with Schedule R and a balance due |
+| 2027-1 | 941 | Orchid Incorporated, baseline TY2027 Form 941 |
+| 2027-2 | 941 | Marigold Corporation, TY2027 semiweekly depositor with Schedule B |
+| 2027-3 | 941 | Daffodil Accounting, TY2027 CPEO aggregate 941 with Schedule R and Form 8974 |
+| 2027-4 | 941X | Orchid Incorporated, Form 941-X correcting TY2027 scenario 1 |
 <!-- /generated -->
 
 ## Pyramos
 
 Pyramos Software LLC files 94x returns as a Reporting Agent for other companies. The device certificate is in `Pyramos Software Certificates/` (`O=Pyramos Software LLC`, `CN=c2s.pahealthmanagement.org`, IGC Device CA 2, valid 2026-08-21 to 2027-08-21). Renew it before 2027-08-21.
 
-Sends use EFIN 237861. EFIN 102192 starts with 10, and `Originator` refuses that prefix (R0000-118-01). ETINs: 44753 (Transmitter, production), 44754 (Software Developer, test; this one for ATS), 44762 (Online Provider). ASID 10219201. Quarterly software ID 26996214. The values live in `mef-spring-boot-integration/.env` (gitignored).
+Sends use EFIN 237861. EFIN 102192 starts with 10, and `Originator` refuses that prefix (R0000-118-01). ETINs: 44753 (Transmitter, production), 44754 (Software Developer, test; this one for ATS), 44762 (Online Provider). ASID 10219201 (the one behind every accepted send; the ASID only names the client app at login and is not tied to the EFIN). A spare ASID 23786102 ("Pyramos MeF A2A Client Annual", all ETINs, same cert) exists since 2026-11-03 and is unused. Software IDs: quarterly 26996214 (TY2026), annual 26888440 (TY2026, "Annual Form 2026"); the account also lists Onepay 26994140 (TY2026 quarterly) and Quarterly Forms 2027 27998441, neither used here. The values live in `mef-spring-boot-integration/.env` (gitignored).
 
-ATS accepted the four quarterly scenarios under EFIN 237861: scenario 1 Orchid 941 `2378612026268yagqidh` (2026-09-25); scenario 2 Marigold 941 `2378612026287enq7gwn`, scenario 3 Daffodil 941 `237861202628741tq062`, scenario 4 Orchid 941-X `2378612026287svv97c5` (2026-10-14). Acks are in `mef-spring-boot-integration/data/ack-store/`.
+ATS accepted the four quarterly scenarios under EFIN 237861: scenario 1 Orchid 941 `2378612026268yagqidh` (2026-09-25); scenario 2 Marigold 941 `2378612026287enq7gwn`, scenario 3 Daffodil 941 `237861202628741tq062`, scenario 4 Orchid 941-X `2378612026287svv97c5` (2026-10-14). Acks are in `mef-spring-boot-integration/data/ack-store/`. The TY2027 quarterly schema `2027Q1v2.0` is bundled (`FormSpec.schemaFor(taxYear)` picks the release; its Software ID is `MEF_SOFTWARE_ID_2027`) and ATS accepted scenario 2027-4 Orchid 941-X `2378612026307qe8dxko` on 2026-11-03 (ack `7GM9S3PXX2N9QDK800QA3SNWJP3FAB36TE1H2C2UCWMS8`, Software ID 27998441, quarter ending 2027-03 sent five months before the quarter closed, so ATS does not enforce R0000-191). ATS also accepted the three TY2027 Form 941 scenarios on 2026-11-03, each on the first ack poll with Software ID 27998441: 2027-1 Orchid `2378612026307fihd1kt` (ack `E4KF2LW38MDJSLGND16NRM6PGN87N052Q5HRPC09N62SQ`), 2027-2 Marigold `2378612026307ikiw5g4` (ack `CPQ7W4HV5KLX6M6RC85PPRG7KEWKTA45EC41BDB27BGAN`), 2027-3 Daffodil `2378612026307wp6t6cx` (ack `NPW3VR4516XVX4T8T66GEJUPE0MWSWBXL3TUVM5DHCE0G`), the last one on the April 2027 Schedule R layout. Every TY2027 94x quarterly ATS scenario is accepted. `./mef pdf` cannot yet print a 2027 return (`IrsForm` maps only 2026Q1v4.0 to `irs-forms/2026/`).
 
-Form 940 validates against the IRS 2026v2.0 annual bundle in `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, copied verbatim from the e-Services SOR mailbox drop in `94x-2026/`. The three 940 scenarios preflight clean, and each `line-mapping.tsv` cites the XSD `LineNumber` behind every element. No 940 has been sent. A live 940 needs `MEF_SOFTWARE_ID_ANNUAL` (IRS issues a separate Software ID for the annual 94x package; `SoftwareIds` refuses a 940 without it), and a quarterly pass does not open annual testing; call e-Help (866-255-0654).
+Form 940 validates against the IRS 2026v2.0 annual bundle in `mef-spring-boot-integration/src/main/resources/schemas/94x/2026v2.0/`, copied verbatim from the e-Services SOR mailbox drop in `94x-2026/`. The three 940 scenarios preflight clean, and each `line-mapping.tsv` cites the XSD `LineNumber` behind every element. ATS accepted all three 940 scenarios on 2026-11-03 with Software ID 26888440 and ASID 10219201, each ack on the first poll and without any e-Help call to open annual testing: 940-1 Zinnia `2378612026307ywjskwh` (ack `5Q1MJ19QMTNRC8WPMESQ5C0UC58AA5A9HM1LPSXTVJ9UU`), 940-2 Poppy `237861202630751tdicl` (ack `VPVKQSGMSKXCNTA7PXUEJV8JVVQTN7QKN04GAP9W6BC1S`), 940-3 Crocus `2378612026307z0dsve6` (ack `SJKBSVAGRCQAQK6TEC6X06228K94BVLGV4TL9QPS5MQ9Q`). A live 940 needs `MEF_SOFTWARE_ID_ANNUAL` (IRS issues a separate Software ID for the annual 94x package; `SoftwareIds` refuses a 940 without it). Whether an ATS accept on one 940 counts as the annual package pass for production is an e-Help question (866-255-0654).
 
 Not yet built: per-client Form 8655 authorization. Any caller of `POST /api/mef/filings` can file any EIN under the Reporting Agent PIN, and the app has no authentication.
 

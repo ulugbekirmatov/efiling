@@ -32,7 +32,7 @@ final class ReturnComposerXml {
         xml.append("  <ReturnHeader binaryAttachmentCnt=\"0\">\n");
         element(xml, 2, "ReturnTypeCd", client.form().code());
         element(xml, 2, "ReturnTs", RETURN_TS.format(truncated));
-        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.form().schema().release()).value());
+        element(xml, 2, "SoftwareId", originator.softwareIds().forRelease(client.schema().release()).value());
         element(xml, 2, "MultSoftwarePackagesUsedInd", "false");
         additionalFilerInformation(xml);
         filingSecurity(xml, originator, client, truncated);

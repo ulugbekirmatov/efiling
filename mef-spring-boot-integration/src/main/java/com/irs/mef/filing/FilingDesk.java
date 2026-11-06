@@ -58,7 +58,7 @@ public class FilingDesk {
                 composed.xml());
         Filing prepared = new Filing(id, command, now);
         String manifest = ManifestXml.render(prepared);
-        returnXmlValidator.validate(filing.form(), composed.xml());
+        returnXmlValidator.validate(filing.form(), filing.body().schema(), composed.xml());
         String schemaReport = ManifestSchema.validate(manifest);
         Preflight draft = Preflight.of(filing, prepared, manifest);
         byte[] archive;

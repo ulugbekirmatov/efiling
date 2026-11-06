@@ -10,8 +10,8 @@ final class ClasspathSchemas {
 
     private ClasspathSchemas() {}
 
-    static File root(FormSpec form) {
-        String resource = form.schema().resource();
+    static File root(SchemaBinding schema) {
+        String resource = schema.resource();
         URL url = ClasspathSchemas.class.getClassLoader().getResource(resource);
         if (url == null) {
             throw new IllegalStateException("Bundled schema missing from classpath: " + resource);

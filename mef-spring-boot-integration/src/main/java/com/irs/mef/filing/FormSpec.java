@@ -1,26 +1,31 @@
 package com.irs.mef.filing;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public enum FormSpec {
-    F940("940", "IRS940", PeriodKind.TAX_YEAR,
-            new SchemaBinding(SchemaRelease.Y2026_V2, "EmploymentTax/940/Return940.xsd")),
-    F941("941", "IRS941", PeriodKind.QUARTER,
-            new SchemaBinding(SchemaRelease.Y2026Q1_V4, "EmploymentTax/941/Return941.xsd")),
-    F941X("941X", "IRS941X", PeriodKind.QUARTER,
-            new SchemaBinding(SchemaRelease.Y2026Q1_V4, "EmploymentTax/941X/Return941X.xsd"));
+    F940("940", "IRS940", PeriodKind.TAX_YEAR, "EmploymentTax/940/Return940.xsd",
+            Map.of(2026, SchemaRelease.Y2026_V2)),
+    F941("941", "IRS941", PeriodKind.QUARTER, "EmploymentTax/941/Return941.xsd",
+            Map.of(2026, SchemaRelease.Y2026Q1_V4, 2027, SchemaRelease.Y2027Q1_V2)),
+    F941X("941X", "IRS941X", PeriodKind.QUARTER, "EmploymentTax/941X/Return941X.xsd",
+            Map.of(2026, SchemaRelease.Y2026Q1_V4, 2027, SchemaRelease.Y2027Q1_V2));
 
     private final String code;
     private final String mainDocument;
     private final PeriodKind periodKind;
-    private final SchemaBinding schema;
+    private final String xsdPathInBundle;
+    private final Map<Integer, SchemaRelease> releaseByTaxYear;
 
-    FormSpec(String code, String mainDocument, PeriodKind periodKind, SchemaBinding schema) {
+    FormSpec(String code, String mainDocument, PeriodKind periodKind, String xsdPathInBundle,
+             Map<Integer, SchemaRelease> releaseByTaxYear) {
         this.code = code;
         this.mainDocument = mainDocument;
         this.periodKind = periodKind;
-        this.schema = schema;
+        this.xsdPathInBundle = xsdPathInBundle;
+        this.releaseByTaxYear = Map.copyOf(releaseByTaxYear);
     }
 
     public String code() {
@@ -35,12 +40,16 @@ public enum FormSpec {
         return periodKind;
     }
 
-    public SchemaBinding schema() {
-        return schema;
-    }
-
-    public String returnVersion() {
-        return schema.release().returnVersion();
+    /** The IRS schema release a return of this form for the given tax year is composed and validated against. */
+    public SchemaBinding schemaFor(int taxYear) {
+        SchemaRelease release = releaseByTaxYear.get(taxYear);
+        if (release == null) {
+            throw new ReportingAgentValidationException("taxPeriodBegin",
+                    "No bundled " + code + " schema for tax year " + taxYear + ". Bundled tax years: "
+                            + new TreeMap<>(releaseByTaxYear).keySet().stream()
+                            .map(String::valueOf).collect(Collectors.joining(", ")));
+        }
+        return new SchemaBinding(release, xsdPathInBundle);
     }
 
     public static FormSpec parse(String raw) {

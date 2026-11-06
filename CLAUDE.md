@@ -9,6 +9,7 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 ./mef scenarios          id, form, title
 ./mef preflight <id>     offline compose and validate. Never logs in.
 ./mef pdf <id>           offline paper copy on the IRS forms. <id> is a scenario or a captured submission id.
+./mef w2 <statement.json>  offline Form W-2 employee sheet (Pub 1141 substitute, one duplex letter sheet).
 ./mef ats <id>           LIVE send to ATS. Exit 0 only when the ack is Accepted.
 ./mef login              LIVE login probe, no send.
 ./mef checkbook          LIVE Checkbook sandbox: one $1.00 digital check, then read it back.
@@ -25,6 +26,8 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 | Journal states | `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/JournalState.java` |
 | Idempotency and replay | `FilingDesk.file` in `mef-spring-boot-integration/src/main/java/com/irs/mef/filing/FilingDesk.java` |
 | Scenario list | `test-scenarios/*/scenario-*/scenario.json` |
+| W-2 employee sheet: input shape and layout | `mef-spring-boot-integration/src/main/java/com/irs/mef/w2sheet/W2Statement.java`, `mef-spring-boot-integration/src/main/java/com/irs/mef/w2sheet/W2EmployeeSheet.java`; sample `mef-spring-boot-integration/src/test/resources/w2sheet/jordan-rivera-2026.json` |
+| W-2 employee sheet: IRS back text | `mef-spring-boot-integration/src/main/resources/w2sheet/2026/employee-instructions.json`, written from fw2.pdf by `mef-spring-boot-integration/scripts/extract-w2-instructions.py` |
 | Paper copy: which MeF document prints on which IRS PDF | `mef-spring-boot-integration/src/main/java/com/irs/mef/returnpdf/IrsForm.java` |
 | Web state to tone | `c2s-web/app/lib/states.js` |
 | Web page list | `c2s-web/app/registry.js` |

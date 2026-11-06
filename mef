@@ -13,6 +13,7 @@ Usage:
   ./mef scenarios
   ./mef preflight <id>
   ./mef pdf <id>
+  ./mef w2 <statement.json>
   ./mef ats <id>
   ./mef login
   ./mef checkbook
@@ -118,6 +119,18 @@ case "$verb" in
     out="$ROOT/reports/pdf/$2.pdf"
     mkdir -p "$(dirname "$out")"
     ( cd "$ROOT/mef-spring-boot-integration" && mvn -B -q test -Dsurefire.useFile=false -Dtest=ReturnPdfVerbTest "-Dmef.pdf.in=$xml" "-Dmef.pdf.out=$out" )
+    echo "$out"
+    ;;
+  w2)
+    [[ $# -eq 2 ]] || usage
+    if [[ ! -f "$2" ]]; then
+      echo "w2: no such statement file: $2" >&2
+      exit 1
+    fi
+    in="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
+    out="$ROOT/reports/pdf/w2-$(basename "$2" .json).pdf"
+    mkdir -p "$(dirname "$out")"
+    ( cd "$ROOT/mef-spring-boot-integration" && mvn -B -q test -Dsurefire.useFile=false -Dtest=W2SheetVerbTest "-Dmef.w2.in=$in" "-Dmef.w2.out=$out" )
     echo "$out"
     ;;
   ats)

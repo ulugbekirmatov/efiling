@@ -49,6 +49,36 @@ public class CheckbookClient {
                 .body(CheckbookCheck.class);
     }
 
+    public CheckbookCheck sendPhysicalCheck(PhysicalCheckRequest request, String idempotencyKey) {
+        requireKeys();
+        return http.post()
+                .uri("/check/physical")
+                .header(IDEMPOTENCY_KEY_HEADER, idempotencyKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(toJsonBytes(request))
+                .retrieve()
+                .body(CheckbookCheck.class);
+    }
+
+    public CheckbookWallet createWallet(String name, WalletType type) {
+        requireKeys();
+        return http.post()
+                .uri("/account/wallet")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(toJsonBytes(new CreateWalletRequest(name, type)))
+                .retrieve()
+                .body(CheckbookWallet.class);
+    }
+
+    public List<CheckbookWallet> listWallets() {
+        requireKeys();
+        WalletList list = http.get()
+                .uri("/account/wallet")
+                .retrieve()
+                .body(WalletList.class);
+        return list == null || list.wallets() == null ? List.of() : list.wallets();
+    }
+
     public CheckbookCheck getCheck(String id) {
         requireKeys();
         return http.get()
@@ -109,5 +139,12 @@ public class CheckbookClient {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record CheckList(List<CheckbookCheck> checks) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record WalletList(List<CheckbookWallet> wallets) {
+    }
+
+    private record CreateWalletRequest(String name, WalletType type) {
     }
 }

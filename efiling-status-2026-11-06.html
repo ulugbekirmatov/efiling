@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-filing status</title>
+<style>
+:root {
+  /* Surfaces */
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  /* Text */
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  /* Accents (Anthropic brand) */
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --rust:   #B04A3F;
+  /* Typography */
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory); color: var(--slate);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word; word-break: break-word;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 56px 32px 72px; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+/* Page chrome (components 1.1 / 1.2 / 1.3) */
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--g500); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 24px; height: 1.5px; background: var(--clay); }
+h1 {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(34px, 4.8vw, 52px); line-height: 1.08;
+  letter-spacing: -0.018em; color: var(--slate); margin: 0 0 8px; max-width: 22ch;
+}
+.intro { font-size: 16.5px; color: var(--g700); margin: 18px 0 0; max-width: 640px; }
+section { margin-top: 56px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.sec-head .count { font-family: var(--mono); font-size: 11px; color: var(--g500); background: var(--g100); padding: 2px 8px; border-radius: 999px; }
+
+/* Text containment — break long tokens so they never overflow a card */
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .milestone, .callout, .summary, .bubble, .stat-card, .carry-body {
+  overflow-wrap: break-word; word-break: break-word;
+}
+.card, .milestone, .stat-card, [class*="col"], [class*="grid"] > * { min-width: 0; }
+/* Table cells never word-break: break-word collapses min-content width to one character and crushes columns mid-word */
+table { table-layout: auto; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }
+
+/* Block code panel — dark slate, warm syntax tints */
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+.code pre {
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
+  color: #E8E6DE; white-space: pre; margin: 0;
+}
+.code .kw  { color: var(--clay); }
+.code .str { color: var(--olive); }
+.code .cm  { color: var(--g500); }
+.code .fn  { color: #C9B98A; }
+
+/* Inline code — small mono badge on a tinted surface */
+:not(pre) > code {
+  font-family: var(--mono); font-size: 0.92em;
+  background: var(--g100); color: var(--slate);
+  padding: 1px 6px; border-radius: 4px;
+  overflow-wrap: break-word;
+}
+
+/* Shared chips & pills (components 7.1 / 7.3) */
+.chip {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1.5px solid var(--g300);
+  color: var(--g700); padding: 5px 10px; border-radius: 8px; white-space: nowrap;
+}
+.chip strong { color: var(--slate); font-weight: 600; }
+.pill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  border-radius: 999px; padding: 5px 12px; line-height: 1;
+}
+.pill.sev      { background: var(--clay);  color: #fff; letter-spacing: 0.03em; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral  { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g300); }
+
+/* Risk matrix (component 5.5) */
+.risks-panel { border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; background: var(--paper); }
+.risks-panel .row { display: grid; grid-template-columns: 1.6fr 110px 1.6fr; }
+.risks-panel .row + .row { border-top: 1.5px solid var(--g300); }
+.risks-panel .cell { padding: 14px 18px; font-size: 13.5px; }
+.risks-panel .cell + .cell { border-left: 1.5px solid var(--g300); }
+.risks-panel .head { background: var(--g100); font-weight: 600; color: var(--slate); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.sev-badge { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+.sev-badge.high { background: #F3D9CC; color: #8A3B1E; }
+.sev-badge.med  { background: var(--oat); color: var(--slate); }
+.sev-badge.low  { background: #E4E9DC; color: #4B5C39; }
+
+/* Action-item checklist (component 25, simplified columns) */
+.ai-list { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; }
+.ai-row { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--g100); }
+.ai-row:last-child { border-bottom: none; }
+.ai-check { width: 18px; height: 18px; border: 1.5px solid var(--g300); border-radius: 5px; background: var(--paper); position: relative; }
+.ai-row.done .ai-check { background: var(--olive); border-color: var(--olive); }
+.ai-row.done .ai-check::after {
+  content: ""; position: absolute; left: 4px; top: 1px; width: 5px; height: 9px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(40deg);
+}
+.ai-row.done .ai-desc { color: var(--g500); text-decoration: line-through; text-decoration-color: var(--g300); }
+.ai-desc { font-size: 14px; }
+.ai-due { font-family: var(--mono); font-size: 12px; color: var(--g500); text-align: right; }
+
+footer {
+  margin-top: 72px; padding-top: 16px; border-top: 1.5px solid var(--g200);
+  font-family: var(--mono); font-size: 11px; color: var(--g500);
+}
+
+@media print {
+  body { background: #fff; }
+  .wrap { max-width: 100%; padding: 0; }
+  .card:hover { transform: none; box-shadow: none; }
+  .code, .diff { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  section { break-inside: avoid-page; }
+}
+
+/* Summary band / KPI grid (component 10.1) */
+.summary-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 32px; }
+@media (max-width: 720px) { .summary-band { grid-template-columns: repeat(2, 1fr); } }
+.stat-card { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 20px 22px 18px; }
+.stat-card.warn { border-left: 4px solid var(--clay); padding-left: 19px; }
+.stat-num { font-family: var(--serif); font-size: 44px; font-weight: 500; line-height: 1; color: var(--slate); margin-bottom: 8px; }
+.stat-label { font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--g500); }
+.stat-delta { font-family: var(--mono); font-size: 11px; margin-top: 6px; }
+.stat-delta.up   { color: var(--olive); }
+.stat-delta.flat { color: var(--g500); }
+.stat-delta.down { color: var(--clay); }
+
+/* Shipped table (components 5.2 + 5.3) */
+table.shipped { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; }
+table.shipped thead th {
+  text-align: left; font-family: var(--sans); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500);
+  background: var(--g100); padding: 12px 16px; border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td { padding: 13px 16px; border-bottom: 1px solid var(--g100); font-size: 14px; vertical-align: middle; }
+table.shipped tbody tr:last-child td { border-bottom: none; }
+table.shipped tbody tr:hover { background: var(--ivory); }
+table.shipped .detail { color: var(--g500); font-size: 12.5px; display: block; margin-top: 2px; }
+table.shipped .ref { font-family: var(--mono); font-size: 12px; color: var(--g500); white-space: nowrap; }
+.risk { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--g500); }
+.risk-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.risk-dot.low { background: var(--olive); }
+.risk-dot.med { background: var(--clay); }
+.risk-dot.high { background: var(--rust); }
+
+/* Highlights (component 6.1) */
+.highlights { list-style: none; margin: 0; padding: 0; }
+.highlights li { position: relative; padding: 0 0 14px 26px; font-size: 15px; color: var(--g700); }
+.highlights li::before { content: ""; position: absolute; left: 6px; top: 8px; width: 7px; height: 7px; border-radius: 2px; background: var(--clay); }
+.highlights li strong { color: var(--slate); font-weight: 600; }
+
+/* Carryover strip (component 6.3) */
+.carryover { background: var(--oat); border-radius: 12px; padding: 20px 22px; }
+.carry-item { display: flex; align-items: baseline; gap: 14px; padding: 8px 0; }
+.carry-item + .carry-item { border-top: 1px solid rgba(20, 20, 19, 0.08); }
+.carry-tag {
+  font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--g700); background: var(--ivory); border-radius: 4px; padding: 3px 7px; flex-shrink: 0;
+}
+.carry-body { font-size: 14px; color: var(--g700); }
+.carry-body .who { color: var(--g500); font-size: 12px; }
+
+/* Inline bar chart (component 12.2 pattern) */
+.chart-card { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 20px 22px; margin-top: 24px; }
+.chart-card .metric-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--g500); margin-bottom: 14px; }
+.chart-card svg { width: 100%; height: auto; display: block; }
+
+/* Pele diagram token mapping (components.md 31) */
+.pele {
+  --pele-bg: var(--paper);
+  --pele-fg: var(--slate);
+  --pele-muted: var(--g500);
+  --pele-line: var(--g700);
+  --pele-surface: var(--g100);
+  --pele-surface-alt: var(--g200);
+  --pele-border: var(--g300);
+  --pele-accent: var(--clay);
+  --pele-critical: #B04A3F;
+  --pele-error: #B04A3F;
+  --pele-font: var(--sans);
+  --pele-font-mono: var(--mono);
+  --pele-radius: 8px;
+  --pele-series-1: var(--clay);
+  --pele-series-2: #4F7FB0;
+  --pele-series-3: var(--olive);
+  --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A;
+  --pele-series-6: #4A8670;
+  --pele-series-7: #7470A8;
+  --pele-series-8: var(--rust, #B04A3F);
+}
+/* Hue classes added by diagram.js colorize(): they redefine Pele's surface/border/line
+   variables on one node, edge or cluster, so the SVG markup itself never changes. */
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas {
+  border: 1px solid var(--g300); border-radius: 12px; overflow-x: auto;
+  background: var(--paper); padding: 16px;
+}
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0;
+}
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+@media print { figure.diagram .canvas { border-color: var(--g200); } }
+
+
+/* Status cards (replaces the shipped table) */
+.status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.status-card { background: var(--paper); border: 1px solid var(--g200); border-radius: 14px; padding: 20px 22px 18px; border-top: 4px solid var(--g300); min-width: 0; }
+.status-card.production, .status-card.passed { border-top-color: var(--olive); }
+.status-card.testing { border-top-color: var(--oat); }
+.status-card.waiting, .status-card.notstarted { border-top-color: var(--clay); }
+.status-card .stage { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; margin-bottom: 12px; }
+.status-card.production .stage, .status-card.passed .stage { background: #E4EBDA; color: #4E5F39; }
+.status-card.testing .stage { background: var(--oat); color: var(--g700); }
+.status-card.waiting .stage, .status-card.notstarted .stage { background: #F6E0D6; color: var(--clay-d); }
+.status-card h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; line-height: 1.25; margin: 0 0 10px; color: var(--slate); }
+.status-card p { font-size: 14.5px; color: var(--g700); margin: 0; }
+.status-card .next { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--g100); color: var(--slate); }
+.status-card .next span { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--clay); margin-right: 8px; }
+@media (max-width: 720px) { .status-grid { grid-template-columns: 1fr; } }
+@media print { .status-card { break-inside: avoid; } }
+
+/* Stage board (replaces the kanban figure) */
+.board { margin: 36px 0 0; }
+.stage-track { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--g500); }
+.stage-track-line { flex: 1; height: 1.5px; background: linear-gradient(90deg, var(--clay), var(--oat), var(--olive)); position: relative; }
+.stage-track-line::after { content: ""; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left: 7px solid var(--olive); }
+.stage-board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.stage-col { border-radius: 12px; padding: 12px 10px 10px; min-width: 0; border: 1px solid var(--g200); background: var(--g100); }
+.stage-col.attn { background: #FBEFE9; border-color: #F1D3C5; }
+.stage-col.mid { background: #F5EFE3; border-color: var(--oat); }
+.stage-col.good { background: #ECF1E3; border-color: #CFDBBE; }
+.stage-head { display: flex; align-items: center; gap: 8px; margin: 0 2px 12px; }
+.stage-step { font-family: var(--mono); font-size: 11px; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; background: var(--g500); flex-shrink: 0; }
+.attn .stage-step { background: var(--clay); } .mid .stage-step { background: #B59A6E; } .good .stage-step { background: var(--olive); }
+.stage-name { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--slate); line-height: 1.2; flex: 1; min-width: 0; }
+.stage-n { font-family: var(--mono); font-size: 11px; color: var(--g500); }
+.stage-card { background: var(--paper); border-radius: 9px; padding: 10px 12px; margin-top: 8px; border: 1px solid rgba(0,0,0,0.06); }
+.stage-card strong { display: block; font-weight: 600; font-size: 13.5px; line-height: 1.3; color: var(--slate); margin-bottom: 3px; }
+.stage-card span { display: block; font-size: 12.5px; line-height: 1.35; color: var(--g700); }
+.board figcaption { margin-top: 14px; }
+@media (max-width: 860px) { .stage-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .stage-board { grid-template-columns: 1fr; } }
+@media print { .stage-col { break-inside: avoid; } }
+
+/* Carryover groups (replaces the oat block) */
+.carry-groups { display: grid; gap: 16px; }
+.carry-group { background: var(--paper); border: 1px solid var(--g200); border-left: 5px solid var(--g300); border-radius: 12px; padding: 16px 22px 8px; }
+.carry-group.attn { border-left-color: var(--clay); }
+.carry-group.mid { border-left-color: #C9B38C; }
+.carry-group.good { border-left-color: var(--olive); }
+.carry-group h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 0 0 6px; color: var(--slate); }
+.carry-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; padding: 11px 0; border-top: 1px solid var(--g100); align-items: start; }
+.carry-who { font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--g500); padding-top: 4px; }
+.carry-row p { margin: 0; font-size: 14.5px; color: var(--g700); }
+@media (max-width: 560px) { .carry-row { grid-template-columns: 1fr; gap: 4px; } }
+@media print { .carry-group { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="eyebrow">Status for the finance team · 9 November 2026</div><h1>E-filing status: ACA, 94x, W-2 and SSNVS</h1><p class="intro">Where each electronic filing stands today: the federal ACA health coverage forms, the state ACA portals, the federal payroll tax returns (941 and 940), the W-2 wage file, the Social Security name check, and the new Checkbook.io payment link. <strong>The IRS told us by phone on Nov 6 that it will move our payroll tax filing (941 and 940) to production within 48 hours.</strong> One filing is in production, three have passed the IRS tests and are about to go live, four are in testing, and two are waiting on a form. Four items are not started or not yet confirmed. Three of them were added on Nov 9: registering Pyramos with Social Security to upload W-2s for clients, confirming that the IRS accepted our clients’ Form 8655s, and deciding whether we e-file California payroll tax returns.</p></header><div class="summary-band"><div class="stat-card"><div class="stat-num">14</div><div class="stat-label">items tracked</div><div class="stat-delta flat">3 added Nov 9</div></div><div class="stat-card"><div class="stat-num">1</div><div class="stat-label">in production (California)</div><div class="stat-delta up">approved Oct 8</div></div><div class="stat-card"><div class="stat-num">3</div><div class="stat-label">passed IRS tests (941 for 2026 and 2027, 940)</div><div class="stat-delta up">IRS: production within 48 hours (Nov 6)</div></div><div class="stat-card warn"><div class="stat-num">2</div><div class="stat-label">waiting on a state form (NJ, MA)</div></div><div class="stat-card"><div class="stat-num">Dec 8</div><div class="stat-label">Social Security opens W-2 uploads</div></div></div><figure class="board"><div class="stage-track"><span class="stage-track-label">Earlier</span><span class="stage-track-line"></span><span class="stage-track-label">Ready to file</span></div><div class="stage-board"><div class="stage-col attn"><div class="stage-head"><span class="stage-step">1</span><span class="stage-name">Not started or unconfirmed</span><span class="stage-n">4</span></div><div class="stage-card"><strong>Washington DC health coverage report</strong><span>not registered, not on the original list</span></div><div class="stage-card"><strong>SSA third-party submitter (W-2 uploads)</strong><span>Pyramos not registered yet; code takes about 15 days by mail</span></div><div class="stage-card"><strong>Client Form 8655s at the IRS</strong><span>IRS acceptance not confirmed</span></div><div class="stage-card"><strong>California payroll tax e-filing</strong><span>required by California; we have not decided whether Pyramos files it</span></div></div><div class="stage-col attn"><div class="stage-head"><span class="stage-step">2</span><span class="stage-name">Registered, waiting</span><span class="stage-n">2</span></div><div class="stage-card"><strong>New Jersey ACA forms</strong><span>portal registered, NJ form pending</span></div><div class="stage-card"><strong>Massachusetts MA 1099-HC</strong><span>portal registered, MA form pending</span></div></div><div class="stage-col mid"><div class="stage-head"><span class="stage-step">3</span><span class="stage-name">In testing</span><span class="stage-n">4</span></div><div class="stage-card"><strong>Federal ACA forms 1094-C / 1095-C</strong><span>seven test filings sent, IRS result pending</span></div><div class="stage-card"><strong>W-2 wage file</strong><span>test files built, uploads pending</span></div><div class="stage-card"><strong>Social Security name check</strong><span>SSA access in place, first roster run pending</span></div><div class="stage-card"><strong>Checkbook.io payments</strong><span>sandbox checks sent and read back Nov 6</span></div></div><div class="stage-col good"><div class="stage-head"><span class="stage-step">4</span><span class="stage-name">Tests passed, going live</span><span class="stage-n">3</span></div><div class="stage-card"><strong>Form 941 / 941-X for 2026</strong><span>all four IRS test cases accepted; production within 48 h</span></div><div class="stage-card"><strong>Form 940 for 2026</strong><span>all three IRS test cases accepted Nov 3; production within 48 h</span></div><div class="stage-card"><strong>Form 941 / 941-X for 2027</strong><span>all four IRS test cases accepted Nov 3; production within 48 h</span></div></div><div class="stage-col good"><div class="stage-head"><span class="stage-step">5</span><span class="stage-name">In production</span><span class="stage-n">1</span></div><div class="stage-card"><strong>California ACA forms</strong><span>production approval issued Oct 8</span></div></div></div><figcaption><div><div class="cap-title">Each filing by stage, left to right. Tests passed is not yet production. For the payroll tax returns the IRS confirmed by phone on Nov 6 that the production switch comes within 48 hours; the federal ACA program still needs its own approval.</div><div class="cap-sub">Terracotta columns need an action from us this week. Green columns are done or ready.</div></div></figcaption></figure><section><div class="sec-head"><span class="idx">01</span><h2>Where each filing stands</h2></div><div class="status-grid"><article class="status-card production"><span class="stage">In production</span><h3>California ACA forms</h3><p>California accepted all five of our test filings and issued production approval on Oct 8. We can file California for tax year 2026. The approval renews automatically each December.</p><p class="next"><span>Next</span>Switch our California connection to production mode in November.</p></article><article class="status-card passed"><span class="stage">Tests passed · going live</span><h3>Form 941 and 941-X for 2026 (quarterly payroll tax)</h3><p>The IRS accepted all four required test cases, the last three on Oct 14, including a 941-X correction. The paper copies print on the official IRS forms. On Nov 6 the IRS help desk told us it will move us to production within 48 hours.</p><p class="next"><span>Next</span>Before the first real return: client authorization forms (Form 8655), user login on the filing app, and the production connection settings.</p></article><article class="status-card testing"><span class="stage">In testing</span><h3>Federal ACA forms 1094-C and 1095-C</h3><p>Our software has sent seven test filings to the IRS since Oct 27. The IRS gave a receipt for each but has not returned a result. A review on Nov 3 confirmed our filings follow every IRS rule, so the delay is on the IRS side. We have an open IRS support case.</p><p class="next"><span>Next</span>Check the receipts in the IRS portal and call the IRS help desk this week.</p></article><article class="status-card passed"><span class="stage">Tests passed · going live</span><h3>Form 940 for 2026 (annual unemployment tax)</h3><p>The IRS accepted all three test cases on Nov 3: a single-state return with a refund, a multi-state return with the credit reduction schedule, and an agent return with Schedule R and a balance due. Each was accepted on the first check, with no errors and no help-desk call needed.</p><p class="next"><span>Next</span>When the production switch lands, confirm in IRS e-Services that it covers the annual 940 package too, then the same production checklist as the 941.</p></article><article class="status-card passed"><span class="stage">Tests passed · going live</span><h3>Form 941 and 941-X for 2027</h3><p>The IRS accepted all four 2027 test cases on Nov 3, including the 941-X correction, each on the first check with no errors. The 2027 quarterly package is registered with the IRS under its own software ID. The paper copies for 2027 returns are not built yet.</p><p class="next"><span>Next</span>Add the 2027 paper copies, then the same production checklist as the 2026 forms.</p></article><article class="status-card testing"><span class="stage">In testing</span><h3>W-2 wage file (Social Security)</h3><p>The W-2 file is built. We prepared 18 test files per year to confirm Social Security’s AccuWage checker agrees with our output. New this week: the employee copy. Our software now prints each employee’s W-2 on one two-sided letter sheet (Copies B, C and 2 on the front, the IRS instructions on the back), the layout IRS Publication 1141 allows in place of the official form. Social Security opens uploads on Dec 8; W-2s are due Feb 1, 2027.</p><p class="next"><span>Next</span>Upload the 2025 test set in November, the 2026 set in December. Decide where real employee data for the employee copy comes from, and how to handle employees who work in two states.</p></article><article class="status-card testing"><span class="stage">In testing</span><h3>Social Security name and SSN check</h3><p>The tool that checks every employee name and SSN against Social Security records before the W-2 upload is ready, and we already have access to the Social Security Number Verification Service (SSNVS) through our Business Services Online account. No activation code is needed.</p><p class="next"><span>Next</span>Run the check on the full 2026 employee roster in November and fix every mismatch with HR before the Dec 8 W-2 upload.</p></article><article class="status-card testing"><span class="stage">In testing · sandbox</span><h3>Checkbook.io payments</h3><p>Our software is connected to the Checkbook.io test environment. On Nov 6 it sent $1.00 digital test checks and read them back, including one with a W-2 employee copy attached as a PDF. Nothing touches real money: the connection can only reach the test environment. Research on Nov 4 found Checkbook is a payment service, not a mailing service, so it is not the right tool for mailing W-2s to employees; a print-and-mail service or electronic delivery with employee consent fits that better.</p><p class="next"><span>Next</span>Decide what we will pay through Checkbook before building toward production. The test key expires Feb 4, 2027.</p></article><article class="status-card waiting"><span class="stage">Waiting on a form</span><h3>New Jersey ACA forms</h3><p>We are registered on the New Jersey portal but cannot yet produce the New Jersey version of the 1095-C. New Jersey accepts the same file format as the IRS, so a separate form may not be needed. Due Mar 31.</p><p class="next"><span>Next</span>Confirm whether New Jersey needs its own form.</p></article><article class="status-card waiting"><span class="stage">Waiting on a form</span><h3>Massachusetts health coverage form (MA 1099-HC)</h3><p>We are registered on the Massachusetts portal but cannot yet produce the MA 1099-HC. If our health plan is fully insured, the insurance carrier issues this form, not the employer.</p><p class="next"><span>Next</span>Confirm how the plan is funded before building anything.</p></article><article class="status-card notstarted"><span class="stage">Not started</span><h3>Washington DC health coverage report</h3><p>DC requires employers to report employee health coverage to its tax office, due Apr 30. This was not on the original list. Nothing is registered or built yet.</p><p class="next"><span>Next</span>Decide on DC registration in November.</p></article><article class="status-card notstarted"><span class="stage">Not started · added Nov 9</span><h3>Register Pyramos with Social Security as a third-party W-2 submitter</h3><p>To upload W-2s for client companies, Pyramos needs its own Business Services Online (BSO) registration as a third-party submitter. Social Security’s new authorization process started Nov 7. An officer who can sign for Pyramos registers the company, answers yes to “payroll service provider”, and Social Security mails a registration code to Pyramos’s IRS address in about 15 days. Most clients sign nothing at Social Security. A client that registered itself under the new process, or opted in to the new Employer Signature PIN, must name Pyramos as its submitter and give us the PIN. Accounts on the old process must re-register for W-2 uploads. The SSN check (SSNVS) is not affected.</p><p class="next"><span>Next</span>Register this week so the code arrives before uploads open on Dec 8. Add a second Pyramos user. Ask each client whether it registered with Social Security or opted in to the Signature PIN.</p></article><article class="status-card notstarted"><span class="stage">To check · added Nov 9</span><h3>Did the IRS accept the client Form 8655s?</h3><p>Each client signs a Form 8655 so that Pyramos can file its 941 and 940 as Reporting Agent. The forms go to the IRS Ogden Reporting Agent team with the Reporting Agent’s List, by mail or by fax to 855-214-7523 (25 forms at most per fax). The IRS sends back a validated list within about 30 days. We have no record of a validated list, so we cannot yet say the IRS accepted any 8655.</p><p class="next"><span>Next</span>Find the fax confirmations and any validated list from the IRS. If no list came back within 30 days of sending, call the IRS to confirm which client EINs are on file. Do not file a client’s first real return until that client is on the validated list.</p></article><article class="status-card notstarted"><span class="stage">Decision needed · added Nov 9</span><h3>California payroll tax e-filing (EDD DE 9, DE 9C, DE 88)</h3><p>California requires it. Since 2018, every employer and every payroll agent must e-file state payroll returns and pay deposits electronically with the California Employment Development Department (EDD). The penalties are $50 per return, $20 per wage item, and 15% of a late payment. Whether Pyramos does this work depends on the scope we choose: California state returns for clients, or only the federal 941 and 940. For 2026 the state returns stay with the current payroll channel, and none of this is built. California ACA reporting is a separate program and is already in production.</p><p class="next"><span>Next</span>The owner decides on the scope. If Pyramos takes on California, it registers with EDD as a payroll agent (forms DE 973B and DE 972) and keeps each client’s DE 48 authorization on file. Returns then go through one of two channels. EDD’s bulk filing channel needs enrollment on form DE 547 and a certification test. The e-Services file upload needs no certification. The DE 9C also covers California W-2 reporting, so no separate W-2 file goes to the state.</p></article></div></section><section><div class="sec-head"><span class="idx">02</span><h2>What's next</h2></div><div class="ai-list"><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Check the seven federal ACA test receipts in the IRS web portal and call the IRS ACA help desk</span><span class="ai-due">this week</span></div><div class="ai-row done"><span class="ai-check"></span><span class="ai-desc">Call the IRS help desk about production for the 941 and 940 packages (IRS: production within 48 hours)</span><span class="ai-due">Nov 6</span></div><div class="ai-row done"><span class="ai-check"></span><span class="ai-desc">Connect Checkbook.io in its test environment and send test checks, one with a W-2 attached</span><span class="ai-due">Nov 6</span></div><div class="ai-row done"><span class="ai-check"></span><span class="ai-desc">Build the one-sheet W-2 employee copy (Publication 1141 layout)</span><span class="ai-due">Nov 6</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Confirm the IRS production switch arrived for 941 (2026, 2027) and 940, and point the filing app at production</span><span class="ai-due">Nov 9</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">A Pyramos officer registers Pyramos Software LLC on Social Security’s Business Services Online as a payroll service provider (third-party submitter). The code arrives by mail in about 15 days</span><span class="ai-due">this week</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Confirm that the IRS accepted the client Form 8655s: find the validated Reporting Agent’s List, or call the IRS</span><span class="ai-due">this week</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Ask each client whether it registered with Social Security or opted in to the Employer Signature PIN</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Decide whether Pyramos e-files California payroll tax returns (DE 9, DE 9C, DE 88) or only the federal 941 and 940</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Before the first real return: signed Form 8655 from each client and a login on the filing app</span><span class="ai-due">before first filing</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Decide what Checkbook.io will pay and how W-2 employee copies reach employees (mail service or electronic delivery)</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Run the Social Security name check (SSNVS) on the 2026 employee roster and clear the mismatches with HR</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Upload the 2025 W-2 test files to AccuWage and record the results</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Decide on Washington DC registration; confirm whether the Massachusetts and New Jersey forms are needed</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Switch the California connection to production mode</span><span class="ai-due">Nov</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Roll out the 1095-C code rules to the platform and run a 2026 dry run</span><span class="ai-due">before Dec</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Social Security opens W-2 uploads for tax year 2026</span><span class="ai-due">Dec 8</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Form 940 and W-2s due</span><span class="ai-due">Feb 1, 2027</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Give employees their 1095-C forms</span><span class="ai-due">Mar 2, 2027</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">File ACA forms with the IRS, California and New Jersey</span><span class="ai-due">Mar 31, 2027</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">File the Washington DC health coverage report</span><span class="ai-due">Apr 30, 2027</span></div></div></section><section><div class="sec-head"><span class="idx">03</span><h2>Not on the list, and open questions</h2></div><div class="carry-groups"><div class="carry-group attn"><h3>Not on the original list</h3><div class="carry-row"><span class="carry-who">Owner</span><p>Washington DC employer health coverage report, due Apr 30, 2027. Not registered yet.</p></div><div class="carry-row"><span class="carry-who">Team</span><p>Production approval is a separate step for both IRS programs. For the payroll tax returns the IRS said on Nov 6 it will switch us within 48 hours. The ACA production window is expected to open in January 2027.</p></div><div class="carry-row"><span class="carry-who">Dev and owner</span><p>Going live opens a gap that testing hid: today anyone who can reach the filing app can file a return for any company under our Reporting Agent PIN. We need each client’s signed Form 8655 on record, and a login on the app, before the first real return.</p></div><div class="carry-row"><span class="carry-who">Owner and HR</span><p>The 1095-C data itself. Before any form can be filed we still need the employer’s safe-harbor and lowest-cost-plan answers for Lines 15 and 16, and the January to April 2026 offer records held in the previous system. Employee copies are due Mar 2, 2027.</p></div></div><div class="carry-group mid"><h3>To confirm</h3><div class="carry-row"><span class="carry-who">Owner</span><p>California payroll tax: does Pyramos file California state returns for clients, or only the federal 941 and 940? California requires e-filing either way. The open question is who does it.</p></div><div class="carry-row"><span class="carry-who">Owner</span><p>Form 8655: which clients does the IRS have on file for Pyramos? No validated Reporting Agent’s List is on record yet.</p></div><div class="carry-row"><span class="carry-who">Owner</span><p>Social Security: confirm with the Employer Reporting Service Center (1-800-772-6270) that a registered third party can still file for a client that has not registered under the new process.</p></div><div class="carry-row"><span class="carry-who">Benefits lead</span><p>Massachusetts: if the health plan is fully insured, the insurance carrier issues the 1099-HC and we do not need to build it.</p></div><div class="carry-row"><span class="carry-who">Owner</span><p>New Jersey accepts the federal file format, so a New Jersey-specific form may not be needed.</p></div><div class="carry-row"><span class="carry-who">Owner</span><p>Form 940 and the 2027 quarterly forms: when the production switch lands, check in IRS e-Services that it covers all three packages, not only the 2026 quarterly one.</p></div><div class="carry-row"><span class="carry-who">Owner</span><p>Checkbook.io: what it will pay is not decided yet. Mailing W-2s through it would turn every W-2 into a real check with a per-check fee, so it is not the plan for employee copies.</p></div><div class="carry-row"><span class="carry-who">Finance</span><p>The Q3 2026 Form 941 for OneWell of California was prepared with the new tool as a dry run but not sent through it. Confirm it was filed through the current payroll channel.</p></div><div class="carry-row"><span class="carry-who">Finance</span><p>State W-2 copies for the ten payroll jurisdictions stay with the current payroll channel for tax year 2026.</p></div></div><div class="carry-group good"><h3>Renewals</h3><div class="carry-row"><span class="carry-who">Dev</span><p>Our IRS signing certificate renews by August 2027 and the California keys by September 2027. The Checkbook.io test key expires Feb 4, 2027. Reminders are set a month ahead.</p></div></div></div></section>
+<footer>Generated 2026-11-03 · updated 2026-11-06: IRS phone call (94x production within 48 hours), Checkbook.io sandbox checks, W-2 employee copy · updated 2026-11-09: SSA third-party submitter, Form 8655 check, California payroll e-filing · /html</footer>
+</main>
+</body>
+</html>
+
+</body></html>

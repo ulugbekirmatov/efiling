@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-employer W-2 upload</title>
+<style>
+:root {
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory); color: var(--slate);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word; word-break: break-word;
+}
+.wrap { max-width: 980px; margin: 0 auto; padding: 56px 32px 72px; }
+@media (max-width: 640px) { .wrap { padding: 36px 16px 56px; } }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+/* Text containment */
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .callout, .summary, .rec, .opt {
+  overflow-wrap: break-word; word-break: break-word;
+}
+.card, .opt, .rec, [class*="col"], [class*="grid"] > * { min-width: 0; }
+table { table-layout: auto; min-width: 640px; width: 100%; border-collapse: collapse; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; border: 1.5px solid var(--g300); border-radius: 12px; background: var(--paper); }
+
+:not(pre) > code {
+  font-family: var(--mono); font-size: 0.92em;
+  background: var(--g100); color: var(--slate);
+  padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word;
+}
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin-top: 14px; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw { color: var(--clay); }
+.code .str { color: var(--olive); }
+.code .cm { color: var(--g500); }
+.code .fn { color: #C9B98A; }
+
+/* Header */
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--g500); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 24px; height: 1.5px; background: var(--clay); }
+h1 {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(34px, 4.8vw, 52px); line-height: 1.08;
+  letter-spacing: -0.018em; margin: 0 0 8px; max-width: 22ch;
+}
+.intro { font-size: 16.5px; color: var(--g700); margin-top: 18px; max-width: 680px; }
+
+/* TL;DR dark */
+.tldr-dark { background: var(--slate); border-radius: 14px; padding: 24px 28px; margin-top: 32px; max-width: 800px; }
+.tldr-dark .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--clay); margin-bottom: 10px; }
+.tldr-dark p { color: #F3F1EA; font-family: var(--serif); font-size: 19px; line-height: 1.5; }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: #FFFFFF; }
+.tldr-dark code { background: #2A2A28; color: #F3F1EA; }
+
+/* Stat strip */
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+@media (max-width: 720px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.summary .cell { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 16px 18px; }
+.summary .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 6px; }
+.summary .v { font-size: 22px; font-weight: 600; font-family: var(--serif); }
+.summary .v.accent { color: var(--clay-d); }
+.summary .s { font-size: 12.5px; color: var(--g700); margin-top: 2px; }
+
+/* Sections */
+section { margin-top: 60px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 16px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; line-height: 1.2; }
+.lede { color: var(--g700); max-width: 720px; margin-bottom: 18px; }
+.lede + .lede { margin-top: -6px; }
+h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin-bottom: 6px; }
+
+/* Tables */
+th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--g700); background: var(--g100); padding: 11px 14px; border-bottom: 1.5px solid var(--g300); }
+td { padding: 11px 14px; font-size: 13.5px; border-bottom: 1px solid var(--g200); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td.nowrap, th.nowrap { white-space: nowrap; }
+td.mono { font-family: var(--mono); font-size: 12.5px; }
+
+/* File diagram */
+.file { border: 1.5px solid var(--g300); border-radius: 12px; background: var(--paper); overflow: hidden; }
+.file .bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--g100); border-bottom: 1.5px solid var(--g300); font-family: var(--mono); font-size: 12px; color: var(--g700); }
+.file .dots { display: flex; gap: 5px; }
+.file .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--g300); display: block; }
+.file .body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rec { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; border-radius: 8px; padding: 9px 12px; font-size: 13.5px; }
+.rec .id { font-family: var(--mono); font-weight: 700; font-size: 13px; }
+.rec .n { font-family: var(--mono); font-size: 12px; color: var(--g500); white-space: nowrap; }
+.rec.ra, .rec.rf { background: var(--slate); color: #F3F1EA; }
+.rec.ra .n, .rec.rf .n { color: #C9C6BC; }
+.block { border: 1.5px solid var(--g300); border-left: 4px solid var(--olive); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.block .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); padding: 0 4px; }
+.rec.re { background: #E4E9DC; }
+.rec.rw { background: var(--g100); }
+.rec.rt { background: var(--oat); }
+.gap { text-align: center; font-family: var(--mono); font-size: 12px; color: var(--g500); padding: 4px; border: 1.5px dashed var(--g300); border-radius: 8px; }
+
+/* Ledger (component 30.2) */
+.ledger { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; }
+.ledger .row { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 10px 18px; font-size: 14px; border-bottom: 1px solid var(--g200); }
+.ledger .row:last-child { border-bottom: none; }
+.ledger .row .v { font-family: var(--mono); font-size: 13px; text-align: right; white-space: nowrap; }
+.ledger .row.was { background: #F7E6DE; }
+.ledger .row.now { background: #E8EDE0; }
+.ledger .row.punch { background: var(--slate); color: #F3F1EA; font-weight: 600; }
+.ledger .row.punch .v { color: #FFFFFF; }
+.ledger .head { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); background: var(--g100); }
+
+/* Analogy */
+.analogy { margin-top: 22px; background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; }
+.analogy .main { padding: 18px 22px; }
+.analogy .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 6px; }
+.analogy .breaks { border-top: 1.5px solid var(--g300); border-left: 4px solid var(--clay); padding: 14px 22px; background: #FBF1EC; font-size: 14px; }
+.analogy .breaks .k { color: var(--clay-d); }
+
+/* Options */
+.opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 860px) { .opts { grid-template-columns: 1fr; } }
+.opt { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.opt.pick { border: 2px solid var(--slate); }
+.opt .tag { align-self: flex-start; font-family: var(--mono); font-size: 11px; padding: 3px 9px; border-radius: 999px; background: var(--g100); color: var(--g700); border: 1px solid var(--g300); }
+.opt.pick .tag { background: var(--slate); color: #FFFFFF; border-color: var(--slate); }
+.opt ul { padding-left: 18px; font-size: 13.5px; color: var(--g700); display: flex; flex-direction: column; gap: 4px; }
+.opt .if { font-size: 13px; border-top: 1px solid var(--g200); padding-top: 10px; color: var(--slate); }
+.opt .if b { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--g500); }
+
+.callout { margin-top: 18px; background: var(--paper); border: 1.5px solid var(--g300); border-left: 4px solid var(--clay); border-radius: 12px; padding: 16px 20px; font-size: 14.5px; max-width: 800px; }
+.callout.olive { border-left-color: var(--olive); }
+.callout .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--clay-d); margin-bottom: 6px; }
+.callout.olive .k { color: var(--olive); }
+
+/* Checklists */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+.card { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 18px 20px; }
+.card .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 10px; }
+.checks { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.checks li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: 14px; }
+.checks li::before { content: ""; width: 14px; height: 14px; margin-top: 3px; border: 1.5px solid var(--g300); border-radius: 4px; }
+.checks li small { display: block; color: var(--g500); font-size: 12.5px; margin-top: 2px; }
+
+/* Gap findings */
+.finds { display: flex; flex-direction: column; gap: 12px; }
+.find { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 16px 20px; display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
+.find .num { font-family: var(--mono); font-weight: 700; color: var(--clay); font-size: 14px; }
+.find .found { font-size: 12px; color: var(--g500); font-family: var(--mono); margin-top: 6px; }
+.find p { font-size: 14px; color: var(--g700); margin-top: 4px; }
+.badge { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 2px 7px; border-radius: 6px; font-weight: 600; margin-left: 8px; vertical-align: 2px; }
+.badge.high { background: #F3D9CC; color: #8A3B1E; }
+.badge.med { background: var(--oat); color: var(--slate); }
+.badge.low { background: #E4E9DC; color: #4B5C39; }
+.weak { border: 1.5px dashed var(--clay); }
+
+/* Timeline */
+.tl { display: flex; flex-direction: column; }
+.ms { display: grid; grid-template-columns: 130px 24px 1fr; gap: 0 16px; }
+@media (max-width: 640px) { .ms { grid-template-columns: 78px 20px 1fr; gap: 0 10px; } }
+.ms .when { text-align: right; font-family: var(--mono); font-size: 12px; color: var(--g500); padding-top: 3px; }
+.ms .dc { display: flex; flex-direction: column; align-items: center; }
+.ms .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 3px solid var(--clay); margin-top: 4px; flex-shrink: 0; }
+.ms .dot.slate { border-color: var(--slate); background: var(--slate); }
+.ms .line { width: 2px; flex: 1; background: var(--g300); margin: 4px 0; }
+.ms:last-child .line { display: none; }
+.ms .b { padding-bottom: 28px; min-width: 0; }
+.ms .b p { color: var(--g700); font-size: 14px; max-width: 640px; }
+
+footer { margin-top: 72px; padding-top: 16px; border-top: 1.5px solid var(--g200); font-family: var(--mono); font-size: 11px; color: var(--g500); line-height: 1.8; }
+footer a { color: var(--g700); }
+
+@media print {
+  body { background: #fff; }
+  .wrap { max-width: 100%; padding: 0; }
+  .tldr-dark, .rec.ra, .rec.rf, .ledger .row.punch, .code { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  section { break-inside: avoid-page; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">W-2 wage reporting · TY2026 · Pyramos as third-party submitter</div>
+  <h1>Ten employers, one upload</h1>
+  <p class="intro">Pyramos files W-2s to Social Security for ten client companies. This page covers how that one upload is arranged: who signs it, where each client's EIN goes, whether to send one file or ten, and what the current <code>wagefile</code> code still needs.</p>
+
+  <div class="tldr-dark">
+    <div class="k">The two-sentence version</div>
+    <p>Pyramos logs in to Business Services Online once and uploads <strong>one EFW2 file</strong>. The file opens with a Pyramos <code>RA</code> record, then holds one <code>RE</code> block for each client, each carrying that client's own EIN.</p>
+    <p>Each employee's earnings post to the EIN in their client's <code>RE</code> record. Pyramos only signs the upload. It never appears as the employer.</p>
+  </div>
+
+  <div class="summary">
+    <div class="cell"><div class="k">BSO accounts</div><div class="v">1 org · 2 people</div><div class="s">Pyramos only. Clients need none.</div></div>
+    <div class="cell"><div class="k">Files per year</div><div class="v">1</div><div class="s">SSA asks for combined reports</div></div>
+    <div class="cell"><div class="k">10 clients · 2,000 W-2s</div><div class="v">≈ 1.0 MB</div><div class="s">limit 350 MB</div></div>
+    <div class="cell"><div class="k">Code gaps for multi-client</div><div class="v accent">5</div><div class="s">see section 06</div></div>
+  </div>
+</header>
+
+<main>
+
+<section id="problem">
+  <div class="sec-head"><span class="idx">01</span><h2>The problem: one login, ten employers' earnings</h2></div>
+  <p class="lede">Say Client C has 260 employees and Client F has 170. Social Security credits each person's wages to a lifetime earnings record that it ties to an employer EIN. If the file names Pyramos as the employer, 2,000 people's 2026 earnings land under Pyramos's EIN. Every client then gets a mismatch notice, because its Forms 941 report wages that its W-2s never matched.</p>
+  <p class="lede">The EFW2 format separates the two roles. One record says who is <em>sending</em> the file. A separate record, repeated once per company, says who <em>paid</em> the wages.</p>
+</section>
+
+<section id="roles">
+  <div class="sec-head"><span class="idx">02</span><h2>Who goes in which record</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Record</th><th>How many</th><th>Whose data</th><th>Key positions</th><th>Found in code</th></tr></thead>
+      <tbody>
+        <tr><td class="mono nowrap">RA</td><td class="nowrap">1, first</td><td>Pyramos (submitter)</td><td>EIN 3–11 = Pyramos. BSO User ID 12–19 = the uploader's 8-character ID, which serves as the electronic signature. Preparer Code 500 = <code>S</code> (service bureau).</td><td class="mono"><code>Efw2Writer.java:57</code></td></tr>
+        <tr><td class="mono nowrap">RE</td><td class="nowrap">1 per client</td><td>The client (employer)</td><td>EIN 8–16 = the <b>client's</b> EIN, the one its 941 deposits were made under. Agent Indicator 7 stays blank. Name, address and contact fields are required.</td><td class="mono"><code>Efw2Writer.java:77</code></td></tr>
+        <tr><td class="mono nowrap">RW</td><td class="nowrap">1 per W-2</td><td>The client's employee</td><td>SSN, name, address, and money fields in cents</td><td class="mono"><code>Efw2Writer.java:97</code></td></tr>
+        <tr><td class="mono nowrap">RT</td><td class="nowrap">1 per client</td><td>Totals for that client</td><td>RW count 3–9 plus money totals. The writer computes them and never accepts them as input.</td><td class="mono"><code>Efw2Writer.java:118</code></td></tr>
+        <tr><td class="mono nowrap">RF</td><td class="nowrap">1, last</td><td>Whole file</td><td>Total RW count across all clients, at 8–16</td><td class="mono"><code>Efw2Writer.java:131</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <div class="k">Why position 7 stays blank</div>
+    Position 7 is for agents who file <em>under their own EIN</em>: Form 2678 agents (code 1), common paymasters (2), and Section 3504 agents (3). A Form 8655 Reporting Agent such as Pyramos files and deposits under the client's EIN, so none of the codes apply. This reading is inferred from Publication 42-007, not quoted from it. Confirm it with an SSA Employer Services Liaison Officer (1-800-772-6270) before the first live file. The writer already follows it: <code>EmployerWage.java:5</code>.
+  </div>
+</section>
+
+<section id="shape">
+  <div class="sec-head"><span class="idx">03</span><h2>The file, drawn for ten clients</h2></div>
+  <p class="lede">The writer loops over employers in <code>Efw2Writer.write</code> (<code>Efw2Writer.java:14-33</code>). Each client becomes a self-contained RE → RW… → RT block, stacked between a single RA and a single RF.</p>
+  <div class="file">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span>w2-2026-pyramos.efw2 · 512-byte records</div>
+    <div class="body">
+      <div class="rec ra"><span class="id">RA</span><span>Pyramos Software LLC · Pyramos EIN · BSO User ID · Preparer S</span><span class="n">×1</span></div>
+      <div class="block">
+        <div class="label">Client A</div>
+        <div class="rec re"><span class="id">RE</span><span>Client A EIN · name · contact</span><span class="n">×1</span></div>
+        <div class="rec rw"><span class="id">RW</span><span>one per employee</span><span class="n">×420</span></div>
+        <div class="rec rt"><span class="id">RT</span><span>count 420 · Client A totals</span><span class="n">×1</span></div>
+      </div>
+      <div class="block">
+        <div class="label">Client B</div>
+        <div class="rec re"><span class="id">RE</span><span>Client B EIN · name · contact</span><span class="n">×1</span></div>
+        <div class="rec rw"><span class="id">RW</span><span>one per employee</span><span class="n">×310</span></div>
+        <div class="rec rt"><span class="id">RT</span><span>count 310 · Client B totals</span><span class="n">×1</span></div>
+      </div>
+      <div class="gap">Clients C – I · seven more RE / RW… / RT blocks</div>
+      <div class="block">
+        <div class="label">Client J</div>
+        <div class="rec re"><span class="id">RE</span><span>Client J EIN · name · contact</span><span class="n">×1</span></div>
+        <div class="rec rw"><span class="id">RW</span><span>one per employee</span><span class="n">×70</span></div>
+        <div class="rec rt"><span class="id">RT</span><span>count 70 · Client J totals</span><span class="n">×1</span></div>
+      </div>
+      <div class="rec rf"><span class="id">RF</span><span>total RW records in the file</span><span class="n">2,000</span></div>
+    </div>
+  </div>
+  <p class="lede" style="margin-top:12px;font-size:13px;color:var(--g500)">Client names and headcounts are illustrative. Optional RO, RS, RU and RV records are left out because the federal file does not need them.</p>
+</section>
+
+<section id="example">
+  <div class="sec-head"><span class="idx">04</span><h2>Worked example: does 2,000 W-2s fit?</h2></div>
+  <p class="lede">Ten clients with 420, 310, 260, 220, 190, 170, 150, 120, 90 and 70 employees add up to 2,000. The writer ends each 512-byte record with CRLF, so each line is 514 bytes on disk.</p>
+  <div class="ledger">
+    <div class="row head"><span>Item</span><span class="v">Value</span></div>
+    <div class="row"><span>RA + RF (once each)</span><span class="v">2</span></div>
+    <div class="row"><span>RE + RT (one each per client × 10)</span><span class="v">20</span></div>
+    <div class="row"><span>RW (one per employee)</span><span class="v">2,000</span></div>
+    <div class="row"><span>Total records × 514 bytes</span><span class="v">2,022 × 514 = 1,039,308 B</span></div>
+    <div class="row was"><span>BSO upload limit</span><span class="v">350 MB</span></div>
+    <div class="row was"><span>Record caps for multi-employer files</span><span class="v">50,000 RE · 1,000,000 RW</span></div>
+    <div class="row now"><span>This file</span><span class="v">≈ 1.0 MB · 10 RE · 2,000 RW</span></div>
+    <div class="row punch"><span>Headroom: about 0.3% of the size cap, so size is not the constraint</span><span class="v">1 upload</span></div>
+  </div>
+  <p class="lede" style="margin-top:12px">One SSA page sets a stricter 500,000 records total for multi-employer files. 2,022 records is still well under that.</p>
+
+  <div class="analogy">
+    <div class="main">
+      <div class="k">Analogy</div>
+      Pyramos is a courier carrying ten sealed letters in one bag. The courier signs the delivery slip (RA). Each letter is addressed to its own mailbox (the client EIN in RE), and the mailroom sorts by the address on each letter, not by the courier's name.
+    </div>
+    <div class="breaks">
+      <div class="k">Where this breaks</div>
+      A real mailroom delivers the nine good letters and returns the bad one. SSA does not. If the file is returned, you resubmit the <b>entire corrected file</b>, with RA position 29 = <code>1</code> and the original Wage File Identifier (WFID) in positions 30–35, within 45 days. One client's blank contact phone holds up all ten. The courier's signature is also a legal statement made under penalty of perjury, covering every letter in the bag.
+    </div>
+  </div>
+</section>
+
+<section id="split">
+  <div class="sec-head"><span class="idx">05</span><h2>One file or ten?</h2></div>
+  <p class="lede">All three options use the same example: ten clients, and Client F's contact phone is blank.</p>
+  <div class="opts">
+    <div class="opt pick">
+      <span class="tag">Recommended · combined</span>
+      <h3>One file, ten RE blocks</h3>
+      <ul>
+        <li>1 upload, 1 AccuWage run, 1 WFID to store</li>
+        <li>SSA's stated preference: "We encourage you to file combined reports"</li>
+        <li>Client F's blank phone returns the whole file. All ten resubmit together.</li>
+      </ul>
+      <div class="if"><b>Pick this if:</b> every client's data is final by mid-January and the local validator plus AccuWage pass before upload.</div>
+    </div>
+    <div class="opt">
+      <span class="tag">Isolated · per client</span>
+      <h3>Ten files, one RE each</h3>
+      <ul>
+        <li>10 uploads, 10 AccuWage runs, 10 WFIDs</li>
+        <li>Client F's file comes back. The other nine move on to processing.</li>
+        <li>Ten times the manual BSO work, and each upload is a live filing</li>
+      </ul>
+      <div class="if"><b>Pick this if:</b> clients' data arrives at very different times, or one client's data is known to be messy.</div>
+    </div>
+    <div class="opt">
+      <span class="tag">Hybrid · ready + late</span>
+      <h3>Combined file for ready clients, a second file for late ones</h3>
+      <ul>
+        <li>Send the nine ready clients now and Client F once it is fixed</li>
+        <li>Each file has its own RA and its own WFID</li>
+        <li>Needs a client filter on the build. Today's code has none (gap 5).</li>
+      </ul>
+      <div class="if"><b>Pick this if:</b> the February 1, 2027 deadline is close and one client is still missing data.</div>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="k">The rule that makes any split safe</div>
+    Each client EIN may appear in only <b>one</b> live file per tax year. If Client F is in both the combined file and a late file, SSA posts its employees' wages twice, and fixing that takes W-2c corrections. <code>WageFileManifest.employerEins</code> already records which EINs each run holds, so the guard has the data it needs.
+  </div>
+</section>
+
+<section id="setup">
+  <div class="sec-head"><span class="idx">06</span><h2>What to arrange: once vs. per client</h2></div>
+  <div class="two">
+    <div class="card">
+      <div class="k">Once, for Pyramos</div>
+      <ul class="checks">
+        <li><span>Two people register in BSO as <b>third-party</b> submitters, with Pyramos's EIN and address<small>Login.gov or ID.me. SSA mails an activation code to Pyramos's IRS address of record, usually within 2 weeks. BSO User IDs stay with the person, which is why two people register.</small></span></li>
+        <li><span>Request Wage Reporting and SSNVS (SSA's SSN verification service) access<small>SSNVS checks each name/SSN pair under the client's EIN. Run it at hire and again before the filing season.</small></span></li>
+        <li><span>Call an SSA Employer Services Liaison Officer to confirm the RE treatment<small>Client EIN in 8–16, position 7 blank, for a Form 8655 agent</small></span></li>
+        <li><span>Add a client-assurance clause to each service agreement<small>Form 8655 does not cover W-2s. The RA signature rests on "assurances provided by the client" (Pub 42-007 §5.2).</small></span></li>
+        <li><span>Set <code>MEF_BSO_USER_ID</code> in the environment, never in the repo</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="k">Per client, per tax year</div>
+      <ul class="checks">
+        <li><span>EIN, legal name, and delivery address exactly as the IRS holds them</span></li>
+        <li><span>Contact name, phone and e-mail<small>Required since TY2025. "Submissions will be returned if any of these fields are left blank."</small></span></li>
+        <li><span>Kind of Employer (RE 174) and Employment Code (RE 219)<small>A 501(c) nonprofit is <code>T</code>, not <code>N</code>. A Form 944 filer is <code>F</code>, not <code>R</code>.</small></span></li>
+        <li><span>Employer Signature PIN, if the client opted in (RE 319–328, new for TY2026)<small>Without it, SSA does not process that client's report</small></span></li>
+        <li><span>Closed in 2026? Set the terminating-business flag (RE 26)</span></li>
+        <li><span>Totals reconciled to that client's four 941 quarters, using 941-X column 1 where amended</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="gaps">
+  <div class="sec-head"><span class="idx">07</span><h2>What the code needs before ten clients</h2></div>
+  <p class="lede">The writer already loops over many employers, and the validator already checks each RE block's RT against its RW rows. These gaps only show up once real clients differ from the one-employer Orchid fixture.</p>
+  <div class="finds">
+    <div class="find">
+      <span class="num">1</span>
+      <div><b>Kind of Employer is hardcoded to "none apply"</b><span class="badge high">HIGH if any client is a nonprofit or government</span>
+        <p>Every client is written as <code>N</code>. A 501(c) client written as <code>N</code> is a wrong filing, not a format error, so AccuWage will not catch it. Move it onto <code>EmployerWage</code>.</p>
+        <div class="found">Found in code — Efw2Writer.java:88 · record.put(174, 174, "N")</div>
+      </div>
+    </div>
+    <div class="find">
+      <span class="num">2</span>
+      <div><b>Employment Code is hardcoded to Regular (941)</b><span class="badge med">MED</span>
+        <p>This is correct for 941 filers. A client that files Form 944 needs <code>F</code>, and a client that files Form 943 needs <code>A</code>. Pyramos files 94x returns, so a 944 client is possible.</p>
+        <div class="found">Found in code — Efw2Writer.java:89 · record.put(219, 219, "R")</div>
+      </div>
+    </div>
+    <div class="find">
+      <span class="num">3</span>
+      <div><b>No Employer Signature PIN or terminating-business flag per client</b><span class="badge med">MED</span>
+        <p>RE 319–328 is never written, and RE 26 is always <code>0</code>. Add a nullable per-year PIN and a boolean to <code>EmployerWage</code>. Note that Ohio's state file reserves 319–512 as blank.</p>
+        <div class="found">Found in code — Efw2Writer.java:82 · EmployerWage.java:6-17</div>
+      </div>
+    </div>
+    <div class="find">
+      <span class="num">4</span>
+      <div><b>Nothing stops the same EIN from appearing twice</b><span class="badge high">HIGH once splitting exists</span>
+        <p>The validator does not flag a repeated RE EIN within one file, and the store does not check across runs. Add both checks: one RE per EIN per file, and one live (non-RETURNED) run per EIN per tax year.</p>
+        <div class="found">Found in code — Efw2Validator.java:60-95 · FileWageFileStore.java:30</div>
+      </div>
+    </div>
+    <div class="find weak">
+      <span class="num">5</span>
+      <div><b>The build cannot pick a subset of clients</b><span class="badge low">LOW until a client is late</span>
+        <p>The request carries only the tax year, and the source loads every employer. The hybrid option needs an optional EIN list on the request. This is the one item you could skip if every client is always on time. Your call.</p>
+        <div class="found">Found in code — api/BuildWageFileRequest.java:3 · WageFileService.java:23-32</div>
+      </div>
+    </div>
+  </div>
+  <div class="code"><pre><span class="cm">// Sketch for gaps 1–3 and 5. Not implemented.</span>
+<span class="kw">public record</span> <span class="fn">EmployerWage</span>(
+        <span class="kw">int</span> taxYear, String ein, String name, <span class="cm">/* … */</span>
+        <span class="fn">KindOfEmployer</span> kind,          <span class="cm">// RE 174: N, T, S, Y, F</span>
+        <span class="fn">EmploymentCode</span> employmentCode, <span class="cm">// RE 219: R, F (944), A (943), …</span>
+        <span class="kw">boolean</span> terminatingBusiness,   <span class="cm">// RE 26</span>
+        String signaturePin,           <span class="cm">// RE 319-328, null unless the client opted in</span>
+        List&lt;EmployeeWage&gt; employees) {}
+
+<span class="kw">public record</span> <span class="fn">BuildWageFileRequest</span>(<span class="kw">int</span> taxYear, List&lt;String&gt; employerEins) {} <span class="cm">// null = all clients</span></pre></div>
+</section>
+
+<section id="timeline">
+  <div class="sec-head"><span class="idx">08</span><h2>The season, in order</h2></div>
+  <div class="tl">
+    <div class="ms"><div class="when">Oct – Nov 2026</div><div class="dc"><span class="dot"></span><span class="line"></span></div><div class="b"><h3>Register and agree</h3><p>Two BSO third-party registrations, the SSA call about the RE treatment, client-assurance clauses, and collecting the per-client fields. SSA plans an updated authorization system for December 2026, so re-read its W-2 News page before the season.</p></div></div>
+    <div class="ms"><div class="when">Dec 8, 2026</div><div class="dc"><span class="dot"></span><span class="line"></span></div><div class="b"><h3>BSO opens for TY2026</h3><p>Run SSNVS on every client's employee list. Reconcile each client's year to its four 941 quarters.</p></div></div>
+    <div class="ms"><div class="when">Jan 2027</div><div class="dc"><span class="dot"></span><span class="line"></span></div><div class="b"><h3>Build, check, upload</h3><p><code>POST /api/mef/wage-files</code> builds and validates the combined file. A person runs AccuWage Online, zips one wage file per .zip, uploads it, and stores the WFID with <code>POST /api/mef/wage-files/{id}/receipt</code>.</p></div></div>
+    <div class="ms"><div class="when">Feb 1, 2027</div><div class="dc"><span class="dot slate"></span><span class="line"></span></div><div class="b"><h3>Due date for every client</h3><p>The deadline is the same for all ten. A late client is the one case that justifies the hybrid split.</p></div></div>
+    <div class="ms"><div class="when">+45 days</div><div class="dc"><span class="dot"></span><span class="line"></span></div><div class="b"><h3>If the file is returned</h3><p>Resubmit the whole saved file with RA 29 = <code>1</code> and the WFID, using <code>WageFileService.resubmit</code>. One 15-day extension exists. Wrong data in a completed file is a W-2c, which is a different specification.</p></div></div>
+  </div>
+  <div class="callout olive">
+    <div class="k">Separate from this upload</div>
+    SSA forwards nothing to the states. Ten of Pyramos's eleven payroll jurisdictions want their own W-2 file on their own portal. Ohio rejects any file that contains non-Ohio RS records, so it needs a filtered single-state file. See <code>w2-efile-research.html</code> for the state-by-state list.
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Generated 2026-10-02 · /html · Sources:
+  <a href="https://www.ssa.gov/employer/bsohbnew.htm">SSA Electronic W-2 Filing Handbook</a> ·
+  <a href="https://www.ssa.gov/employer/efw/25efw2.pdf">Pub 42-007 EFW2 (TY2025 v3.3)</a> ·
+  <a href="https://www.ssa.gov/employer/bsoewrug.pdf">BSO Electronic W-2/W-2c Filing</a> ·
+  <a href="https://www.ssa.gov/employer/documents/WageFileUpload-Tutorial.pdf">Wage File Upload Tutorial</a> (blocked to automated fetch, not read directly) ·
+  repo: w2-efile-research.html, w2-batch-upload-plan.html, mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/
+</footer>
+
+</div>
+</body>
+</html>

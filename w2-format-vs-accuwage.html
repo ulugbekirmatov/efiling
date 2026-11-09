@@ -1,0 +1,104 @@
+<title>Is our W-2 file the AccuWage file?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow reading column; the only wide thing is the record ruler, which scrolls on its own. */
+:root {
+  --bg: #fbfaf7;
+  --fg: #1f2420;
+  --muted: #5e665f;
+  --line: #d9d6cc;
+  --accent: #1f5f4a;
+  --accent-soft: #e4efe9;
+  --ink: #f4f3ee;
+  --display: "Fraunces", Georgia, serif;
+  --body: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171a18; --fg: #e8e7e0; --muted: #a2a89f; --line: #363b37;
+    --accent: #7fc3a6; --accent-soft: #1f2d27; --ink: #0f1210; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171a18; --fg: #e8e7e0; --muted: #a2a89f; --line: #363b37;
+  --accent: #7fc3a6; --accent-soft: #1f2d27; --ink: #0f1210; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.55;
+  padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 42rem; margin: 0 auto; display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 1.35rem; margin: 0 0 8px; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.answer { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 14px 18px; font-size: 1.1rem; }
+.answer strong { color: var(--accent); }
+section { display: grid; gap: 10px; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 65ch; }
+li strong { font-weight: 600; }
+.ruler { overflow-x: auto; background: var(--ink); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.ruler pre { margin: 0; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; white-space: pre; }
+.ruler b { color: var(--accent); font-weight: 500; }
+.ruler i { color: var(--muted); font-style: normal; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+td:first-child { font-family: var(--mono); font-size: 0.9rem; white-space: nowrap; }
+code { font-family: var(--mono); font-size: 0.9em; }
+.small { color: var(--muted); font-size: 0.92rem; }
+</style>
+
+<main>
+  <h1>Is our W-2 file the AccuWage file?</h1>
+
+  <p class="answer"><strong>Yes.</strong> We generate one W-2 format, the SSA wage file. The files we upload to AccuWage are the same bytes that same code would send to SSA for real. There is no HTML W-2 anywhere in the repo.</p>
+
+  <section>
+    <h2>What the file is, in plain words</h2>
+    <p>It is a plain text file. Every line is exactly 512 characters, padded with spaces, ending in a Windows line break. There are no commas, no tags, no field names. SSA knows what each value is purely by where it sits on the line. Position 3 to 11 on a submitter line is the EIN, and so on. SSA calls this format EFW2 and documents it in Publication 42-007.</p>
+    <p>A file is a short stack of line types:</p>
+    <table>
+      <thead><tr><th>Line</th><th>Who or what</th><th>How many</th></tr></thead>
+      <tbody>
+        <tr><td>RA</td><td>Who is sending the file. For us that is Pyramos, with the BSO user ID and a contact.</td><td>1 per file</td></tr>
+        <tr><td>RE</td><td>One client employer: EIN, name, tax year.</td><td>1 per employer</td></tr>
+        <tr><td>RW</td><td>One employee's W-2: SSN, name, wages, taxes withheld, Box 12 amounts.</td><td>1 per W-2</td></tr>
+        <tr><td>RT</td><td>Totals for that employer, which must add up to its RW lines.</td><td>1 per employer</td></tr>
+        <tr><td>RF</td><td>End of file, with the count of all RW lines.</td><td>1 per file</td></tr>
+      </tbody>
+    </table>
+    <p class="small">One Reporting Agent file can carry several employers: RA, then RE/RW/RT repeated per client, then RF. Test file 02 does exactly that with three clients.</p>
+  </section>
+
+  <section>
+    <h2>What the first line of a real test file looks like</h2>
+    <div class="ruler"><pre><b>RA</b>123456789<i>PYRAMOS1 </i>        0      98PYRAMOS SOFTWARE LLC  …  100 MARKET ST  HARRISBURG  PA17101 …
+<b>RE</b>2025 231234567         0             KEYSTONE HOME CARE LLC …
+<b>RW</b>201111001MARY      …
+<b>RT</b>…
+<b>RF</b>…</pre></div>
+    <p class="small">From <code>reports/accuwage-ty2025/01-single-employer.txt</code>, shortened. The fake submitter EIN and user ID are placeholders until you export <code>ACCUWAGE_SUBMITTER_EIN</code> and <code>ACCUWAGE_BSO_USER_ID</code>.</p>
+  </section>
+
+  <section>
+    <h2>Why the AccuWage copy and the real copy are the same</h2>
+    <ul>
+      <li><strong>One writer.</strong> The class <code>Efw2Writer</code> builds every line. The test files and the real build endpoint (<code>POST /mef/wage-files</code>) both call it. Nothing is reformatted for AccuWage.</li>
+      <li><strong>AccuWage checks the upload format.</strong> AccuWage Online is SSA's free pre-check for the exact file BSO's "Upload Formatted Wage File" takes. If AccuWage says no errors, BSO accepts the same bytes.</li>
+      <li><strong>Only the data differs.</strong> Test files use made-up employers and employees. A real run uses a client's payroll and Pyramos's real EIN and BSO user ID in the RA line.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Three things to keep in mind</h2>
+    <ul>
+      <li><strong>It is not on main yet.</strong> The generator lives on the local branch <code>feature/w2-accuwage-files</code>, unpushed. Main only has the generated files under <code>reports/accuwage-ty2025</code> and <code>reports/accuwage-ty2026</code>.</li>
+      <li><strong>Test with the 2025 set first.</strong> AccuWage may reject a tax year 2026 file before January 2027, so the 2025 files are the ones to upload now.</li>
+      <li><strong>Federal only, no extras.</strong> We write RA/RE/RW/RT/RF. We do not write RO/RU lines (needed for tip and overtime Box 12 codes) or RS state lines. State W-2 filings are separate files with their own rules per state.</li>
+    </ul>
+  </section>
+</main>

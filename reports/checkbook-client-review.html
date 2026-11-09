@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkbook Client Review</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D;
+  --codebg:#141413; --codefg:#E8E6DE;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ivory:#1A1A18; --paper:#232321; --g100:#2C2C29; --g200:#3A3A36; --g300:#4A4A45;
+    --slate:#F0EEE6; --g700:#D1CFC5; --g500:#A3A29B; --oat:#5A5246; --codebg:#0E0E0D;
+  }
+}
+:root[data-theme="dark"] {
+  --ivory:#1A1A18; --paper:#232321; --g100:#2C2C29; --g200:#3A3A36; --g300:#4A4A45;
+  --slate:#F0EEE6; --g700:#D1CFC5; --g500:#A3A29B; --oat:#5A5246; --codebg:#0E0E0D;
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--ivory); color:var(--slate); font-family:var(--sans); line-height:1.55;
+  overflow-wrap:break-word; word-break:break-word; }
+p, li, dd, dt, h1, h2, h3, .card, .callout { overflow-wrap:break-word; word-break:break-word; }
+.card, [class*="grid"] > * { min-width:0; }
+main { max-width: 980px; margin: 0 auto; padding: 40px 16px 80px; }
+h1, h2, h3 { font-family:var(--serif); font-weight:500; }
+h1 { font-size: 34px; margin: 6px 0 10px; }
+h2 { font-size: 24px; margin: 44px 0 14px; }
+h3 { font-size: 18px; margin: 0 0 6px; }
+.eyebrow { font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--g500); }
+a { color:var(--clay); text-decoration-color:var(--oat); text-underline-offset:3px; }
+:not(pre) > code { font-family:var(--mono); font-size:.9em; background:var(--g100); color:var(--slate);
+  padding:1px 6px; border-radius:4px; overflow-wrap:break-word; }
+.verdict { background:var(--codebg); color:var(--codefg); border-radius:14px; padding:22px 24px; margin:22px 0; }
+.verdict p, .verdict strong, .verdict li { color:var(--codefg); }
+.verdict code { background:#2C2C29; color:var(--codefg); }
+.verdict ul { margin:8px 0 0; padding-left:20px; }
+.card { background:var(--paper); border:1px solid var(--g200); border-radius:12px; padding:18px 20px; margin:14px 0; }
+.card .meta { font-family:var(--mono); font-size:12px; color:var(--g700); margin:4px 0 10px; }
+.sev { display:inline-block; font-family:var(--mono); font-size:11px; text-transform:uppercase; padding:2px 8px;
+  border-radius:999px; margin-right:8px; vertical-align:2px; }
+.sev.high { background:var(--clay); color:#fff; }
+.sev.med { background:var(--oat); color:#141413; }
+.sev.low { background:var(--g100); color:var(--g700); border:1px solid var(--g300); }
+.card.high { border-left:4px solid var(--clay); }
+.label { font-family:var(--mono); font-size:11px; text-transform:uppercase; color:var(--g500); margin-top:10px; }
+.code { background:var(--codebg); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0; }
+.code pre { font-family:var(--mono); font-size:12.5px; line-height:1.65; color:var(--codefg); white-space:pre; margin:0; }
+.code .kw { color:var(--clay); } .code .str { color:var(--olive); } .code .cm { color:#87867F; } .code .fn { color:#C9B98A; }
+.table-wrap { overflow-x:auto; border:1px solid var(--g200); border-radius:12px; background:var(--paper); }
+table { border-collapse:collapse; width:100%; min-width:640px; table-layout:auto; font-size:14px; }
+td, th { word-break:normal; overflow-wrap:break-word; text-align:left; padding:10px 12px; border-bottom:1px solid var(--g200); vertical-align:top; }
+th { font-family:var(--mono); font-size:11px; text-transform:uppercase; color:var(--g500); font-weight:500; }
+td.nw, th.nw { white-space:nowrap; }
+tr:last-child td { border-bottom:0; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width: 720px) { .grid2 { grid-template-columns:1fr; } h1 { font-size:28px; } }
+.ok { color:var(--olive); font-weight:600; }
+.no { color:var(--clay-d); font-weight:600; }
+@media print { .verdict { background:#fff; color:#000; border:1px solid #999; } .verdict p, .verdict li, .verdict strong { color:#000; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">MeF · com.irs.mef.checkbook · review 2026-11-06 · read-only</div>
+  <h1>Checkbook.io client review</h1>
+  <p>The goal is to know what breaks before the Checkbook sandbox client grows from a $1.00 probe into paying people and attaching their W-2. Eight reviewers from two vendors covered four lenses, two seats per lens. Every finding below was re-checked against the code, and the disputed ones were settled by running code.</p>
+</header>
+
+<section class="verdict">
+  <p><strong>Verdict.</strong> The sandbox probe is sound. It cannot reach production, the secret key stays masked, the W-2 sample is synthetic, and the offline suite cannot spend money. It is not ready to pay anyone. Three things decide that:</p>
+  <ul>
+    <li>A retry can pay twice. Nothing is journaled before the POST, a null or blank <code>Idempotency-Key</code> still sends, and the only caller mints a fresh UUID per attempt.</li>
+    <li>No HTTP timeout exists, so a stalled Checkbook call hangs forever and invites that retry.</li>
+    <li>Any amount of at least one cent is legal, with no ceiling, and it goes on the wire as <code>1E+2</code> or <code>100.000</code> if that is how the caller built it.</li>
+  </ul>
+  <p>One adjacent defect outranks all of these for today. The <code>.env</code> loader prints <code>MEF_RA_PIN</code> in clear at every boot.</p>
+</section>
+
+<h2>Findings</h2>
+
+<article class="card high">
+  <h3><span class="sev high">high</span>A retry after a lost response creates a second check</h3>
+  <div class="meta">CheckbookClient.java:41-50 · CheckbookSandboxTest.java:56, 74 · seats: DeepSeek 1, 3, 4 · Grok 1, 3, 4</div>
+  <p>Say the POST reaches Checkbook, the check is created, and the response is lost. The caller then holds an exception and no check id. The client stores nothing before the send. It offers no lookup by key, so the next attempt cannot know the first one landed. The only demonstrated caller passes <code>UUID.randomUUID()</code> on every attempt, so the retry is a brand-new payment.</p>
+  <p>The key itself is not guarded. Boot 3.2.0 builds the <code>RestClient</code> on <code>SimpleClientHttpRequestFactory</code>, whose <code>addHeaders</code> turns a null value into <code>""</code>. So <code>sendDigitalCheck(req, null)</code> and <code>sendDigitalCheck(req, "")</code> both POST with an empty <code>Idempotency-Key</code>. The returned check is never compared to the request either. A reused key with a changed amount gets the old check back, and the caller cannot tell.</p>
+  <div class="code"><pre><span class="kw">return</span> http.<span class="fn">post</span>()
+        .<span class="fn">uri</span>(<span class="str">"/check/digital"</span>)
+        .<span class="fn">header</span>(IDEMPOTENCY_KEY_HEADER, idempotencyKey)   <span class="cm">// no null/blank check, nothing journaled</span>
+        .<span class="fn">body</span>(<span class="fn">toJsonBytes</span>(request))
+        .<span class="fn">retrieve</span>().<span class="fn">body</span>(CheckbookCheck.<span class="kw">class</span>);</pre></div>
+  <div class="label">Verified</div>
+  <p><code>javap</code> on <code>spring-boot-3.2.0.jar</code> shows <code>ClientHttpRequestFactories.get</code> trying HttpComponents, Jetty, and OkHttp, then <code>Simple</code>. None of the first three are on the classpath. A probe test against <code>MockRestServiceServer</code> showed the header present with value <code>[null]</code>. Compare <code>FilingDesk.file</code>, which reserves a <code>CREATED</code> row before the IRS call and replays on <code>INDETERMINATE</code>.</p>
+</article>
+
+<article class="card high">
+  <h3><span class="sev high">high</span>No connect or read timeout</h3>
+  <div class="meta">CheckbookClient.java:30-38 · seats: DeepSeek 1, 3, 4 · Grok 4</div>
+  <p>The client uses the injected builder as is. <code>src/main</code> sets no request factory and no timeout. Boot's <code>DEFAULTS</code> settings carry null durations, so <code>SimpleClientHttpRequestFactory</code> never calls <code>setReadTimeout</code>, and <code>HttpURLConnection</code> waits forever. A Checkbook endpoint that accepts the connection and never answers parks the calling thread for good. Behind a controller, that is one Tomcat worker per hung payment. It also feeds the finding above, because an operator who kills a hung run and reruns it sends a second check.</p>
+  <div class="label">Verified</div>
+  <p>A grep of <code>src/main</code> for <code>timeout</code> and request-factory types found nothing. The factory choice was confirmed with <code>javap</code> as above.</p>
+</article>
+
+<article class="card high">
+  <h3><span class="sev high">high</span>Adjacent: the .env loader prints the RA PIN at boot</h3>
+  <div class="meta">config/DotenvEnvironmentPostProcessor.java:61-68 · seat: DeepSeek 2 · outside the Checkbook package</div>
+  <p>The loader masks a value only when its key contains <code>PASSWORD</code> or <code>KEY</code>. <code>MEF_RA_PIN</code>, <code>MEF_EFIN</code>, <code>MEF_ETIN</code>, and <code>MEF_ASID</code> match neither, so every <code>./mef checkbook</code> run and every app start writes them to the console. The Checkbook keys are masked only because their names contain <code>KEY</code>.</p>
+  <div class="code"><pre>String displayValue = key.<span class="fn">toUpperCase</span>().<span class="fn">contains</span>(<span class="str">"PASSWORD"</span>) ||
+                     key.<span class="fn">toUpperCase</span>().<span class="fn">contains</span>(<span class="str">"KEY"</span>)
+        ? <span class="str">"***"</span> : stringValue;
+System.out.<span class="fn">println</span>(<span class="str">"  "</span> + key + <span class="str">" = "</span> + displayValue);</pre></div>
+  <div class="label">Verified</div>
+  <p>Read in source. The loader is registered in <code>META-INF/spring.factories</code>.</p>
+</article>
+
+<article class="card">
+  <h3><span class="sev med">med</span>No amount ceiling, and the wire token is not canonical</h3>
+  <div class="meta">DigitalCheckRequest.java:22-27 · CheckbookClient.java:28 · seats: DeepSeek 3 · Grok 3</div>
+  <p>The constructor checks a floor of 0.01 and a cent scale on <code>stripTrailingZeros()</code>, then keeps the original value. A plain <code>new ObjectMapper()</code> writes <code>BigDecimal.toString()</code>, so the token on the wire is whatever form the caller built. A payroll bug that passes <code>1E+20</code> constructs and posts.</p>
+  <div class="table-wrap"><table>
+    <tr><th class="nw">Input</th><th>Constructor</th><th>JSON sent</th></tr>
+    <tr><td class="nw"><code>1E+2</code></td><td>accepted</td><td><code>"amount":1E+2</code></td></tr>
+    <tr><td class="nw"><code>100.000</code></td><td>accepted</td><td><code>"amount":100.000</code></td></tr>
+    <tr><td class="nw"><code>1E+20</code></td><td>accepted</td><td><code>"amount":1E+20</code></td></tr>
+    <tr><td class="nw"><code>-0</code></td><td>rejected</td><td>not sent</td></tr>
+  </table></div>
+  <div class="label">Verified</div>
+  <p>Run on JDK 17 with Jackson 2.15.3, and through the real client in the probe test (<code>1E+2</code> appeared in the request body). Checkbook's parser was not tested. A strict parser would reject a payment the constructor allowed. A lenient one pays any magnitude.</p>
+</article>
+
+<article class="card">
+  <h3><span class="sev med">med</span>An empty 2xx after a POST is not a CheckbookException</h3>
+  <div class="meta">CheckbookClient.java:43-49 · found by the parent's probe</div>
+  <p>A <code>201</code> with no body made the client throw Spring's <code>UnknownContentTypeException</code>. A caller that catches <code>CheckbookException</code> misses it, and the check may already exist with no id in hand. That is the ambiguous case from the first finding, reached by another path.</p>
+</article>
+
+<article class="card">
+  <h3><span class="sev med">med</span>listChecks returns only the first page</h3>
+  <div class="meta">CheckbookClient.java:68-75, 110-112 · seats: DeepSeek 1 · Grok 1, 4</div>
+  <p>One <code>GET /check</code> with no page parameter, and <code>page</code>, <code>pages</code>, and <code>total</code> are ignored. Any reconciliation such as "did this payment go out?" silently misses checks past page one. The live test's <code>anyMatch</code> holds only while the new check sorts onto page one. Checkbook's default page size was not checked.</p>
+</article>
+
+<article class="card">
+  <h3><span class="sev med">med</span>Error messages carry Checkbook's field echoes into logs</h3>
+  <div class="meta">CheckbookException.java:13 · CheckbookClient.java:92-108 · seats: DeepSeek 2 · Grok 2</div>
+  <p>The exception message is the <code>error</code> string plus every <code>more_info</code> value, unredacted. If Checkbook echoes a recipient email, an amount, or an employee-named attachment filename, that text lands in any log of the exception. Today only sandbox and <code>example.com</code> values flow, so this is latent.</p>
+</article>
+
+<article class="card">
+  <h3><span class="sev low">low</span>Smaller items</h3>
+  <ul>
+    <li><code>./mef checkbook</code> sends two $1.00 checks per run, one per test method, while the class comment says one (<code>CheckbookSandboxTest.java:51, 66</code>). Seat: Grok 4.</li>
+    <li><code>recipient</code> accepts any non-blank string, despite the "email or phone" comment. <code>name</code>, <code>description</code>, and attachment size have no cap, though the filename is capped at 128. Seats: DeepSeek 3, Grok 3.</li>
+    <li><code>getAttachment</code> returns any 200 body as the PDF, with no content-type check. Seat: DeepSeek 1.</li>
+    <li><code>LiveIrsTestGuardTest</code> scans only for <code>.probe(</code> and <code>.login(</code>. A future test calling <code>sendDigitalCheck</code> without <code>@LiveSandboxTest</code> would run in CI. Seats: DeepSeek 4, Grok 4.</li>
+    <li>The static <code>A2A_TOOLKIT_HOME</code> block in <code>CheckbookSandboxTest</code> is not needed. This test never touches the IRS SDK. Seats: DeepSeek 4, Grok 4.</li>
+  </ul>
+</article>
+
+<h2>Claims the check refuted</h2>
+<div class="table-wrap"><table>
+  <tr><th>Claim</th><th class="nw">Seat</th><th>What the check showed</th></tr>
+  <tr><td>A null idempotency key throws an NPE inside the JDK HTTP client, so it never leaves the process.</td><td class="nw">DeepSeek 1, Grok 1</td><td class="no">Wrong. Boot 3.2.0 picks <code>SimpleClientHttpRequestFactory</code>, not the JDK client. Null becomes an empty header and the POST goes out, which is worse.</td></tr>
+  <tr><td>An empty 2xx body makes <code>sendDigitalCheck</code> return null.</td><td class="nw">DeepSeek 4</td><td class="no">Wrong. The probe threw <code>UnknownContentTypeException</code>.</td></tr>
+  <tr><td>The static block runs during JUnit discovery even when the class is disabled.</td><td class="nw">DeepSeek 4</td><td>Disputed by Grok 4 (JUnit loads with <code>initialize=false</code>). Not settled here, and low stakes either way.</td></tr>
+</table></div>
+
+<h2>Checked and clean</h2>
+<div class="grid2">
+  <div class="card"><ul>
+    <li><span class="ok">Clean.</span> Production is unreachable. <code>CheckbookEnvironment</code> has one constant and the client hardcodes it.</li>
+    <li><span class="ok">Clean.</span> The live guard holds. <code>@LiveSandboxTest</code> runs only when <code>-Dmef.live.test=CheckbookSandboxTest</code>, which <code>./mef check</code> and CI never pass.</li>
+    <li><span class="ok">Clean.</span> <code>CheckbookProperties.toString</code> masks the secret, and no actuator exposes config props.</li>
+  </ul></div>
+  <div class="card"><ul>
+    <li><span class="ok">Clean.</span> The W-2 sample is synthetic: EIN <code>00-0000000</code>, a "(SAMPLE)" employer, SSN last four only.</li>
+    <li><span class="ok">Clean.</span> A <code>byte[]</code> body carries <code>Content-Length</code>. A JSON number for <code>number</code> coerces to a String.</li>
+    <li><span class="ok">Clean.</span> An HTML 502 maps to <code>CheckbookException(502, "unparseable error body")</code>, as the probe showed.</li>
+  </ul></div>
+</div>
+
+<h2>Before this client pays anyone</h2>
+<p>These are recommendations. Nothing was changed.</p>
+<ol>
+  <li>Put a pay desk in front of the client, shaped like <code>FilingDesk</code>. Derive the idempotency key from the payment's content, journal it before the POST, and on an unknown outcome reconcile by key instead of resending.</li>
+  <li>Require a non-blank key in <code>sendDigitalCheck</code>, and check that the returned amount and recipient match the request.</li>
+  <li>Set connect and read timeouts on the client's own request factory.</li>
+  <li>Add an amount ceiling, normalize with <code>setScale(2)</code>, and write the amount as a plain decimal.</li>
+  <li>Page through <code>listChecks</code>, and map an empty or unreadable 2xx to <code>CheckbookException</code>.</li>
+  <li>Separately, mask every <code>.env</code> value in the startup print, or drop the print.</li>
+</ol>
+
+<h2>Who reviewed what</h2>
+<div class="table-wrap"><table>
+  <tr><th>Lens</th><th>Grok 4.7 high-fast</th><th>DeepSeek V4.1 Flash</th></tr>
+  <tr><td>1 · HTTP wire correctness</td><td class="nw">526 s</td><td class="nw">349 s · $0.017</td></tr>
+  <tr><td>2 · Secrets, PII, logging</td><td class="nw">532 s</td><td class="nw">206 s · $0.059</td></tr>
+  <tr><td>3 · Money and idempotency</td><td class="nw">380 s</td><td class="nw">81 s · $0.026</td></tr>
+  <tr><td>4 · Tests, wiring, operability</td><td class="nw">456 s</td><td class="nw">83 s · $0.041</td></tr>
+</table></div>
+<p>All seats were read-only (Grok in <code>--mode ask</code>, DeepSeek with read, grep, find, and ls only). The parent settled disputes with a throwaway <code>MockRestServiceServer</code> probe test, since deleted, a Jackson serialization run on JDK 17, and <code>javap</code> on <code>spring-boot-3.2.0.jar</code>. No live Checkbook or IRS call was made.</p>
+</main>
+</body>
+</html>

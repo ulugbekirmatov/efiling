@@ -1,0 +1,197 @@
+<title>SSNVS name and SSN check</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g600:#5E5D59; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D;
+  --safe-bg:#E4EBDA; --safe-fg:#4E5F39; --warn-bg:#F6E0D6;
+  --panel:#141413; --panel-fg:#EDEBE4; --panel-code:#2A2A28; --panel-cm:#9C9A92; --panel-kw:#E7A27F; --panel-str:#B9C99A;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ivory:#1B1B19; --paper:#232321; --g100:#2C2C29; --g200:#3A3A36; --g300:#4A4A45;
+  --slate:#EDEBE4; --g700:#CFCCC3; --g600:#B3B0A7; --g500:#9A978E;
+  --clay:#E08A6C; --clay-d:#E8A288; --oat:#4A4438; --olive:#9DB27F;
+  --safe-bg:#2F3A25; --safe-fg:#C3D4A8; --warn-bg:#46291F;
+  --panel:#0F0F0E; --panel-fg:#EDEBE4; --panel-code:#2A2A28; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --ivory:#1B1B19; --paper:#232321; --g100:#2C2C29; --g200:#3A3A36; --g300:#4A4A45;
+  --slate:#EDEBE4; --g700:#CFCCC3; --g600:#B3B0A7; --g500:#9A978E;
+  --clay:#E08A6C; --clay-d:#E8A288; --oat:#4A4438; --olive:#9DB27F;
+  --safe-bg:#2F3A25; --safe-fg:#C3D4A8; --warn-bg:#46291F;
+  --panel:#0F0F0E; --panel-fg:#EDEBE4; --panel-code:#2A2A28; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--ivory); color:var(--slate); font-family:var(--sans); line-height:1.55; }
+body * { overflow-wrap:break-word; min-width:0; }
+td, th { word-break:normal; overflow-wrap:normal; }
+.page { max-width: 980px; margin: 0 auto; padding-block: 48px 80px; padding-inline: 24px; }
+.eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--g600); }
+h1 { font-family:var(--serif); font-weight:500; font-size:38px; line-height:1.15; margin:8px 0 12px; }
+h2 { font-family:var(--serif); font-weight:500; font-size:26px; margin:44px 0 12px; }
+h3 { font-family:var(--serif); font-weight:500; font-size:19px; margin:24px 0 8px; }
+p { margin:0 0 12px; }
+.intro { font-size:17px; color:var(--g700); max-width:760px; }
+code, .mono { font-family:var(--mono); font-size:.88em; background:var(--g100); padding:1px 5px; border-radius:4px; }
+.tldr { background:var(--panel); color:var(--panel-fg); border-radius:14px; padding:22px 26px; margin:24px 0; }
+.tldr p, .tldr strong { color:var(--panel-fg); }
+.tldr .eyebrow { color:var(--panel-str); }
+.tldr code { background:var(--panel-code); color:var(--panel-kw); }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:20px 0; }
+.stat { background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; padding:14px 16px; }
+.stat b { display:block; font-family:var(--serif); font-size:28px; font-weight:500; }
+.stat span { font-family:var(--mono); font-size:11px; color:var(--g600); text-transform:uppercase; letter-spacing:.06em; }
+.card { background:var(--paper); border:1.5px solid var(--g200); border-radius:12px; padding:18px 20px; margin:14px 0; }
+.callout { border-left:3px solid var(--olive); background:var(--paper); padding:12px 16px; border-radius:0 10px 10px 0; margin:14px 0; }
+.callout.attention { border-left-color:var(--clay); }
+.flow { counter-reset:step; list-style:none; padding:0; margin:0; }
+.flow li { counter-increment:step; position:relative; padding:12px 14px 12px 52px; background:var(--paper); border:1.5px solid var(--g200); border-radius:10px; margin:8px 0; }
+.flow li::before { content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--oat); font-family:var(--mono); font-size:13px; display:flex; align-items:center; justify-content:center; }
+.code { background:var(--panel); color:var(--panel-fg); border-radius:12px; padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.6; margin:12px 0; }
+.code .cm { color:var(--panel-cm); } .code .kw { color:var(--panel-kw); } .code .str { color:var(--panel-str); } .code .fn { color:var(--panel-fg); }
+.table-wrap { overflow-x:auto; margin:12px 0; }
+table { border-collapse:collapse; width:100%; min-width:560px; background:var(--paper); border:1.5px solid var(--g200); border-radius:10px; font-size:14px; }
+th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--g200); vertical-align:top; }
+th { font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--g600); background:var(--g100); }
+.badge { display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:999px; background:var(--g100); color:var(--g700); white-space:nowrap; }
+.badge.safe { background:var(--safe-bg); color:var(--safe-fg); } .badge.attention { background:var(--warn-bg); color:var(--clay-d); } .badge.neutral { background:var(--oat); color:var(--g700); }
+details { background:var(--paper); border:1.5px solid var(--g200); border-radius:10px; padding:10px 14px; margin:8px 0; }
+summary { cursor:pointer; font-weight:600; }
+ul { padding-left:20px; } li { margin:4px 0; }
+.path { font-family:var(--mono); font-size:12.5px; color:var(--g700); }
+@media (max-width:640px) { h1 { font-size:30px; } .page { padding-block:32px 64px; padding-inline:16px; } }
+@media print { .page { max-width:none; } details { break-inside:avoid; } }
+</style>
+<main class="page">
+  <div class="eyebrow">MeF · branch feature/ssnvs-bulk-file · 2026-10-13</div>
+  <h1>Check W-2 names and SSNs with SSA before the wage file goes in</h1>
+  <p class="intro">A W-2 whose name and SSN don't match SSA's records goes into SSA's suspense file. The employee's earnings don't post to their record, and the employer gets mismatch notices months later. SSA's SSNVS lets a filer check every name and SSN pair first, in bulk, through Business Services Online. This branch builds the upload file from C2S data and turns SSA's answer into a fix list.</p>
+
+  <div class="tldr">
+    <div class="eyebrow">The two-sentence version</div>
+    <p><strong>Export the employer's W-2 people from C2S, then <code>./ssnvs.sh build</code> writes a BSO-ready SSNVS file and lists anyone who can't be sent.</strong></p>
+    <p>Next day, <code>./ssnvs.sh results</code> maps SSA's answer back to employee ids and writes <code>fixes.csv</code>. Fix those W-2s before you build the EFW2 file.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>130</b><span>chars per record</span></div>
+    <div class="stat"><b>250,000</b><span>records per file</span></div>
+    <div class="stat"><b>173 / 0</b><span>mvn tests / failures</span></div>
+    <div class="stat"><b>72 + 23</b><span>SSNVS Java + checker tests</span></div>
+    <div class="stat"><b>4</b><span>reviewers, 2 vendors</span></div>
+  </div>
+
+  <h2>SSNVS is SSA's check, not IRS TIN Matching</h2>
+  <p>The two services get mixed up because both "match a TIN". They serve different filings.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Service</th><th>Who runs it</th><th>For</th><th>Bulk limit</th></tr>
+    <tr><td><strong>SSNVS</strong></td><td>SSA, in Business Services Online</td><td>W-2 employees, current or former, for wage reporting only</td><td>250,000 per file, results usually next business day</td></tr>
+    <tr><td>TIN Matching</td><td>IRS e-Services</td><td>1099 payees, for payers in the IRS Payer Account File</td><td>100,000 per file</td></tr>
+  </table></div>
+  <div class="callout attention">SSA forbids SSNVS for potential hires, contractors, or identity checks. A mismatch alone is not grounds for action against an employee. The runbook and <code>fixes.csv</code> actions say so.</div>
+  <p>Pyramos registers in BSO once, under its own firm, and requests SSNVS access. SSA then mails an activation code to the firm's IRS address of record. Allow about two weeks; the code expires after 60 days. Sign-in is Login.gov or ID.me. Each upload carries the client's EIN, typed on the BSO page. The record itself has no EIN field, so one file covers one employer.</p>
+
+  <h2>The operator flow</h2>
+  <ol class="flow">
+    <li>In DBeaver, run <span class="path">sql/ssnvs_w2_people.sql</span> for one legal company and tax year. Use the sed copy from the runbook, because PostgreSQL rejects the empty C2S editor markers. Export the result as CSV.</li>
+    <li><code>./ssnvs.sh build --csv export.csv --out out</code> writes <span class="path">out/&lt;ein&gt;/ssnvs.txt</span> (plus a zip over 500 records), <span class="path">holdbacks.csv</span>, <span class="path">notes.csv</span>, and <span class="path">manifest.json</span>.</li>
+    <li><code>python3 ssnvs_check.py request out/&lt;ein&gt;/ssnvs.txt</code> is a second opinion. The checker was written from the SSA handbook alone and shares no code with the builder.</li>
+    <li>Upload in BSO with the client EIN. Keep the confirmation number.</li>
+    <li>Next business day: <code>./ssnvs.sh results --dir out/&lt;ein&gt; --results ssa.txt</code> writes <span class="path">fixes.csv</span> by employee id.</li>
+    <li>Fix box e or the SSN in C2S and regenerate the W-2s. Then re-verify and build the EFW2 file.</li>
+  </ol>
+  <p>The full how-to is <span class="path">mef-spring-boot-integration/SSNVS.md</span>.</p>
+
+  <h2>The record, from the handbook</h2>
+  <p>Both researchers read SSA's <em>SSNVS Handbook</em> (updated January 2025), pages 18 to 21, one on opus and one on grok. They agree on every position. I re-read the extracted PDF text myself.</p>
+<pre class="code"><span class="cm">pos  1-9    SSN (9 digits)          10-12  TPV          13-15  214</span>
+<span class="cm">pos 16-28   last name (13)          29-38  first (10)   39-45  middle (7, optional)</span>
+<span class="cm">pos 46-53   birth date MMDDYYYY or blanks              54-89  blanks</span>
+<span class="cm">pos 90-103  user control (employee id, 14 digits)      104-123 blanks</span>
+<span class="cm">pos 124-127 OEVS                    128-130 000          CRLF after each record</span>
+
+<span class="kw">result</span> <span class="fn">code at 98</span>: <span class="str">blank</span> verified · <span class="str">1</span> SSN never issued · <span class="str">3</span> name ok, birth date not · <span class="str">5</span> name does not match · <span class="str">6</span> other
+<span class="kw">result</span> <span class="fn">death at 121</span>: <span class="str">Y</span> / <span class="str">N</span>   <span class="kw">control echoed at</span> 84-97   <span class="kw">SSN masked</span> XXXXX#### for blank, 3, 6</pre>
+  <p>Names must be letters only: no hyphens, apostrophes, spaces, periods, suffixes, or titles. So <code>O'BRIEN-SMITH JR</code> is sent as <code>OBRIENSMITH</code>, and <code>MARY ANN</code> as <code>MARYANN</code>.</p>
+
+  <h2>What the builder decides for you</h2>
+  <h3>The name SSA checks is the W-2 box e name</h3>
+  <p>The C2S W-2 stores first and middle as one string (<code>box_e_first_middle</code>). HR and ADP only decide where to cut it. The cut is recorded per person as <code>name_source</code>: <span class="badge">HR_FULL</span> <span class="badge">HR_INITIAL</span> <span class="badge">ADP_FULL</span> <span class="badge">SINGLE_TOKEN</span> <span class="badge">HR_FIRST_PREFIX</span> <span class="badge attention">GUESSED</span>. A guessed cut is still sent with a note. On a code 5, <code>fixes.csv</code> says to confirm the cut first.</p>
+  <h3>Held back versus flagged</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Held, not sent</th><th>Sent with a note</th></tr>
+    <tr><td><code>NO_SSN</code>, <code>SSN_NOT_9_DIGITS</code>, <code>SSN_SHAPE_NEVER_ISSUED</code>, <code>W2_FIELDS_BLANK_OR_DISAGREE</code>, <code>W2_EIN_DIFFERS</code>, <code>W2_EIN_BLANK</code>, <code>LAST_NAME_BLANK</code>, <code>FIRST_NAME_BLANK</code>, <code>NAME_INVALID_CHARACTER</code>, <code>DUPLICATE_SSN</code> (every holder), <code>DUPLICATE_EMPLOYEE_ROW</code></td>
+        <td><code>SSN_DIFFERS_FROM_HR</code> (the W-2 SSN is sent, because that is what gets filed), <code>FIRST_MIDDLE_SPLIT_GUESSED</code>, <code>SUFFIX_OR_PREFIX_DROPPED</code>, <code>NAME_TRUNCATED</code>, <code>DUPLICATE_FIRST_LAST</code>, two birth-date-omitted notes, <code>SEVERAL_W2S</code></td></tr>
+  </table></div>
+  <h3>PII stays where SSA needs it</h3>
+  <p>Only <code>ssnvs.txt</code> holds SSNs, names, and birth dates, because SSA requires them. The manifest, holdbacks, notes, fix list, stdout, exception messages, and every <code>toString</code> carry employee ids and codes only. <code>SsnvsPiiGuardTest</code> enforces that, last four digits included. <code>ssnvs-out/</code> is gitignored.</p>
+  <h3>An uploaded file is never overwritten by accident</h3>
+  <p>Results need the exact file that was uploaded. <code>build</code> refuses to replace a directory that has a manifest and no <code>fixes.csv</code> unless you pass <code>--replace</code>.</p>
+
+  <h2>How the shape was chosen</h2>
+  <p>Three runners each designed a whole shape: Java in the Spring app (opus), a Python CLI (grok), and a C2S page (grok). A Fable judge scored them against a six-point rubric.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Shape</th><th>Score</th><th>Won on</th><th>Lost on</th></tr>
+    <tr><td>A. Java domain core</td><td>25</td><td>Value types that refuse illegal names; tests run in CI (<code>mvn test</code> is the only CI gate)</td><td>REST server, run store, and file splitting were more than the job needed</td></tr>
+    <tr><td>B. Python CLI</td><td>25</td><td>Smallest surface: two commands, one manifest</td><td>Its tests would not run in CI</td></tr>
+    <tr><td>C. C2S page</td><td>21</td><td>No PII export on a laptop</td><td>No zip, browser-side SSNs, bare query params</td></tr>
+  </table></div>
+  <p><strong>Shipped:</strong> A's Java core with B's two-command CLI in place of the REST server, plus C's file gates. It runs as <code>SsnvsCli</code> with no Spring context, so <code>GlobalExceptionHandler</code> never sees a message.</p>
+
+  <h2>Adversarial review</h2>
+  <p>Fable, opus, and two grok reviewers read every file and probed the code with synthetic inputs. Everything below was fixed, each fix with a test that fails without it.</p>
+  <details open><summary>Consensus findings (raised by 3 or 4 of the 4 reviewers)</summary>
+    <ul>
+      <li>The query silently dropped W-2s whose company code maps to no legal company. It now also selects W-2s whose box b EIN equals the FEIN, and the notes add a check query for W-2s with a NULL tax year.</li>
+      <li>A suffix in box e first/middle was sent as the middle name: <code>JOHN A JR</code> went out as middle <code>AJR</code>. One tokenizer now serves both the split and the name rules.</li>
+      <li>The checker's pair mode did not compare SSNs. It now compares positions 6 to 9 for every code, and all nine digits for codes 1 and 5.</li>
+      <li>Unicode dashes, typographic apostrophes, and no-break spaces held people for nothing. The suffix list was too short (<code>V</code>, <code>ESQ</code>, <code>3RD</code>).</li>
+      <li>A rebuild between upload and results destroyed the uploaded file, and a failed results run left a stale <code>fixes.csv</code>.</li>
+    </ul>
+  </details>
+  <details><summary>Single-reviewer findings acted on</summary>
+    <ul>
+      <li><span class="badge attention">critical</span> The documented DBeaver run could not parse (both groks). I confirmed it with PostgreSQL's own parser (pglast): a syntax error at <code>GROUP</code>. The sed copy parses.</li>
+      <li>A CSV with more than one EIN is now an input error (opus). Box e name agreement in SQL is case-insensitive (groks). The samples moved to <code>target/</code> (Fable). The fake SSA results use literal handbook positions (opus). The checker now runs inside <code>mvn test</code> (opus).</li>
+      <li>Mine, found while reviewing the fix: the middle-name suffix set swallowed a real middle initial <code>V</code>. Fixed, with test <code>middleInitialV</code>.</li>
+    </ul>
+  </details>
+  <details><summary>Kept as designed</summary>
+    <ul>
+      <li>Duplicate first and last name stays a note, not a hold. SSA's sentence about it is in the online section and says "may not". Holding would stall two real employees named John Smith.</li>
+      <li><code>ß</code> becomes <code>SS</code>, which can push a 13-letter name past the field. This is rare and sends the usual transliteration.</li>
+    </ul>
+  </details>
+
+  <h2>Verification</h2>
+  <ul>
+    <li><code>mvn -q test</code> on the branch, rebased onto <code>origin/main</code>: 173 tests, 0 failures, 8 skipped (the existing live-IRS tests). The 72 SSNVS tests include <code>SsnvsCheckerAgreementTest</code>, which runs the Python checker on the Java output.</li>
+    <li><code>python3 -m unittest test_ssnvs_check</code>: 23 tests, OK.</li>
+    <li>CLI end to end on synthetic data. The build held one person and exited 2, and the checker passed the file. A rebuild before results was refused. Results mapped codes 5 and 1 and a death flag to the right ids, and pair mode passed.</li>
+    <li>The C2S SQL validators from <span class="path">claude-projects/dmv/.claude/hooks</span> pass the query and flag a known-bad control.</li>
+    <li>This page was checked statically, not in a browser.</li>
+  </ul>
+
+  <h2>Open decisions</h2>
+  <div class="card">
+    <ol>
+      <li><strong>Push and open the PR.</strong> The six commits are local on <code>feature/ssnvs-bulk-file</code>, rebased onto <code>origin/main</code>. They don't depend on your unpushed <code>feature/w2-accuwage-files</code>.</li>
+      <li><strong>Ask BSO support (1-888-772-2970) about line endings and case.</strong> The handbook doesn't say whether files use CRLF or LF, or uppercase letters. The tool writes uppercase ASCII with CRLF, the same as Excel .prn and EFW2.</li>
+      <li><strong>Box e versus HR legal name.</strong> The tool verifies the name printed on the W-2, which is the right check before filing. Say so if you wanted the HR legal name instead.</li>
+      <li><strong>Register the query in C2S?</strong> It isn't needed for the DBeaver flow. The QID stays 0 until a C2S page needs it.</li>
+      <li><strong>Docs drift found along the way.</strong> <span class="path">MeF/c2s/queries.md:101-115</span> teaches bare numeric params, while <span class="path">claude-projects</span> enforces quoted-then-cast. The W-2 dashboard's <span class="path">CLAUDE.md</span> says marker SQL runs in DBeaver after you replace the placeholders, and PostgreSQL rejects it.</li>
+      <li><strong>BSO access for Pyramos.</strong> Request SSNVS access now. The mailed activation code takes about two weeks.</li>
+    </ol>
+  </div>
+
+  <h2>Files</h2>
+  <ul class="path">
+    <li>mef-spring-boot-integration/src/main/java/com/irs/mef/ssnvs/ (CLI, value types, planner, parser, reconcile)</li>
+    <li>mef-spring-boot-integration/src/test/java/com/irs/mef/ssnvs/ (72 tests)</li>
+    <li>mef-spring-boot-integration/sql/ssnvs_w2_people.sql and .md</li>
+    <li>mef-spring-boot-integration/ssnvs_check.py and test_ssnvs_check.py</li>
+    <li>mef-spring-boot-integration/ssnvs.sh, generate-ssnvs-samples.sh, SSNVS.md</li>
+  </ul>
+  <p class="eyebrow">Source: SSA SSNVS Handbook (January 2025), pp.4-25; irs.gov TIN Matching pages. ssa.gov blocked direct fetches, so the handbook was read from Internet Archive captures of the same URLs.</p>
+</main>

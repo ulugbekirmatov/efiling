@@ -1,0 +1,344 @@
+{
+ "root": "/Users/ulugbekirmatov/Documents/MeF",
+ "question": "How is an EFW2 wage file laid out, step by step, so the AccuWage test files make sense?",
+ "takeaways": [
+  {
+   "id": "t-lines",
+   "text": "A wage file is a stack of lines that are each exactly 512 bytes, and the first two letters of a line say whether it is the submitter, an employer, one W-2, an employer's totals, or the end.",
+   "because": "the reader asked to understand the format easily, and the line order is what every file shares"
+  },
+  {
+   "id": "t-pos",
+   "text": "Each W-2 box sits at fixed byte positions, and money is whole cents padded with zeros on the left, so 52000.00 dollars is written 00005200000.",
+   "because": "AccuWage finds values by position, which is the part a reader of the raw text cannot see"
+  },
+  {
+   "id": "t-totals",
+   "text": "Each employer's totals line must equal the sum of its W-2 lines and the final line counts every W-2, and the broken test files each break one of these rules on purpose.",
+   "because": "files 94, 95 and 97 only make sense once the totals and the length rule are clear"
+  }
+ ],
+ "claims": [
+  {
+   "id": "problem-ask",
+   "kind": "problem",
+   "text": "the user asked for a stepping drawing that makes the wage file format easy to understand",
+   "evidence": [
+    {
+     "source": "/Users/ulugbekirmatov/.claude/projects/-Users-ulugbekirmatov-Documents-MeF/a65fc3ed-f03e-4995-85fe-98487b2f7fdf.jsonl",
+     "quote": "understand the wagefile format easily"
+    }
+   ]
+  },
+  {
+   "id": "shape-order",
+   "kind": "shape",
+   "text": "a file is RA, then per employer an RE, its RW lines and an RT, then one RF",
+   "evidence": [
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/Efw2Writer.java",
+     "line": 10,
+     "quote": "RA, then each employer's RE, RW rows, and RT, then RF"
+    }
+   ]
+  },
+  {
+   "id": "how-length",
+   "kind": "how",
+   "critical": true,
+   "why": "why-position",
+   "serves": [
+    "t-lines"
+   ],
+   "text": "every record is built in a 512-character buffer and the validator flags any line of another length",
+   "evidence": [
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/FixedWidth.java",
+     "line": 12,
+     "quote": "public static final int RECORD_LENGTH = 512;"
+    },
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/Efw2Validator.java",
+     "line": 42,
+     "quote": "if (bytes != FixedWidth.RECORD_LENGTH) {"
+    }
+   ]
+  },
+  {
+   "id": "why-position",
+   "kind": "why",
+   "confidence": "stated",
+   "serves": [
+    "t-lines"
+   ],
+   "text": "SSA's format has no labels or separators inside a line, so the length is the only thing that keeps every field at its position",
+   "rejected": [
+    {
+     "option": "a labelled or comma-separated file",
+     "fails": "SSA accepts only EFW2, which Pub 42-007 defines as exact 512-byte records"
+    }
+   ],
+   "evidence": [
+    {
+     "file": "reports/accuwage-ty2025/MANIFEST.tsv",
+     "line": 17,
+     "quote": "The record length must be exactly 512 bytes."
+    }
+   ]
+  },
+  {
+   "id": "how-pad",
+   "kind": "how",
+   "critical": true,
+   "why": "why-cents",
+   "serves": [
+    "t-pos"
+   ],
+   "text": "money is written as whole cents with zeros added on the left until the field is full; text is padded with spaces on the right",
+   "evidence": [
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/FixedWidth.java",
+     "line": 67,
+     "quote": "return \"0\".repeat(width - digits.length()) + digits;"
+    },
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/Efw2Writer.java",
+     "line": 115,
+     "quote": "FixedWidth.zeroFill(employee.cents(amount), 11)"
+    }
+   ]
+  },
+  {
+   "id": "why-cents",
+   "kind": "why",
+   "confidence": "inferred",
+   "serves": [
+    "t-pos"
+   ],
+   "text": "whole cents need no decimal point, and adding cents never rounds, so the totals line can match the W-2 lines to the cent",
+   "rejected": [
+    {
+     "option": "dollars with a decimal point",
+     "fails": "the point takes a byte and fractional dollars round, so a total could drift by a cent"
+    }
+   ],
+   "evidence": [
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/EmployeeWage.java",
+     "line": 9,
+     "quote": "Money is integer cents."
+    }
+   ]
+  },
+  {
+   "id": "how-total",
+   "kind": "how",
+   "critical": true,
+   "why": "why-total",
+   "serves": [
+    "t-totals"
+   ],
+   "text": "while it writes each W-2 line the writer adds its cents into the employer's totals, then writes RT, and RF gets the count of all W-2 lines",
+   "evidence": [
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/Efw2Writer.java",
+     "line": 24,
+     "quote": "totals[amount.ordinal()] += employee.cents(amount);"
+    },
+    {
+     "file": "mef-spring-boot-integration/src/main/java/com/irs/mef/wagefile/Efw2Writer.java",
+     "line": 138,
+     "quote": "record.put(8, 16, FixedWidth.zeroFill(totalEmployees, 9));"
+    }
+   ]
+  },
+  {
+   "id": "why-total",
+   "kind": "why",
+   "confidence": "stated",
+   "serves": [
+    "t-totals"
+   ],
+   "text": "SSA checks that RT holds the total of the RW lines since the last RE, and calls a mismatch out of balance",
+   "rejected": [
+    {
+     "option": "leaving the totals for SSA to add up",
+     "fails": "Pub 42-007 requires RT, and a wrong RT is the out-of-balance error file 94 tests"
+    }
+   ],
+   "evidence": [
+    {
+     "file": "reports/accuwage-ty2025/MANIFEST.tsv",
+     "line": 14,
+     "quote": "Enter the total for all RW (Employee) Records reported since the last RE (Employer) Record"
+    }
+   ]
+  },
+  {
+   "id": "value-01",
+   "kind": "value",
+   "serves": [
+    "t-lines"
+   ],
+   "text": "file 01 has 7 records in the order RA RE RW RW RW RT RF, each 512 bytes",
+   "values": [
+    7,
+    512
+   ],
+   "evidence": [
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 2,
+     "quote": "file 01: 7 records: RA RE RW RW RW RT RF · each 512 bytes + CR LF"
+    }
+   ]
+  },
+  {
+   "id": "value-layout",
+   "kind": "value",
+   "serves": [
+    "t-pos"
+   ],
+   "text": "the RW line splits into type 2, SSN 9, name 50, address and more 126, box 1 11, box 2 11, boxes 3-6 44, the rest 259",
+   "values": [
+    2,
+    9,
+    50,
+    126,
+    11,
+    44,
+    259,
+    512
+   ],
+   "evidence": [
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 12,
+     "quote": "RW layout widths: type 2 · SSN 9 · name 50 · address and more 126 · box 1 11 · box 2 11 · boxes 3-6 44 · the rest 259 = 512"
+    }
+   ]
+  },
+  {
+   "id": "value-box1",
+   "kind": "value",
+   "serves": [
+    "t-pos"
+   ],
+   "text": "Maria's box 1 wages 52000.00 are 5200000 cents and are written 00005200000 at RW 188-198",
+   "values": [
+    52000.0,
+    5200000,
+    188,
+    198
+   ],
+   "evidence": [
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 4,
+     "quote": "RW 1 box 1 wages: 52000.00 -> cents 5200000 -> RW 188-198 00005200000"
+    }
+   ]
+  },
+  {
+   "id": "value-sum",
+   "kind": "value",
+   "serves": [
+    "t-totals"
+   ],
+   "text": "the three box 1 wages 52000.00 + 38500.50 + 71250.00 make 161750.50, written at RT 10-24 as 000000016175050",
+   "values": [
+    52000.0,
+    38500.5,
+    71250.0,
+    161750.5,
+    3
+   ],
+   "evidence": [
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 6,
+     "quote": "box 1 wages per RW: 52000.00 + 38500.50 + 71250.00 = 161750.50"
+    },
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 7,
+     "quote": "RT 3-9 employees 0000003 · RT 10-24 wages 000000016175050 = 161750.50"
+    },
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 8,
+     "quote": "RF 8-16 employees in file 000000003 = 3"
+    }
+   ]
+  },
+  {
+   "id": "value-broken",
+   "kind": "value",
+   "serves": [
+    "t-totals"
+   ],
+   "text": "file 94's RW wages add to 321400.25 and RT says 321500.25; file 95's RF says 4 with 3 RW lines; file 97 has one 511-byte RW line",
+   "values": [
+    321400.25,
+    321500.25,
+    100.0,
+    3,
+    4,
+    511
+   ],
+   "evidence": [
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 9,
+     "quote": "file 94: RW wages sum 321400.25 · RT 10-24 says 321500.25 · off by 100.00"
+    },
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 10,
+     "quote": "file 95: RW records 3 · RF 8-16 says 4"
+    },
+    {
+     "file": "reports/efw2-format/efw2-format.run.log",
+     "line": 11,
+     "quote": "RW=511"
+    }
+   ]
+  },
+  {
+   "id": "edge-94",
+   "kind": "edge",
+   "text": "file 94 puts 100.00 too much in RT, an out-of-balance error",
+   "evidence": [
+    {
+     "file": "reports/accuwage-ty2025/MANIFEST.tsv",
+     "line": 14,
+     "quote": "Out of Balance Money Field(s)"
+    }
+   ]
+  },
+  {
+   "id": "edge-95",
+   "kind": "edge",
+   "text": "file 95's RF claims 4 W-2 lines and the file has 3",
+   "evidence": [
+    {
+     "file": "reports/accuwage-ty2025/MANIFEST.tsv",
+     "line": 15,
+     "quote": "RF Number of RW Records says 4; the file has 3."
+    }
+   ]
+  },
+  {
+   "id": "edge-97",
+   "kind": "edge",
+   "text": "file 97 has one W-2 line of 511 bytes, a critical error that stops testing",
+   "evidence": [
+    {
+     "file": "reports/accuwage-ty2025/MANIFEST.tsv",
+     "line": 17,
+     "quote": "Critical, testing stops: record length."
+    }
+   ]
+  }
+ ]
+}

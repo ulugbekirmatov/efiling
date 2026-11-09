@@ -1,0 +1,15 @@
+{
+  "eyebrow": "EFW2 wage file · step by step",
+  "title": "A wage file is a stack of 512-byte lines, read by position",
+  "intro": "One small test file (01) played start to finish. Every number comes from the generated TY2025 files.",
+  "stages": {
+    "1": { "title": "Every line is 512 bytes, and its first two letters say what it is",
+           "body": "File 01 has 7 lines: **RA RE RW RW RW RT RF**. A file for several clients repeats RE, its RW lines and RT once per employer." },
+    "2": { "title": "One W-2 is one RW line, at fixed byte positions",
+           "body": "Maria's box 1 wages of 52000.00 become 5200000 cents, written `00005200000` at RW 188-198. One byte too many or too few and every field after it moves, so SSA requires exactly 512 bytes." },
+    "3": { "title": "RT adds up the RW lines, RF counts them",
+           "body": "52000.00 + 38500.50 + 71250.00 = 161750.50, written `000000016175050` at RT 10-24. SSA checks each RT against the RW lines since the last RE." },
+    "4": { "title": "Each broken test file breaks one rule on purpose",
+           "body": "File 94's RT is 100.00 more than its RW lines, file 95's RF says 4 for 3 RW lines, and file 97 has one 511-byte line, which stops testing." }
+  }
+}

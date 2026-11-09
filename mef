@@ -17,6 +17,7 @@ Usage:
   ./mef ats <id>
   ./mef login
   ./mef checkbook
+  ./mef checkbook-mailed
 EOF
   exit 2
 }
@@ -159,6 +160,10 @@ case "$verb" in
   checkbook)
     [[ $# -eq 1 ]] || usage
     ( cd "$ROOT/mef-spring-boot-integration" && mvn -B test -Dtest=CheckbookSandboxTest -Dmef.live.test=CheckbookSandboxTest )
+    ;;
+  checkbook-mailed)
+    [[ $# -eq 1 ]] || usage
+    ( cd "$ROOT/mef-spring-boot-integration" && mvn -B test -Dtest=CheckbookMailedCheckSandboxTest -Dmef.live.test=CheckbookMailedCheckSandboxTest )
     ;;
   *)
     usage

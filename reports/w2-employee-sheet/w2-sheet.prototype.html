@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>W-2 Employee Sheet</title>
+<style>
+  @page { size: letter; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; color: #000; font-family: Helvetica, Arial, sans-serif; }
+  .page { width: 8.5in; height: 11in; position: relative; overflow: hidden; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  /* Pub 1141 2.3.05: copies must be easily separated; dashed lines mark the perforations */
+  .grid { position: absolute; inset: 0; display: grid; }
+  .quad .grid { grid-template-columns: 4.25in 4.25in; grid-template-rows: 5.5in 5.5in; }
+  .tri .grid { grid-template-columns: 8.5in; grid-template-rows: repeat(3, calc(11in / 3)); }
+  .cell { position: relative; padding: 0.22in 0.2in 0.18in; overflow: hidden; }
+  .perf-v, .perf-h { position: absolute; border: 0 dashed #888; z-index: 2; }
+  .perf-v { top: 0; bottom: 0; border-left-width: 0.75pt; }
+  .perf-h { left: 0; right: 0; border-top-width: 0.75pt; }
+
+  .copy { height: 100%; display: flex; flex-direction: column; font-size: 6.5pt; }
+  .box { border: 0.5pt solid #000; padding: 1.5pt 3pt; min-height: 0.25in; position: relative; }
+  .box .lbl { font-size: 5.5pt; line-height: 1.1; }
+  .box .lbl b { font-size: 6pt; margin-right: 2pt; }
+  .box .val { font-family: "Courier New", Courier, monospace; font-size: 8.5pt; font-weight: bold; text-align: right; margin-top: 1pt; }
+  .box .txt { font-family: "Courier New", Courier, monospace; font-size: 8pt; font-weight: bold; margin-top: 1pt; line-height: 1.15; }
+  /* Pub 1141 2.3.12: boxes 1 and 2 on Copy B outlined in a bold 2-point rule */
+  .bold-rule { outline: 2pt solid #000; outline-offset: -1.5pt; }
+
+  .core { display: grid; grid-template-columns: 1fr 1fr; }
+  .core .box { min-width: 1.125in; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; }
+  .stack > .box + .box, .core > .box, .row2 > .box { margin: -0.25pt; }
+  .check { display: flex; gap: 6pt; margin-top: 2pt; font-size: 5.5pt; }
+  .check span::before { content: ""; display: inline-block; width: 6pt; height: 6pt; border: 0.5pt solid #000; margin-right: 2pt; vertical-align: -1pt; }
+  .check span.on::before { background: #000; }
+  .codes { font-family: "Courier New", Courier, monospace; font-size: 7.5pt; font-weight: bold; display: grid; grid-template-columns: auto 1fr; column-gap: 6pt; margin-top: 1pt; }
+  .codes div:nth-child(even) { text-align: right; }
+  .statelocal { display: grid; margin-top: auto; }
+  .note-c { font-size: 5.6pt; font-style: normal; border: 0.5pt solid #000; padding: 2pt 3pt; margin-top: 3pt; line-height: 1.2; }
+
+  .foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 6pt; margin-top: 3pt; }
+  .foot .title { line-height: 1.05; }
+  .foot .title .form { font-size: 6pt; }
+  .foot .title .form b { font-size: 13pt; margin-left: 2pt; }
+  .foot .title .name { font-size: 8pt; font-weight: bold; }
+  .foot .year { font-family: "OCR A Std", "OCR A Extended", "Courier New", monospace; font-size: 20pt; font-weight: bold; }
+  .foot .agency { font-size: 5.5pt; text-align: right; line-height: 1.15; }
+  .copylabel { font-size: 6.5pt; font-weight: bold; margin-top: 2pt; }
+
+  /* 4-up vertical format: core data across the top (Pub 1141 2.3.08) */
+  .quad .ids { display: grid; grid-template-columns: 1fr 1fr; margin-top: 3pt; }
+  .quad .ids .wide { grid-column: span 2; }
+  .quad .extra { display: grid; grid-template-columns: 1fr 1fr; margin-top: 3pt; }
+  .quad .statelocal { grid-template-columns: 0.55fr 1fr 0.9fr 0.8fr; }
+
+  /* 3-up horizontal format: identifiers left, core data upper right */
+  .tri .body { display: grid; grid-template-columns: 1fr 1fr 0.9fr; gap: 0; flex: 1; min-height: 0; }
+  .tri .left { display: flex; flex-direction: column; }
+  .tri .statelocal { grid-template-columns: 0.5fr 1.1fr 1fr 0.9fr 1fr 0.9fr 0.9fr; }
+  .tri .copy { font-size: 6.2pt; }
+
+  /* back side */
+  .back .cell { padding: 0.22in 0.22in 0.18in; }
+  .instr { height: 100%; overflow: hidden; font-size: var(--instr-size, 6.4pt); line-height: 1.22; text-align: left; }
+  .tri .instr { column-count: 3; column-gap: 0.16in; column-fill: auto; }
+  .quad .instr { column-count: 2; column-gap: 0.14in; column-fill: auto; }
+  .instr h3 { font-size: 1.25em; margin: 0 0 2pt; break-after: avoid; }
+  .instr p { margin: 0 0 2.2pt; }
+  .instr .side { font-size: 0.85em; font-weight: bold; margin-bottom: 3pt; column-span: all; }
+  #fit { position: fixed; left: 0; top: 0; font: 9pt monospace; background: #ff0; display: none; }
+  @media screen { body { background: #ccc; } .page { margin: 12px auto; background: #fff; box-shadow: 0 1px 4px #0004; } #fit { display: block; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="fit"></div>
+<script id="instructions" type="application/json">INSTRUCTIONS_JSON</script>
+<script>
+// The data shape a production generator would receive for one employee.
+const W2 = {
+  taxYear: 2026,
+  employer: { ein: "00-0000000", name: "Zinnia Company (SAMPLE)", address: ["1200 Market St Ste 400", "Philadelphia PA 19107"] },
+  employee: { firstName: "Jordan A", lastName: "Rivera", suffix: "", ssnLast4: "4321", address: ["815 Spruce St Apt 3", "Philadelphia PA 19107"] },
+  money: { 1: 58000.00, 2: 6120.00, 3: 64000.00, 4: 3968.00, 5: 64000.00, 6: 928.00 },
+  optionalMoney: { 7: null, 8: null, 10: null, 11: null },
+  box12: [ { code: "D", amount: 6000.00 }, { code: "DD", amount: 7200.00 } ],
+  box13: { statutoryEmployee: false, retirementPlan: true, thirdPartySickPay: false },
+  box14a: [ { label: "PA SUI", amount: 44.80 } ],
+  box14b: [],
+  stateLines: [ { state: "PA", stateId: "12345678", wages: 64000.00, tax: 1964.80 } ],
+  localLines: [ { wages: 64000.00, tax: 2393.60, locality: "PHILADELPHIA" } ],
+};
+
+// Pub 1141 2.3.10 and 2.3.18: one row per copy, what differs between copies lives here.
+const COPIES = {
+  B: { label: "Copy B—To Be Filed With Employee’s FEDERAL Tax Return.", boldCore: true, negligenceNote: false },
+  C: { label: "Copy C—For EMPLOYEE’S RECORDS.", boldCore: false, negligenceNote: true },
+  2: { label: "Copy 2—To Be Filed With Employee’s State, City, or Local Income Tax Return.", boldCore: false, negligenceNote: false },
+};
+const NEGLIGENCE = "This information is being furnished to the Internal Revenue Service. If you are required to file a tax return, a negligence penalty or other sanction may be imposed on you if this income is taxable and you fail to report it.";
+const CORE_LABELS = { 1: "Wages, tips, other compensation", 2: "Federal income tax withheld", 3: "Social security wages", 4: "Social security tax withheld", 5: "Medicare wages and tips", 6: "Medicare tax withheld" };
+const OPTIONAL_LABELS = { 7: "Social security tips", 8: "Allocated tips", 10: "Dependent care benefits", 11: "Nonqualified plans" };
+
+const LAYOUTS = {
+  // Long-edge duplex mirrors columns, so the back of B sits top right. The two Copy 2 backs
+  // are interchangeable, so they keep left-to-right reading order instead of mirroring.
+  quad: { front: ["B", "C", "2", "2"], backOrder: [1, 0, 2, 3] },
+  tri: { front: ["B", "C", "2"], backOrder: [0, 1, 2] },
+};
+
+const money = n => n == null ? "" : n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const box = (num, label, inner, cls = "") => `<div class="box ${cls}"><div class="lbl">${num !== "" ? `<b>${num}</b>` : ""}${esc(label)}</div>${inner}</div>`;
+const moneyBox = (num, cls = "") => box(num, CORE_LABELS[num], `<div class="val">${money(W2.money[num])}</div>`, cls);
+const textBox = (num, label, lines) => box(num, label, `<div class="txt">${lines.map(esc).join("<br>")}</div>`);
+
+function coreBoxes(copy) {
+  return [1, 2, 3, 4, 5, 6].map(n => moneyBox(n, copy.boldCore && n <= 2 ? "bold-rule" : "")).join("");
+}
+function identifierBoxes() {
+  const e = W2.employee, r = W2.employer;
+  return [
+    textBox("a", "Employee’s social security number", [`XXX-XX-${e.ssnLast4}`]),
+    textBox("b", "Employer identification number (EIN)", [r.ein]),
+    `<div class="wide">${textBox("c", "Employer’s name, address, and ZIP code", [r.name, ...r.address])}</div>`,
+    `<div class="wide">${textBox("e/f", "Employee’s name, address, and ZIP code", [`${e.firstName} ${e.lastName}${e.suffix ? " " + e.suffix : ""}`, ...e.address])}</div>`,
+  ].join("");
+}
+function optionalBoxes() {
+  const parts = [];
+  for (const [n, v] of Object.entries(W2.optionalMoney)) if (v != null) parts.push(box(n, OPTIONAL_LABELS[n], `<div class="val">${money(v)}</div>`));
+  if (W2.box12.length) parts.push(box("12", "See instructions for box 12", `<div class="codes">${W2.box12.map(x => `<div>${x.code}</div><div>${money(x.amount)}</div>`).join("")}</div>`));
+  const b13 = W2.box13;
+  parts.push(box("13", "", `<div class="check"><span class="${b13.statutoryEmployee ? "on" : ""}">Statutory employee</span><span class="${b13.retirementPlan ? "on" : ""}">Retirement plan</span><span class="${b13.thirdPartySickPay ? "on" : ""}">Third-party sick pay</span></div>`));
+  if (W2.box14a.length) parts.push(box("14a", "Other", `<div class="codes">${W2.box14a.map(x => `<div>${esc(x.label)}</div><div>${money(x.amount)}</div>`).join("")}</div>`));
+  if (W2.box14b.length) parts.push(box("14b", "Treasury Tipped Occupation Code(s)", `<div class="txt">${W2.box14b.join(", ")}</div>`));
+  return parts.join("");
+}
+function stateLocalBoxes() {
+  const s = W2.stateLines[0] || {}, l = W2.localLines[0] || {};
+  return [
+    textBox("15", "State", [s.state || ""]), textBox("", "Employer’s state ID number", [s.stateId || ""]),
+    box("16", "State wages, tips, etc.", `<div class="val">${money(s.wages)}</div>`), box("17", "State income tax", `<div class="val">${money(s.tax)}</div>`),
+    box("18", "Local wages, tips, etc.", `<div class="val">${money(l.wages)}</div>`), box("19", "Local income tax", `<div class="val">${money(l.tax)}</div>`),
+    textBox("20", "Locality name", [l.locality || ""]),
+  ].join("");
+}
+function footer(copy) {
+  return `<div class="foot">
+      <div class="title"><div class="form">Form<b>W-2</b></div><div class="name">Wage and Tax Statement</div></div>
+      <div class="year">${W2.taxYear}</div>
+      <div class="agency">Department of the Treasury—<br>Internal Revenue Service</div>
+    </div>
+    <div class="copylabel">${copy.label}</div>`;
+}
+
+function quadCopy(copy) {
+  return `<div class="copy">
+    <div class="core">${coreBoxes(copy)}</div>
+    <div class="ids">${identifierBoxes()}</div>
+    <div class="extra">${optionalBoxes()}</div>
+    <div class="statelocal" style="grid-template-columns:0.45fr 1fr 1fr 1fr">${stateLocalBoxes()}</div>
+    ${copy.negligenceNote ? `<div class="note-c">${NEGLIGENCE}</div>` : ""}
+    ${footer(copy)}
+  </div>`;
+}
+function triCopy(copy) {
+  return `<div class="copy">
+    <div class="body">
+      <div class="left stack" style="display:grid;grid-template-columns:1fr 1fr;align-content:start">${identifierBoxes()}</div>
+      <div class="stack" style="display:grid;grid-template-columns:1fr 1fr;align-content:start">${optionalBoxes()}</div>
+      <div class="core" style="align-content:start">${coreBoxes(copy)}</div>
+    </div>
+    <div class="statelocal">${stateLocalBoxes()}</div>
+    ${copy.negligenceNote ? `<div class="note-c">${NEGLIGENCE}</div>` : ""}
+    ${footer(copy)}
+  </div>`;
+}
+
+function perforations(kind) {
+  return kind === "quad"
+    ? `<div class="perf-v" style="left:4.25in"></div><div class="perf-h" style="top:5.5in"></div>`
+    : `<div class="perf-h" style="top:calc(11in/3)"></div><div class="perf-h" style="top:calc(22in/3)"></div>`;
+}
+
+function render(kind) {
+  const layout = LAYOUTS[kind];
+  const render1 = kind === "quad" ? quadCopy : triCopy;
+  const front = layout.front.map(id => `<div class="cell">${render1(COPIES[id])}</div>`).join("");
+  const backCells = layout.front.map((_, i) => `<div class="cell"><div class="instr" data-slot="${i}"></div></div>`);
+  const back = layout.backOrder.map(i => backCells[i]).join("");
+  document.getElementById("root").innerHTML =
+    `<section class="page ${kind}"><div class="grid">${front}</div>${perforations(kind)}</section>
+     <section class="page back ${kind}"><div class="grid">${back}</div>${perforations(kind)}</section>`;
+  fillInstructions(kind);
+}
+
+// Back of Copy B carries the Notice to Employee (EITC notice included, Pub 1141 2.3.20);
+// the Instructions for Employee flow across the backs of the remaining copies (Pub 1141 3.1.05).
+function fillInstructions(kind) {
+  const text = JSON.parse(document.getElementById("instructions").textContent);
+  const slots = [...document.querySelectorAll(".instr")].sort((a, b) => a.dataset.slot - b.dataset.slot);
+  const names = LAYOUTS[kind].front;
+  slots.forEach((s, i) => s.insertAdjacentHTML("beforeend", `<div class="side">Back of ${COPIES[names[i]].label.split("—")[0]}</div>`));
+  const fits = el => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1;
+  let overflowWords = 0;
+  const place = (paras, from) => {
+    let idx = from;
+    for (const p of paras) {
+      while (idx < slots.length) {
+        const node = document.createElement(p.heading ? "h3" : "p");
+        node.textContent = p.text;
+        slots[idx].appendChild(node);
+        if (fits(slots[idx])) break;
+        node.remove();
+        idx++;
+      }
+      if (idx >= slots.length) overflowWords += p.text.split(/\s+/).length;
+    }
+  };
+  place(text.notice, 0);
+  place(text.instructions, 1);
+  document.getElementById("fit").textContent = overflowWords ? `OVERFLOW ${overflowWords} words` : "all instruction text fits";
+  document.body.dataset.overflow = overflowWords;
+}
+
+render(new URLSearchParams(location.search).get("v") || "quad");
+</script>
+</body>
+</html>

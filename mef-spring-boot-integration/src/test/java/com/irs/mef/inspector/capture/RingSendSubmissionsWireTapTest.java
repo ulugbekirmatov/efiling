@@ -5,7 +5,7 @@ import com.irs.mef.inspector.ring.InMemorySendSnapshotRing;
 import com.irs.mef.inspector.ring.SendSnapshot;
 import com.irs.mef.inspector.ring.SendSnapshotRing;
 import com.irs.mef.inspector.ring.SnapshotId;
-import com.irs.mef.newsend.domain.NewSendFiling;
+import com.irs.mef.filing.Filing;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ class RingSendSubmissionsWireTapTest {
         InMemorySendSnapshotRing ring = new InMemorySendSnapshotRing(20);
         RingSendSubmissionsWireTap tap = new RingSendSubmissionsWireTap(
                 ring, new ReflectiveMimeTap(), CLOCK, "ATS", 1_048_576L);
-        NewSendFiling filing = FixtureSnapshots.orchidFiling();
+        Filing filing = FixtureSnapshots.orchidFiling();
 
         try (var session = tap.open(filing)) {
             session.attach(new Object());

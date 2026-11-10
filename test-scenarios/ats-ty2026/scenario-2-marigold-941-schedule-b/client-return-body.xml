@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ClientReturnBody returnTypeCd="941" xmlns="http://www.irs.gov/efile"
-               returnVersion="2026Q1v4.0"
                taxPeriodBegin="2026-01-01"
                taxPeriodEnd="2026-03-31"
                quarterEndingDt="2026-03">

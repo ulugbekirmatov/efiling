@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Checkbook Mailed Prefund</title>
+<style>
+:root{--ivory:#FAF9F5;--paper:#FFFFFF;--g100:#F0EEE6;--g200:#E6E3DA;--g300:#D1CFC5;--slate:#141413;--g700:#3D3D3A;--g500:#87867F;--clay:#D97757;--clay-d:#B85C3E;--oat:#E3DACC;--olive:#788C5D;--rust:#B04A3F;
+--serif:ui-serif,Georgia,"Times New Roman",Times,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Monaco,Consolas,monospace;}
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ivory);color:var(--slate);font-family:var(--sans);line-height:1.55;overflow-wrap:break-word;word-break:break-word}
+p,li,dd,dt,h1,h2,h3,h4,figcaption,blockquote,.card,.callout,.story,.item{overflow-wrap:break-word;word-break:break-word}
+.story,.item,.dcard,[class*="col"],[class*="grid"]>*{min-width:0}
+.wrap{max-width:960px;margin:0 auto;padding:48px 24px 80px}
+header{margin-bottom:28px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--g500);margin-bottom:10px}
+h1{font-family:var(--serif);font-weight:500;font-size:34px;line-height:1.2;margin:0 0 14px}
+h2{font-family:var(--serif);font-weight:500;font-size:23px;margin:40px 0 12px}
+section>p{max-width:760px;color:var(--g700)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mono{font-family:var(--mono);font-size:12px;color:var(--g500)}
+.pill{font-family:var(--mono);font-size:11.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--g300);background:var(--paper)}
+.pill.ok{border-color:var(--olive);color:var(--olive)}
+.pill.warn{border-color:var(--clay);color:var(--clay-d)}
+a{color:var(--clay);text-decoration-color:var(--oat);text-underline-offset:3px}
+:not(pre)>code{font-family:var(--mono);font-size:.92em;background:var(--g100);color:var(--slate);padding:1px 6px;border-radius:4px;overflow-wrap:break-word}
+.tldr-light{background:var(--paper);border:1.5px solid var(--g300);border-left:4px solid var(--clay);border-radius:12px;padding:20px 24px;max-width:760px}
+.tldr-light .k{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:8px}
+.tldr-light p{margin:0;font-size:15px;line-height:1.6;color:var(--slate)}
+.tldr-light p+p{margin-top:10px}
+.callout{display:flex;gap:12px;border:1.5px solid var(--oat);background:rgba(227,218,204,.35);border-radius:10px;padding:14px 16px;font-size:14px;max-width:760px}
+.callout .ico{color:var(--clay);font-weight:600}
+.story{border:1.5px solid var(--g200);border-radius:14px;background:var(--paper);padding:20px 22px;margin:16px 0;scroll-margin-top:20px}
+.story .stitle{font-family:var(--serif);font-weight:500;font-size:18.5px;margin:0 0 6px}
+.story p{color:var(--g700);margin:8px 0;font-size:14px}
+.story .pathchip{font-family:var(--mono);font-size:11.5px;background:var(--g100);border:1px solid var(--g200);border-radius:6px;padding:2px 8px;color:var(--g700);display:inline-block;margin:2px 4px 2px 0}
+.exbox{background:var(--g100);border:1px solid var(--g200);border-radius:10px;padding:12px 16px;margin-top:12px}
+.exbox .exhead{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--g500);margin-bottom:8px}
+.exrow{display:flex;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:12.5px;line-height:1.9;color:var(--g700);border-bottom:1px dashed var(--g200)}
+.exrow>span{min-width:0}.exrow>span:last-child{text-align:right}
+.exrow:last-child{border-bottom:none}
+.exrow .was{color:var(--clay-d)}.exrow .now{color:var(--olive);font-weight:700}
+.exrow.punch{color:var(--slate);font-weight:700}
+.code{background:#141413;border-radius:12px;padding:18px 20px;overflow-x:auto;margin-top:12px}
+.code pre{font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#E8E6DE;white-space:pre;margin:0}
+.code .kw{color:var(--clay)}.code .str{color:var(--olive)}.code .cm{color:var(--g500)}.code .fn{color:#C9B98A}
+.code .add{color:#A9C08A}.code .del{color:#E39A85}
+.focus{display:flex;flex-direction:column;gap:14px;max-width:760px}
+.focus .item{background:var(--paper);border:1.5px solid var(--g300);border-radius:10px;padding:16px 20px;display:flex;gap:16px}
+.focus .n{font-family:var(--mono);font-size:13px;font-weight:600;color:#fff;background:var(--clay);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.focus .t{font-weight:600;font-size:15px;margin-bottom:2px}
+.focus .d{font-size:13.5px;color:var(--g700)}
+.file-tour{display:flex;flex-direction:column;gap:14px}
+.file{background:var(--paper);border:1.5px solid var(--g300);border-radius:12px;overflow:hidden}
+.file summary{padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;list-style:none;background:var(--g100);border-bottom:1.5px solid var(--g300)}
+.file:not([open]) summary{border-bottom:none}
+.file summary::-webkit-details-marker{display:none}
+.file summary .chev{width:8px;height:8px;border-right:2px solid var(--g500);border-bottom:2px solid var(--g500);transform:rotate(-45deg);transition:transform .15s ease;flex-shrink:0}
+.file[open] summary .chev{transform:rotate(45deg)}
+.file summary .path{font-family:var(--mono);font-size:13px;flex:1;min-width:0}
+.file summary .stat{font-family:var(--mono);font-size:12px}
+.file summary .stat .add{color:var(--olive)}.file summary .stat .del{color:var(--clay)}
+.file .file-body{padding:16px 20px 18px}
+.file .why{font-size:14.5px;max-width:680px}
+.tests{display:flex;flex-direction:column;gap:10px;max-width:760px}
+.test{display:flex;align-items:flex-start;gap:12px;background:var(--paper);border:1.5px solid var(--g300);border-radius:10px;padding:13px 18px;font-size:14px}
+.test>div{min-width:0}
+.test .check{width:18px;height:18px;border-radius:5px;flex-shrink:0;margin-top:2px;border:1.5px solid var(--g300)}
+.test.done .check{background:var(--olive);border-color:var(--olive);position:relative}
+.test.done .check::after{content:"";position:absolute;left:5px;top:2px;width:5px;height:9px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(40deg)}
+.decide{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.dcard{background:var(--paper);border:1.5px solid var(--g300);border-radius:12px;padding:18px 20px}
+.dcard.flag{border:1.5px dashed var(--clay)}
+.dcard .dk{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--g500)}
+.dcard.flag .dk{color:var(--clay-d)}
+.dcard .dt{font-family:var(--serif);font-size:18px;font-weight:500;margin:4px 0 6px}
+.dcard p{font-size:14px;color:var(--g700);margin:8px 0}
+@media (max-width:720px){.decide{grid-template-columns:1fr}h1{font-size:28px}.exrow{flex-direction:column;gap:0}.exrow>span:last-child{text-align:left}}
+@media print{body{background:#fff}.file .file-body{display:block}details.file>*{display:block}.code{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Pele diagram token mapping (components.md 31): literal light palette, never page tokens */
+.pele {
+  color-scheme: light;
+  --pele-bg: #FFFFFF;
+  --pele-fg: #141413;
+  --pele-muted: #87867F;
+  --pele-line: #3D3D3A;
+  --pele-surface: #F0EEE6;
+  --pele-surface-alt: #E6E3DA;
+  --pele-border: #D1CFC5;
+  --pele-accent: #D97757;
+  --pele-critical: #B04A3F;
+  --pele-error: #B04A3F;
+  --pele-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --pele-font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --pele-radius: 8px;
+  --pele-series-1: #C4633F;
+  --pele-series-2: #4F7FB0;
+  --pele-series-3: #667A4C;
+  --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A;
+  --pele-series-6: #4A8670;
+  --pele-series-7: #7470A8;
+  --pele-series-8: #B04A3F;
+}
+/* Hue classes added by diagram.js colorize(): they redefine Pele's surface/border/line
+   variables on one node, edge or cluster, so the SVG markup itself never changes. */
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas {
+  color-scheme: light;
+  border: 1px solid #D1CFC5; border-radius: 12px; overflow-x: auto;
+  background: #FFFFFF; padding: 16px;
+}
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0;
+}
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+@media print { figure.diagram .canvas { border-color: var(--g200); } }
+
+</style></head>
+<body><div class="wrap">
+<header>
+  <div class="eyebrow">PR writeup · Checkbook.io sandbox · PR #25 · 2026-11-09</div>
+  <h1>Mailed checks from a prefund wallet, with the W-2 attached</h1>
+  <div class="meta">
+    <a class="pill" href="https://github.com/ulugbekirmatov/efiling/pull/25">PR #25 open</a>
+    <span class="pill ok">offline: 313 run, 0 failures</span>
+    <span class="pill ok">bank-funded mailed check: pass</span>
+    <span class="pill warn">wallet-funded: blocked on Checkbook</span>
+    <span class="mono">feature/checkbook-mailed-prefund → feature/agent-friendly · 2d1882a</span>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="tldr-light">
+    <div class="k">TL;DR</div>
+    <p>We can now create a Checkbook wallet and send a paper check by mail, paid from that wallet, with the W-2 PDF printed inside the envelope. A bank-funded mailed check already goes through in the sandbox.</p>
+    <p>The wallet-funded one fails with <code>Mailed checks are not enabled for this account</code>. That's a switch on Checkbook's side. Once they flip it, <code>./mef checkbook-mailed</code> is the whole retest.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Why</h2>
+  <p>Checkbook doesn't have a "business mail" endpoint yet, so we can't simply mail a document without a check. Their interim answer was to send a physical check paid from a <strong>prefund wallet</strong>, which is a balance held inside the Checkbook account, and attach the PDF to it. The difference from what we had: a wallet has to be created and funded, and the check request points at that wallet.</p>
+  <div class="callout"><span class="ico">!</span><div>The request shapes come from Checkbook's own API spec. The spec isn't offered as a download, so we pulled it out of the docs site's page bundle (<code>docs.checkbook.io/reference</code>, v3.0.0). The implementation guide attached to their email wasn't available here. Their docs list no prefund page, no wallet funding call, and no mailed-check examples.</div></div>
+</section>
+
+<section>
+  <h2>What changed, one story per change</h2>
+
+  <div class="story" id="story-1">
+    <div class="stitle">1 · Reading back any mailed check crashed our client</div>
+    <p>A digital check names its recipient by email, so Checkbook returns <code>recipient</code> as text. A mailed check goes to an address, so Checkbook returns an object. Our <code>CheckbookCheck</code> record expected text, so Jackson threw an error on the first mailed check it saw. That broke <code>getCheck</code>, and also <code>listChecks</code>, which lists every check in the account. So the existing <code>./mef checkbook</code> would have failed as soon as a mailed check existed, even though it never sends one.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · sandbox check 5006, the first mailed probe</div>
+      <div class="exrow"><span>recipient on a digital check</span><span>"sandbox-recipient@example.com"</span></div>
+      <div class="exrow"><span>recipient on check 5006</span><span>{"line_1": "1725 Slough Avenue", "city": "Scranton", …}</span></div>
+      <div class="exrow"><span>CheckbookCheck.recipient before</span><span class="was">String → parse error on 5006</span></div>
+      <div class="exrow punch"><span>CheckbookCheck.recipient now</span><span class="now">JsonNode → both shapes read</span></div>
+    </div>
+    <p><span class="pathchip">CheckbookCheck.java</span></p>
+    <div class="code"><pre><span class="del">-        String recipient,</span>
+<span class="add">+        JsonNode recipient,</span></pre></div>
+  </div>
+
+  <div class="story" id="story-2">
+    <div class="stitle">2 · A mailed check needs an address, a mail class, and a funding source</div>
+    <p>A digital check has one recipient string. A mailed check needs a postal address, a delivery service, and an optional debit account. That account is the hook for prefunding. Leave it out and Checkbook debits the default bank. Put a wallet ID there and Checkbook debits the wallet.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · the two checks <code>./mef checkbook-mailed</code> sends</div>
+      <div class="exrow"><span>recipient</span><span>1725 Slough Avenue, Scranton PA 18505</span></div>
+      <div class="exrow"><span>mail_type</span><span>USPS_FIRST_CLASS</span></div>
+      <div class="exrow"><span>attachment</span><span>w2-jordan-rivera-2026.pdf, base64</span></div>
+      <div class="exrow"><span>account omitted (bank)</span><span class="now">201 IN_PROCESS</span></div>
+      <div class="exrow punch"><span>account = wallet 418692…fcc</span><span class="was">400 not enabled for this account</span></div>
+    </div>
+    <p>The records check Checkbook's limits before anything leaves the app: <code>line_1</code>, city, state and zip are required and length-capped, the name must be 2 to 180 characters, and the attachment must be at most 7 MB, which is Checkbook's per-PDF limit for mailed checks. Both request types now share one amount rule in <code>CheckAmount</code>, with the same error messages as before.</p>
+    <p><span class="pathchip">PhysicalCheckRequest.java</span> <span class="pathchip">MailingAddress.java</span> <span class="pathchip">MailType.java</span> <span class="pathchip">CheckAmount.java</span> <span class="pathchip">CheckbookClient.java · sendPhysicalCheck</span></p>
+    <div class="code"><pre><span class="fn">@JsonInclude</span>(JsonInclude.Include.NON_NULL)
+<span class="kw">public record</span> <span class="fn">PhysicalCheckRequest</span>(
+        String name,
+        <span class="fn">MailingAddress</span> recipient,
+        BigDecimal amount,
+        String description,
+        <span class="fn">@JsonProperty</span>(<span class="str">"account"</span>) String fundingAccountId,   <span class="cm">// null = default bank, wallet id = prefund</span>
+        <span class="fn">@JsonProperty</span>(<span class="str">"mail_type"</span>) <span class="fn">MailType</span> mailType,
+        <span class="fn">CheckAttachment</span> attachment) {
+    <span class="kw">static final int</span> MAX_ATTACHMENT_BYTES = 7 * 1024 * 1024;
+    ...
+}</pre></div>
+  </div>
+
+  <div class="story" id="story-3">
+    <div class="stitle">3 · Wallets can be created and listed, but their bank numbers are never stored</div>
+    <p>An EXTERNAL wallet comes back with real ACH, RTP and wire account and routing numbers, and Checkbook shows them only once. Holding those in a Java record means they can end up in a log line or a <code>toString()</code>. So <code>CheckbookWallet</code> maps only id, name, balance and date, and a test asserts the account number from the response never appears in the record.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · GET /v3/account/wallet on the sandbox</div>
+      <div class="exrow"><span>id</span><span>418692033f4243c7bee7caf874169fcc</span></div>
+      <div class="exrow"><span>name</span><span>Pyramos Prefund Sandbox</span></div>
+      <div class="exrow"><span>balance</span><span>0.00</span></div>
+      <div class="exrow punch"><span>numbers.ACH / RTP / WIRE</span><span class="now">dropped, never mapped</span></div>
+    </div>
+    <p>The client has no "fund this wallet" method because Checkbook's API has no such call. Their docs say an INTERNAL wallet is funded by ACH debit or a wallet-to-wallet transfer, and an EXTERNAL one by an ACH, wire, RTP or FedNow deposit to its numbers.</p>
+    <p><span class="pathchip">CheckbookWallet.java</span> <span class="pathchip">WalletType.java</span> <span class="pathchip">CheckbookClient.java · createWallet, listWallets</span></p>
+    <div class="code"><pre><span class="kw">public</span> <span class="fn">CheckbookWallet</span> <span class="fn">createWallet</span>(String name, <span class="fn">WalletType</span> type) {
+    requireKeys();
+    <span class="kw">return</span> http.post().uri(<span class="str">"/account/wallet"</span>)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(toJsonBytes(<span class="kw">new</span> <span class="fn">CreateWalletRequest</span>(name, type)))
+            .retrieve().body(<span class="fn">CheckbookWallet</span>.<span class="kw">class</span>);
+}</pre></div>
+  </div>
+</section>
+
+<section>
+<figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-sequence" viewBox="0 0 515 711" width="515" height="711" style="width:clamp(386px,100%,515px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="sequence"><g transform="translate(94.25,8)"><g class="pele-lifelines" fill="none" stroke="var(--_b)"><path class="pele-lifeline" data-id="d1-T" d="M0,68V627"/><path class="pele-lifeline" data-id="d1-C" d="M166,68V627"/><path class="pele-lifeline" data-id="d1-K" d="M332,68V627"/></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-message" data-id="d1-i0"><path d="M0,126H159"/><path class="pele-marker" d="M166,126L158,129.36L158,122.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i1"><path d="M166,163H325"/><path class="pele-marker" d="M332,163L324,166.36L324,159.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i2"><path d="M332,215H173" stroke-dasharray="4 4"/><path class="pele-marker" d="M166,215L174,211.64L174,218.36Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i3"><path d="M166,252H325"/><path class="pele-marker" d="M332,252L324,255.36L324,248.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i4"><path d="M332,304H173" stroke-dasharray="4 4"/><path class="pele-marker" d="M166,304L174,300.64L174,307.36Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i5"><path d="M0,341H159"/><path class="pele-marker" d="M166,341L158,344.36L158,337.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i6"><path d="M166,378H325"/><path class="pele-marker" d="M332,378L324,381.36L324,374.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i7"><path d="M332,430H173" stroke-dasharray="4 4"/><path class="pele-marker" d="M166,430L174,426.64L174,433.36Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i8"><path d="M0,500H159"/><path class="pele-marker" d="M166,500L158,503.36L158,496.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i9"><path d="M166,537H325"/><path class="pele-marker" d="M332,537L324,540.36L324,533.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i10"><path d="M332,607H173" stroke-dasharray="4 4"/><path class="pele-marker" d="M166,607L174,603.64L174,610.36Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="d1-i0"><text text-anchor="middle" xml:space="preserve"><tspan x="83" y="99.9">sendPhysicalCheck(no</tspan><tspan x="83" y="117.9">account, W-2 PDF)</tspan></text></g><g class="pele-edge-label" data-id="d1-i1"><text x="249" y="153.4" text-anchor="middle">POST /v3/check/physical</text></g><g class="pele-edge-label" data-id="d1-i2"><text text-anchor="middle" xml:space="preserve"><tspan x="249" y="188.9">201 IN_PROCESS,</tspan><tspan x="249" y="206.9">recipient = address object</tspan></text></g><g class="pele-edge-label" data-id="d1-i3"><text x="249" y="242.4" text-anchor="middle">GET /v3/check/{id}</text></g><g class="pele-edge-label" data-id="d1-i4"><text text-anchor="middle" xml:space="preserve"><tspan x="249" y="277.9">line_1 = 1725 Slough</tspan><tspan x="249" y="295.9">Avenue</tspan></text></g><g class="pele-edge-label" data-id="d1-i5"><text x="83" y="331.4" text-anchor="middle">listWallets()</text></g><g class="pele-edge-label" data-id="d1-i6"><text x="249" y="368.4" text-anchor="middle">GET /v3/account/wallet</text></g><g class="pele-edge-label" data-id="d1-i7"><text text-anchor="middle" xml:space="preserve"><tspan x="249" y="403.9">Pyramos Prefund</tspan><tspan x="249" y="421.9">Sandbox, balance 0.00</tspan></text></g><g class="pele-edge-label" data-id="d1-i8"><text text-anchor="middle" xml:space="preserve"><tspan x="83" y="455.9">sendPhysicalCheck(acco</tspan><tspan x="83" y="473.9">unt</tspan><tspan x="83" y="491.9">= wallet id, W-2 PDF)</tspan></text></g><g class="pele-edge-label" data-id="d1-i9"><text x="249" y="527.4" text-anchor="middle">POST /v3/check/physical</text></g><g class="pele-edge-label" data-id="d1-i10"><text text-anchor="middle" xml:space="preserve"><tspan x="249" y="562.9">400 Mailed checks are</tspan><tspan x="249" y="580.9">not enabled for this</tspan><tspan x="249" y="598.9">account</tspan></text></g></g><g class="pele-nodes"><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-clay" data-id="d1-T"><rect x="-86.25" y="627" width="172.5" height="68" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="654.6">CheckbookMailedChe</tspan><tspan x="0" y="678.6">ckSandboxTest</tspan></text></g><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-sky" data-id="d1-C"><rect x="97.54" y="627" width="136.93" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="166" y="654.6" text-anchor="middle">CheckbookClient</text></g><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-olive" data-id="d1-K"><rect x="251.52" y="627" width="160.96" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="332" y="654.6" text-anchor="middle">Checkbook sandbox</text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-clay" data-id="d1-T"><rect x="-86.25" y="0" width="172.5" height="68" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="27.6">CheckbookMailedChe</tspan><tspan x="0" y="51.6">ckSandboxTest</tspan></text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-sky" data-id="d1-C"><rect x="97.54" y="24" width="136.93" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="166" y="51.6" text-anchor="middle">CheckbookClient</text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-olive" data-id="d1-K"><rect x="251.52" y="24" width="160.96" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="332" y="51.6" text-anchor="middle">Checkbook sandbox</text></g></g></g></svg></div><figcaption><div><div class="cap-title">What ./mef checkbook-mailed does, run on 2026-11-09</div><div class="cap-sub">The bank-funded check passes. The wallet-funded one stops at Checkbook's account switch.</div></div></figcaption></figure>
+
+</section>
+
+<section>
+  <h2>Blocked on Checkbook</h2>
+  <p>Code can't get past either item below. Both belong in the reply to Checkbook's email.</p>
+  <div class="focus">
+    <div class="item"><div class="n">1</div><div><div class="t">Enable prefunded mailed checks on our sandbox account</div><div class="d">A bank-funded mailed check works. The same request with <code>account</code> set to a wallet ID returns <code>400 Mailed checks are not enabled for this account</code>.</div></div></div>
+    <div class="item"><div class="n">2</div><div><div class="t">Tell us how to fund an INTERNAL wallet in the sandbox</div><div class="d">The API has no funding call, and the sandbox dashboard has no wallet screen. A digital check to the wallet ID, debited from our verified bank with <code>deposit_options: ["WALLET"]</code>, returns <code>Invalid recipient</code>. The wallet balance is still 0.00, so the prefund check may hit an insufficient-balance error once mailed checks are enabled.</div></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Built on PR #24: a digital check with the W-2 attached</h2>
+  <p>The attachment record and the request style come from the earlier digital-check work, which is merged. Three things learned there still hold for mailed checks:</p>
+  <div class="tests">
+    <div class="test done"><span class="check"></span><div><strong>Send the body as bytes.</strong> Checkbook rejects a chunked body ("Fields must be in JSON body"), so every request is serialized to <code>byte[]</code> first and carries a <code>Content-Length</code>. <code>sendPhysicalCheck</code> and <code>createWallet</code> use the same <code>toJsonBytes</code>.</div></div>
+    <div class="test done"><span class="check"></span><div><strong>The attachment shape is shared.</strong> Both digital and mailed checks take <code>{filename, content}</code>, with the content as base64. <code>CheckAttachment</code> is reused unchanged.</div></div>
+    <div class="test done"><span class="check"></span><div><strong>The stored file isn't ready right away, and it comes back changed.</strong> On a digital check, the attachment download returns 404 for a few seconds, and Checkbook stamps the check number on every page. The mailed-check test doesn't read the attachment back yet. That's listed under open decisions below.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>File tour</h2>
+  <div class="file-tour">
+    <details class="file" open><summary><span class="chev"></span><span class="path">checkbook/CheckbookClient.java</span><span class="stat"><span class="add">+37</span></span></summary>
+      <div class="file-body"><div class="why"><code>sendPhysicalCheck</code> (POST <code>/check/physical</code>, with an Idempotency-Key), <code>createWallet</code> and <code>listWallets</code>. Every method still checks for keys first, and errors still go through the one status handler as <code>CheckbookException</code>.</div></div></details>
+    <details class="file"><summary><span class="chev"></span><span class="path">checkbook/PhysicalCheckRequest.java · MailingAddress.java · MailType.java</span><span class="stat"><span class="add">+86 new</span></span></summary>
+      <div class="file-body"><div class="why">The mailed-check body (story 2). Country is left out on purpose because we only mail inside the US.</div></div></details>
+    <details class="file"><summary><span class="chev"></span><span class="path">checkbook/CheckbookWallet.java · WalletType.java</span><span class="stat"><span class="add">+17 new</span></span></summary>
+      <div class="file-body"><div class="why">The wallet as returned by Checkbook, minus its bank numbers (story 3).</div></div></details>
+    <details class="file"><summary><span class="chev"></span><span class="path">checkbook/CheckbookCheck.java · CheckAmount.java · DigitalCheckRequest.java</span><span class="stat"><span class="add">+26</span> <span class="del">−11</span></span></summary>
+      <div class="file-body"><div class="why">The <code>recipient</code> fix (story 1), and the amount rule moved into one helper that both request types call.</div></div></details>
+    <details class="file"><summary><span class="chev"></span><span class="path">test/…/CheckbookClientTest.java</span><span class="stat"><span class="add">+155</span></span></summary>
+      <div class="file-body"><div class="why">Ten offline tests against a mock server. They cover the JSON field names (<code>line_1</code>, <code>mail_type</code>, <code>account</code>), null fields left out, the base64 attachment, an address-object recipient read back by <code>getCheck</code> and <code>listChecks</code>, wallet create and list, and each validation limit.</div></div></details>
+    <details class="file"><summary><span class="chev"></span><span class="path">test/…/CheckbookMailedCheckSandboxTest.java · mef · CLAUDE.md</span><span class="stat"><span class="add">+88</span> <span class="del">−1</span></span></summary>
+      <div class="file-body"><div class="why">The live test and its verb, <code>./mef checkbook-mailed</code>. It finds or creates the wallet by name, so a rerun reuses the same wallet. CLAUDE.md lists the new verb as live, so it doesn't count as safe to repeat.</div></div></details>
+  </div>
+</section>
+
+<section>
+  <h2>How it was verified</h2>
+  <div class="tests">
+    <div class="test done"><span class="check"></span><div><code>./mef check</code>: Tests run: 313, Failures: 0, Errors: 0, Skipped: 11. BUILD SUCCESS. It ran in a copy outside iCloud. In <code>~/Documents</code>, iCloud keeps writing duplicates like <code>AckStore 2.class</code> and <code>AckStore 3.class</code> into <code>target/</code> mid-build, and Spring fails to read them.</div></div>
+    <div class="test done"><span class="check"></span><div><code>./mef checkbook-mailed</code>, test A: check <code>c58a4dd1…</code>, status IN_PROCESS, and <code>line_1</code> read back from the address object.</div></div>
+    <div class="test"><span class="check"></span><div><code>./mef checkbook-mailed</code>, test B: <code>400 Mailed checks are not enabled for this account</code>. This is expected until Checkbook acts.</div></div>
+    <div class="test done"><span class="check"></span><div><code>./mef checkbook</code> still passes (checks 5008 and an UNPAID plain check), now against an account that holds mailed checks. That run exercises story 1.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Open decisions</h2>
+  <div class="decide">
+    <div class="dcard flag">
+      <div class="dk">Weakest part · your call</div>
+      <div class="dt">No guardrails on a funded wallet yet</div>
+      <p>The 2026-11-06 review found that sends have no HTTP timeouts and no amount cap. With an empty sandbox wallet that costs nothing. With a funded production wallet, a hung request or a mistyped amount spends real money. We should close both before a production key exists.</p>
+    </div>
+    <div class="dcard">
+      <div class="dk">Smaller</div>
+      <div class="dt">Read back the mailed attachment</div>
+      <p>Test A checks the id, the amount and the address, but not the stored PDF. Adding the same poll-and-compare the digital test uses would prove the W-2 made it onto the mailed check too. It costs one more live call per run.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+</div></body></html>

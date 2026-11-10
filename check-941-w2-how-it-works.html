@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the 941 / W-2 checker works</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D; --rust:#B04A3F;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; }
+body { overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .callout, .story, .exbox { overflow-wrap: break-word; word-break: break-word; }
+.story, .exbox, [class*="grid"] > * { min-width: 0; }
+table { table-layout: auto; min-width: 640px; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }
+main { max-width: 960px; margin: 0 auto; padding: 56px 32px 96px; }
+header { margin-bottom: 40px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--g500); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.eyebrow::before { content: ""; width: 24px; height: 1.5px; background: var(--clay); }
+h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(38px, 5.4vw, 62px); line-height: 1.06; letter-spacing: -.018em; color: var(--slate); margin: 0 0 8px; max-width: 17ch; }
+h1 em { font-style: italic; color: var(--clay); }
+.intro { font-size: 16.5px; color: var(--g700); margin: 22px 0 0; max-width: 620px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin: 56px 0 10px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; line-height: 1.2; letter-spacing: -.012em; margin: 0; }
+p { color: var(--g700); font-size: 15px; margin: 10px 0; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius: 12px; padding: 22px 26px; margin: 0 0 8px; }
+.tldr-dark .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--oat); margin-bottom: 10px; }
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark code { font-family: var(--mono); font-size: 13.5px; background: rgba(250,249,245,.12); color: var(--ivory); padding: 1px 5px; border-radius: 4px; }
+.story { border: 1.5px solid var(--g200); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 16px 0; min-width: 0; scroll-margin-top: 20px; }
+.story .stitle { font-family: var(--serif); font-weight: 500; font-size: 18.5px; margin: 0 0 6px; }
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.story .pathchip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g200); border-radius: 6px; padding: 2px 8px; color: var(--g700); white-space: nowrap; }
+.exbox { background: var(--g100); border: 1px solid var(--g200); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.exbox .exhead { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--g500); margin-bottom: 8px; }
+.exrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: var(--g700); border-bottom: 1px dashed var(--g200); }
+.exrow:last-child { border-bottom: none; }
+.exrow .was { color: var(--clay-d); }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; }
+.analogy { border-left: 3px solid var(--oat); padding: 4px 12px; margin: 10px 0; font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--g700); }
+.analogy .abreak { display: block; font-family: var(--sans); font-style: normal; font-size: 12.5px; color: var(--clay-d); margin-top: 6px; }
+.callout { display: flex; gap: 12px; border: 1.5px solid var(--oat); background: rgba(227,218,204,.35); border-radius: 10px; padding: 14px 16px; font-size: 14px; margin: 16px 0; }
+.callout .ico { color: var(--clay); font-weight: 600; }
+.term { border-bottom: 1.5px dotted var(--clay); cursor: help; color: var(--slate); }
+table.compare { border-collapse: collapse; width: 100%; font-size: 13.5px; background: var(--paper); }
+table.compare th, table.compare td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--g300); vertical-align: top; }
+table.compare th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); font-weight: 500; }
+table.compare td.bad { color: var(--rust); white-space: nowrap; }
+table.compare td.good { color: var(--olive); white-space: nowrap; }
+table.compare td.mid { color: var(--g500); white-space: nowrap; }
+table.compare td.grp { font-family: var(--mono); font-size: 11.5px; color: var(--g700); white-space: nowrap; }
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 14px 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw { color: var(--clay); } .code .str { color: var(--olive); } .code .cm { color: var(--g500); } .code .fn { color: #C9B98A; }
+:not(pre) > code { font-family: var(--mono); font-size: .92em; background: var(--g100); color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word; }
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.steps li { position: relative; padding: 0 0 14px 40px; font-size: 15px; color: var(--g700); counter-increment: s; }
+.steps li::before { content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: 2px; font-family: var(--mono); font-size: 12px; color: var(--clay); font-weight: 600; }
+.steps li strong { color: var(--slate); }
+.pele { --pele-bg: var(--paper); --pele-fg: var(--slate); --pele-muted: var(--g500); --pele-line: var(--g700); --pele-surface: var(--g100); --pele-surface-alt: var(--g200); --pele-border: var(--g300); --pele-accent: var(--clay); --pele-critical: #B04A3F; --pele-error: #B04A3F; --pele-font: var(--sans); --pele-font-mono: var(--mono); --pele-radius: 8px; --pele-series-1: var(--clay); --pele-series-2: var(--olive); --pele-series-3: #C9B98A; --pele-series-4: #B04A3F; --pele-series-5: var(--g700); --pele-series-6: var(--g500); --pele-series-7: #C4B59B; --pele-series-8: var(--clay-d); }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas { border: 1px solid var(--g300); border-radius: 12px; overflow-x: auto; background: var(--paper); padding: 16px; }
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0; }
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .two { grid-template-columns: 1fr; } main { padding: 40px 16px 64px; } }
+@media print { figure.diagram .canvas { border-color: var(--g200); } .tldr-dark { background: var(--g100); color: var(--slate); } .tldr-dark p, .tldr-dark strong, .tldr-dark code { color: var(--slate); } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">Explainer · claude-projects/check_941_w2</div>
+  <h1>How the 941 / W-2 <em>checker</em> works</h1>
+  <p class="intro">You saw a Form 941 card where line 5d said $4,320.00 of wages and $0.00 of tax, and nobody at that company earns anywhere near $200,000. The page could not see the problem because it only adds up what the database says. This is the script that does the math on its own and tells you where the numbers lie.</p>
+</header>
+
+<div class="tldr-dark">
+  <div class="label">Two-sentence version</div>
+  <p><strong>The checker takes the raw paycheck tax rows, works out what every 941 line and W-2 box should be using nothing but the IRS rates, and prints one line for every place the data, the filed forms, or the page say something different.</strong></p>
+  <p>It shares no code with the page. If the page and the checker agree, you can trust the page. If they disagree, one of them is wrong, and the finding tells you which number to go look at.</p>
+</div>
+
+<div class="sec-head"><span class="idx">01</span><h2>The problem it solves</h2></div>
+<p>The Form 941 &amp; W-2 page adds up columns from the paycheck tax table. Line 5d column 1 is just the sum of every "Additional Medicare taxable wages" value in that table. If the payroll engine wrote a bad value there, the page shows the bad value with a straight face. Nothing in the page knows that Additional Medicare only starts once one person has been paid more than $200,000 in the year.</p>
+<p>A check written inside the page would be built on the same sums, so it would make the same mistake. What you wanted is a second set of eyes that starts from the rates and the rules, not from the page.</p>
+<div class="callout"><span class="ico">→</span><div>Everything the checker prints uses employee ids and dollar amounts only. No names, no SSNs. You run it on your machine against a DBeaver export, and the file never comes into a Claude session.</div></div>
+
+<div class="sec-head"><span class="idx">02</span><h2>One worked example: the $4,320 on line 5d</h2></div>
+<div class="story" id="story-1">
+  <div class="stitle">Employee 3060, third quarter, the company from your screenshot</div>
+  <p>This person was paid $5,709.00 in Q2 and $12,548.72 in Q3. Their <span class="term" title="Year to date: the running total of Medicare wages from January up to and including this paycheck or quarter.">year-to-date</span> Medicare wages after Q3 are $18,257.72. The Additional Medicare rule says: the slice of this quarter's wages that pushed the year-to-date total past $200,000 is taxable at 0.9%. Here nothing pushed past anything.</p>
+  <div class="exbox">
+    <div class="exhead">Worked example · Additional Medicare threshold is $200,000.00</div>
+    <div class="exrow"><span>Medicare wages YTD before Q3 (Y0)</span><span>$5,709.00</span></div>
+    <div class="exrow"><span>Medicare wages this quarter</span><span>$12,548.72</span></div>
+    <div class="exrow"><span>Medicare wages YTD after Q3 (Y1)</span><span>$18,257.72</span></div>
+    <div class="exrow"><span>Should be on 5d: max(0, Y1 − 200,000) − max(0, Y0 − 200,000)</span><span class="now">$0.00</span></div>
+    <div class="exrow"><span>What the data says is on 5d</span><span class="was">$4,320.00</span></div>
+    <div class="exrow"><span>Tax that $4,320.00 would need: 4,320.00 × 0.9%</span><span class="now">$38.88</span></div>
+    <div class="exrow"><span>Tax the data says</span><span class="was">$0.00</span></div>
+    <div class="exrow punch"><span>Checker prints</span><span>2 errors on employee 3060 q3, exit code 1</span></div>
+  </div>
+  <p>Both findings come from the same bad row, and that is on purpose. One says "these wages should not exist". The other says "even if they did, the tax is wrong". The screenshot analysis made the same two points by hand. Every other number on that screen passes: $24.00 × 6.2% is $1.49, $12,646.76 × 12.4% is $1,568.20, and so on down the card.</p>
+  <p><span class="pathchip">check_941_w2/check_941_w2.js</span> <span class="pathchip">unit-addl-med-wages</span> <span class="pathchip">unit-addl-med-tax-rate</span></p>
+</div>
+
+<div class="story" id="story-2">
+  <div class="stitle">The same rule when someone really does cross the line</div>
+  <p>To make sure the rule is not just "always expect zero", the tests pay one person $20,000.00 a month. The <span class="term" title="Wage base: the yearly amount after which Social Security tax stops. $184,500.00 for 2026.">Social Security wage base</span> stops in October and Additional Medicare starts in November. The checker expects exactly that, and flags a run where it is missing.</p>
+  <div class="exbox">
+    <div class="exhead">Worked example · $20,000.00 a month, wage base $184,500.00, threshold $200,000.00</div>
+    <div class="exrow"><span>October: YTD goes $180,000 → $200,000</span><span class="now">SS wages $4,500.00, Additional Medicare $0.00</span></div>
+    <div class="exrow"><span>November: YTD goes $200,000 → $220,000</span><span class="now">SS wages $0.00, Additional Medicare $20,000.00, tax $180.00</span></div>
+    <div class="exrow"><span>If October was taxed on the full $20,000</span><span class="was">warning on that check, error on the year ($200,000 &gt; $184,500)</span></div>
+    <div class="exrow"><span>If November shows $0.00 Additional Medicare</span><span class="was">error: expected $20,000.00, got $0.00</span></div>
+    <div class="exrow punch"><span>Clean data</span><span>zero findings, exit code 0</span></div>
+  </div>
+</div>
+
+<div class="sec-head"><span class="idx">03</span><h2>What one run does</h2></div>
+<p>Four steps, then one table of rules.</p>
+<ol class="steps">
+  <li><strong>Turn every row into a unit.</strong> A unit is either one paycheck (from the new <code>paycheck_tax_lines.sql</code>) or one employee-quarter row (from the page's own <code>w2c_employee_raw.sql</code>). Both get the same fields plus a "how many paychecks am I" count. Everything after this step does not care which one you fed it.</li>
+  <li><strong>Walk each employee in date order and carry the Medicare year-to-date.</strong> Every unit remembers the total before it (Y0) and after it (Y1). The two threshold rules, Social Security stopping at the wage base and Additional Medicare starting at $200,000, only need Y0 and Y1. That is why a quarter row works as well as a paycheck: the before and after totals are the same whether you cross the line in one check or in a quarter.</li>
+  <li><strong>Add employees up into a company.</strong> Four quarters and a year, each with the same money fields. Line 1 counts the people whose pay period covered the 12th of the quarter's last month, the way the form asks.</li>
+  <li><strong>Run the table.</strong> Every rule is one row: an id, what it expects, what it found, how many cents of slack it gets, and the sentence to print. The runner walks the table. Adding a rule is adding a row, not writing new code.</li>
+</ol>
+<figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 713 715" width="713" height="715" style="width:clamp(535px,100%,713px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge" data-id="d1-L_A_B_0"><path d="M119.81,74L119.81,115"/><path class="pele-marker" d="M119.81,122L116.45,114L123.17,114Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_B_C_0"><path d="M119.81,188L119.81,229"/><path class="pele-marker" d="M119.81,236L116.45,228L123.17,228Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_C_D_0"><path d="M119.81,302L119.81,343"/><path class="pele-marker" d="M119.81,350L116.45,342L123.17,342Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_D_E_0"><path d="M119.81,416C119.81,440.8 165.38,456 239.73,456C314.08,456 359.64,467.4 359.64,486L359.64,492"/><path class="pele-marker" d="M359.64,499L356.28,491L363,491Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_F_E_0"><path d="M295.63,407C295.63,441.5 375.64,441.5 375.64,476L375.64,482" stroke-dasharray="3 4"/><path class="pele-marker" d="M375.64,489L372.28,481L379,481Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_G_E_0"><path d="M471.66,407C471.66,441.5 391.64,441.5 391.64,476L391.64,482" stroke-dasharray="3 4"/><path class="pele-marker" d="M391.64,489L388.28,481L395,481Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_H_E_0"><path d="M642.36,416C642.36,440.8 597.76,456 525,456C452.24,456 407.64,467.4 407.64,486L407.64,492" stroke-dasharray="3 4"/><path class="pele-marker" d="M407.64,499L404.28,491L411,491Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_E_I_0"><path d="M383.64,592.13L383.64,633.13"/><path class="pele-marker" d="M383.64,640.13L380.28,632.13L387,632.13Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect" data-id="d1-A" transform="translate(119.81,41)"><rect x="-111.81" y="-33" width="223.62" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">DBeaver JSON</tspan><tspan x="0" y="16.1">paychecks or quarter rows</tspan></text></g><g class="pele-node pele-shape-rect" data-id="d1-B" transform="translate(119.81,155)"><rect x="-84.71" y="-33" width="169.42" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">units</tspan><tspan x="0" y="16.1">one shape for both</tspan></text></g><g class="pele-node pele-shape-rect" data-id="d1-C" transform="translate(119.81,269)"><rect x="-87.34" y="-33" width="174.69" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">per employee</tspan><tspan x="0" y="16.1">walk Medicare YTD</tspan></text></g><g class="pele-node pele-shape-rect" data-id="d1-D" transform="translate(119.81,383)"><rect x="-68.47" y="-33" width="136.94" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">per company</tspan><tspan x="0" y="16.1">Q1..Q4 + year</tspan></text></g><g class="pele-node pele-shape-diam" data-id="d1-E" transform="translate(383.64,538.07)"><polygon points="0,-54.06 86.5,0 0,54.07 -86.5,0" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">CHECKS table</text></g><g class="pele-node pele-shape-rect" data-id="d1-F" transform="translate(295.63,383)"><rect x="-67.35" y="-24" width="134.7" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">filed 941 rows</text></g><g class="pele-node pele-shape-rect" data-id="d1-G" transform="translate(471.66,383)"><rect x="-68.67" y="-24" width="137.34" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">filed W-2 rows</text></g><g class="pele-node pele-shape-rect" data-id="d1-H" transform="translate(642.36,383)"><rect x="-62.03" y="-33" width="124.06" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">page engine</tspan><tspan x="0" y="16.1">same rows</tspan></text></g><g class="pele-node pele-shape-rect" data-id="d1-I" transform="translate(383.64,673.13)"><rect x="-67.35" y="-33" width="134.7" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">findings</tspan><tspan x="0" y="16.1">exit 1 on error</tspan></text></g></g></svg></div><figcaption><div><div class="cap-title">What one run does</div><div class="cap-sub">every input lands in the same table of checks; dotted inputs are optional</div></div></figcaption></figure>
+
+<p>The dotted inputs are optional. Give it filed 941 rows and it compares each line to its own recomputation and checks the form's own arithmetic. Give it W-2 rows and it compares the boxes. Give it both and it also compares the filed 941 to the filed W-2s, which needs no paychecks at all. Add <code>--page</code> and it runs the page's own engine on the same rows and diffs every line and box, 79 values for the screenshot company.</p>
+
+<div class="sec-head"><span class="idx">04</span><h2>What it checks</h2></div>
+<p>Slack means how far off a number may be before it counts. Tax lines get one cent per paycheck, because payroll rounds each check and the form rounds the total. Wages and counts get none.</p>
+<div class="table-wrap">
+<table class="compare">
+  <thead><tr><th>Group</th><th>Rule, in plain words</th><th>Severity</th></tr></thead>
+  <tbody>
+    <tr><td class="grp">unit</td><td>Additional Medicare wages equal the slice over $200,000 for this unit (Y0 and Y1 rule)</td><td class="bad">error</td></tr>
+    <tr><td class="grp">unit</td><td>Social Security tax is 6.2% of its wages, both the employee and the employer side; Medicare is 1.45% each side; Additional Medicare tax is 0.9% of its wages</td><td class="bad">error</td></tr>
+    <tr><td class="grp">unit</td><td>Social Security wages are Medicare wages until the wage base is reached, then zero</td><td class="mid">warning</td></tr>
+    <tr><td class="grp">unit</td><td>Tax with zero wages; quarter does not match the pay date; pay date outside the year; quarter not 1 to 4</td><td class="bad">error</td></tr>
+    <tr><td class="grp">unit</td><td>Federal wages are Medicare wages minus 401(k); any negative amount</td><td class="mid">warning</td></tr>
+    <tr><td class="grp">employee</td><td>Year Social Security wages never exceed the wage base</td><td class="bad">error</td></tr>
+    <tr><td class="grp">filed 941</td><td>Each line matches the recomputation; column 2 is column 1 times the rate; 5e and line 6 add up; a quarter with wages has a filed form; one active form per quarter</td><td class="bad">error</td></tr>
+    <tr><td class="grp">filed W-2</td><td>Boxes 1 to 6, 12 D, and 13 match the year; every paid employee has a W-2; no W-2 for someone never paid</td><td class="bad">error</td></tr>
+    <tr><td class="grp">941 vs W-2</td><td>Year line 2 = sum of box 1; line 3 = box 2; 5a = box 3; 5c = box 5; 5d = box 5 over $200,000; 5a tax = twice box 4</td><td class="bad">error</td></tr>
+    <tr><td class="grp">page</td><td>Every 941 line and W-2 box the page would show equals the recomputation</td><td class="bad">error</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="sec-head"><span class="idx">05</span><h2>An analogy, and where it stops working</h2></div>
+<div class="analogy">It is like checking a restaurant bill by redoing it on a napkin from the menu prices instead of reading the printed total. If the napkin and the bill agree, pay. If they do not, you know which line to argue about.
+  <span class="abreak">Where this breaks: a bill is one piece of paper. Here there are three layers that can each be wrong on their own, the paychecks, the filed forms, and the page. The checker redoes the napkin once and holds every layer against it, and it also holds the filed 941 against the filed W-2s, which is a comparison no napkin is involved in.</span></div>
+
+<div class="sec-head"><span class="idx">06</span><h2>The rule in one line, and how to run it</h2></div>
+<p><strong>Recompute from rates, never from the thing you are checking, and report every difference with the id of the row that caused it.</strong></p>
+<div class="code"><pre><span class="cm"># one row per paycheck: run sql/paycheck_tax_lines.sql in DBeaver, export as JSON</span>
+<span class="fn">node</span> check_941_w2/check_941_w2.js <span class="kw">--year</span> 2026 <span class="kw">--paychecks</span> <span class="str">~/Downloads/paycheck_tax_lines.json</span>
+
+<span class="cm"># the rows the page uses, plus a diff against the page engine</span>
+<span class="fn">node</span> check_941_w2/check_941_w2.js <span class="kw">--year</span> 2026 <span class="kw">--quarters</span> <span class="str">~/Downloads/w2c_employee_raw.json</span> <span class="kw">--page</span>
+
+<span class="cm"># filed forms too, machine-readable output</span>
+<span class="fn">node</span> check_941_w2/check_941_w2.js <span class="kw">--year</span> 2026 <span class="kw">--paychecks</span> <span class="str">p.json</span> <span class="kw">--f941</span> <span class="str">941.json</span> <span class="kw">--w2</span> <span class="str">w2.json</span> <span class="kw">--json</span>
+
+<span class="cm"># the 21 hand-computed tests</span>
+<span class="fn">node</span> check_941_w2/test/run_checker_tests.js</pre></div>
+<p>Exit code 0 means no errors. 1 means at least one error finding. 2 means it could not read the input or the year has no wage constants. Warnings never change the exit code.</p>
+<p>Below the findings it prints the recomputed 941 card for Q1 to Q4 and the year, and the W-2 column totals, formatted like the page so you can hold the two side by side.</p>
+
+<div class="two">
+  <div class="story">
+    <div class="stitle">What it does not do yet</div>
+    <p>Tips are not modeled. Box 12 code A is not added to box 4, and 941 line 5b column 2 is only derived from the tips amount, because the table has no 5b tax column.</p>
+    <p>A business that closed mid-year is not flagged for the quarters it stopped filing. Only a quarter with wages and no form is an error.</p>
+    <p>Nothing has run on real data. That is the next step: export 2026 from DBeaver and run it.</p>
+  </div>
+  <div class="story">
+    <div class="stitle">Where the pieces live</div>
+    <p><span class="pathchip">check_941_w2/check_941_w2.js</span> the checker, also a module.</p>
+    <p><span class="pathchip">check_941_w2/CLAUDE.md</span> the full rule table with formulas and slack.</p>
+    <p><span class="pathchip">check_941_w2/sql/paycheck_tax_lines.sql</span> DBeaver query, one row per paycheck, no names.</p>
+    <p><span class="pathchip">check_941_w2/test/run_checker_tests.js</span> the hand-computed cases, including the screenshot.</p>
+  </div>
+</div>
+</main>
+</body>
+</html>

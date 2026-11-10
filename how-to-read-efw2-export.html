@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading the EFW2 Export</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D; --rust:#B04A3F;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--ivory); }
+body { margin: 0; background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; font-size: 15px;
+  overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .story, .callout, .finding { overflow-wrap: break-word; word-break: break-word; }
+.card, .story, .finding, .stat, [class*="col"], [class*="grid"] > * { min-width: 0; }
+table { table-layout: auto; min-width: 640px; border-collapse: collapse; width: 100%; font-size: 13.5px; }
+td, th { word-break: normal; overflow-wrap: break-word; text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--g200); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); font-weight: 500; }
+td.num, th.num { text-align: right; white-space: nowrap; font-family: var(--mono); font-size: 12.5px; }
+td.nw { white-space: nowrap; }
+.table-wrap { overflow-x: auto; border: 1.5px solid var(--g200); border-radius: 12px; background: var(--paper); margin: 14px 0; }
+.table-wrap table tr:last-child td { border-bottom: none; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+:not(pre) > code { font-family: var(--mono); font-size: .92em; background: var(--g100); color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+header.wrap { padding-top: 48px; }
+.eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--g500); }
+h1 { font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.15; margin: 10px 0 12px; }
+h2 { font-family: var(--serif); font-weight: 500; font-size: 26px; margin: 56px 0 6px; }
+h2 .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); margin-right: 8px; vertical-align: middle; }
+.lede { font-size: 17px; color: var(--g700); max-width: 760px; margin: 0; }
+.sec-note { color: var(--g700); max-width: 780px; margin: 6px 0 0; }
+.filechip { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--g700); background: var(--g100); border: 1px solid var(--g200); border-radius: 6px; padding: 3px 9px; }
+.term { border-bottom: 1.5px dotted var(--clay); cursor: help; color: inherit; }
+
+/* TL;DR dark card (components 3.3) */
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius: 12px; padding: 22px 26px; margin: 32px 0 20px; }
+.tldr-dark .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--oat); margin-bottom: 10px; }
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark code { font-family: var(--mono); font-size: 13.5px; background: rgba(250,249,245,.12); color: var(--ivory); padding: 1px 5px; border-radius: 4px; }
+
+/* Stat strip */
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.stat { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 12px 14px; }
+.stat .n { font-family: var(--serif); font-size: 26px; line-height: 1.1; }
+.stat .l { font-family: var(--mono); font-size: 11px; color: var(--g500); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+.stat.ok { border-color: var(--olive); } .stat.ok .n { color: var(--olive); }
+.stat.bad { border-color: var(--clay); } .stat.bad .n { color: var(--clay-d); }
+.stat a { color: inherit; text-decoration: none; }
+@media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 32px; } }
+
+/* Code panel (dark slate) */
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 14px 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw { color: var(--clay); } .code .str { color: var(--olive); } .code .cm { color: var(--g500); } .code .fn { color: #C9B98A; }
+.code-label { font-family: var(--mono); font-size: 11px; color: var(--g500); margin: 14px 0 -8px; }
+
+/* Story card + ledger (components 30) */
+.story { border: 1.5px solid var(--g200); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 16px 0; }
+.story .stitle { font-family: var(--serif); font-weight: 500; font-size: 18.5px; margin: 0 0 6px; }
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.pathchip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g200); border-radius: 6px; padding: 2px 8px; color: var(--g700); white-space: nowrap; }
+.exbox { background: var(--g100); border: 1px solid var(--g200); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.exbox .exhead { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--g500); margin-bottom: 8px; }
+.exrow { display: grid; grid-template-columns: 76px minmax(0,1fr) auto; gap: 14px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: var(--g700); border-bottom: 1px dashed var(--g200); }
+.exrow.two { grid-template-columns: minmax(0,1fr) auto; }
+.exrow:last-child { border-bottom: none; }
+.exrow .pos { color: var(--g500); white-space: nowrap; }
+.exrow .val { text-align: right; white-space: nowrap; }
+.exrow .raw { color: var(--g500); margin-right: 10px; }
+.exrow .was { color: var(--clay-d); font-weight: 700; }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; font-family: var(--sans); font-size: 13.5px; line-height: 1.5; padding: 8px 0 2px; display: block; }
+.analogy { border-left: 3px solid var(--oat); padding: 4px 12px; margin: 16px 0 6px; font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--g700); }
+.analogy .abreak { display: block; font-family: var(--sans); font-style: normal; font-size: 13px; color: var(--clay-d); margin-top: 6px; }
+
+/* Rules list */
+ol.rules { counter-reset: r; list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+ol.rules li { counter-increment: r; background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 12px 16px 12px 54px; position: relative; font-size: 14.5px; }
+ol.rules li::before { content: counter(r); position: absolute; left: 16px; top: 11px; width: 26px; height: 26px; border-radius: 50%; background: var(--g100); color: var(--clay-d); font-family: var(--mono); font-size: 12.5px; display: flex; align-items: center; justify-content: center; }
+ol.rules li strong { font-weight: 600; }
+
+/* Decoder demo (components 22) */
+.demo { border: 1.5px solid var(--g300); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin-top: 16px; }
+.demo textarea { width: 100%; min-height: 92px; font-family: var(--mono); font-size: 12px; border: 1.5px solid var(--g300); border-radius: 10px; padding: 10px 12px; background: var(--ivory); color: var(--slate); resize: vertical; white-space: pre; overflow-x: auto; }
+.demo textarea:focus, .demo button:focus-visible, .demo input:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+.demo .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 12px 0 4px; font-size: 13px; color: var(--g700); }
+.demo button { font-family: var(--sans); font-size: 13px; background: var(--g100); border: 1.5px solid var(--g300); color: var(--slate); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.demo button:hover { border-color: var(--g500); }
+.demo input[type=number] { width: 72px; font-family: var(--mono); font-size: 12.5px; border: 1.5px solid var(--g300); border-radius: 8px; padding: 5px 8px; background: var(--paper); }
+.demo label { display: inline-flex; align-items: center; gap: 6px; }
+.demo .status { font-family: var(--mono); font-size: 12px; }
+.pill { display: inline-block; font-family: var(--mono); font-size: 11px; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--g300); color: var(--g700); background: var(--g100); }
+.pill.ok { border-color: var(--olive); color: var(--olive); background: #EEF2E8; }
+.pill.bad { border-color: var(--clay); color: var(--clay-d); background: #FBF1EC; }
+#decoded td.raw { font-family: var(--mono); font-size: 12px; white-space: pre; color: var(--g700); }
+#decoded td.box { white-space: nowrap; color: var(--clay-d); font-family: var(--mono); font-size: 12px; }
+#decoded tr.flag td { background: #FBF1EC; }
+.privacy { font-size: 12.5px; color: var(--g500); margin: 8px 0 0; }
+
+/* Findings */
+.finding { border: 1.5px solid var(--clay); border-radius: 14px; background: var(--paper); padding: 18px 22px; margin: 16px 0; }
+.finding.warn { border-style: dashed; }
+.finding.info { border-color: var(--oat); background: #FBF8F2; }
+.finding .ftag { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--clay-d); }
+.finding.info .ftag { color: var(--g700); }
+.finding .stitle { font-family: var(--serif); font-size: 19px; font-weight: 500; margin: 4px 0 6px; }
+.finding p { color: var(--g700); font-size: 14px; margin: 8px 0; }
+
+footer.wrap { margin-top: 64px; padding-bottom: 56px; font-size: 13px; color: var(--g500); border-top: 1px solid var(--g200); padding-top: 18px; }
+
+/* Pele diagram tokens (components 31) */
+
+/* Pele diagram token mapping (components.md 31) */
+.pele {
+  --pele-bg: var(--paper);
+  --pele-fg: var(--slate);
+  --pele-muted: var(--g500);
+  --pele-line: var(--g700);
+  --pele-surface: var(--g100);
+  --pele-surface-alt: var(--g200);
+  --pele-border: var(--g300);
+  --pele-accent: var(--clay);
+  --pele-critical: #B04A3F;
+  --pele-error: #B04A3F;
+  --pele-font: var(--sans);
+  --pele-font-mono: var(--mono);
+  --pele-radius: 8px;
+  --pele-series-1: var(--clay);
+  --pele-series-2: #4F7FB0;
+  --pele-series-3: var(--olive);
+  --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A;
+  --pele-series-6: #4A8670;
+  --pele-series-7: #7470A8;
+  --pele-series-8: var(--rust, #B04A3F);
+}
+/* Hue classes added by diagram.js colorize(): they redefine Pele's surface/border/line
+   variables on one node, edge or cluster, so the SVG markup itself never changes. */
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas {
+  border: 1px solid var(--g300); border-radius: 12px; overflow-x: auto;
+  background: var(--paper); padding: 16px;
+}
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0;
+}
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+@media print { figure.diagram .canvas { border-color: var(--g200); } }
+
+
+@media print {
+  .demo { display: none; }
+  .tldr-dark { background: var(--paper); color: var(--slate); border: 1.5px solid var(--slate); }
+  .tldr-dark p, .tldr-dark strong, .tldr-dark code { color: var(--slate); }
+  .code { background: var(--g100); } .code pre { color: var(--slate); white-space: pre-wrap; word-break: break-all; }
+  h2 { break-after: avoid; } .story, .finding { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="eyebrow">W-2 wage file · <span class="term" title="EFW2: SSA's fixed-width text format for W-2 Copy A. You upload it at Business Services Online (BSO).">EFW2</span> format · tax year 2025</div>
+  <h1>How to read w2_export-efw2.txt</h1>
+  <p class="lede">This file sends Copy A of 244 W-2s to the Social Security Administration. Every line is one record, and every value sits at a fixed character position. Below, line 3 of your own file is decoded field by field. Then you can decode any other line yourself.</p>
+  <span class="filechip">~/Downloads/w2_export-efw2.txt · 250 lines · 512 characters each · CR LF line ends</span>
+</header>
+
+<main class="wrap">
+  <section class="tldr-dark" aria-label="Two-sentence version">
+    <div class="label">The two-sentence version</div>
+    <p>Each line is one 512-character record, and its first two letters name it: <code>RA</code> submitter, <code>RE</code> employer, <code>RW</code> one employee's W-2, <code>RT</code> that employer's totals, <code>RF</code> end of file.</p>
+    <p>A value is found only by its position, and money is whole cents with no decimal point: characters 188–198 of line 3 read <code>00002036696</code>, which is Box 1 wages of <strong>$20,366.96</strong>.</p>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><div class="n">2</div><div class="l">employers</div></div>
+    <div class="stat"><div class="n">244</div><div class="l">W-2s (RW lines)</div></div>
+    <div class="stat ok"><div class="n">✓</div><div class="l">totals reconcile</div></div>
+    <div class="stat bad"><a href="#fix-156"><div class="n">Line 156</div><div class="l">breaks an SSA rule</div></a></div>
+    <div class="stat bad"><a href="#fix-ra"><div class="n">Line 1</div><div class="l">test placeholders</div></a></div>
+  </div>
+
+  <section id="problem">
+    <h2><span class="idx">01</span>The problem: 512 characters and no labels</h2>
+    <p class="sec-note">Open the file in an editor and line 3 looks like the panel below. Nothing says where the name ends or which run of digits is the wage. The file assumes you have SSA's layout, <span class="term" title="SSA Publication 42-007, 'Specifications for Filing Forms W-2 Electronically (EFW2)'. One edition per tax year.">Publication 42-007</span>, open beside it. The two grey lines on top are a column ruler. SSN, name, and address are masked here; your file has the real values.</p>
+    <div class="code-label">line 3 · masked · scroll right →</div>
+    <div class="code"><pre><span class="cm">        10        20        30        40        50        60        70        80        90       100       110       120       130       140       150       160       170       180       190       200       210       220       230       240       250       260       270       280       290       300       310       320       330       340       350       360       370       380       390       400       410       420       430       440       450       460       470       480       490       500       510  
+----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|--</span>
+<span class="kw">RW</span><span class="cm">XXXXXXXXX</span><span class="cm">xxxxx                         xxxxxxx                                       xxxx xxxxx xxxx xxx   xxxxx xxxx            PAxxxxx                                                 </span><span class="fn">000020366960000015077300002058814000001276460000205881400000029852</span><span class="str">00000000000           000000000000000002211800000000000000000000000000000000000000000000           00000000000000000000000000000000000000000000           00000000000000000000000000000000000000022118000000000000000000000000000000000 </span><span class="kw">0 10</span><span class="cm">                       </span></pre></div>
+    <p class="sec-note">Colors: <span style="color:var(--clay-d)">record type</span> · <span style="color:var(--g500)">identity (masked)</span> · <span style="color:#9C8A55">Boxes 1–6</span> · <span style="color:var(--olive)">other money slots</span> · <span style="color:var(--clay-d)">Box 13 flags</span>. Most of the line is zeros because most W-2 boxes are empty.</p>
+  </section>
+
+  <section id="shape">
+    <h2><span class="idx">02</span>Start with the first two characters</h2>
+    <p class="sec-note">Characters 1–2 tell you which layout the rest of the line follows. Your file has five record types, always in the order below. Each employer gets its own block: one <code>RE</code>, its <code>RW</code> lines, then one <code>RT</code>.</p>
+    <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 827 544" width="827" height="544" style="width:clamp(620px,100%,827px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-clusters"><g class="pele-cluster pele-hue-sky" data-id="d1-E2"><rect x="318.61" y="296" width="500.38" height="126" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-cluster-label" fill="var(--_m)" x="568.8" y="321.6" text-anchor="middle">SUPPORTS COORDINATION GROUP LLC</text></g><g class="pele-cluster pele-hue-clay" data-id="d1-E1"><rect x="8" y="122" width="464.8" height="126" fill="var(--_a)" fill-opacity="0.5" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-cluster-label" fill="var(--_m)" x="240.4" y="147.6" text-anchor="middle">PYRAMOS SOFTWARE LLC</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-clay" data-id="d1-L_RE1_RW1_0"><path d="M142.64,195L183.64,195"/><path class="pele-marker" d="M190.64,195L182.64,198.36L182.64,191.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_RW1_RT1_0"><path d="M291.06,195L332.06,195"/><path class="pele-marker" d="M339.06,195L331.06,198.36L331.06,191.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_RE2_RW2_0"><path d="M453.25,369L494.25,369"/><path class="pele-marker" d="M501.25,369L493.25,372.36L493.25,365.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_RW2_RT2_0"><path d="M619.46,369L660.46,369"/><path class="pele-marker" d="M667.46,369L659.46,372.36L659.46,365.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_RA_RE1_0"><path d="M85.32,74L85.32,155"/><path class="pele-marker" d="M85.32,162L81.96,154L88.68,154Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_RT1_RE2_0"><path d="M395.93,228L395.93,329"/><path class="pele-marker" d="M395.93,336L392.57,328L399.29,328Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_RT2_RF_0"><path d="M733.22,402L733.22,463"/><path class="pele-marker" d="M733.22,470L729.86,462L736.58,462Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d1-RA" transform="translate(85.32,41)"><rect x="-59.99" y="-33" width="119.98" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Line 1 · RA</tspan><tspan x="0" y="16.1">submitter</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-RE1" transform="translate(85.32,195)"><rect x="-57.32" y="-33" width="114.64" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">RE · line 2</tspan><tspan x="0" y="16.1">employer</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-RW1" transform="translate(240.85,195)"><rect x="-50.21" y="-33" width="100.42" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">RW ×2</tspan><tspan x="0" y="16.1">lines 3–4</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-RT1" transform="translate(395.93,195)"><rect x="-56.87" y="-33" width="113.74" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">RT · line 5</tspan><tspan x="0" y="16.1">totals</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-sky" data-id="d1-RE2" transform="translate(395.93,369)"><rect x="-57.32" y="-33" width="114.64" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">RE · line 6</tspan><tspan x="0" y="16.1">employer</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-sky" data-id="d1-RW2" transform="translate(560.35,369)"><rect x="-59.1" y="-33" width="118.21" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">RW ×242</tspan><tspan x="0" y="16.1">lines 7–248</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-sky" data-id="d1-RT2" transform="translate(733.22,369)"><rect x="-65.77" y="-33" width="131.54" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">RT · line 249</tspan><tspan x="0" y="16.1">totals</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="d1-RF" transform="translate(733.22,503)"><rect x="-68.69" y="-33" width="137.38" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Line 250 · RF</tspan><tspan x="0" y="16.1">end: 244 RWs</tspan></text></g></g></svg></div><figcaption><div><div class="cap-title">Line by line: what each record in your file is</div><div class="cap-sub">Each employer block is RE → RW… → RT. RA opens the file once; RF closes it once.</div></div></figcaption></figure>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>Type</th><th>Lines</th><th>What it holds</th><th>W-2 box it feeds</th></tr></thead>
+      <tbody>
+        <tr><td class="nw"><code>RA</code></td><td class="nw">1</td><td>Who sends the file: submitter EIN, BSO User ID, contact person. One per file.</td><td>None. SSA uses it to reach you.</td></tr>
+        <tr><td class="nw"><code>RE</code></td><td class="nw">2, 6</td><td>The employer: tax year, EIN, name, address, kind of employer.</td><td>Boxes b and c</td></tr>
+        <tr><td class="nw"><code>RW</code></td><td class="nw">3–4, 7–248</td><td>One employee: SSN, name, address, and every federal money box.</td><td>Boxes a, e, f, 1–13</td></tr>
+        <tr><td class="nw"><code>RT</code></td><td class="nw">5, 249</td><td>Totals of the RW lines just above it: count, then the sum of each money slot.</td><td>Matches Form W-3</td></tr>
+        <tr><td class="nw"><code>RF</code></td><td class="nw">250</td><td>End of file and the count of all RW lines (244).</td><td>None</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sec-note">Four other types are absent. <code>RO</code> and <code>RU</code> carry rarer Box 12 codes and Puerto Rico amounts. <code>RS</code> and <code>RV</code> carry state wages and state tax. With no <code>RS</code> lines, this file holds federal data only.</p>
+  </section>
+
+  <section id="example">
+    <h2><span class="idx">03</span>One line, decoded: line 3</h2>
+    <div class="story">
+      <div class="stitle">Line 3 is one employee of PYRAMOS SOFTWARE LLC</div>
+      <p>Take the line from section 1 and cut it at the positions Publication 42-007 gives for an <code>RW</code> record. Each slot below shows its positions, the raw characters, and what they mean on the paper W-2.</p>
+      <div class="exbox">
+        <div class="exhead">Worked example · line 3 · positions → raw text → W-2</div>
+        <div class="exrow"><span class="pos">1–2</span><span>Record type</span><span class="val"><span class="raw">RW</span>employee W-2</span></div>
+        <div class="exrow"><span class="pos">3–11</span><span>SSN · Box a</span><span class="val"><span class="raw">XXXXXXXXX</span>masked here</span></div>
+        <div class="exrow"><span class="pos">12–61</span><span>First / middle / last name · Box e</span><span class="val">masked here</span></div>
+        <div class="exrow"><span class="pos">132–133</span><span>Home state · Box f</span><span class="val"><span class="raw">PA</span>Pennsylvania</span></div>
+        <div class="exrow"><span class="pos">188–198</span><span>Wages, tips, other comp · Box 1</span><span class="val"><span class="raw">00002036696</span>$20,366.96</span></div>
+        <div class="exrow"><span class="pos">199–209</span><span>Federal income tax withheld · Box 2</span><span class="val"><span class="raw">00000150773</span>$1,507.73</span></div>
+        <div class="exrow"><span class="pos">210–220</span><span>Social Security wages · Box 3</span><span class="val"><span class="raw">00002058814</span>$20,588.14</span></div>
+        <div class="exrow"><span class="pos">221–231</span><span>Social Security tax · Box 4</span><span class="val"><span class="raw">00000127646</span>$1,276.46</span></div>
+        <div class="exrow"><span class="pos">232–242</span><span>Medicare wages · Box 5</span><span class="val"><span class="raw">00002058814</span>$20,588.14</span></div>
+        <div class="exrow"><span class="pos">243–253</span><span>Medicare tax · Box 6</span><span class="val"><span class="raw">00000029852</span>$298.52</span></div>
+        <div class="exrow"><span class="pos">287–297</span><span>401(k) deferral · Box 12 code D</span><span class="val"><span class="raw">00000022118</span>$221.18</span></div>
+        <div class="exrow"><span class="pos">441–451</span><span>Roth 401(k) · Box 12 code AA</span><span class="val"><span class="raw">00000022118</span>$221.18</span></div>
+        <div class="exrow"><span class="pos">486</span><span>Statutory employee · Box 13</span><span class="val"><span class="raw">0</span>not checked</span></div>
+        <div class="exrow"><span class="pos">488</span><span>Retirement plan · Box 13</span><span class="val"><span class="raw">1</span>checked</span></div>
+        <div class="exrow punch">Box 1 is exactly $221.18 below Boxes 3 and 5. That gap is the pre-tax 401(k) deferral (code D): it leaves income-tax wages but stays in Social Security and Medicare wages. The Roth amount (code AA) is after-tax, so it changes nothing.</div>
+      </div>
+      <div class="analogy">Reading an RW line is like reading a paper W-2 where you know each box only by where it sits on the page.
+        <span class="abreak">Where this breaks: the paper form prints labels and decimal points, and this file prints neither. You read <code>00002036696</code> as $20,366.96 only because you know slot 188–198 holds cents. A blank and a zero also differ: name and address slots pad with spaces, money slots pad with zeros.</span></div>
+    </div>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:19px;margin:28px 0 0">The whole RW line at a glance</h3>
+    <p class="sec-note">Every employee line in the file uses these slots. Money slots are 11 digits of cents. Gaps not listed are blank.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th class="num">Positions</th><th>Holds</th><th>W-2 box</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1–2</td><td><code>RW</code></td><td></td></tr>
+        <tr><td class="num">3–11</td><td>SSN</td><td class="nw">a</td></tr>
+        <tr><td class="num">12–65</td><td>First name 12–26, middle 27–41, last 42–61, suffix 62–65</td><td class="nw">e</td></tr>
+        <tr><td class="num">66–187</td><td>Address: location 66–87, street 88–109, city 110–131, state 132–133, ZIP 134–138, then foreign fields</td><td class="nw">f</td></tr>
+        <tr><td class="num">188–253</td><td>Six money slots in box order: wages 188, federal tax 199, SS wages 210, SS tax 221, Medicare wages 232, Medicare tax 243</td><td class="nw">1–6</td></tr>
+        <tr><td class="num">254–264</td><td>Social Security tips</td><td class="nw">7</td></tr>
+        <tr><td class="num">276–286</td><td>Dependent care benefits</td><td class="nw">10</td></tr>
+        <tr><td class="num">287–341</td><td>Deferrals D 287, E 298, F 309, G 320, H 331</td><td class="nw">12</td></tr>
+        <tr><td class="num">353–396</td><td>Nonqualified plan, section 457 353; HSA W 364; nonqualified plan, not 457 375; combat pay Q 386</td><td class="nw">11, 12</td></tr>
+        <tr><td class="num">408–484</td><td>C 408, V 419, Y 430, AA 441, BB 452, DD 463, FF 474</td><td class="nw">12</td></tr>
+        <tr><td class="num">486–489</td><td>Flags: statutory employee 486, retirement plan 488, third-party sick pay 489</td><td class="nw">13</td></tr>
+        <tr><td class="num">490–495</td><td>Tipped occupation codes (tax year 2026 and later)</td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="rules">
+    <h2><span class="idx">04</span>The rules for any field</h2>
+    <p class="sec-note">These six rules decode every line in the file. Line 3 above follows each one.</p>
+    <ol class="rules">
+      <li><strong>One line is one record of exactly 512 characters</strong>, ending in a Windows line break (<span class="term" title="Carriage return + line feed: the two bytes \r\n. SSA requires them after every record.">CR LF</span>). The line break is not part of the 512.</li>
+      <li><strong>Characters 1–2 pick the layout.</strong> <code>RW</code> means the employee layout, <code>RT</code> the totals layout, and so on.</li>
+      <li><strong>Positions count from 1.</strong> "188–198" means the 188th through the 198th character, 11 characters in all.</li>
+      <li><strong>Money is in cents, right-aligned, zero-filled, with no decimal point or sign.</strong> Divide by 100. RW slots are 11 digits wide; RT total slots are 15 digits wide (characters 10–24 of line 249 read <code>000000680185698</code>, which is $6,801,856.98).</li>
+      <li><strong>Text is uppercase, left-aligned, and space-filled</strong> to the slot's width. A slot of all spaces means "not reported".</li>
+      <li><strong>A one-character flag is <code>0</code> for no and <code>1</code> for yes.</strong> Coded slots use letters instead: Employment Code <code>R</code> (line 2, position 219) means regular Form 941 employment.</li>
+    </ol>
+  </section>
+
+  <section id="decode">
+    <h2><span class="idx">05</span>Decode a line yourself</h2>
+    <p class="sec-note">Paste one line from the file, or the whole file, then pick a line number. The decoder applies the Publication 42-007 layout for that record type and names the W-2 box each slot feeds.</p>
+    <div class="demo">
+      <textarea id="input" spellcheck="false" aria-label="EFW2 lines to decode" placeholder="Paste a line (or the whole file) here"></textarea>
+      <div class="bar">
+        <button type="button" id="load-example">Load line 3 (masked)</button>
+        <label>Line <input type="number" id="line-no" min="1" value="1"></label>
+        <span id="line-count" class="status"></span>
+        <label><input type="checkbox" id="show-empty"> show empty slots</label>
+      </div>
+      <div id="summary" class="bar"></div>
+      <div class="table-wrap"><table id="decoded">
+        <thead><tr><th class="num">Positions</th><th>Field</th><th>Raw</th><th>Means</th><th>W-2</th></tr></thead>
+        <tbody><tr><td colspan="5">Paste a line or load the example.</td></tr></tbody>
+      </table></div>
+      <p class="privacy">The decoder runs only inside this page. Nothing you paste leaves your browser.</p>
+    </div>
+    <p class="sec-note" style="margin-top:22px">The same reads work in a terminal. Use <code>cut -c</code> with the positions from the layout:</p>
+    <div class="code"><pre><span class="cm"># count each record type</span>
+<span class="fn">cut</span> -c1-2 ~/Downloads/w2_export-efw2.txt | <span class="fn">sort</span> | <span class="fn">uniq</span> -c
+
+<span class="cm"># Box 1 (positions 188-198) of every employee, in dollars, with its line number</span>
+<span class="fn">awk</span> <span class="str">'substr($0,1,2)=="RW" { printf "%d  %.2f\n", NR, substr($0,188,11)/100 }'</span> ~/Downloads/w2_export-efw2.txt
+
+<span class="cm"># one slot of one line: line 156, Box 3 (positions 210-220)</span>
+<span class="fn">sed</span> -n 156p ~/Downloads/w2_export-efw2.txt | <span class="fn">cut</span> -c210-220
+
+<span class="cm"># every SSA rule at once: the repo's checker, with the 2025 wage base</span>
+<span class="fn">git</span> show feature/w2-accuwage-files:mef-spring-boot-integration/efw2_check.py <span class="kw">&gt;</span> ~/efw2_check.py
+<span class="fn">python3</span> ~/efw2_check.py --tax-year 2025 ~/Downloads/w2_export-efw2.txt</pre></div>
+    <p class="sec-note">In VS Code or Cursor, the status bar shows "Col N" for the cursor. Col 188 is the first character of Box 1.</p>
+  </section>
+
+  <section id="contents">
+    <h2><span class="idx">06</span>What this file holds</h2>
+    <p class="sec-note">Each <code>RT</code> line must equal the sum of the <code>RW</code> lines above it. All of them do here: count, Box 1, Box 3, Box 5, and every other slot the checker compares. The <code>RF</code> count of 244 equals 2 + 242.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Employer (RE line)</th><th>EIN</th><th class="num">W-2s</th><th class="num">Box 1</th><th class="num">Box 2</th><th class="num">Box 3</th><th class="num">Box 5</th><th class="num">Box 12 D</th><th>RT line</th></tr></thead>
+      <tbody>
+        <tr><td>PYRAMOS SOFTWARE LLC (2)</td><td class="nw">99-1037312</td><td class="num">2</td><td class="num">$81,973.78</td><td class="num">$11,744.00</td><td class="num">$82,194.96</td><td class="num">$82,194.96</td><td class="num">$221.18</td><td class="nw">5 ✓</td></tr>
+        <tr><td>SUPPORTS COORDINATION GROUP LLC (6)</td><td class="nw">46-1572983</td><td class="num">242</td><td class="num">$6,801,856.98</td><td class="num">$410,896.91</td><td class="num">$7,008,701.94</td><td class="num">$7,040,601.94</td><td class="num">$230,719.96</td><td class="nw">249 ✓</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sec-note">Both <code>RE</code> lines say tax year 2025, Employment Code <code>R</code> (regular 941 employer), Kind of Employer <code>N</code> (not government or tax-exempt), and a blank Agent Indicator. Employee home addresses span ten states: 230 in PA, 6 in NJ, and one each in CA, FL, GA, MD, NY, OH, TX, and VA.</p>
+  </section>
+
+  <section id="fix">
+    <h2><span class="idx">07</span>Fix before you upload</h2>
+    <p class="sec-note">The repo's checker (<span class="pathchip">efw2_check.py</span>, run with <code>--tax-year 2025</code>) found one error and one warning, both on line 156. Reading line 1 by hand shows test values in the submitter record. Order: SSA reject, SSA warning, wrong data, then a note.</p>
+
+    <div class="finding" id="fix-156">
+      <div class="ftag">Error · <span class="term" title="AccuWage: SSA's free checker for EFW2 files. It flags errors (SSA rejects) and warnings (SSA may question).">AccuWage</span> rejects this</div>
+      <div class="stitle">Line 156: Box 3 is over the 2025 Social Security wage base</div>
+      <p>Social Security tax stops once an employee earns the <span class="term" title="The most wages Social Security tax applies to in one year: $176,100 for 2025, $184,500 for 2026.">wage base</span>, so Box 3 can never exceed it. This employee's Box 4 tax already stops at the base. Only the wage slot was not capped.</p>
+      <div class="exbox">
+        <div class="exhead">Worked example · line 156 (name and SSN not shown)</div>
+        <div class="exrow two"><span>2025 Social Security wage base</span><span>$176,100.00</span></div>
+        <div class="exrow two"><span>Box 4 tax, positions 221–231: <code>00001091820</code></span><span>$10,918.20 = 6.2% × $176,100.00</span></div>
+        <div class="exrow two"><span>Box 3 wages, positions 210–220: <code>00018410000</code></span><span class="was">$184,100.00</span></div>
+        <div class="exrow two"><span>Box 3 should read <code>00017610000</code></span><span class="now">$176,100.00</span></div>
+        <div class="exrow punch">Lower line 156 Box 3 by $8,000.00, and lower the Box 3 total on line 249 (positions 40–54) by the same amount, or the RT check fails next.</div>
+      </div>
+    </div>
+
+    <div class="finding warn">
+      <div class="ftag">Warning · check payroll first</div>
+      <div class="stitle">Line 156: Box 6 Medicare tax is lower than Box 5 implies</div>
+      <p>Medicare tax has no wage cap. It is 1.45% of all Medicare wages, plus 0.9% on wages above $200,000. This employee's withholding comes out $44.00 short of even the 1.45% part.</p>
+      <div class="exbox">
+        <div class="exhead">Worked example · line 156</div>
+        <div class="exrow two"><span>Box 5 Medicare wages, positions 232–242</span><span>$216,000.00</span></div>
+        <div class="exrow two"><span>1.45% of $216,000.00</span><span>$3,132.00</span></div>
+        <div class="exrow two"><span>+ 0.9% on the $16,000.00 above $200,000</span><span>$3,276.00</span></div>
+        <div class="exrow two"><span>Box 6 reported, positions 243–253: <code>00000308800</code></span><span class="was">$3,088.00</span></div>
+        <div class="exrow punch">A warning, not a reject. Box 6 must show what payroll actually withheld, so compare it with this employee's 2025 pay records before you change anything.</div>
+      </div>
+    </div>
+
+    <div class="finding" id="fix-ra">
+      <div class="ftag">Wrong data · replace before upload</div>
+      <div class="stitle">Line 1 (RA) still holds test-fixture values</div>
+      <p>The submitter record tells SSA who sent the file and whom to call about it. Every value on line 1 is a test default from <span class="pathchip">ScenarioKit.submitter()</span> on branch <code>feature/w2-accuwage-files</code>: the EIN, the User ID, the 100 MARKET ST, HARRISBURG address, contact name W2 CONTACT, the phone, and the email.</p>
+      <div class="exbox">
+        <div class="exhead">Line 1 · positions → value in file</div>
+        <div class="exrow"><span class="pos">3–11</span><span>Submitter EIN. placeholder; Pyramos's EIN in <code>.env</code> and on line 2 is 991037312</span><span class="val was">123456789</span></div>
+        <div class="exrow"><span class="pos">12–19</span><span>BSO User ID of the person who attests to the file</span><span class="val was">PYRAMOS1</span></div>
+        <div class="exrow"><span class="pos">423–437</span><span>Contact phone (555 is a fictional exchange)</span><span class="val was">7175550199</span></div>
+        <div class="exrow"><span class="pos">446–485</span><span>Contact email (example.com is reserved for tests)</span><span class="val was">w2@pyramos.example.com</span></div>
+        <div class="exrow punch">Line 6 (SUPPORTS COORDINATION GROUP) repeats the same 555 phone and example.com email as its employer contact, positions 249–263 and 279–318. Whatever produced this export filled the submitter from test defaults. Fix the source rather than editing the file by hand.</div>
+      </div>
+    </div>
+
+    <div class="finding info">
+      <div class="ftag">Note · not an error</div>
+      <div class="stitle">State wages and state tax are not in this file</div>
+      <p>The file has no <code>RS</code> records, so no Box 15–17 data. SSA does not need them. The state copies for PA (230 employees), NJ (6), and the other eight states go to each state separately.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  Layouts: SSA Publication 42-007, as encoded in <code>efw2_check.py</code> (branch <code>feature/w2-accuwage-files</code>), which follows the TY2026 edition. The TY2025 edition (<a href="https://www.ssa.gov/employer/efw/25efw2.pdf">ssa.gov/employer/efw/25efw2.pdf</a>) uses the same positions, except that it leaves RE 319–328, RW 490–495, and the new RO/RU code slots blank. Source file read on 2026-11-02; employee SSNs, names, and addresses are masked on this page.
+</footer>
+
+<script>
+const LAYOUTS = {"RA":[["Record Identifier",1,2,"fixed"],["Submitter's EIN",3,11,"digits_full"],["User Identification (User ID)",12,19,"text"],["Software Vendor Code",20,23,"digits_full"],["Blank",24,28,"blank"],["Resub Indicator",29,29,"code"],["Resub Wage File Identifier (WFID)",30,35,"text"],["Software Code",36,37,"code"],["Company Name",38,94,"text"],["Company Location Address",95,116,"text"],["Company Delivery Address",117,138,"text"],["Company City",139,160,"text"],["Company State Abbreviation",161,162,"text"],["Company ZIP Code",163,167,"digits_full"],["Company ZIP Code Extension",168,171,"digits_full"],["Blank",172,176,"blank"],["Company Foreign State/Province",177,199,"text"],["Company Foreign Postal Code",200,214,"text"],["Company Country Code",215,216,"text"],["Submitter Name",217,273,"text"],["Submitter Location Address",274,295,"text"],["Submitter Delivery Address",296,317,"text"],["Submitter City",318,339,"text"],["Submitter State Abbreviation",340,341,"text"],["Submitter ZIP Code",342,346,"digits_full"],["Submitter ZIP Code Extension",347,350,"digits_full"],["Blank",351,355,"blank"],["Submitter Foreign State/Province",356,378,"text"],["Submitter Foreign Postal Code",379,393,"text"],["Submitter Country Code",394,395,"text"],["Contact Name",396,422,"text"],["Contact Phone Number",423,437,"digits"],["Contact Phone Extension",438,442,"digits"],["Blank",443,445,"blank"],["Contact E-Mail/Internet",446,485,"email"],["Blank",486,488,"blank"],["Contact Fax",489,498,"digits"],["Blank",499,499,"blank"],["Preparer Code",500,500,"code"],["Blank",501,512,"blank"]],"RE":[["Record Identifier",1,2,"fixed"],["Tax Year",3,6,"digits_full"],["Agent Indicator Code",7,7,"code"],["Employer/Agent EIN",8,16,"digits_full"],["Agent for EIN",17,25,"digits_full"],["Terminating Business Indicator",26,26,"code"],["Establishment Number",27,30,"free"],["Other EIN",31,39,"digits_full"],["Employer Name",40,96,"text"],["Employer Location Address",97,118,"text"],["Employer Delivery Address",119,140,"text"],["Employer City",141,162,"text"],["Employer State Abbreviation",163,164,"text"],["Employer ZIP Code",165,169,"digits_full"],["Employer ZIP Code Extension",170,173,"digits_full"],["Kind of Employer",174,174,"code"],["Blank",175,178,"blank"],["Employer Foreign State/Province",179,201,"text"],["Employer Foreign Postal Code",202,216,"text"],["Employer Country Code",217,218,"text"],["Employment Code",219,219,"code"],["Tax Jurisdiction Code",220,220,"code"],["Third-Party Sick Pay Indicator",221,221,"code"],["Employer Contact Name",222,248,"text"],["Employer Contact Phone Number",249,263,"digits"],["Employer Contact Phone Extension",264,268,"digits"],["Employer Contact Fax Number",269,278,"digits"],["Employer Contact E-Mail/Internet",279,318,"email"],["Employer Signature PIN",319,328,"free"],["Blank",329,512,"blank"]],"RW":[["Record Identifier",1,2,"fixed"],["Social Security Number (SSN)",3,11,"digits_full"],["Employee First Name",12,26,"text"],["Employee Middle Name or Initial",27,41,"text"],["Employee Last Name",42,61,"text"],["Suffix",62,65,"text"],["Employee Location Address",66,87,"text"],["Employee Delivery Address",88,109,"text"],["Employee City",110,131,"text"],["Employee State Abbreviation",132,133,"text"],["Employee ZIP Code",134,138,"digits_full"],["Employee ZIP Code Extension",139,142,"digits_full"],["Blank",143,147,"blank"],["Employee Foreign State/Province",148,170,"text"],["Employee Foreign Postal Code",171,185,"text"],["Employee Country Code",186,187,"text"],["Wages, Tips and Other Compensation",188,198,"money"],["Federal Income Tax Withheld",199,209,"money"],["Social Security Wages",210,220,"money"],["Social Security Tax Withheld",221,231,"money"],["Medicare Wages and Tips",232,242,"money"],["Medicare Tax Withheld",243,253,"money"],["Social Security Tips",254,264,"money"],["Blank",265,275,"blank"],["Dependent Care Benefits",276,286,"money"],["401(k) Deferrals (Code D)",287,297,"money"],["403(b) Deferrals (Code E)",298,308,"money"],["408(k)(6) Deferrals (Code F)",309,319,"money"],["457(b) Deferrals (Code G)",320,330,"money"],["501(c)(18)(D) Deferrals (Code H)",331,341,"money"],["Blank",342,352,"blank"],["Nonqualified Plan Section 457",353,363,"money"],["Employer HSA Contributions (Code W)",364,374,"money"],["Nonqualified Plan Not Section 457",375,385,"money"],["Nontaxable Combat Pay (Code Q)",386,396,"money"],["Blank",397,407,"blank"],["Group Term Life Over $50,000 (Code C)",408,418,"money"],["Nonstatutory Stock Options (Code V)",419,429,"money"],["409A Deferrals (Code Y)",430,440,"money"],["Roth 401(k) (Code AA)",441,451,"money"],["Roth 403(b) (Code BB)",452,462,"money"],["Employer-Sponsored Health Coverage (Code DD)",463,473,"money"],["QSEHRA Benefits (Code FF)",474,484,"money"],["Blank",485,485,"blank"],["Statutory Employee Indicator",486,486,"code"],["Blank",487,487,"blank"],["Retirement Plan Indicator",488,488,"code"],["Third-Party Sick Pay Indicator",489,489,"code"],["Primary Treasury Tipped Occupation Code",490,492,"digits_full"],["Secondary Treasury Tipped Occupation Code",493,495,"digits_full"],["Blank",496,512,"blank"]],"RO":[["Record Identifier",1,2,"fixed"],["Blank",3,11,"blank"],["Allocated Tips",12,22,"money"],["Uncollected Employee Tax on Tips (Codes A and B)",23,33,"money"],["Medical Savings Account (Code R)",34,44,"money"],["Simple Retirement Account (Code S)",45,55,"money"],["Qualified Adoption Expenses (Code T)",56,66,"money"],["Uncollected SS/RRTA Tax on Group Term Life (Code M)",67,77,"money"],["Uncollected Medicare Tax on Group Term Life (Code N)",78,88,"money"],["Failed 409A Income (Code Z)",89,99,"money"],["Blank",100,110,"blank"],["Roth 457(b) (Code EE)",111,121,"money"],["83(i) Equity Grant Income (Code GG)",122,132,"money"],["83(i) Aggregate Deferrals (Code HH)",133,143,"money"],["Medicaid Waiver Payments (Code II)",144,154,"money"],["Uncollected SS/RRTA Tax on Tips (Code A)",155,165,"money"],["Uncollected Medicare Tax on Tips (Code B)",166,176,"money"],["Nontaxable Sick Pay (Code J)",177,187,"money"],["Golden Parachute Excise Tax (Code K)",188,198,"money"],["Substantiated Business Expense Reimbursements (Code L)",199,209,"money"],["Armed Services Moving Expense Reimbursements (Code P)",210,220,"money"],["Trump Account Employer Contributions (Code TA)",221,231,"money"],["Cash Tips Reported to the Employer (Code TP)",232,242,"money"],["Qualified Overtime Compensation (Code TT)",243,253,"money"],["Blank",254,274,"blank"],["Wages Subject to Puerto Rico Tax",275,285,"money"],["Commissions Subject to Puerto Rico Tax",286,296,"money"],["Allowances Subject to Puerto Rico Tax",297,307,"money"],["Tips Subject to Puerto Rico Tax",308,318,"money"],["Total Subject to Puerto Rico Tax",319,329,"money"],["Puerto Rico Tax Withheld",330,340,"money"],["Retirement Fund Annual Contributions",341,351,"money"],["Blank",352,362,"blank"],["Wages Subject to VI/GU/AS/MP Income Tax",363,373,"money"],["VI/GU/AS/MP Income Tax Withheld",374,384,"money"],["Blank",385,512,"blank"]],"RS":[["Record Identifier",1,2,"fixed"],["State Code",3,4,"digits_full"],["Taxing Entity Code",5,9,"free"],["Social Security Number (SSN)",10,18,"digits_full"],["Employee First Name",19,33,"text"],["Employee Middle Name or Initial",34,48,"text"],["Employee Last Name",49,68,"text"],["Suffix",69,72,"text"],["Employee Location Address",73,94,"text"],["Employee Delivery Address",95,116,"text"],["Employee City",117,138,"text"],["Employee State Abbreviation",139,140,"text"],["Employee ZIP Code",141,145,"digits_full"],["Employee ZIP Code Extension",146,149,"digits_full"],["Blank",150,154,"blank"],["Employee Foreign State/Province",155,177,"text"],["Employee Foreign Postal Code",178,192,"text"],["Employee Country Code",193,194,"text"],["Optional Code",195,196,"free"],["Reporting Period",197,202,"free"],["State Quarterly UI Total Wages",203,213,"state_money"],["State Quarterly UI Total Taxable Wages",214,224,"state_money"],["Number of Weeks Worked",225,226,"free"],["Date First Employed",227,234,"free"],["Date of Separation",235,242,"free"],["Blank",243,247,"blank"],["State Employer Account Number",248,267,"free"],["Blank",268,273,"blank"],["Income Tax State Code",274,275,"digits_full"],["State Taxable Wages",276,286,"state_money"],["State Income Tax Withheld",287,297,"state_money"],["Other State Data",298,307,"free"],["Tax Type Code",308,308,"code"],["Local Taxable Wages",309,319,"free"],["Local Income Tax Withheld",320,330,"free"],["State Control Number",331,337,"free"],["Supplemental Data 1",338,412,"free"],["Supplemental Data 2",413,487,"free"],["Blank",488,512,"blank"]],"RT":[["Record Identifier",1,2,"fixed"],["Total Number of RW Records",3,9,"count"],["Total Wages, Tips and Other Compensation",10,24,"money"],["Total Federal Income Tax Withheld",25,39,"money"],["Total Social Security Wages",40,54,"money"],["Total Social Security Tax Withheld",55,69,"money"],["Total Medicare Wages and Tips",70,84,"money"],["Total Medicare Tax Withheld",85,99,"money"],["Total Social Security Tips",100,114,"money"],["Blank",115,129,"blank"],["Total Dependent Care Benefits",130,144,"money"],["Total 401(k) Deferrals (Code D)",145,159,"money"],["Total 403(b) Deferrals (Code E)",160,174,"money"],["Total 408(k)(6) Deferrals (Code F)",175,189,"money"],["Total 457(b) Deferrals (Code G)",190,204,"money"],["Total 501(c)(18)(D) Deferrals (Code H)",205,219,"money"],["Blank",220,234,"blank"],["Total Nonqualified Plan Section 457",235,249,"money"],["Total Employer HSA Contributions (Code W)",250,264,"money"],["Total Nonqualified Plan Not Section 457",265,279,"money"],["Total Nontaxable Combat Pay (Code Q)",280,294,"money"],["Total Employer-Sponsored Health Coverage (Code DD)",295,309,"money"],["Total Group Term Life Over $50,000 (Code C)",310,324,"money"],["Total Income Tax Withheld by Payer of Third-Party Sick Pay",325,339,"money"],["Total Nonstatutory Stock Options (Code V)",340,354,"money"],["Total 409A Deferrals (Code Y)",355,369,"money"],["Total Roth 401(k) (Code AA)",370,384,"money"],["Total Roth 403(b) (Code BB)",385,399,"money"],["Total QSEHRA Benefits (Code FF)",400,414,"money"],["Blank",415,512,"blank"]],"RU":[["Record Identifier",1,2,"fixed"],["Total Number of RO Records",3,9,"count"],["Total Allocated Tips",10,24,"money"],["Total Uncollected Employee Tax on Tips (Codes A and B)",25,39,"money"],["Total Medical Savings Account (Code R)",40,54,"money"],["Total Simple Retirement Account (Code S)",55,69,"money"],["Total Qualified Adoption Expenses (Code T)",70,84,"money"],["Total Uncollected SS/RRTA Tax on Group Term Life (Code M)",85,99,"money"],["Total Uncollected Medicare Tax on Group Term Life (Code N)",100,114,"money"],["Total Failed 409A Income (Code Z)",115,129,"money"],["Blank",130,144,"blank"],["Total Roth 457(b) (Code EE)",145,159,"money"],["Total 83(i) Equity Grant Income (Code GG)",160,174,"money"],["Total 83(i) Aggregate Deferrals (Code HH)",175,189,"money"],["Total Medicaid Waiver Payments (Code II)",190,204,"money"],["Total Uncollected SS/RRTA Tax on Tips (Code A)",205,219,"money"],["Total Uncollected Medicare Tax on Tips (Code B)",220,234,"money"],["Total Nontaxable Sick Pay (Code J)",235,249,"money"],["Total Golden Parachute Excise Tax (Code K)",250,264,"money"],["Total Substantiated Business Expense Reimbursements (Code L)",265,279,"money"],["Total Armed Services Moving Expense Reimbursements (Code P)",280,294,"money"],["Total Trump Account Employer Contributions (Code TA)",295,309,"money"],["Total Cash Tips Reported to the Employer (Code TP)",310,324,"money"],["Total Qualified Overtime Compensation (Code TT)",325,339,"money"],["Blank",340,354,"blank"],["Total Wages Subject to Puerto Rico Tax",355,369,"money"],["Total Commissions Subject to Puerto Rico Tax",370,384,"money"],["Total Allowances Subject to Puerto Rico Tax",385,399,"money"],["Total Tips Subject to Puerto Rico Tax",400,414,"money"],["Total Subject to Puerto Rico Tax",415,429,"money"],["Total Puerto Rico Tax Withheld",430,444,"money"],["Total Retirement Fund Annual Contributions",445,459,"money"],["Total Wages Subject to VI/GU/AS/MP Income Tax",460,474,"money"],["Total VI/GU/AS/MP Income Tax Withheld",475,489,"money"],["Blank",490,512,"blank"]],"RV":[["Record Identifier",1,2,"fixed"],["Supplemental Data",3,512,"free"]],"RF":[["Record Identifier",1,2,"fixed"],["Blank",3,7,"blank"],["Number of RW Records",8,16,"count"],["Blank",17,512,"blank"]]};
+const EXAMPLE_LINE = "RWXXXXXXXXXxxxxx                         xxxxxxx                                       xxxx xxxxx xxxx xxx   xxxxx xxxx            PAxxxxx                                                 00002036696000001507730000205881400000127646000020588140000002985200000000000           000000000000000002211800000000000000000000000000000000000000000000           00000000000000000000000000000000000000000000           00000000000000000000000000000000000000022118000000000000000000000000000000000 0 10                       ";
+const RECORD_LENGTH = 512;
+const RECORD_NAMES = { RA: "submitter", RE: "employer", RW: "employee W-2", RO: "employee optional", RS: "state", RT: "employer totals", RU: "optional totals", RV: "state totals", RF: "end of file" };
+const CODE_MEANINGS = {
+  "Resub Indicator": { "0": "original file", "1": "resubmission" },
+  "Software Code": { "98": "in-house program", "99": "off-the-shelf software" },
+  "Preparer Code": { A: "accounting firm", L: "self-prepared", S: "service bureau", P: "parent company", O: "other" },
+  "Agent Indicator Code": { " ": "no agent", "1": "Form 2678 agent", "2": "common paymaster", "3": "section 3504 agent" },
+  "Terminating Business Indicator": { "0": "no", "1": "yes, business ended this year" },
+  "Kind of Employer": { F: "federal government", S: "state/local government", T: "tax-exempt 501(c)", Y: "state/local 501(c)", N: "none of these", " ": "not given" },
+  "Employment Code": { A: "agriculture (943)", H: "household", M: "military", Q: "Medicare-qualified government", X: "railroad", F: "Form 944", R: "regular (941)" },
+  "Tax Jurisdiction Code": { " ": "W-2 (states and DC)", V: "Virgin Islands", G: "Guam", S: "American Samoa", N: "Northern Mariana Islands", P: "Puerto Rico" },
+};
+const YES_NO = { "0": "no", "1": "yes" };
+const BOXES = {
+  "Social Security Number (SSN)": "Box a", "Employer/Agent EIN": "Box b", "Employer Name": "Box c",
+  "Wages, Tips and Other Compensation": "Box 1", "Federal Income Tax Withheld": "Box 2",
+  "Social Security Wages": "Box 3", "Social Security Tax Withheld": "Box 4",
+  "Medicare Wages and Tips": "Box 5", "Medicare Tax Withheld": "Box 6", "Social Security Tips": "Box 7",
+  "Allocated Tips": "Box 8", "Dependent Care Benefits": "Box 10",
+  "Nonqualified Plan Section 457": "Box 11", "Nonqualified Plan Not Section 457": "Box 11",
+  "Statutory Employee Indicator": "Box 13", "Retirement Plan Indicator": "Box 13",
+  "State Employer Account Number": "Box 15", "State Taxable Wages": "Box 16", "State Income Tax Withheld": "Box 17",
+  "Local Taxable Wages": "Box 18", "Local Income Tax Withheld": "Box 19",
+};
+
+function boxFor(recordId, name) {
+  if (BOXES[name]) return BOXES[name];
+  if (recordId === "RW" && name === "Third-Party Sick Pay Indicator") return "Box 13";
+  if (recordId === "RT" || recordId === "RU") return "W-3";
+  const code = name.match(/\(Codes? ([A-Z]{1,2})/);
+  if (code) return "Box 12 " + code[1];
+  if (/^Employee (First|Middle|Last)|^Suffix/.test(name)) return "Box e";
+  if (/^Employee .*(Address|City|State Abbreviation|ZIP|Foreign|Country)/.test(name)) return "Box f";
+  if (/^Employer .*(Address|City|State Abbreviation|ZIP|Foreign|Country)/.test(name)) return "Box c";
+  return "";
+}
+
+const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+function meaning(field, raw) {
+  const [name, , , kind] = field;
+  if (kind === "money" || kind === "state_money") {
+    return /^\d+$/.test(raw) ? dollars.format(Number(raw) / 100) : (raw.trim() ? "not digits" : "blank");
+  }
+  if (kind === "count") return /^\d+$/.test(raw) ? String(Number(raw)) : "not digits";
+  if (kind === "blank") return raw.trim() ? "should be blank" : "";
+  if (CODE_MEANINGS[name] && raw in CODE_MEANINGS[name]) return CODE_MEANINGS[name][raw];
+  if (kind === "code" && raw in YES_NO) return YES_NO[raw];
+  return raw.trim();
+}
+
+function isEmpty(field, raw) {
+  const kind = field[3];
+  if (kind === "money" || kind === "state_money") return /^0*$/.test(raw.trim());
+  return raw.trim() === "";
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function pill(text, tone) { return el("span", "pill " + (tone || ""), text); }
+
+function render() {
+  const lines = document.getElementById("input").value.split(/\n/).map(l => l.replace(/\r$/, "")).filter(l => l.length);
+  const lineInput = document.getElementById("line-no");
+  const body = document.querySelector("#decoded tbody");
+  const summary = document.getElementById("summary");
+  const showEmpty = document.getElementById("show-empty").checked;
+  body.replaceChildren(); summary.replaceChildren();
+  lineInput.max = Math.max(lines.length, 1);
+  document.getElementById("line-count").textContent = lines.length ? "of " + lines.length : "";
+  if (!lines.length) {
+    const row = body.insertRow(); const cell = row.insertCell(); cell.colSpan = 5; cell.textContent = "Paste a line or load the example.";
+    return;
+  }
+  const index = Math.min(Math.max(parseInt(lineInput.value, 10) || 1, 1), lines.length) - 1;
+  const line = lines[index];
+  const recordId = line.slice(0, 2);
+  const layout = LAYOUTS[recordId];
+  summary.append(pill(recordId + (RECORD_NAMES[recordId] ? " · " + RECORD_NAMES[recordId] : " · unknown type"), layout ? "" : "bad"));
+  summary.append(line.length === RECORD_LENGTH ? pill("512 characters ✓", "ok") : pill(line.length + " characters; SSA needs 512", "bad"));
+  if (!layout) {
+    const row = body.insertRow(); const cell = row.insertCell(); cell.colSpan = 5;
+    cell.textContent = "Characters 1–2 are \"" + recordId + "\". An EFW2 line starts with RA, RE, RW, RO, RS, RT, RU, RV, or RF.";
+    return;
+  }
+  let hidden = 0;
+  for (const field of layout) {
+    const [name, start, end, kind] = field;
+    const raw = line.slice(start - 1, end).padEnd(end - start + 1, " ");
+    const misplaced = kind === "blank" && raw.trim() !== "";
+    if (!showEmpty && !misplaced && (kind === "blank" || isEmpty(field, raw))) { hidden++; continue; }
+    const row = body.insertRow();
+    if (misplaced) row.className = "flag";
+    row.append(el("td", "num", start === end ? String(start) : start + "–" + end));
+    row.append(el("td", "", name));
+    row.append(el("td", "raw", raw));
+    row.append(el("td", "", meaning(field, raw)));
+    row.append(el("td", "box", boxFor(recordId, name)));
+  }
+  if (hidden) summary.append(el("span", "status", hidden + " empty slots hidden"));
+}
+
+document.getElementById("input").addEventListener("input", () => { document.getElementById("line-no").value = 1; render(); });
+document.getElementById("line-no").addEventListener("input", render);
+document.getElementById("show-empty").addEventListener("change", render);
+document.getElementById("load-example").addEventListener("click", () => {
+  document.getElementById("input").value = EXAMPLE_LINE;
+  document.getElementById("line-no").value = 1;
+  render();
+});
+render();
+</script>
+</body>
+</html>

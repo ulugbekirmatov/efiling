@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W-2 batch upload</title>
+<style>
+:root {
+  /* Surfaces */
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  /* Text */
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  /* Accents (Anthropic brand) */
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --rust:   #B04A3F;
+  /* Typography */
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory); color: var(--slate);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word; word-break: break-word;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 56px 32px 72px; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+
+/* Page chrome (components 1.1 / 1.2 / 1.3) */
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--g500); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 24px; height: 1.5px; background: var(--clay); }
+h1 {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(34px, 4.8vw, 52px); line-height: 1.08;
+  letter-spacing: -0.018em; color: var(--slate); margin: 0 0 8px; max-width: 22ch;
+}
+.intro { font-size: 16.5px; color: var(--g700); margin: 18px 0 0; max-width: 640px; }
+section { margin-top: 56px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.sec-head .count { font-family: var(--mono); font-size: 11px; color: var(--g500); background: var(--g100); padding: 2px 8px; border-radius: 999px; }
+
+/* Text containment — break long tokens so they never overflow a card */
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .milestone, .callout, .summary, .bubble, .stat-card, .carry-body {
+  overflow-wrap: break-word; word-break: break-word;
+}
+.card, .milestone, .stat-card, [class*="col"], [class*="grid"] > * { min-width: 0; }
+/* Table cells never word-break: break-word collapses min-content width to one character and crushes columns mid-word */
+table { table-layout: auto; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }
+
+/* Block code panel — dark slate, warm syntax tints */
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+.code pre {
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
+  color: #E8E6DE; white-space: pre; margin: 0;
+}
+.code .kw  { color: var(--clay); }
+.code .str { color: var(--olive); }
+.code .cm  { color: var(--g500); }
+.code .fn  { color: #C9B98A; }
+
+/* Inline code — small mono badge on a tinted surface */
+:not(pre) > code {
+  font-family: var(--mono); font-size: 0.92em;
+  background: var(--g100); color: var(--slate);
+  padding: 1px 6px; border-radius: 4px;
+  overflow-wrap: break-word;
+}
+
+/* Shared chips & pills (components 7.1 / 7.3) */
+.chip {
+  font-family: var(--mono); font-size: 11.5px;
+  background: var(--g100); border: 1.5px solid var(--g300);
+  color: var(--g700); padding: 5px 10px; border-radius: 8px; white-space: nowrap;
+}
+.chip strong { color: var(--slate); font-weight: 600; }
+.pill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  border-radius: 999px; padding: 5px 12px; line-height: 1;
+}
+.pill.sev      { background: var(--clay);  color: #fff; letter-spacing: 0.03em; }
+.pill.resolved { background: var(--olive); color: #fff; }
+.pill.neutral  { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g300); }
+
+/* Risk matrix (component 5.5) */
+.risks-panel { border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; background: var(--paper); }
+.risks-panel .row { display: grid; grid-template-columns: 1.6fr 110px 1.6fr; }
+.risks-panel .row + .row { border-top: 1.5px solid var(--g300); }
+.risks-panel .cell { padding: 14px 18px; font-size: 13.5px; }
+.risks-panel .cell + .cell { border-left: 1.5px solid var(--g300); }
+.risks-panel .head { background: var(--g100); font-weight: 600; color: var(--slate); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.sev-badge { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+.sev-badge.high { background: #F3D9CC; color: #8A3B1E; }
+.sev-badge.med  { background: var(--oat); color: var(--slate); }
+.sev-badge.low  { background: #E4E9DC; color: #4B5C39; }
+
+/* Action-item checklist (component 25, simplified columns) */
+.ai-list { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; overflow: hidden; }
+.ai-row { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--g100); }
+.ai-row:last-child { border-bottom: none; }
+.ai-check { width: 18px; height: 18px; border: 1.5px solid var(--g300); border-radius: 5px; background: var(--paper); position: relative; }
+.ai-row.done .ai-check { background: var(--olive); border-color: var(--olive); }
+.ai-row.done .ai-check::after {
+  content: ""; position: absolute; left: 4px; top: 1px; width: 5px; height: 9px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(40deg);
+}
+.ai-row.done .ai-desc { color: var(--g500); text-decoration: line-through; text-decoration-color: var(--g300); }
+.ai-desc { font-size: 14px; }
+.ai-due { font-family: var(--mono); font-size: 12px; color: var(--g500); text-align: right; }
+
+footer {
+  margin-top: 72px; padding-top: 16px; border-top: 1.5px solid var(--g200);
+  font-family: var(--mono); font-size: 11px; color: var(--g500);
+}
+
+@media print {
+  body { background: #fff; }
+  .wrap { max-width: 100%; padding: 0; }
+  .card:hover { transform: none; box-shadow: none; }
+  .code, .diff { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  section { break-inside: avoid-page; }
+}
+
+/* Key/value summary cells (component 10.2) */
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+@media (max-width: 720px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.summary .cell { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 18px 20px; }
+.summary .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 6px; }
+.summary .v { font-size: 17px; color: var(--slate); font-weight: 600; }
+.summary .v.accent { color: var(--clay); }
+
+/* TL;DR — light left-accent variant (component 3.4) */
+.tldr-light { background: var(--paper); border: 1.5px solid var(--g300); border-left: 4px solid var(--clay); border-radius: 12px; padding: 20px 24px; max-width: 760px; margin-top: 28px; }
+.tldr-light .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 8px; }
+.tldr-light p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--slate); }
+.tldr-light p + p { margin-top: 10px; }
+
+/* Milestone timeline (component 11.1) */
+.milestones { display: flex; flex-direction: column; gap: 0; }
+.milestone { display: grid; grid-template-columns: 120px 28px 1fr; gap: 0 18px; position: relative; }
+@media (max-width: 640px) { .milestone { grid-template-columns: 76px 22px 1fr; gap: 0 10px; } }
+.milestone .when { text-align: right; font-family: var(--mono); font-size: 12px; color: var(--g500); padding-top: 4px; }
+.milestone .dot-col { display: flex; flex-direction: column; align-items: center; }
+.milestone .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 3px solid var(--clay); margin-top: 4px; flex-shrink: 0; }
+.milestone .dot.done { background: var(--olive); border-color: var(--olive); }
+.milestone .line { width: 2px; flex: 1; background: var(--g300); margin: 4px 0; }
+.milestone:last-child .line { display: none; }
+.milestone .body { padding-bottom: 36px; min-width: 0; }
+.milestone .body h3 { font-family: var(--serif); font-weight: 500; font-size: 20px; margin-bottom: 6px; }
+.milestone .body p { color: var(--g700); font-size: 14.5px; max-width: 640px; }
+.milestone .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.milestone .tag { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g300); border-radius: 6px; padding: 3px 8px; color: var(--g700); }
+.milestone .code { margin-top: 14px; }
+
+/* Numbered step list (component 6.4) */
+.steps { list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.steps li {
+  counter-increment: step; display: flex; align-items: flex-start; gap: 12px;
+  background: var(--paper); border: 1.5px solid var(--g300); border-radius: 8px;
+  padding: 10px 14px; font-size: 13px; color: var(--slate);
+}
+.steps li::before {
+  content: counter(step); font-family: var(--mono); font-size: 11px;
+  flex: 0 0 20px; height: 20px; border-radius: 50%;
+  background: var(--oat); color: var(--slate);
+  display: inline-flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="eyebrow">Implementation plan · MeF</div><h1>W-2 batch upload</h1><p class="intro">Pyramos has to give Social Security one wage file for tax year 2026. The MeF send cannot carry a W-2. This plan builds that file in the Spring Boot app and leaves the upload to a person on Business Services Online. Decision. Build Phases 1 through 7. The federal file writer comes first. State copies and W-2c stay out, because they are different files and different portals.</p></header><div class="summary"><div class="cell"><div class="k">File</div><div class="v">One EFW2. Each record is 512 bytes.</div></div><div class="cell"><div class="k">Upload</div><div class="v">A person, on SSA Business Services Online.</div></div><div class="cell"><div class="k">Opens</div><div class="v">December 8, 2026</div></div><div class="cell"><div class="k">Due</div><div class="v accent">February 1, 2027</div></div><div class="cell"><div class="k">Not in this build</div><div class="v">State copies and W-2c.</div></div></div><div class="tldr-light"><div class="k">TL;DR</div><p>The app writes one combined wage file for every client. A person checks it with AccuWage and uploads it on Business Services Online. The app stores the file and the Wage File Identifier. It never logs into Social Security.</p></div><section><div class="sec-head"><span class="idx">01</span><h2>Milestones</h2><span class="count">7 steps</span></div><div class="milestones"><div class="milestone"><div class="when">Phase 1</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>A pure 512-byte writer</h3><p><code>FormType</code> stays the closed 94x list. A new package, <code>com.irs.mef.wagefile</code>, turns employer and employee rows into bytes. Money is integer cents. The writer does not call <code>SendSubmissions</code> and does not touch <code>MefClientService</code>.</p><ol class="steps"><li>Add types for the submitter, one employer, and one employee wage row.</li><li>Add <code>Efw2Writer</code>. It emits RA, then each employer's RE, RW rows, and RT, then RF.</li><li>Test one employer and one employee at 250000 cents. Assert five records, 512 bytes each, and a zero-filled wage field.</li></ol><div class="tags"><span class="tag">com.irs.mef.wagefile</span><span class="tag">Publication 42-007</span></div></div></div><div class="milestone"><div class="when">Phase 2</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>Reject a file SSA would return</h3><p>The validator runs on the bytes before anyone uploads. It checks length, order, and totals. It does not call AccuWage.</p><ol class="steps"><li>Fail a record that is not 512 bytes.</li><li>Fail an RT whose wage sum disagrees with that employer's RW rows.</li><li>Fail an RU with no RO, and an RV with no RS.</li></ol><div class="tags"><span class="tag">Efw2Validator</span></div></div></div><div class="milestone"><div class="when">Phase 3</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>Keep the exact bytes</h3><p>A resubmit has to reuse the file SSA already saw. <code>NewSendSubmissionRecord</code> stores a SHA-256 and drops the XML, so this file gets its own directory. Add <code>mef.wagefile.path</code>, default <code>data/wage-files</code>, beside <code>mef.newsend.journal.path</code>.</p><ol class="steps"><li>Each run is a folder with the bytes, the sha256, the tax year, the employer EINs, a status, and a blank Wage File Identifier.</li><li>Statuses are BUILT, UPLOADED, RETURNED, and COMPLETE.</li><li>A test writes a file and reads the same bytes back. The NewSend journal is not written.</li></ol><div class="tags"><span class="tag">data/wage-files</span><span class="tag">NewSendSubmissionRecord.java</span></div></div></div><div class="milestone"><div class="when">Phase 4</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>Build from a fixture first</h3><p>Payroll rows live in the sibling database, not in this repo. <code>onepay_employee_tax_payment</code> has <code>tax_amount</code> and <code>taxable_wages</code> keyed by <code>tax_type_id</code>, and the DDL ships no seed ids. <code>hr_employee</code> stores <code>social_security_last_five_number</code> only. The first loader reads a checked-in fixture. The live query waits until those codes are named.</p><ol class="steps"><li>Add <code>WageYearSource</code> for one tax year of employers and employees.</li><li>Add <code>FixtureWageYearSource</code> with the corrected Orchid quarter, wages 2500.00.</li><li>Do not add a C2S query in this phase.</li></ol><div class="tags"><span class="tag">onepay_employee_tax_payment</span><span class="tag">adp_employee.government_no</span></div></div></div><div class="milestone"><div class="when">Phase 5</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>Match the file to the 941 quarters</h3><p>For each quarter, compare the wage file with Form 941 line 2 <code>WagesAmt</code>, line 3 <code>FederalIncomeTaxWithheldAmt</code>, line 5a column 1 <code>SocialSecurityTaxCashWagesAmt</code>, and line 5c column 1 <code>TaxableMedicareWagesTipsAmt</code>. A 941-X replaces that quarter with column 1. Column 4 is tax. On Orchid Q1 the file must show 2500.00, not the original 1000.00 and not the 186.00 tax. The check takes those amounts as input. It does not read the journal hash.</p><ol class="steps"><li>Fail the file when wages are 1000.00 and the corrected quarter is 2500.00.</li><li>Pass the file when wages are 2500.00, withholding 250.00, Social Security wages 2500.00, and Medicare wages 2500.00.</li></ol><div class="tags"><span class="tag">IRS941.xsd:111</span><span class="tag">scenario-4-orchid-941x</span></div></div></div><div class="milestone"><div class="when">Phase 6</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>Build the file, then record the upload</h3><p>One call writes the year file and returns the path and the hash. A second call stores the Wage File Identifier a person copied from the Business Services Online receipt. There is no browser automation and no MeF login.</p><ol class="steps"><li>Add <code>POST /api/mef/wage-files</code> to build the year file.</li><li>Add <code>POST /api/mef/wage-files/{id}/receipt</code> to store the identifier and set status UPLOADED.</li><li>Tests call the services. They do not open a socket to SSA.</li></ol><div class="tags"><span class="tag">context path /api</span></div></div></div><div class="milestone"><div class="when">Phase 7</div><div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="body"><h3>Resubmit a returned file from the saved bytes</h3><p>Publication 42-007 puts the resubmit flag in RA position 29 and the prior Wage File Identifier in positions 30-35. The resubmit reads the saved bytes, sets those fields, and writes a new run that points at the original. It does not rebuild totals from payroll. A completed file with wrong data is a different publication and is not this phase.</p><ol class="steps"><li>A test sets RA position 29 to 1 and positions 30-35 to a known identifier.</li><li>The original bytes stay on disk.</li></ol><div class="tags"><span class="tag">RA 29</span><span class="tag">RA 30-35</span></div></div></div></div></section><section><div class="sec-head"><span class="idx">02</span><h2>Risks</h2><span class="count">6</span></div><div class="risks-panel"><div class="row"><div class="cell head">Risk</div><div class="cell head">Severity</div><div class="cell head">Mitigation</div></div><div class="row"><div class="cell">The RE employer EIN can be filed under the wrong person. Publication 42-007 says positions 8-16 are the EIN under which Form 941 deposits were made. Position 7 is only for a Form 2678 agent, a common paymaster, or a 3504 agent. A Form 8655 reporting agent is none of those, so position 7 stays blank and 8-16 is the client EIN already used on the 941.</div><div class="cell"><span class="sev-badge high">HIGH</span></div><div class="cell">Keep the writer offline until one SSA call confirms that reading. The unit tests do not need the call.</div></div><div class="row"><div class="cell">The live payroll query cannot be written yet. <code>tax_type_id</code> values are not in the DDL, and no column is named as the full SSN.</div><div class="cell"><span class="sev-badge high">HIGH</span></div><div class="cell">Ship <code>FixtureWageYearSource</code>. Block the live loader until the tax codes and the SSN column are named.</div></div><div class="row"><div class="cell">Business Services Online has no test environment. Every upload is a live filing, and AccuWage does not check names against SSNs.</div><div class="cell"><span class="sev-badge high">HIGH</span></div><div class="cell">The app never uploads. A person runs AccuWage, then uploads. The local validator runs first.</div></div><div class="row"><div class="cell">The BSO User ID in RA positions 12-19 belongs to a person and leaves with that employee.</div><div class="cell"><span class="sev-badge med">MED</span></div><div class="cell">Register two people before December 8, 2026. Store the id in new config <code>MEF_BSO_USER_ID</code>. Do not commit it.</div></div><div class="row"><div class="cell">941-X column 4 reuses wage element names for tax. Orchid's Social Security figure there is 186.00, which is 1500 times 0.124.</div><div class="cell"><span class="sev-badge med">MED</span></div><div class="cell">The reconciler reads column 1 only. The Phase 5 test locks 2500.00 against 186.00.</div></div><div class="row"><div class="cell">State portals and the 1,024-byte W-2c file are easy to pull into this build. They are separate specifications.</div><div class="cell"><span class="sev-badge low">LOW</span></div><div class="cell">They are not in the milestones. A returned EFW2 uses Phase 7. A completed file with bad data waits for a later plan.</div></div></div></section><section><div class="sec-head"><span class="idx">03</span><h2>Next steps</h2></div><div class="ai-list"><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Decision. Build Phases 1 through 7. Chosen because the MeF send cannot carry a W-2, and one federal file is the upload Social Security accepts.</span><span class="ai-due"></span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Confirm with SSA that RE position 7 stays blank and positions 8-16 carry the client EIN from the 941.</span><span class="ai-due">Before any live upload</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Finish BSO registration for two people and set <code>MEF_BSO_USER_ID</code>.</span><span class="ai-due">Before Dec 8, 2026</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Name the <code>tax_type_id</code> values and the SSN column before any live payroll loader.</span><span class="ai-due">Before the live loader</span></div><div class="ai-row"><span class="ai-check"></span><span class="ai-desc">Implement Phases 1 through 7 in order. Each phase ends in the test named in that phase.</span><span class="ai-due"></span></div></div></section>
+<footer>Generated 2026-10-02 · /html · rendered by render-page.js</footer>
+</main>
+</body>
+</html>

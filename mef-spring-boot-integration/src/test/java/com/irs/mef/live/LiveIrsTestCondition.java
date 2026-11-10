@@ -4,7 +4,7 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-/** Enables a {@link LiveIrsTest} class only when {@value #PROPERTY} equals its simple name. */
+/** Enables a {@link LiveIrsTest} or {@link LiveSandboxTest} class only when {@value #PROPERTY} equals its simple name. */
 public final class LiveIrsTestCondition implements ExecutionCondition {
 
     public static final String PROPERTY = "mef.live.test";
@@ -16,6 +16,6 @@ public final class LiveIrsTestCondition implements ExecutionCondition {
             return ConditionEvaluationResult.enabled("armed by -D" + PROPERTY + "=" + testClass);
         }
         return ConditionEvaluationResult.disabled(
-                "logs in to IRS; run alone with -D" + PROPERTY + "=" + testClass);
+                "reaches a live service; run alone with -D" + PROPERTY + "=" + testClass);
     }
 }

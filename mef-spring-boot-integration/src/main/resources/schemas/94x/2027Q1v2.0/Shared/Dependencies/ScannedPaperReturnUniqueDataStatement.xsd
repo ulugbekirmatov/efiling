@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.irs.gov/efile" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+    <xsd:annotation>
+        <xsd:documentation>
+            <Description>IRS e-file Schema - Dependency - Scanned Paper Return (SPR) Unique Data Statement</Description>
+            <TaxYear>2027</TaxYear>
+            <MaturityLevel>Schema Version RL10A Drop 4 94x Annual Q1</MaturityLevel>
+            <ReleaseDate>September 24 2026</ReleaseDate>
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:include schemaLocation="../../Common/efileTypes.xsd"/>
+    
+    <!-- ========================================================================== -->
+    <!-- =============== Scanned Paper Return Unique Data Statement =============== -->
+    <!-- ========================================================================== -->
+    
+    <xsd:element name="SPRUniqueDataStatement">
+        <xsd:annotation>
+            <xsd:documentation>Scanned Paper Return (SPR) Unique Data Statement</xsd:documentation>
+        </xsd:annotation>
+        
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="SPRUniqueDataStatementType">
+                    <xsd:attributeGroup ref="DocumentAttributes">
+                        <xsd:annotation>
+                            <xsd:documentation>Common return document attributes</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attributeGroup>
+                    
+                    <xsd:attribute name="documentName" type="TextType" fixed="ScannedPaperReturnUniqueDataStatement">
+                        <xsd:annotation>
+                            <xsd:documentation>IRS internal use only. To avoid errors within the return, do not include the attribute name or value.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="SPRUniqueDataStatementType">
+        <xsd:sequence>
+			<!-- IRS Received Julian Date for Scanned Paper Returns -->
+			<xsd:element name="IRSReceivedJulianDt">
+				<xsd:annotation>
+                    <xsd:documentation>
+                         <Description>IRS Received Julian Date for Scanned Paper Returns</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+                
+                <xsd:simpleType>
+                    <xsd:restriction base="TextType">
+                        <!--Note: (DDDYYYY)--> 
+                        <xsd:pattern value="(00[1-9]|0[1-9]\d|[12]\d{2}|3[0-5]\d|36[0-6])[1-9]\d{3}"/>
+					</xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>   
+            
+            <!-- Special Processing Code Text -->
+            <xsd:element name="SpecialProcessingCodeTxt" minOccurs="0" maxOccurs="10">
+				<xsd:annotation>
+                    <xsd:documentation>
+                         <Description>Special Processing Code Text</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+                
+                <xsd:simpleType>
+                    <xsd:restriction base="TextType">
+                        <xsd:maxLength value="7"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            
+            <!-- Return Processing Code Text -->
+            <xsd:element name="ReturnProcessingCodeTxt" minOccurs="0" maxOccurs="10">
+				<xsd:annotation>
+                    <xsd:documentation>
+                         <Description>Return Processing Code Text</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+                
+                <xsd:simpleType>
+                    <xsd:restriction base="TextType">
+                        <xsd:maxLength value="7"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

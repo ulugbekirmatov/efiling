@@ -12,7 +12,7 @@ Surfaces: `card`, `card lift`, `card-title`, `callout`, `callout attention`, `ca
 
 Data: `kv`, `table-wrap`, `data` (add `wide` at four columns or more), `nowrap`, `num`, `section-label`, `file-path`, `frame`. Render XML with `XmlCode` from `app/design-system/XmlCode.js`. Pass `tall` or `wrap` through its `className`.
 
-Status: `Badge` and `Chip` from `app/design-system/Badge.js`. Map each domain state to a tone in `app/design-system/tones.js`, then pass that tone in. The tones are `attention` (needs a human: rejected, fault, risk), `safe` (accepted, confirmed, correct), `neutral` (a highlight with no judgment), and `waiting` (not sent yet, missing, deprioritized). `app/scenarios/ui.js` maps `accepted` to `safe` and `ready` to `waiting`. `toneClass` returns `tone-attention`, `tone-safe`, `tone-neutral`, or `tone-waiting`. An unknown tone becomes `tone-waiting`.
+Status: `Badge` and `Chip` from `app/design-system/Badge.js`. Map each domain state to a tone in `app/design-system/tones.js`, then pass that tone in. The tones are `attention` (needs a human: rejected, fault, risk), `safe` (accepted, confirmed, correct), `neutral` (a highlight with no judgment), and `waiting` (not sent yet, missing, deprioritized). `app/scenarios/ui.js` maps `accepted` to `safe`, `ready` to `waiting`, and `partial` to `attention`. `toneClass` returns `tone-attention`, `tone-safe`, `tone-neutral`, or `tone-waiting`. An unknown tone becomes `tone-waiting`.
 
 Controls: `btn btn-primary`, `btn btn-secondary`, `btn-mini`, `tabs` and `tab` (`aria-selected="true"` on the open tab), `select-list` and `select-item` (`aria-current="true"` on the open row).
 
@@ -24,12 +24,7 @@ Muted text uses `--g600`. The `/html` skill uses `--g500` for muted text, and th
 
 ## Run both
 
-Backend (from this folder):
-
-```bash
-cd ../mef-spring-boot-integration
-mvn spring-boot:run
-```
+MeF commands run from the repo root. `./mef check` is the offline suite. `./mef login` is the live login probe. `./mef ats <id>` sends one scenario.
 
 Frontend:
 
@@ -61,22 +56,17 @@ C2S QID/DID wiring is intentionally absent. Do not invent platform IDs here.
 
 Open http://localhost:3000/scenarios
 
-The pages read `test-scenarios/ats-ty2026/` on disk: `scenarios.json` and each scenario's XML, TSV, and PDF. The Spring Boot backend is not needed.
+The pages read the scenario directories under `test-scenarios/ats-ty2026/` and `test-scenarios/ats-ty2026-annual/`. Shared format text is `test-scenarios/ats-ty2026/formats.json` (and the annual directory's formats.json). Each scenario directory holds scenario.json plus the XML, TSV, and PDF. The Spring Boot backend is not needed.
 
-Set `MEF_REPO_ROOT` when `next dev` or `next build` does not run from `c2s-web`. The default repo root is the parent of `c2s-web`.
+Set `MEF_REPO_ROOT` to override the repo root. Otherwise `app/scenarios/scenarioData.js` resolves it from its own file location.
 
-`composed-return.xml` and `manifest.xml` are regenerated with:
-
-```bash
-cd mef-spring-boot-integration
-mvn test -Dtest=AtsScenarioSnapshotTest -Dats.snapshots.update=true
-```
+`./mef preflight <id>` composes one scenario offline. `./mef check` compares `composed-return.xml` and `manifest.xml`.
 
 Scenario pages render per request, so regenerated snapshots show up on reload with no rebuild.
 
 ## AIR operator
 
-The AIR operator pages are for the IRS AIR 1094-C/1095-C AATS session described in `TESTING.md` of the AIR package. They compose a transmission from an AATS fixture, validate and preview it, submit it to AATS, and check status. Each run is one directory under `AIR_RUNS_DIR`. The MeF Spring Boot backend is not needed.
+The AIR operator pages are for the IRS AIR 1094-C/1095-C AATS session described in TESTING.md of the AIR package (a separate repo). They compose a transmission from an AATS fixture, validate and preview it, submit it to AATS, and check status. Each run is one directory under `AIR_RUNS_DIR`. The MeF Spring Boot backend is not needed.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -92,13 +82,7 @@ Live runs are written under `AIR_RUNS_DIR`. The default sits outside both the c2
 
 **Build the AIR jar first.** The default `AIR_JAR` is `redesign/air-a2a/java/target/air-a2a-channel-0.1.0-SNAPSHOT.jar` under `AIR_REPO_ROOT`. A stale jar fails with `Invalid signature file digest for Manifest main attributes`. Readiness only checks that the jar file exists.
 
-From `AIR_REPO_ROOT`, rebuild with the `mvn package` command in `redesign/air-a2a/java/README.md` and the `JAVA_HOME` it names.
-
-```bash
-export JAVA_HOME=/opt/homebrew/Cellar/openjdk/26.0.2.1/libexec/openjdk.jdk/Contents/Home
-export PATH="$JAVA_HOME/bin:$PATH"
-mvn -o -q -f redesign/air-a2a/java/pom.xml package
-```
+From `AIR_REPO_ROOT`, rebuild using the command in that repo's java README. MeF commands in this repo are `./mef`.
 
 From `c2s-web`, start the app if it is not running.
 
@@ -118,6 +102,6 @@ On a composed run, Validate (needs `xmllint` on PATH), then Preview, then Submit
 
 Check status only while the stage is PROCESSING, a Receipt ID exists, and 10 minutes have passed since the last submit or status call that may have reached IRS. Live submit and status calls need AATS open (November 2026), the enrolled PKCS12, and the ASID. Preview uses the same PKCS12, ASID, and jar. It does not POST.
 
-Every POST must be same-origin. The pages show SSN-masked form XML, redacted credentials, and redacted CLI records. Downloads of `form.xml` and `manifest.xml` are the exact bytes. The PKCS12 password is passed by env var name only.
+Every POST must be same-origin. The pages show SSN-masked form XML, redacted credentials, and redacted CLI records. Downloads of form.xml and `manifest.xml` are the exact bytes. The PKCS12 password is passed by env var name only.
 
 **Check it offline.** From `c2s-web`, run `npm test`. The AIR tests cover the model, store, redaction, and views. Nothing in `npm test` contacts IRS.

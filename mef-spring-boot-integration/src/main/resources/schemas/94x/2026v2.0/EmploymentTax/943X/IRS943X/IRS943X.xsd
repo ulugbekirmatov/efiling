@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile" targetNamespace="http://www.irs.gov/efile" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+    <xsd:annotation>
+        <xsd:documentation>
+            <Description>IRS e-file Schema – Form 943X Adjusted Employer's Annual Federal Tax Return for Agricultural Employees or Claim for Refund</Description>
+            <TaxYear>2026</TaxYear>
+            <MaturityLevel>Schemas Version RL10A Drop 4 94x Annual</MaturityLevel>
+            <ReleaseDate>September 24 2026</ReleaseDate>
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:include schemaLocation="../../../Common/efileTypes.xsd"/>
+    
+    <!-- ============================================== -->
+    <!-- =============== IRS Form 943-X =============== -->
+    <!-- ============================================== -->
+    
+    <xsd:element name="IRS943X">
+        <xsd:annotation>
+            <xsd:documentation>IRS Form 943 X</xsd:documentation>
+        </xsd:annotation>
+        
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="IRS943XType">
+                    <xsd:attributeGroup ref="DocumentAttributes">
+                        <xsd:annotation>
+                            <xsd:documentation>Common return document attributes</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attributeGroup>
+                    
+                    <xsd:attribute name="documentName" type="TextType" fixed="IRS943X">
+                        <xsd:annotation>
+                            <xsd:documentation>IRS internal use only. To avoid errors within the return, do not include the attribute name or value.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    
+                    <xsd:attribute name="referenceDocumentId" type="IdListType">
+                        <xsd:annotation>
+                            <xsd:documentation>List of document IDs of forms, schedules, supporting info. etc. attached to this form.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    
+                    <xsd:attribute name="referenceDocumentName" type="TextType" fixed="BinaryAttachment FinalPayrollInformationStatement GeneralDependencySmall IRS8974 IRS943A IRS943ScheduleR IRSPayment TransferOfBusinessStatement"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="IRS943XType">
+        <xsd:sequence>
+            <!-- Spanish Language Indicator -->
+            <xsd:element name="SpanishLanguageInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Spanish Language Indicator</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Correcting Return For Year Code -->
+            <xsd:element name="CorrectingReturnCalendarYrCd">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Correcting Return For Year Code</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+                
+                <xsd:simpleType>
+                    <xsd:restriction base="TextType">
+                        <xsd:enumeration value="2024"/>
+					    <xsd:enumeration value="2025"/>
+						<xsd:enumeration value="2026"/>
+		             </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            
+            <!-- Error Discovered Date -->
+            <xsd:element name="ErrorsDiscoveredDt" type="DateType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Error Discovered Date</Description>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+			<!-- Aggregate Return Indicator -->
+			<xsd:choice minOccurs="0">
+                <!-- Section 3504 Agent Indicator -->
+                <xsd:element name="Section3504AgentInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Section 3504 Agent Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                
+                <!-- Certified Professional Employer Organization (CPEO) Indicator -->
+                <xsd:element name="CPEOInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Certified Professional Employer Organization (CPEO) Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+				
+				 <!-- Other Third Party Indicator -->
+                <xsd:element name="OtherThirdPartyInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Other Third Party Indicator</Description>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+				
+            </xsd:choice>
+			
+            <xsd:choice>
+                <!-- =============== Part 1: Select ONLY one process. =============== -->
+                
+                <!-- Adjusted Employment Tax Return Indicator -->
+                <xsd:element name="AdjustedEmploymentTaxRetInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Adjusted Employment Tax Return Indicator</Description>
+                            <LineNumber>Line 1</LineNumber>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                
+                <!-- Claim Indicator -->
+                <xsd:element name="ClaimInd" type="CheckboxType">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <Description>Claim Indicator</Description>
+                            <LineNumber>Line 2</LineNumber>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:choice>
+            
+            <!-- =============== Part 2: Complete the certifications. =============== -->
+            
+            <!-- Filed W-2/W-2c Indicator -->
+            <xsd:element name="FiledW2W2cCorrWageTaxCertInd" type="CheckboxType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Filed W-2/W-2c Indicator</Description>
+                        <LineNumber>Line 3</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Adjusted Return Repaid Employee Indicator -->
+            <xsd:element name="RpdOrReimbSSTMedcrTxPYInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Adjusted Return Repaid Employee Indicator</Description>
+                        <LineNumber>Line 4a</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Adjusted Return Employer Share Indicator -->
+            <xsd:element name="AdjSSTMedcrTxEmplrShrInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Adjusted Return Employer Share Indicator</Description>
+                        <LineNumber>Line 4b</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Adjusted Return Not Withheld Indicator -->
+            <xsd:element name="AdjNotWthldFedSSMedcrTaxInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Adjusted Return Not Withheld Indicator</Description>
+                        <LineNumber>Line 4c</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Repaid Employee Not Claim Indicator -->
+            <xsd:element name="RpdReimbSSTMedcrTxPYNotClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Repaid Employee Not Claim Indicator</Description>
+                        <LineNumber>Line 5a</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Written Consent Not Claim Indicator -->
+            <xsd:element name="WrttnCnsntSSTMedcrEmpNotClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Written Consent Not Claim Indicator</Description>
+                        <LineNumber>Line 5b</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Employer Share Not Claim Indicator -->
+            <xsd:element name="SSTMedcrTxEmplrShrNotClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Employer Share Not Claim Indicator</Description>
+                        <LineNumber>Line 5c</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Claim Not Withheld Indicator -->
+            <xsd:element name="NotWthldFedSSMedcrTaxClmInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Claim Not Withheld Indicator</Description>
+                        <LineNumber>Line 5d</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- =============== Part 3: Enter the corrections for the calendar year you're correcting. Column 1 =============== -->
+            <xsd:element name="TotalCorrectedAmountGrp" type="TotCorrOrigDiffTxCorrGrpType" minOccurs="0"/>
+			
+            <!-- =============== Part 3: Enter the corrections for the calendar year you're correcting. Column 2 =============== -->
+            <xsd:element name="OriginallyRptOrAsPrevCorrGrp" type="TotCorrOrigDiffTxCorrGrpType" minOccurs="0"/>
+            
+			<!-- =============== Part 3: Enter the corrections for the calendar year you're correcting. Column 3 =============== -->
+            <xsd:element name="CorrRptDifferenceGrp" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <!-- Social Security Tax Cash Wages Amount -->
+                        <xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Social Security Tax Cash Wages Amount</Description>
+                                    <LineNumber>Line 6 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                       
+                        <!-- Medicare Tax Cash Wages Amount -->
+                        <xsd:element name="MedicareTaxCashWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Medicare Tax Cash Wages Amount</Description>
+                                    <LineNumber>Line 7 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Total Wages Subject to Additional Medicare Tax Withholding -->
+                        <xsd:element name="TotMedcrTaxCashWagesAddnlWhAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Total Wages Subject to Additional Medicare Tax Withholding</Description>
+                                    <LineNumber>Line 8 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Federal Income Tax Withheld Amount -->
+                        <xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Federal Income Tax Withheld Amount</Description>
+                                    <LineNumber>Line 9 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Current Year Adjustment Amount -->
+                        <xsd:element name="CurrentYearAdjustmentAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Current Year Adjustment Amount</Description>
+                                    <LineNumber>Line 10 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified small business payroll tax credit for increasing research activities -->
+                        <xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+									<LineNumber>Line 11 Column 3</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						
+							<xsd:complexType>
+								<xsd:simpleContent>
+									<xsd:extension base="USDecimalAmountType">
+										<xsd:attribute name="referenceDocumentId" type="IdListType"></xsd:attribute>
+										<xsd:attribute name="referenceDocumentName" type="TextType" fixed="IRS8974"></xsd:attribute>
+									</xsd:extension>
+								</xsd:simpleContent>
+							</xsd:complexType>
+						</xsd:element>
+                        
+                        <!-- Special addition to wages for federal income tax -->
+                        <xsd:element name="SpclAddnWgsFedIncmTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for federal income tax</Description>
+                                    <LineNumber>Line 12 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for social security taxes -->
+                        <xsd:element name="SpclAddnWgsSSTAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for social security taxes</Description>
+                                    <LineNumber>Line 13 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Medicare taxes -->
+                        <xsd:element name="SpclAddnWgsMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Medicare taxes</Description>
+                                    <LineNumber>Line 14 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Additional Medicare Tax -->
+                        <xsd:element name="SpclAddnWgsAddnlMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Additional Medicare Tax</Description>
+                                    <LineNumber>Line 15 Column 3</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+						
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <!-- =============== Part 3: Enter the corrections for the calendar year you're correcting. Column 4 =============== -->
+            
+            <xsd:element name="TaxCorrectionGrp" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <!-- Social Security Tax Cash Wages Amount -->
+                        <xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Social Security Tax Cash Wages Amount</Description>
+                                    <LineNumber>Line 6 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                                                
+                        <!-- Medicare Tax Cash Wages Amount -->
+                        <xsd:element name="MedicareTaxCashWagesAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Medicare Tax Cash Wages Amount</Description>
+                                    <LineNumber>Line 7 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Total Wages Subject to Additional Medicare Tax Withholding -->
+                        <xsd:element name="TotMedcrTaxCashWagesAddnlWhAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Total Wages Subject to Additional Medicare Tax Withholding</Description>
+                                    <LineNumber>Line 8 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+						<!-- FederalIncomeTaxWithheldAmt Note: Not in XML. Use value from Part 3 Column 3 Line 11 -->
+						
+                        <!-- Current Year Adjustment Amount -->
+                        <xsd:element name="CurrentYearAdjustmentAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Current Year Adjustment Amount</Description>
+                                    <LineNumber>Line 10 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Qualified small business payroll tax credit for increasing research activities -->
+                        <xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+									<LineNumber>Line 11 Column 4</LineNumber>
+								</xsd:documentation>
+							</xsd:annotation>
+						
+							<xsd:complexType>
+								<xsd:simpleContent>
+									<xsd:extension base="USDecimalAmountType">
+										<xsd:attribute name="referenceDocumentId" type="IdListType"></xsd:attribute>
+										<xsd:attribute name="referenceDocumentName" type="TextType" fixed="IRS8974"></xsd:attribute>
+									</xsd:extension>
+								</xsd:simpleContent>
+							</xsd:complexType>
+						</xsd:element>
+                                                
+                        <!-- Special addition to wages for federal income tax -->
+                        <xsd:element name="SpclAddnWgsFedIncmTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for federal income tax</Description>
+                                    <LineNumber>Line 12 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for social security taxes -->
+                        <xsd:element name="SpclAddnWgsSSTAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for social security taxes</Description>
+                                    <LineNumber>Line 13 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Medicare taxes -->
+                        <xsd:element name="SpclAddnWgsMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Medicare taxes</Description>
+                                    <LineNumber>Line 14 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                        
+                        <!-- Special addition to wages for Additional Medicare Tax -->
+                        <xsd:element name="SpclAddnWgsAddnlMedcrTaxAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <Description>Special addition to wages for Additional Medicare Tax</Description>
+                                    <LineNumber>Line 15 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                                                
+                        <xsd:element name="TotalAmt" type="USDecimalAmountType" minOccurs="0">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    <LineNumber>Line 16 Column 4</LineNumber>
+                                </xsd:documentation>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+			<!-- Direct Deposit Group -->
+            <xsd:element name="DirectDepositGrp" type="DirectDepositGrpType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Direct Deposit Group</Description>
+                        <LineNumber>Line 16b-d</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+			
+            <!-- =============== Part 4: Enter the corrections for the calendar year you're correcting. =============== -->
+            
+            <!-- Corrections Underreported And Overreported Amounts Indicator -->
+            <xsd:element name="CorrUndrptOverreportedAmtInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Corrections Underreported And Overreported Amounts Indicator</Description>
+                        <LineNumber>Line 17</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Corrections Reclassified Workers Indicator -->
+            <xsd:element name="CorrReclassifiedWorkersInd" type="CheckboxType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Corrections Reclassified Workers Indicator</Description>
+                        <LineNumber>Line 18</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Explanation Of Corrections Text -->
+            <xsd:element name="CorrectionsExplanationTxt" type="MediumExplanationType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Explanation Of Corrections Text</Description>
+                        <LineNumber>Line 19</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+			
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="TotCorrOrigDiffTxCorrGrpType">
+        <xsd:sequence>
+            <!-- Social Security Tax Cash Wages Amount -->
+            <xsd:element name="SocialSecurityTaxCashWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Social Security Tax Cash Wages Amount</Description>
+                        <LineNumber>Line 6 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Medicare Tax Cash Wages Amount -->
+            <xsd:element name="MedicareTaxCashWagesAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Medicare Tax Cash Wages Amount</Description>
+                        <LineNumber>Line 7 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Total Wages Subject to Additional Medicare Tax Withholding -->
+            <xsd:element name="TotMedcrTaxCashWagesAddnlWhAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Total Wages Subject to Additional Medicare Tax Withholding</Description>
+                        <LineNumber>Line 8 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Federal Income Tax Withheld Amount -->
+            <xsd:element name="FederalIncomeTaxWithheldAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Federal Income Tax Withheld Amount</Description>
+                        <LineNumber>Line 9 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Current Year Adjustment Amount -->
+            <xsd:element name="CurrentYearAdjustmentAmt" type="USDecimalAmountType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Current Year Adjustment Amount</Description>
+                        <LineNumber>Line 10 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Qualified small business payroll tax credit for increasing research activities -->
+            <xsd:element name="PayrollTaxCreditAmt" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Qualified small business payroll tax credit for increasing research activities</Description>
+						<LineNumber>Line 11 Column 1 and Column 2</LineNumber>
+					</xsd:documentation>
+				</xsd:annotation>
+			
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="USDecimalAmountNNType">
+							<xsd:attribute name="referenceDocumentId" type="IdListType"></xsd:attribute>
+							<xsd:attribute name="referenceDocumentName" type="TextType" fixed="IRS8974"></xsd:attribute>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+            
+            <!-- Special addition to wages for federal income tax -->
+            <xsd:element name="SpclAddnWgsFedIncmTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for federal income tax</Description>
+                        <LineNumber>Line 12 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Special addition to wages for social security taxes -->
+            <xsd:element name="SpclAddnWgsSSTAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for social security taxes</Description>
+                        <LineNumber>Line 13 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Special addition to wages for Medicare taxes -->
+            <xsd:element name="SpclAddnWgsMedcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for Medicare taxes</Description>
+                        <LineNumber>Line 14 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            
+            <!-- Special addition to wages for Additional Medicare Tax -->
+            <xsd:element name="SpclAddnWgsAddnlMedcrTaxAmt" type="USDecimalAmountNNType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <Description>Special addition to wages for Additional Medicare Tax</Description>
+                        <LineNumber>Line 15 Column 1 and Column 2</LineNumber>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element> 
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

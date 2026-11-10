@@ -6,9 +6,9 @@ import com.irs.mef.inspector.ring.SendSnapshotRing;
 import com.irs.mef.inspector.ring.SnapshotId;
 import com.irs.mef.inspector.ring.SoapCapture;
 import com.irs.mef.inspector.ring.CapturedXml;
-import com.irs.mef.newsend.domain.NewSendFiling;
-import com.irs.mef.newsend.domain.NewSendManifestXml;
-import com.irs.mef.newsend.gateway.SendSubmissionsWireTap;
+import com.irs.mef.filing.Filing;
+import com.irs.mef.filing.ManifestXml;
+import com.irs.mef.filing.SendSubmissionsWireTap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
@@ -26,7 +26,7 @@ import java.util.Objects;
 @Slf4j
 final class CaptureSession implements SendSubmissionsWireTap.Session {
 
-    private final NewSendFiling filing;
+    private final Filing filing;
     private final SendSnapshotRing ring;
     private final ReflectiveMimeTap mimeTap;
     private final Clock clock;
@@ -37,7 +37,7 @@ final class CaptureSession implements SendSubmissionsWireTap.Session {
     private SoapCapture inbound = new SoapCapture.Missing("no inbound SOAP");
     private boolean closed;
 
-    CaptureSession(NewSendFiling filing,
+    CaptureSession(Filing filing,
                    SendSnapshotRing ring,
                    ReflectiveMimeTap mimeTap,
                    Clock clock,
@@ -106,7 +106,7 @@ final class CaptureSession implements SendSubmissionsWireTap.Session {
                     filing.submissionId().value());
             return;
         }
-        String manifest = NewSendManifestXml.render(filing);
+        String manifest = ManifestXml.render(filing);
         if (manifest.getBytes(StandardCharsets.UTF_8).length > maxXmlBytes) {
             log.warn("inspector: skip snapshot {}, manifest exceeds max-xml-bytes",
                     filing.submissionId().value());

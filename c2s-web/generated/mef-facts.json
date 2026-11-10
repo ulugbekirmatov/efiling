@@ -1,0 +1,11 @@
+{
+  "journalStates": [
+    "CREATED",
+    "TRANSMITTED",
+    "REJECTED",
+    "INDETERMINATE",
+    "ABANDONED"
+  ],
+  "ackStatuses": ["Accepted", "Rejected"],
+  "scenarioStates": ["accepted", "ready", "partial"]
+}

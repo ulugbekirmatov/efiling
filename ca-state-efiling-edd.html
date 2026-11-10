@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>California State E-Filing</title>
+<style>
+:root {
+  color-scheme: light;
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D;
+  --clay-tint:#FBEFE9; --olive-tint:#ECF1E3; --oat-tint:#F5EFE3;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--ivory); color:var(--slate); font-family:var(--sans); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-wrap:break-word; word-break:break-word; }
+.wrap { max-width:960px; margin:0 auto; padding:56px 32px 72px; }
+@media (max-width:600px) { .wrap { padding:32px 16px 48px; } }
+a { color:var(--clay); text-decoration-color:var(--oat); text-underline-offset:3px; }
+p, li, dd, dt, h1, h2, h3, figcaption, .card, .callout { overflow-wrap:break-word; word-break:break-word; }
+.card, [class*="grid"] > * { min-width:0; }
+table { table-layout:auto; min-width:640px; width:100%; border-collapse:separate; border-spacing:0; }
+td, th { word-break:normal; overflow-wrap:break-word; }
+.table-wrap { overflow-x:auto; border:1.5px solid var(--g300); border-radius:12px; background:var(--paper); }
+:not(pre) > code { font-family:var(--mono); font-size:0.9em; background:var(--g100); color:var(--slate); padding:1px 6px; border-radius:4px; overflow-wrap:break-word; }
+
+.eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--g500);
+  margin-bottom:12px; display:flex; align-items:center; gap:12px; }
+.eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 { font-family:var(--serif); font-weight:500; font-size:clamp(32px,4.6vw,48px); line-height:1.1; letter-spacing:-0.015em; max-width:22ch; }
+.intro { font-size:16.5px; color:var(--g700); margin-top:18px; max-width:660px; }
+section { margin-top:56px; }
+.sec-head { display:flex; align-items:baseline; gap:16px; margin-bottom:18px; }
+.sec-head .idx { font-family:var(--mono); font-size:13px; color:var(--clay); font-weight:600; width:34px; flex-shrink:0; }
+.sec-head h2 { font-family:var(--serif); font-weight:500; font-size:26px; }
+.lede { color:var(--g700); margin:-6px 0 18px 50px; max-width:640px; }
+@media (max-width:600px) { .lede { margin-left:0; } }
+
+.tldr { margin-top:32px; background:#141413; color:#F0EEE6; border-radius:14px; padding:22px 26px; }
+.tldr .lbl { font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#D97757; margin-bottom:8px; }
+.tldr p { color:#F0EEE6; font-family:var(--serif); font-size:19px; line-height:1.45; }
+.tldr strong { color:#FFFFFF; }
+
+.summary-band { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-top:24px; }
+@media (max-width:720px) { .summary-band { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.stat-card { background:var(--paper); border:1.5px solid var(--g300); border-radius:12px; padding:18px 20px 16px; }
+.stat-card.warn { border-left:4px solid var(--clay); padding-left:17px; }
+.stat-card.good { border-left:4px solid var(--olive); padding-left:17px; }
+.stat-num { font-family:var(--serif); font-size:34px; font-weight:500; line-height:1; margin-bottom:8px; }
+.stat-label { font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--g500); }
+
+table.facts thead th { text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--g500); background:var(--g100); padding:12px 16px; border-bottom:1px solid var(--g300); }
+table.facts td { padding:13px 16px; border-bottom:1px solid var(--g100); font-size:14px; vertical-align:top; color:var(--g700); }
+table.facts tr:last-child td { border-bottom:none; }
+table.facts td:first-child { color:var(--slate); font-weight:600; width:30%; }
+.src { display:block; font-family:var(--mono); font-size:11px; color:var(--g500); margin-top:4px; }
+
+.fix-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+@media (max-width:720px) { .fix-grid { grid-template-columns:1fr; } }
+.card { background:var(--paper); border:1px solid var(--g200); border-radius:14px; padding:20px 22px; }
+.card h3 { font-family:var(--serif); font-weight:500; font-size:19px; line-height:1.3; margin-bottom:12px; }
+.ledger { border-radius:10px; overflow:hidden; border:1px solid var(--g200); font-size:14px; }
+.ledger div { padding:10px 14px; }
+.ledger .was { background:var(--clay-tint); }
+.ledger .now { background:var(--olive-tint); }
+.ledger .punch { background:var(--g100); font-weight:600; color:var(--slate); }
+.ledger .tag { font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:2px; }
+.ledger .was .tag { color:var(--clay-d); }
+.ledger .now .tag { color:var(--olive); }
+
+.paths { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+@media (max-width:720px) { .paths { grid-template-columns:1fr; } }
+.path { background:var(--paper); border:1px solid var(--g200); border-top:4px solid var(--olive); border-radius:14px; padding:20px 22px; }
+.path.heavy { border-top-color:var(--clay); }
+.path .pill { display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+  padding:3px 9px; border-radius:999px; margin-bottom:10px; background:var(--olive-tint); color:var(--olive); }
+.path.heavy .pill { background:var(--clay-tint); color:var(--clay-d); }
+.path h3 { font-family:var(--serif); font-weight:500; font-size:20px; margin-bottom:12px; }
+.path dl { display:grid; grid-template-columns:96px minmax(0,1fr); gap:8px 12px; font-size:14px; }
+.path dt { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--g500); padding-top:3px; }
+.path dd { color:var(--g700); }
+
+.steps { list-style:none; counter-reset:s; background:var(--paper); border:1.5px solid var(--g300); border-radius:12px; overflow:hidden; }
+.steps li { counter-increment:s; display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:14px; align-items:baseline;
+  padding:14px 18px; border-bottom:1px solid var(--g100); font-size:14.5px; }
+.steps li:last-child { border-bottom:none; }
+.steps li::before { content:counter(s); font-family:var(--mono); font-size:12px; color:#fff; background:var(--clay);
+  width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; }
+.steps .who { font-family:var(--mono); font-size:11px; color:var(--g500); text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+.steps .note { display:block; font-size:13px; color:var(--g500); margin-top:2px; }
+
+.callout { background:var(--oat-tint); border-left:4px solid var(--clay); border-radius:10px; padding:16px 20px; margin-top:18px; color:var(--g700); font-size:14.5px; }
+.callout strong { color:var(--slate); }
+
+.sources { columns:2; column-gap:32px; font-size:13.5px; padding-left:18px; color:var(--g700); }
+.sources li { margin-bottom:6px; break-inside:avoid; }
+@media (max-width:720px) { .sources { columns:1; } }
+
+footer { margin-top:64px; padding-top:16px; border-top:1.5px solid var(--g200); font-family:var(--mono); font-size:11px; color:var(--g500); }
+
+
+/* Pele diagram token mapping (components.md 31): literal light palette, never page tokens */
+.pele {
+  color-scheme: light;
+  --pele-bg: #FFFFFF;
+  --pele-fg: #141413;
+  --pele-muted: #87867F;
+  --pele-line: #3D3D3A;
+  --pele-surface: #F0EEE6;
+  --pele-surface-alt: #E6E3DA;
+  --pele-border: #D1CFC5;
+  --pele-accent: #D97757;
+  --pele-critical: #B04A3F;
+  --pele-error: #B04A3F;
+  --pele-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --pele-font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --pele-radius: 8px;
+  --pele-series-1: #C4633F;
+  --pele-series-2: #4F7FB0;
+  --pele-series-3: #667A4C;
+  --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A;
+  --pele-series-6: #4A8670;
+  --pele-series-7: #7470A8;
+  --pele-series-8: #B04A3F;
+}
+/* Hue classes added by diagram.js colorize(): they redefine Pele's surface/border/line
+   variables on one node, edge or cluster, so the SVG markup itself never changes. */
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas {
+  color-scheme: light;
+  border: 1px solid #D1CFC5; border-radius: 12px; overflow-x: auto;
+  background: #FFFFFF; padding: 16px;
+}
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0;
+}
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+@media print { figure.diagram .canvas { border-color: var(--g200); } }
+
+@media print {
+  body { background:#fff; }
+  .wrap { max-width:100%; padding:0; }
+  section, .card, .path { break-inside:avoid; }
+  .tldr { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <div class="eyebrow">Research brief for the finance team · 9 November 2026</div>
+  <h1>Do we need to e-file California payroll taxes?</h1>
+  <p class="intro">Pyramos now files the federal payroll returns (941, 941-X, 940) as a Reporting Agent. California has its own quarterly payroll filing with the Employment Development Department (EDD). This brief checks what California requires against EDD's own documents, and what Pyramos would need to file there for clients.</p>
+  <div class="tldr">
+    <div class="lbl">The short version</div>
+    <p><strong>If Pyramos keeps to federal returns, the only California work left is switching the ACA connection to production.</strong> If Pyramos also files California payroll for clients, it needs one EDD enrollment, a signed form from each client, and one of two filing paths, and the fast one needs no certification.</p>
+  </div>
+  <div class="summary-band">
+    <div class="stat-card good"><div class="stat-num">Oct 8</div><div class="stat-label">CA ACA production approval</div></div>
+    <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">CA payroll filings built today</div></div>
+    <div class="stat-card warn"><div class="stat-num">1</div><div class="stat-label">decision for the owner</div></div>
+    <div class="stat-card"><div class="stat-num">4×</div><div class="stat-label">CA payroll filings per year, per client</div></div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head"><span class="idx">01</span><h2>The decision</h2></div>
+  <p class="lede">Every quarter, each California employer must file a return with the EDD. The question is who files it for our clients: the current payroll channel or Pyramos.</p>
+  <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 633 809" width="633" height="809" style="width:clamp(475px,100%,633px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-rust" data-id="d1-L_Q_A_0"><path d="M199.58,169.84C199.58,196.91 121.15,196.91 121.15,223.98L121.15,269.48"/><path class="pele-marker" d="M121.15,276.48L117.79,268.48L124.51,268.48Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d1-L_A_A1_0"><path d="M121.15,384.48L121.15,425.48"/><path class="pele-marker" d="M121.15,432.48L117.79,424.48L124.51,424.48Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-rust" data-id="d1-L_Q_E_0"><path d="M307.24,169.84C307.24,196.91 385.67,196.91 385.67,223.98L385.67,279.98"/><path class="pele-marker" d="M385.67,286.98L382.31,278.98L389.03,278.98Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_E_P_0"><path d="M385.67,373.98L385.67,425.48"/><path class="pele-marker" d="M385.67,432.48L382.31,424.48L389.03,424.48Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_P_M_0"><path d="M385.67,519.48L385.67,560.48"/><path class="pele-marker" d="M385.67,567.48L382.31,559.48L389.03,559.48Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_M_U_0"><path d="M377.67,656.72C377.67,669.47 256.08,669.47 256.08,682.22L256.08,727.72"/><path class="pele-marker" d="M256.08,734.72L252.72,726.72L259.44,726.72Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_M_F_0"><path d="M393.67,656.72C393.67,669.47 515.26,669.47 515.26,682.22L515.26,727.72"/><path class="pele-marker" d="M515.26,734.72L511.9,726.72L518.62,726.72Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="d1-L_Q_A_0"><rect x="54.9" y="225.98" width="132.5" height="21" rx="3" fill="var(--_bg)"/><text x="121.15" y="241.38" text-anchor="middle">No: federal 94x only</text></g><g class="pele-edge-label" data-id="d1-L_Q_E_0"><rect x="369.61" y="225.98" width="32.12" height="21" rx="3" fill="var(--_bg)"/><text x="385.67" y="241.38" text-anchor="middle">Yes</text></g><g class="pele-edge-label" data-id="d1-L_M_U_0"><rect x="238.47" y="684.22" width="35.23" height="21" rx="3" fill="var(--_bg)"/><text x="256.08" y="699.62" text-anchor="middle">Fast</text></g><g class="pele-edge-label" data-id="d1-L_M_F_0"><rect x="477.41" y="684.22" width="75.7" height="21" rx="3" fill="var(--_bg)"/><text x="515.26" y="699.62" text-anchor="middle">Automated</text></g></g><g class="pele-nodes"><g class="pele-node pele-shape-diam risk pele-hue-rust" data-id="d1-Q" transform="translate(253.41,105.74)"><polygon points="0,-97.74 156.38,0 0,97.74 -156.38,0" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Does Pyramos file</tspan><tspan x="0" y="5.6">California</tspan><tspan x="0" y="26.6">payroll returns for clients?</tspan></text></g><g class="pele-node pele-shape-rect muted pele-hue-neutral" data-id="d1-A" transform="translate(121.15,330.48)"><rect x="-111.37" y="-54" width="222.74" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Current payroll channel</tspan><tspan x="0" y="-4.9">keeps</tspan><tspan x="0" y="16.1">filing DE 9, DE 9C and DE</tspan><tspan x="0" y="37.1">88</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="d1-A1" transform="translate(121.15,475.98)"><rect x="-113.15" y="-43.5" width="226.3" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Only open California item:</tspan><tspan x="0" y="5.6">switch the ACA connection</tspan><tspan x="0" y="26.6">to production</tspan></text></g><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d1-E" transform="translate(385.67,330.48)"><rect x="-108.7" y="-43.5" width="217.39" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Enroll as payroll reporting</tspan><tspan x="0" y="5.6">agent</tspan><tspan x="0" y="26.6">DE 973B + DE 972</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="d1-P" transform="translate(385.67,475.98)"><rect x="-111.37" y="-43.5" width="222.74" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Collect a DE 48 from each</tspan><tspan x="0" y="5.6">client</tspan><tspan x="0" y="26.6">and keep it on file</tspan></text></g><g class="pele-node pele-shape-diam core pele-hue-clay" data-id="d1-M" transform="translate(385.67,614.6)"><polygon points="0,-47.12 75.39,0 0,47.12 -75.39,0" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">How to file?</text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="d1-U" transform="translate(256.08,767.72)"><rect x="-110.03" y="-33" width="220.06" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">e-Services bulk upload</tspan><tspan x="0" y="16.1">DE 9C file, no certification</tspan></text></g><g class="pele-node pele-shape-rect ext pele-hue-heather" data-id="d1-F" transform="translate(515.26,767.72)"><rect x="-109.14" y="-33" width="218.29" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">FSET: DE 547 enrollment</tspan><tspan x="0" y="16.1">then certification testing</tspan></text></g></g></svg></div><figcaption><div><div class="cap-title">Which work applies depends on one decision</div><div class="cap-sub">Without California filing, only the ACA switch is left. With it, there are two ways to file.</div></div></figcaption></figure>
+
+</section>
+
+<section>
+  <div class="sec-head"><span class="idx">02</span><h2>What California requires</h2></div>
+  <p class="lede">Each item below was checked against an EDD page or form. These rules apply to every employer, whoever files for them.</p>
+  <div class="table-wrap">
+  <table class="facts">
+    <thead><tr><th>Requirement</th><th>What EDD says</th></tr></thead>
+    <tbody>
+      <tr><td>E-file and e-pay are mandatory</td><td>All employers, including out-of-state ones, must file and pay electronically. "Employer representatives filing and paying for an employer must also file and pay electronically." This has applied to every employer since January 1, 2018 (AB 1245).<span class="src">E-file and E-pay Mandate page</span></td></tr>
+      <tr><td>Penalties for paper filing</td><td>$50 per DE 9 return, $20 per DE 9C wage item, 15% of a DE 88 payment.<span class="src">Unemployment Insurance Code §1112(b), §1112.1(a), §1114(b)</span></td></tr>
+      <tr><td>DE 9 and DE 9C every quarter</td><td>The DE 9 reconciles the quarter's wages and taxes. The DE 9C lists each employee's wages and California withholding. Both are due even in a quarter with no wages.<span class="src">Required Filings and Due Dates</span></td></tr>
+      <tr><td>DE 88 deposits</td><td>The DE 88 deposit covers UI, ETT, SDI and state income tax withholding. UI and ETT are paid quarterly. SDI and withholding follow the federal deposit schedule. A late payment costs 15% plus interest.<span class="src">Required Filings and Due Dates</span></td></tr>
+      <tr><td>No state W-2 filing</td><td>California W-2 state copies go to neither EDD nor the Franchise Tax Board. The DE 9C carries that wage data instead. Employees still get boxes 15–17 on their W-2.<span class="src">DE 8829 (2025), DE 44</span></td></tr>
+      <tr><td>DE 34 and DE 542</td><td>New hires (DE 34) and independent contractors paid $600 or more (DE 542) are each reported within 20 days. HR usually owns these, not the tax filer.<span class="src">Required Filings and Due Dates</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="idx">03</span><h2>Two things the first answer got wrong</h2></div>
+  <p class="lede">The first answer was written from memory. EDD's documents corrected two points.</p>
+  <div class="fix-grid">
+    <article class="card">
+      <h3>Pyramos does not send EDD a power of attorney for each client</h3>
+      <div class="ledger">
+        <div class="was"><span class="tag">First answer</span>File a DE 48 power of attorney with EDD for each client.</div>
+        <div class="now"><span class="tag">EDD form DE 231PRA</span>Enroll once as a payroll reporting agent (DE 973B plus the DE 972 agreement, renewed every two years). Keep each client's DE 48 on file and produce it within 24 hours if EDD asks. Send EDD a monthly list of clients added and dropped.</div>
+        <div class="punch">One enrollment plus a monthly list, not one filing per client. It's California's version of Form 8655.</div>
+      </div>
+    </article>
+    <article class="card">
+      <h3>FSET is built like our IRS sender, not just "similar"</h3>
+      <div class="ledger">
+        <div class="was"><span class="tag">First answer</span>FSET is an XML format "aligned with" the IRS one.</div>
+        <div class="now"><span class="tag">EDD guide DE 545</span>FSET is a SOAP web service with MTOM attachments, built to the shared IRS and state standard, with IRS MeF namespaces in its messages. Each send is one zip that can hold many employers' returns. Login is a username and password, not a device certificate.</div>
+        <div class="punch">Much of the shape of our IRS sending code would carry over.</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="idx">04</span><h2>If we file California: two paths</h2></div>
+  <p class="lede">Both paths satisfy the e-file mandate. They differ in setup cost and in how much is automated.</p>
+  <div class="paths">
+    <article class="path">
+      <span class="pill">Fast · no certification</span>
+      <h3>e-Services bulk upload</h3>
+      <dl>
+        <dt>Covers</dt><dd>The DE 9C wage file as XML, ICESA or MMREF, up to 10 MB zipped.</dd>
+        <dt>Setup</dt><dd>An e-Services for Business account only. There is no test environment; the upload itself is the test.</dd>
+        <dt>Cost</dt><dd>A person uploads each file by hand. The DE 9 and the DE 88 payment go through e-Services or EFT separately.</dd>
+        <dt>Fits</dt><dd>A few clients, or the first quarters while FSET is being built.</dd>
+      </dl>
+    </article>
+    <article class="path heavy">
+      <span class="pill">Automated · ATS-style project</span>
+      <h3>FSET, application to application</h3>
+      <dl>
+        <dt>Covers</dt><dd>DE 9, DE 9C, DE 88 (an ACH debit), DE 34 and DE 542. Up to 32,000 records per send.</dd>
+        <dt>Setup</dt><dd>An e-Services account, then the DE 547 enrollment, then certification on EDD's Client Test environment: run the test cases, then send one transmission shaped like real production.</dd>
+        <dt>Limits</dt><dd>Amended DE 9 or DE 9C returns can't go through FSET. Corrections go through e-Services or the DE 9ADJ form.</dd>
+        <dt>Fits</dt><dd>Many clients filed from the same app that sends the 94x.</dd>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="idx">05</span><h2>Steps if the answer is yes</h2></div>
+  <ol class="steps">
+    <li><span>Send EDD the payroll reporting agent registration (DE 973B) and the agreement (DE 972) with the current client list<span class="note">EDD says processing takes about a week. Renew the DE 972 every two years.</span></span><span class="who">Owner</span></li>
+    <li><span>Collect a signed DE 48 or authorization letter from every California client<span class="note">Build it next to the Form 8655 collection, which the federal side still needs.</span></span><span class="who">Owner · Dev</span></li>
+    <li><span>Set up electronic payment for DE 88 deposits<span class="note">Agents can create their own EFT login for clients' payments, or use FSET's ACH debit. Each client must be enrolled for ACH debit first.</span></span><span class="who">Finance</span></li>
+    <li><span>Start with e-Services bulk upload for the DE 9C<span class="note">This needs no certification, so we can file while FSET is being built.</span></span><span class="who">Finance</span></li>
+    <li><span>If volume justifies it, enroll in FSET (DE 547) and pass certification<span class="note">Download the current schemas from EDD first. The guide on hand is Rev. 10 (2-20).</span></span><span class="who">Dev</span></li>
+  </ol>
+  <div class="callout"><strong>Until the owner decides,</strong> the November status page stands: state filings stay with the current payroll channel for tax year 2026. Nothing here needs code or an EDD contact before then.</div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="idx">06</span><h2>Sources</h2></div>
+  <ul class="sources">
+    <li><a href="https://edd.ca.gov/en/payroll_taxes/E-file_and_E-pay_Mandate_for_Employers/">E-file and E-pay Mandate for Employers</a></li>
+    <li><a href="https://edd.ca.gov/en/payroll_taxes/required_filings_and_due_dates/">Required Filings and Due Dates</a></li>
+    <li><a href="https://edd.ca.gov/siteassets/files/pdf_pub_ctr/de231pra.pdf">Payroll Reporting Agent information sheet, DE 231PRA Rev. 5 (2-19)</a></li>
+    <li><a href="https://edd.ca.gov/siteassets/files/pdf_pub_ctr/de972.pdf">Certification of Payroll Agent, DE 972 Rev. 3 (3-17)</a></li>
+    <li><a href="https://edd.ca.gov/Payroll_Taxes/Bulk_Transmissions.htm">FSET program page</a></li>
+    <li><a href="https://edd.ca.gov/siteassets/files/pdf_pub_ctr/de545.pdf">FSET Implementation Guide, DE 545 Rev. 10 (2-20)</a></li>
+    <li><a href="https://edd.ca.gov/siteassets/files/pdf_pub_ctr/de547.pdf">FSET Enrollment, DE 547</a></li>
+    <li><a href="https://edd.ca.gov/siteassets/files/pdf_pub_ctr/de8300.pdf">Electronic Filing Guide, DE 8300</a></li>
+    <li><a href="https://edd.ca.gov/en/payroll_taxes/FAQ_-_e-Services_for_Business/">e-Services for Business FAQs</a></li>
+    <li><a href="https://edd.ca.gov/en/payroll_taxes/Electronic_Funds_Transfer/">Electronic Funds Transfer</a></li>
+    <li><a href="https://edd.ca.gov/siteassets/files/pdf_pub_ctr/de8829-2025.pdf">2025 Household Employer's Guide, DE 8829</a></li>
+  </ul>
+</section>
+
+<footer>Generated 2026-11-09 from EDD primary sources · companion to the e-filing status page of 2026-11-06 · /html</footer>
+</main>
+</body>
+</html>

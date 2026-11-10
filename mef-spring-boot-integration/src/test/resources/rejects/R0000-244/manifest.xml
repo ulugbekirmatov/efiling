@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<IRSSubmissionManifest xmlns="http://www.irs.gov/efile" xmlns:efile="http://www.irs.gov/efile">
+  <SubmissionId>0000002026286abc1234</SubmissionId>
+  <EFIN>000000</EFIN>
+  <TaxYr>2026</TaxYr>
+  <GovernmentCd>IRS</GovernmentCd>
+  <FederalSubmissionTypeCd>941</FederalSubmissionTypeCd>
+  <TaxPeriodBeginDt>2026-01-01</TaxPeriodBeginDt>
+  <TaxPeriodEndDt>2026-03-31</TaxPeriodEndDt>
+  <TIN>003000004</TIN>
+</IRSSubmissionManifest>

@@ -45,12 +45,12 @@ test("groupByDocument keeps first-appearance order", async () => {
   assert.equal(groups[1].rows[0].formLine, "b");
 });
 
-test("loadRegistry on the real repo returns scenario numbers 1-4", async () => {
+test("loadRegistry on the real repo lists scenario ids 1, 2, 3, 4 first", async () => {
   const { loadRegistry } = await import("./scenarioData.js");
   const registry = loadRegistry();
   assert.deepEqual(
-    registry.scenarios.map((scenario) => scenario.number),
-    [1, 2, 3, 4]
+    registry.scenarios.map((scenario) => scenario.id).slice(0, 4),
+    ["1", "2", "3", "4"]
   );
 });
 
@@ -80,8 +80,15 @@ test("loadScenario accepts only canonical scenario number strings", async () => 
 
 test("sendClientId for scenario 1 is ats-scenario-1-orchid-941", async () => {
   const { loadRegistry, sendClientId } = await import("./scenarioData.js");
-  const scenario = loadRegistry().scenarios.find((item) => item.number === 1);
+  const scenario = loadRegistry().scenarios.find((item) => item.id === "1");
   assert.equal(sendClientId(scenario), "ats-scenario-1-orchid-941");
+});
+
+test("loadRegistry lists annual scenario 940-1", async () => {
+  const { loadRegistry, loadScenario } = await import("./scenarioData.js");
+  const ids = loadRegistry().scenarios.map((scenario) => scenario.id);
+  assert.ok(ids.includes("940-1"));
+  assert.equal(loadScenario("940-1").scenario.id, "940-1");
 });
 
 test("resolveScenarioFile maps through the registry and rejects unknown kinds", async () => {

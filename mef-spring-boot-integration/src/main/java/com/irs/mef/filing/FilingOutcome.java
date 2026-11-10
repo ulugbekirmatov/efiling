@@ -1,0 +1,37 @@
+package com.irs.mef.filing;
+
+/**
+ * What a SendSubmissions call can be worth. THREE cases, not two.
+ *
+ * The third one is the whole point: if invoke() throws anything that is not a recognised
+ * IRS business fault, the container MAY have reached the IRS. Calling that "failed" is how
+ * duplicate filings get created — so the type simply does not have a "failed after send" case.
+ */
+public sealed interface FilingOutcome {
+
+    JournalState state();
+
+    /** IRS holds the filing; the receipt confirms TRANSMISSION, not acceptance. */
+    record Transmitted(TransmissionReceipt receipt) implements FilingOutcome {
+        @Override
+        public JournalState state() {
+            return JournalState.TRANSMITTED;
+        }
+    }
+
+    /** IRS explicitly refused the container. Nothing was filed. The same bytes may be sent again. */
+    record Rejected(IrsFault fault) implements FilingOutcome {
+        @Override
+        public JournalState state() {
+            return JournalState.REJECTED;
+        }
+    }
+
+    /** Unknown. Do NOT resubmit; reconcile via GetSubmissionStatus / acks on the submission id. */
+    record Indeterminate(IrsFault fault) implements FilingOutcome {
+        @Override
+        public JournalState state() {
+            return JournalState.INDETERMINATE;
+        }
+    }
+}

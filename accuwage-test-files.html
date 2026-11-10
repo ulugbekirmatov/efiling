@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AccuWage Test Files</title>
+<style>
+:root {
+  --ivory: #FAF9F5; --paper: #FFFFFF; --g100: #F0EEE6; --g200: #E6E3DA; --g300: #D1CFC5;
+  --slate: #141413; --g700: #3D3D3A; --g500: #87867F;
+  --clay: #D97757; --clay-d: #B85C3E; --oat: #E3DACC; --olive: #788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ivory: #1c1c1a; --paper: #262624; --g100: #30302d; --g200: #3a3a37; --g300: #4a4a46;
+    --slate: #F0EEE6; --g700: #d1cfc5; --g500: #9c9a92; --oat: #5a5246;
+  }
+}
+:root[data-theme="dark"] {
+  --ivory: #1c1c1a; --paper: #262624; --g100: #30302d; --g200: #3a3a37; --g300: #4a4a46;
+  --slate: #F0EEE6; --g700: #d1cfc5; --g500: #9c9a92; --oat: #5a5246;
+}
+* { box-sizing: border-box; min-width: 0; }
+html, body { margin: 0; background: var(--ivory); color: var(--slate); }
+body { font-family: var(--sans); line-height: 1.55; overflow-wrap: break-word; }
+main { max-width: 980px; margin: 0 auto; padding: 40px 16px 80px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; }
+h1 { font-size: 34px; margin: 6px 0 10px; }
+h2 { font-size: 24px; margin: 44px 0 12px; }
+h3 { font-size: 18px; margin: 0 0 6px; }
+p { margin: 0 0 12px; color: var(--g700); }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+p code, li code, td code { background: var(--g100); padding: 1px 5px; border-radius: 4px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--g500); }
+.lede { font-size: 17px; color: var(--g700); max-width: 760px; }
+.tldr-dark { background: #141413; border-radius: 14px; padding: 22px 26px; margin: 26px 0; }
+.tldr-dark p, .tldr-dark strong { color: #F0EEE6; }
+.tldr-dark code { color: #F0EEE6; background: #2a2a28; }
+.tldr-dark .eyebrow { color: var(--oat); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0; }
+.stat { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 14px 16px; }
+.stat b { display: block; font-family: var(--serif); font-size: 28px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--g500); }
+.stat.ok b { color: var(--olive); }
+.stat.attn b { color: var(--clay); }
+.card { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 18px 20px; margin: 12px 0; }
+.card.attn { border-left: 4px solid var(--clay); }
+.card.ok { border-left: 4px solid var(--olive); }
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+.steps li { counter-increment: s; position: relative; padding: 10px 0 10px 44px; border-bottom: 1px solid var(--g200); }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: 9px; width: 28px; height: 28px; border-radius: 50%; background: var(--g100); font-family: var(--mono); font-size: 13px; display: grid; place-items: center; color: var(--g700); }
+.tablewrap { overflow-x: auto; border: 1.5px solid var(--g200); border-radius: 12px; background: var(--paper); }
+table { border-collapse: collapse; width: 100%; min-width: 680px; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--g200); vertical-align: top; word-break: normal; overflow-wrap: normal; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); background: var(--g100); }
+td.file { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+.pill { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.pill.ok { background: #e7ecdf; color: #4f6139; }
+.pill.err { background: #f6e1d8; color: var(--clay-d); }
+.pill.crit { background: var(--clay); color: #fff; }
+.ledger { border: 1.5px solid var(--g200); border-radius: 10px; overflow: hidden; margin: 10px 0 4px; font-size: 14px; }
+.ledger div { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--g200); }
+.ledger div:last-child { border-bottom: 0; }
+.ledger .head { background: var(--g100); font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--g500); }
+.ledger .was { color: var(--clay-d); }
+.ledger .now { color: #4f6139; }
+.ledger .punch { font-weight: 600; background: var(--g100); }
+.code { background: #141413; color: #F0EEE6; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.6; }
+.code .cm { color: #9c9a92; } .code .kw { color: #E3DACC; } .code .str { color: #b9c99e; } .code .fn { color: #f0b39a; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.path { font-family: var(--mono); font-size: 12px; color: var(--g700); background: var(--g100); padding: 1px 6px; border-radius: 4px; }
+ul { padding-left: 20px; } li { margin: 4px 0; color: var(--g700); }
+.flag { font-family: var(--mono); font-size: 11px; color: var(--clay-d); text-transform: uppercase; letter-spacing: .06em; }
+.stack { display: grid; gap: 6px; margin: 12px 0; font-family: var(--mono); font-size: 13px; }
+.stack div { display: grid; grid-template-columns: 48px 1fr auto; gap: 12px; align-items: center; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--g200); background: var(--paper); }
+.stack div b { font-weight: 600; }
+.stack div span:last-child { color: var(--g500); font-size: 12px; }
+.stack .emp { margin-left: 24px; border-left: 4px solid var(--oat); }
+.stack .ee { margin-left: 48px; }
+.stack .end { border-left: 4px solid var(--olive); }
+.code .ru { color: #87867F; }
+.code .hl { color: #f0b39a; }
+@media (max-width: 560px) { h1 { font-size: 27px; } .ledger div { grid-template-columns: 1fr; } .stack .emp { margin-left: 10px; } .stack .ee { margin-left: 20px; } .stack div { grid-template-columns: 40px 1fr; } .stack div span:last-child { display: none; } }
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">MeF repo · branch feature/w2-accuwage-files · 2026-10-07</div>
+<h1>W-2 files for AccuWage Online</h1>
+<p class="lede">Eighteen EFW2 wage files, built by the repo's own writer, that you upload to AccuWage in BSO. You do this to see whether SSA's tester agrees with our W-2 output before a real client file goes out. Eight files should pass clean. Ten are broken on purpose, so you can check that AccuWage catches each defect.</p>
+
+<div class="tldr-dark">
+  <div class="eyebrow">Two-sentence version</div>
+  <p><strong>Upload <code>reports/accuwage-ty2025/</code> today, and <code>reports/accuwage-ty2026/</code> once AccuWage accepts tax year 2026 (likely December).</strong> Files 01-08 should come back with no errors. Each of files 90-99 should come back with the one error its manifest row names.</p>
+</div>
+
+<div class="stats">
+  <div class="stat ok"><b>8 / 8</b><span>clean files pass the independent checker, both years</span></div>
+  <div class="stat ok"><b>10 / 10</b><span>negative files fail only their named rule</span></div>
+  <div class="stat ok"><b>36</b><span>files with every W-2 box recomputed by two models</span></div>
+  <div class="stat attn"><b>4</b><span>open decisions for you</span></div>
+</div>
+
+<h2>How to run it in AccuWage</h2>
+<div class="card">
+<ol class="steps">
+  <li>Regenerate with your real values stamped into the RA record. Without them the files carry placeholders: submitter EIN <code>123456789</code> and BSO User ID <code>PYRAMOS1</code>.
+<div class="code"><span class="cm"># from the repo root</span>
+<span class="kw">cd</span> mef-spring-boot-integration
+ACCUWAGE_SUBMITTER_EIN=<span class="str">&lt;pyramos EIN&gt;</span> ACCUWAGE_BSO_USER_ID=<span class="str">&lt;8-char BSO id&gt;</span> \
+  <span class="fn">./generate-accuwage-files.sh</span> 2025   <span class="cm"># or 2026</span></div>
+  The script writes the files, writes <code>MANIFEST.tsv</code>, and runs the independent checker over the clean files. It should print <code>OK</code> eight times.</li>
+  <li>Log in to Business Services Online and open <b>AccuWage Online</b>. Pick the tax year that matches the folder.</li>
+  <li>Upload each <code>.txt</code> file one at a time. AccuWage accepts <code>.txt</code> or <code>.zip</code>. Any file name works.</li>
+  <li>Compare each result with the <code>expected_result</code> column of <code>MANIFEST.tsv</code>. Write down AccuWage's exact message text for files 90-99. SSA does not publish its message wording, so the manifest quotes the Pub 42-007 rule instead.</li>
+</ol>
+</div>
+
+<div class="card attn">
+  <div class="flag">Why two years</div>
+  <p>SSA's online error reference lists an "Invalid Tax Year" condition that includes "does not contain the current calendar year". Today is October 2026. A TY2026 file may be refused until January even though BSO opens TY2026 uploads on 8 December. Neither audit could confirm how AccuWage behaves in December. The fields our writer fills sit at the same positions in TY2025 and TY2026, so the TY2025 set tests the same writer today. Only the wage base ($176,100 vs $184,500) and the Social Security tax maximum ($10,918.20 vs $11,439.00) change.</p>
+</div>
+
+<h2>The files</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>File</th><th>Expect</th><th>What it exercises</th></tr></thead>
+<tbody>
+<tr><td class="file">01-single-employer</td><td><span class="pill ok">no errors</span></td><td>One employer, three employees, wages and withholding only.</td></tr>
+<tr><td class="file">02-multi-employer</td><td><span class="pill ok">no errors</span></td><td>Three client employers (PA, NJ, MD) in one Reporting Agent file. One person has a W-2 under two of them.</td></tr>
+<tr><td class="file">03-high-earners</td><td><span class="pill ok">no errors</span></td><td>Gross exactly at the wage base, one cent over, $199,999.99, $250,000 and $1,000,000. Box 3 caps and the 0.9% Additional Medicare applies above $200,000.</td></tr>
+<tr><td class="file">04-retirement-and-health</td><td><span class="pill ok">no errors</span></td><td>Box 12 D, AA, W, DD and C, Box 10, section 125, and Box 13 retirement plan (RW 488), plus a no-benefits control row.</td></tr>
+<tr><td class="file">05-volume</td><td><span class="pill ok">no errors</span></td><td>250 employees, deterministic. The file is byte-identical on every run.</td></tr>
+<tr><td class="file">06-names-and-addresses</td><td><span class="pill ok">no errors</span></td><td>Names at maximum length, <code>SMITH-JONES</code>, <code>O'BRIEN</code>, <code>MARY ANN</code>, lowercase input, a 22-character city, and employees in five other states.</td></tr>
+<tr><td class="file">07-tipped-employees</td><td><span class="pill ok">no errors</span></td><td>Box 7 tips below the base, capped at base minus Box 3, and zero when Box 3 already sits at the base.</td></tr>
+<tr><td class="file">08-resubmission</td><td><span class="pill ok">no errors</span></td><td>RA 29 = 1 with WFID <code>TEST01</code>, a placeholder until SSA issues a real one.</td></tr>
+<tr><td class="file">90-ssn-area-666</td><td><span class="pill err">error</span></td><td>SSN begins with 666.</td></tr>
+<tr><td class="file">91-ss-wages-over-base</td><td><span class="pill err">error</span></td><td>Social Security wages one cent over the wage base. Pub wording is "should not exceed", so AccuWage may report it as an Alert.</td></tr>
+<tr><td class="file">92-ss-tax-over-maximum</td><td><span class="pill err">error</span></td><td>Social Security tax one cent over the year's maximum.</td></tr>
+<tr><td class="file">93-medicare-below-ss</td><td><span class="pill err">error</span></td><td>Medicare wages below Social Security wages. This is a listed SSA reject condition.</td></tr>
+<tr><td class="file">94-rt-out-of-balance</td><td><span class="pill err">error</span></td><td>RT total wages $100.00 more than the sum of its RW records.</td></tr>
+<tr><td class="file">95-rf-count-wrong</td><td><span class="pill err">error</span></td><td>RF says 4 employees, and the file has 3.</td></tr>
+<tr><td class="file">96-missing-rf</td><td><span class="pill crit">critical</span></td><td>No RF record. AccuWage stops testing.</td></tr>
+<tr><td class="file">97-record-511-bytes</td><td><span class="pill crit">critical</span></td><td>One record is 511 bytes. AccuWage stops testing.</td></tr>
+<tr><td class="file">98-ein-prefix-07</td><td><span class="pill err">error</span></td><td>Employer EIN begins with 07, a prefix SSA never issues.</td></tr>
+<tr><td class="file">99-ra-email-blank</td><td><span class="pill err">error</span></td><td>RA contact e-mail blank. It is a required field.</td></tr>
+</tbody></table></div>
+<p style="margin-top:8px">Full names, purposes and expected messages live in <span class="path">reports/accuwage-ty&lt;year&gt;/MANIFEST.tsv</span>. The table shortens file names 91-99.</p>
+
+<h2 id="format">What's inside a wage file (EFW2)</h2>
+<p>AccuWage finds every value by its byte position, not by a label. If one field runs one byte long, every field after it shifts, and AccuWage reads a name as a dollar amount. That is why file 97 (one 511-byte record) is a critical error that stops testing.</p>
+<p>The format is SSA's EFW2, defined in Publication 42-007. Our writer follows four rules:</p>
+<ul>
+  <li>Every record is exactly <b>512 bytes</b> of uppercase ASCII, ended by CR LF (<code>\r\n</code>).</li>
+  <li>The first two bytes name the record type: <code>RA</code>, <code>RE</code>, <code>RW</code>, <code>RT</code> or <code>RF</code>.</li>
+  <li>Text is left-aligned and padded with spaces. Money is in cents, right-aligned and padded with zeros. There is no decimal point.</li>
+  <li>Positions are 1-based and inclusive. "RA 29" means byte 29 of the RA record.</li>
+</ul>
+
+<h3 style="margin-top:22px">Step through it</h3>
+<p>A four-step drawing of file 01: the line order, one W-2 in bytes, the totals, and the rules the broken files break. Use the step buttons inside the frame. If the frame is empty, open <a href="reports/efw2-format/efw2-format.html">reports/efw2-format/efw2-format.html</a> directly.</p>
+<iframe src="reports/efw2-format/efw2-format.html" title="EFW2 wage file, step by step" loading="lazy" style="width:100%;height:860px;border:1.5px solid var(--g200);border-radius:12px;background:var(--paper)"></iframe>
+
+<h3 style="margin-top:22px">Record order</h3>
+<p>One file holds one submitter, then one block per client employer, then one final record. File 02 repeats the RE…RT block three times, once each for the PA, NJ and MD employers.</p>
+<div class="stack">
+  <div><b>RA</b><span>Submitter: Pyramos, the Reporting Agent</span><span>1 per file</span></div>
+  <div class="emp"><b>RE</b><span>Employer: the client whose W-2s follow</span><span>1 per employer</span></div>
+  <div class="ee"><b>RW</b><span>Employee: one W-2</span><span>1 per employee</span></div>
+  <div class="emp"><b>RT</b><span>Total: sums of that employer's RW records</span><span>1 per employer</span></div>
+  <div class="end"><b>RF</b><span>Final: count of all RW records in the file</span><span>1 per file</span></div>
+</div>
+<p>File 01 is the smallest real example: seven lines, <code>RA RE RW RW RW RT RF</code>. Files 95 and 96 break the last line on purpose.</p>
+
+<h3 style="margin-top:22px">One W-2 in bytes</h3>
+<p>This is Maria Smith's RW record from <span class="path">reports/accuwage-ty2025/01-single-employer.txt</span>, line 3. The ruler counts byte positions. Spaces are shown as <code>·</code>, and the test SSN is masked as <code>#</code>.</p>
+<div class="code"><pre><span class="ru">pos  1 3        12             27             42                 61</span>
+     <span class="kw">RW</span><span class="str">#########</span><span class="fn">MARIA··········</span>···············<span class="fn">SMITH···············</span>
+       <span class="cm">^SSN 3-11^first 12-26   ^middle 27-41  ^last 42-61</span>
+
+<span class="ru">pos  188        199        210        221        232        243</span>
+     <span class="hl">00005200000</span><span class="str">00000421200</span><span class="hl">00005200000</span><span class="str">00000322400</span><span class="hl">00005200000</span><span class="str">00000075400</span>
+     <span class="cm">^Box 1     ^Box 2     ^Box 3     ^Box 4     ^Box 5     ^Box 6</span>
+     <span class="cm">     $52,000.00 $4,212.00  $52,000.00 $3,224.00  $52,000.00 $754.00</span>
+
+<span class="ru">pos  486-489</span>
+     <span class="str">0</span>·<span class="str">00</span>   <span class="cm">486 statutory employee · 487 blank · 488 retirement plan (Box 13) · 489 third-party sick pay</span></pre></div>
+
+<div class="card" style="margin-top:14px">
+  <h3>How a dollar amount becomes eleven digits</h3>
+  <p>RW money fields are 11 bytes. RT totals are 15 bytes, so a large employer's sum still fits. Here is Maria's Box 1 and her employer's RT total from the same file:</p>
+  <div class="ledger">
+    <div class="head"><span>Step</span><span>value</span><span>field</span></div>
+    <div><span>Box 1 wages</span><span>$52,000.00</span><span>—</span></div>
+    <div><span>Convert to cents</span><span>5200000</span><span>—</span></div>
+    <div><span>Zero-fill to 11 (RW 188-198)</span><span class="now">00005200000</span><span>RW</span></div>
+    <div><span>RT 10-24: $52,000.00 + $38,500.50 + $71,250.00</span><span class="now">000000016175050</span><span>RT</span></div>
+    <div class="punch"><span>File 94 (its own three employees): RW wages add to $321,400.25, RT says</span><span class="was">000000032150025</span><span>$100.00 out of balance</span></div>
+  </div>
+  <p style="margin-top:10px">Found in code: <span class="path">wagefile/FixedWidth.java</span> (<code>zeroFill</code>, <code>left</code>) and <span class="path">wagefile/Efw2Writer.java</span> (<code>totalRecord</code>).</p>
+</div>
+
+<h3 style="margin-top:22px">Fields the writer fills</h3>
+<p>Positions not listed here stay blank. Values come from file 01 with the placeholder submitter, so the EIN and BSO User ID are not real.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Record</th><th>Positions</th><th>Field</th><th>File 01 value</th></tr></thead>
+<tbody>
+<tr><td class="file">RA</td><td class="file">3-11</td><td>Submitter EIN</td><td><code>123456789</code> (placeholder)</td></tr>
+<tr><td class="file">RA</td><td class="file">12-19</td><td>BSO User ID</td><td><code>PYRAMOS1</code> (placeholder)</td></tr>
+<tr><td class="file">RA</td><td class="file">29</td><td>Resubmit indicator</td><td><code>0</code>; file 08 sets <code>1</code></td></tr>
+<tr><td class="file">RA</td><td class="file">30-35</td><td>Prior Wage File Identifier (WFID)</td><td>blank; file 08 sets <code>TEST01</code></td></tr>
+<tr><td class="file">RA</td><td class="file">36-37</td><td>Software code</td><td><code>98</code> (in-house program)</td></tr>
+<tr><td class="file">RA</td><td class="file">38-167</td><td>Company name and address</td><td>PYRAMOS SOFTWARE LLC</td></tr>
+<tr><td class="file">RA</td><td class="file">217-346</td><td>Submitter name and address</td><td>required since this branch</td></tr>
+<tr><td class="file">RA</td><td class="file">396-437</td><td>Contact name and phone</td><td>W2 CONTACT, <code>7175550199</code></td></tr>
+<tr><td class="file">RA</td><td class="file">446-485</td><td>Contact e-mail</td><td><code>w2@pyramos.example.com</code>; file 99 blanks it</td></tr>
+<tr><td class="file">RA</td><td class="file">500</td><td>Preparer code</td><td><code>S</code> (self-prepared)</td></tr>
+<tr><td class="file">RE</td><td class="file">3-6</td><td>Tax year</td><td><code>2025</code></td></tr>
+<tr><td class="file">RE</td><td class="file">8-16</td><td>Employer EIN</td><td><code>231234567</code>; file 98 uses prefix 07</td></tr>
+<tr><td class="file">RE</td><td class="file">26</td><td>Agent indicator</td><td><code>0</code></td></tr>
+<tr><td class="file">RE</td><td class="file">40-169</td><td>Employer name and address</td><td>KEYSTONE HOME CARE LLC, HARRISBURG PA</td></tr>
+<tr><td class="file">RE</td><td class="file">174</td><td>Terminating business</td><td><code>N</code></td></tr>
+<tr><td class="file">RE</td><td class="file">219</td><td>Employment code</td><td><code>R</code> (regular, Form 941)</td></tr>
+<tr><td class="file">RE</td><td class="file">221</td><td>Third-party sick pay</td><td><code>0</code></td></tr>
+<tr><td class="file">RE</td><td class="file">222-318</td><td>Employer contact name, phone, e-mail</td><td>per client</td></tr>
+<tr><td class="file">RW</td><td class="file">3-11</td><td>Employee social security number</td><td>9 digits, synthetic; file 90 uses area 666</td></tr>
+<tr><td class="file">RW</td><td class="file">12-61</td><td>First, middle, last name</td><td>MARIA SMITH</td></tr>
+<tr><td class="file">RW</td><td class="file">88-138</td><td>Employee address</td><td>HARRISBURG PA</td></tr>
+<tr><td class="file">RW</td><td class="file">188-484</td><td>24 money fields (next table)</td><td>11 digits each</td></tr>
+<tr><td class="file">RW</td><td class="file">486 / 488 / 489</td><td>Statutory employee / retirement plan / third-party sick pay</td><td><code>0</code> / <code>0</code> / <code>0</code></td></tr>
+<tr><td class="file">RT</td><td class="file">3-9</td><td>Number of RW records for this employer</td><td><code>0000003</code></td></tr>
+<tr><td class="file">RT</td><td class="file">10-414</td><td>Totals of each RW money field</td><td>15 digits each</td></tr>
+<tr><td class="file">RF</td><td class="file">8-16</td><td>Number of RW records in the file</td><td><code>000000003</code>; file 95 says 4</td></tr>
+</tbody></table></div>
+
+<h3 style="margin-top:22px">W-2 boxes to file positions</h3>
+<p>Each RW money field has one RT total. The writer and validator read both positions from one enum, so they cannot disagree. Found in code: <span class="path">wagefile/Efw2Amount.java</span>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>W-2 box</th><th>Amount</th><th>RW</th><th>RT</th></tr></thead>
+<tbody>
+<tr><td>Box 1</td><td>Wages, tips, other compensation</td><td class="file">188-198</td><td class="file">10-24</td></tr>
+<tr><td>Box 2</td><td>Federal income tax withheld</td><td class="file">199-209</td><td class="file">25-39</td></tr>
+<tr><td>Box 3</td><td>Social Security wages</td><td class="file">210-220</td><td class="file">40-54</td></tr>
+<tr><td>Box 4</td><td>Social Security tax withheld</td><td class="file">221-231</td><td class="file">55-69</td></tr>
+<tr><td>Box 5</td><td>Medicare wages and tips</td><td class="file">232-242</td><td class="file">70-84</td></tr>
+<tr><td>Box 6</td><td>Medicare tax withheld</td><td class="file">243-253</td><td class="file">85-99</td></tr>
+<tr><td>Box 7</td><td>Social Security tips</td><td class="file">254-264</td><td class="file">100-114</td></tr>
+<tr><td>Box 10</td><td>Dependent care benefits</td><td class="file">276-286</td><td class="file">130-144</td></tr>
+<tr><td>Box 12 D</td><td>401(k) deferrals</td><td class="file">287-297</td><td class="file">145-159</td></tr>
+<tr><td>Box 12 E</td><td>403(b) deferrals</td><td class="file">298-308</td><td class="file">160-174</td></tr>
+<tr><td>Box 12 F</td><td>408(k)(6) deferrals</td><td class="file">309-319</td><td class="file">175-189</td></tr>
+<tr><td>Box 12 G</td><td>457(b) deferrals</td><td class="file">320-330</td><td class="file">190-204</td></tr>
+<tr><td>Box 12 H</td><td>501(c)(18)(D) deferrals</td><td class="file">331-341</td><td class="file">205-219</td></tr>
+<tr><td>Box 11</td><td>Nonqualified plan, section 457</td><td class="file">353-363</td><td class="file">235-249</td></tr>
+<tr><td>Box 12 W</td><td>Health savings account</td><td class="file">364-374</td><td class="file">250-264</td></tr>
+<tr><td>Box 11</td><td>Nonqualified plan, not section 457</td><td class="file">375-385</td><td class="file">265-279</td></tr>
+<tr><td>Box 12 Q</td><td>Nontaxable combat pay</td><td class="file">386-396</td><td class="file">280-294</td></tr>
+<tr><td>Box 12 C</td><td>Group-term life over $50,000</td><td class="file">408-418</td><td class="file">310-324</td></tr>
+<tr><td>Box 12 V</td><td>Nonstatutory stock options</td><td class="file">419-429</td><td class="file">340-354</td></tr>
+<tr><td>Box 12 Y</td><td>Section 409A deferrals</td><td class="file">430-440</td><td class="file">355-369</td></tr>
+<tr><td>Box 12 AA</td><td>Designated Roth 401(k)</td><td class="file">441-451</td><td class="file">370-384</td></tr>
+<tr><td>Box 12 BB</td><td>Designated Roth 403(b)</td><td class="file">452-462</td><td class="file">385-399</td></tr>
+<tr><td>Box 12 DD</td><td>Employer-sponsored health coverage</td><td class="file">463-473</td><td class="file">295-309</td></tr>
+<tr><td>Box 12 FF</td><td>Qualified small employer HRA</td><td class="file">474-484</td><td class="file">400-414</td></tr>
+<tr><td>Box 13</td><td>Retirement plan checkbox</td><td class="file">488</td><td class="file">—</td></tr>
+<tr><td>—</td><td>Third-party sick pay income tax</td><td class="file">—</td><td class="file">325-339, always zero</td></tr>
+</tbody></table></div>
+<p style="margin-top:8px">The RT order does not follow the RW order. Box 12 DD sits last in RW (463-473) but its total sits at RT 295-309, ahead of Box 12 C. A writer that lays out RT totals in RW order puts DD in the wrong place.</p>
+
+<div class="card attn">
+  <div class="flag">Not in our files</div>
+  <p>The writer emits no RS (state wage), RO (optional employee data) or RU (RO totals) records. EFW2 allows all three. Missing RS is fine, because SSA does not need state data. Missing RO and RU matters for TY2026 Box 12 TP, TT and TA. Open decision 1 below covers it.</p>
+</div>
+
+<h2>What had to change in the writer first</h2>
+<p>Two defects would have made our own output fail AccuWage, so the files would have tested our bugs instead of the scenarios. Both spec audits, Opus and Grok working separately from the TY2026 publication, found them.</p>
+
+<div class="grid2">
+<div class="card attn">
+  <h3>The submitter contact block was blank</h3>
+  <p>Pub 42-007 section 4.5 marks RA 296-346 (submitter address) and 396-437 (contact name and phone) as required. The writer never filled them, so every file the app has ever produced had this gap.</p>
+  <div class="ledger">
+    <div class="head"><span>RA field</span><span>was</span><span>now</span></div>
+    <div><span>296-346 address</span><span class="was">blank</span><span class="now">company address</span></div>
+    <div><span>396-422 contact</span><span class="was">blank</span><span class="now">contact name</span></div>
+    <div class="punch"><span>423-437 phone</span><span class="was">blank</span><span class="now">digits</span></div>
+  </div>
+  <p style="margin-top:10px">Found in code: <span class="path">wagefile/Efw2Writer.java</span> and <span class="path">wagefile/Submitter.java</span>.</p>
+</div>
+<div class="card attn">
+  <h3>The fixture reported the 941 tax rates</h3>
+  <p>W-2 Boxes 4 and 6 hold the employee's share only. The checked-in fixture used the combined employee-plus-employer rates from Form 941.</p>
+  <div class="ledger">
+    <div class="head"><span>$2,500.00 wages</span><span>was</span><span>now</span></div>
+    <div><span>Box 4 Social Security</span><span class="was">$310.00 (12.4%)</span><span class="now">$155.00 (6.2%)</span></div>
+    <div class="punch"><span>Box 6 Medicare</span><span class="was">$72.50 (2.9%)</span><span class="now">$36.25 (1.45%)</span></div>
+  </div>
+  <p style="margin-top:10px">Found in code: <span class="path">wagefile/FixtureWageYearSource.java</span>.</p>
+</div>
+</div>
+
+<div class="card ok">
+  <h3>Box 7, Box 12 and Box 13 now reach the file</h3>
+  <p>Before this change the writer could emit only the six core amounts. A 401(k) employee's file therefore showed no Box 12 D and an unchecked Box 13. The 24 money columns now live in one <code>Efw2Amount</code> enum that the writer and validator share. <code>EmployeeWage</code> carries the extra amounts and the retirement-plan flag. The old 14-argument constructor still works, so existing callers did not change.</p>
+</div>
+
+<h2>How it was verified</h2>
+<ul>
+  <li><b>Unit tests.</b> <code>mvn test</code> passes offline, including new tests that pin tips, Box 12, RW 488 and the RA contact positions to literal values. Another test proves every negative file differs from its clean base and that the structural defects fail the Java validator.</li>
+  <li><b>Independent checker.</b> <span class="path">mef-spring-boot-integration/efw2_check.py</span> was written only from Pub 42-007, without reading the Java code. It reports <code>OK</code> on all eight clean files in both years, and exactly the intended error on each negative file.</li>
+  <li><b>Box arithmetic, two models.</b> Opus and Grok each recomputed every box in all 36 files from the scenario inputs. Both found zero mismatches.</li>
+  <li><b>Code review, two models.</b> Neither reviewer found a wrong position or totals drift. Their smaller findings are fixed: the year-specific wage base in scenario 03, a checker run for TY2025, a strict tax-year parse, locale-free dollar text, a guard against null amounts, and realistic withholding in the 250-employee file.</li>
+  <li>Browser verification of this page was skipped. It is a static report.</li>
+</ul>
+
+<h2>Open decisions</h2>
+<div class="card attn">
+  <h3>1. New 2026 tip and overtime codes need RO and RU records</h3>
+  <p>TY2026 adds Box 12 TP (cash tips), TT (qualified overtime) and TA, which live on the optional RO record with an RU total. TP also requires a tipped-occupation code at RW 490-495. The writer has no RO or RU support, so a 2026 client with reported cash tips or qualified overtime would lose those amounts silently. AccuWage cannot see missing data. Scenario 07 uses Box 7 tips only, which is still valid. Building RO/RU is the next feature if Pyramos clients pay tips or overtime. Your call.</p>
+</div>
+<div class="card attn">
+  <h3>2. The service fixture's employer EIN starts with 00</h3>
+  <p><code>FixtureWageYearSource</code> still uses EIN <code>003000004</code>, the IRS ATS Orchid employer. SSA rejects the 00 prefix. The AccuWage files use their own valid EINs, so this matters only if someone uploads a file from the fixture source. I left it alone because 941 tests share that EIN.</p>
+</div>
+<div class="card attn">
+  <h3>3. <code>Submitter</code> gained two required fields</h3>
+  <p>The constructor now takes a contact name and phone, and a blank submitter name throws. Every caller in the module is updated. Any code outside the module that builds a <code>Submitter</code> needs the two new arguments.</p>
+</div>
+<div class="card attn">
+  <h3>4. The independent checker is not part of CI</h3>
+  <p><code>efw2_check.py</code> runs inside <code>generate-accuwage-files.sh</code> but not in <code>mvn test</code>. Running it in CI would catch a wrong column on Box 12 codes that no scenario uses yet. It needs <code>python3</code> on the runner.</p>
+</div>
+
+<h2>Where things are</h2>
+<ul>
+  <li>Files: <span class="path">reports/accuwage-ty2025/</span> and <span class="path">reports/accuwage-ty2026/</span>. They are not committed. Regenerate them with the script.</li>
+  <li>Scenarios: <span class="path">mef-spring-boot-integration/src/test/java/com/irs/mef/wagefile/accuwage/</span>. <code>ScenarioKit</code> does the box math once, and each <code>Scenario0N</code> only declares data.</li>
+  <li>Branch <code>feature/w2-accuwage-files</code>, 7 commits, local only and not pushed. The first commit adds the pre-existing untracked <code>wagefile</code> package unchanged.</li>
+</ul>
+</main>
+</body>
+</html>

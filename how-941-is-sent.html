@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How a 941 Is Sent</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300); --rust:#B04A3F;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin:0; background:var(--ivory); color:var(--slate); font-family:var(--sans); line-height:1.55; font-size:15px;
+  overflow-wrap:break-word; word-break:break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .callout, .story { overflow-wrap:break-word; word-break:break-word; }
+.card, .story, [class*="col"], [class*="grid"] > * { min-width:0; }
+table { table-layout:auto; min-width:640px; border-collapse:collapse; width:100%; font-size:13.5px; }
+td, th { word-break:normal; overflow-wrap:break-word; text-align:left; vertical-align:top; padding:9px 12px; border-bottom:1px solid var(--g200); }
+th { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--g500); font-weight:600; background:var(--g100); }
+td.nw, th.nw { white-space:nowrap; }
+.table-wrap { overflow-x:auto; border:var(--border); border-radius:12px; background:var(--paper); margin:14px 0; }
+a { color:var(--clay); text-decoration-color:var(--oat); text-underline-offset:3px; }
+:not(pre) > code { font-family:var(--mono); font-size:.9em; background:var(--g100); color:var(--slate); padding:1px 6px; border-radius:4px; overflow-wrap:break-word; }
+
+.wrap { max-width:1200px; margin:0 auto; padding:56px 28px 96px; }
+.eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-bottom:12px; display:flex; align-items:center; gap:12px; }
+.eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 { font-family:var(--serif); font-weight:500; font-size:clamp(38px,5.4vw,60px); line-height:1.06; letter-spacing:-.018em; margin:0 0 8px; max-width:18ch; }
+h1 em { font-style:italic; color:var(--clay); }
+h2 { font-family:var(--serif); font-weight:500; font-size:27px; line-height:1.2; letter-spacing:-.012em; margin:0; }
+h3 { font-family:var(--serif); font-weight:500; font-size:19px; margin:22px 0 6px; }
+.intro { font-size:16.5px; color:var(--g700); margin:20px 0 0; max-width:700px; }
+
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:30px 0 26px; }
+.stat { background:var(--paper); border:var(--border); border-radius:12px; padding:14px 16px; }
+.stat .n { font-family:var(--serif); font-size:30px; line-height:1.1; }
+.stat .n.ok { color:var(--olive); } .stat .n.warn { color:var(--clay); }
+.stat .l { font-family:var(--mono); font-size:11px; color:var(--g500); text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+
+.tldr-dark { background:var(--slate); color:var(--ivory); border-radius:12px; padding:22px 26px; margin-bottom:12px; }
+.tldr-dark .label { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--oat); margin-bottom:10px; }
+.tldr-dark p { margin:0; font-size:16px; line-height:1.65; color:var(--ivory); }
+.tldr-dark p + p { margin-top:10px; }
+.tldr-dark strong { color:var(--ivory); font-weight:600; }
+.tldr-dark a { color:var(--oat); }
+.tldr-dark code { font-family:var(--mono); font-size:13.5px; background:rgba(250,249,245,.12); color:var(--ivory); padding:1px 5px; border-radius:4px; }
+
+.layout { display:grid; grid-template-columns:210px minmax(0,1fr); gap:48px; margin-top:40px; }
+.toc { position:sticky; top:28px; align-self:start; border-left:1.5px solid var(--g300); padding-left:18px; font-size:13px; max-height:calc(100vh - 56px); overflow-y:auto; }
+.toc .t-head { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--g500); margin-bottom:10px; }
+.toc a { display:block; color:var(--g700); text-decoration:none; padding:3px 0; }
+.toc a:hover { color:var(--clay); }
+.toc .sub { padding-left:12px; color:var(--g500); font-size:12.5px; }
+@media (max-width:980px) { .layout { grid-template-columns:1fr; } .toc { position:static; max-height:none; } .stats { grid-template-columns:repeat(2,1fr); } }
+
+section { margin:0 0 64px; scroll-margin-top:20px; }
+.sec-head { display:flex; align-items:baseline; gap:14px; margin-bottom:12px; flex-wrap:wrap; }
+.sec-head .idx { font-family:var(--mono); font-size:13px; color:var(--clay); font-weight:600; width:30px; flex-shrink:0; }
+.sec-head .count { font-family:var(--mono); font-size:11px; color:var(--g500); background:var(--g100); padding:2px 8px; border-radius:999px; }
+.lead { color:var(--g700); font-size:15.5px; max-width:760px; }
+
+.story { border:1.5px solid var(--g200); border-radius:14px; background:var(--paper); padding:22px 24px; margin:18px 0; scroll-margin-top:20px; }
+.story .snum { font-family:var(--mono); font-size:11px; color:var(--clay-d); letter-spacing:.08em; text-transform:uppercase; }
+.story .stitle { font-family:var(--serif); font-weight:500; font-size:21px; margin:2px 0 8px; line-height:1.25; }
+.story p { color:var(--g700); margin:8px 0; font-size:14.5px; }
+.story ul { color:var(--g700); font-size:14px; padding-left:20px; margin:8px 0; }
+.story li { margin:3px 0; }
+.pathchip { font-family:var(--mono); font-size:11.5px; background:var(--g100); border:1px solid var(--g200); border-radius:6px; padding:2px 8px; color:var(--g700); white-space:nowrap; display:inline-block; margin:2px 4px 2px 0; }
+.paths { margin:14px 0 8px; }
+.paths .k { font-family:var(--mono); font-size:10.5px; color:var(--g500); text-transform:uppercase; letter-spacing:.07em; margin-right:6px; }
+
+.exbox { background:var(--g100); border:1px solid var(--g200); border-radius:10px; padding:12px 16px; margin-top:14px; }
+.exbox .exhead { font-family:var(--mono); font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--g500); margin-bottom:8px; }
+.exrow { display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:12.5px; line-height:1.9; color:var(--g700); border-bottom:1px dashed var(--g200); }
+.exrow > span:first-child { min-width:0; }
+.exrow > span:last-child { text-align:right; min-width:0; }
+.exrow:last-child { border-bottom:none; }
+.exrow .was { color:var(--clay-d); }
+.exrow .now { color:var(--olive); font-weight:700; }
+.exrow.punch { color:var(--slate); font-weight:700; }
+
+.analogy { border-left:3px solid var(--oat); padding:4px 14px; margin:12px 0; font-family:var(--serif); font-style:italic; font-size:15px; color:var(--g700); }
+.analogy .abreak { display:block; font-family:var(--sans); font-style:normal; font-size:13px; color:var(--clay-d); margin-top:8px; border-left:3px solid var(--clay); margin-left:-17px; padding-left:14px; }
+
+.code { background:var(--slate); border-radius:12px; padding:16px 20px; overflow-x:auto; margin:12px 0 4px; }
+.code pre { font-family:var(--mono); font-size:12.5px; line-height:1.65; color:#E8E6DE; white-space:pre; margin:0; }
+.code .kw { color:var(--clay); } .code .str { color:var(--olive); } .code .cm { color:var(--g500); } .code .fn { color:#C9B98A; }
+.code .hl { background:rgba(217,119,87,.18); display:inline-block; width:100%; }
+.codecap { font-family:var(--mono); font-size:11px; color:var(--g500); margin-top:2px; }
+
+.callout { display:flex; gap:12px; border:1.5px solid var(--oat); background:rgba(227,218,204,.35); border-radius:10px; padding:14px 16px; font-size:14px; margin:14px 0; color:var(--g700); }
+.callout .ico { color:var(--clay); font-weight:700; }
+.callout.ok { border-color:rgba(120,140,93,.45); background:rgba(120,140,93,.08); }
+.callout.ok .ico { color:var(--olive); }
+
+.gotchas { border:1.5px solid var(--clay); border-radius:12px; background:rgba(217,119,87,.06); padding:18px 22px; }
+.gotchas h3 { font-family:var(--sans); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--clay); margin:0 0 10px; }
+.gotchas ul { list-style:none; padding:0; margin:0; }
+.gotchas li { position:relative; padding-left:18px; font-size:14px; margin-bottom:10px; color:var(--g700); }
+.gotchas li::before { content:""; position:absolute; left:0; top:9px; width:6px; height:6px; background:var(--clay); border-radius:2px; }
+.gotchas li strong { color:var(--slate); }
+
+details { border:var(--border); border-radius:10px; background:var(--paper); margin:14px 0; overflow:hidden; }
+details summary { list-style:none; cursor:pointer; padding:12px 16px; font-family:var(--serif); font-size:16px; display:flex; align-items:baseline; gap:10px; }
+details summary::-webkit-details-marker { display:none; }
+details summary::before { content:"▸"; color:var(--clay); font-family:var(--sans); font-size:12px; transition:transform 120ms; }
+details[open] summary::before { transform:rotate(90deg); }
+details summary .where { font-family:var(--mono); font-size:11px; color:var(--g500); margin-left:auto; }
+details .body { padding:0 16px 16px; }
+details .table-wrap { margin:6px 0 0; }
+
+.tag { font-family:var(--mono); font-size:10.5px; padding:1px 7px; border-radius:999px; white-space:nowrap; border:1px solid; }
+.tag.client { background:#FAF6EE; border-color:var(--oat); color:var(--g700); }
+.tag.pyr { background:#FBF1EC; border-color:var(--clay); color:var(--clay-d); }
+.tag.gen { background:var(--g100); border-color:var(--g300); color:var(--g500); }
+.tag.sess { background:rgba(120,140,93,.1); border-color:rgba(120,140,93,.5); color:#5a6b45; }
+.yes { color:var(--olive); font-weight:700; font-family:var(--mono); }
+.no { color:var(--g300); font-family:var(--mono); }
+
+/* Pipeline map */
+.pipe { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-top:16px; }
+@media (max-width:860px) { .pipe { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:520px) { .pipe { grid-template-columns:1fr; } }
+.phase { border:var(--border); border-radius:12px; background:var(--paper); padding:12px; }
+.phase.wire { border-color:var(--clay); background:#FBF1EC; }
+.phase .ph { font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--g500); margin-bottom:8px; }
+.phase.wire .ph { color:var(--clay-d); }
+.pnode { display:block; text-decoration:none; color:var(--slate); border:1.5px solid var(--g300); background:var(--g100); border-radius:9px; padding:7px 10px; font-size:13px; margin-bottom:7px; line-height:1.35; }
+.pnode:hover { border-color:var(--clay); }
+.pnode .nn { display:block; font-family:var(--mono); font-size:10.5px; color:var(--g500); }
+.phase.wire .pnode { background:var(--paper); border-color:var(--clay); }
+.pipe-note { font-family:var(--mono); font-size:12px; color:var(--clay-d); margin-top:10px; }
+
+/* Nesting doll */
+.doll { border:1.5px solid var(--g300); border-radius:12px; padding:10px 12px 12px; margin-top:8px; background:var(--paper); }
+.doll .dl { font-family:var(--mono); font-size:11px; color:var(--g500); margin-bottom:6px; }
+.doll .dl b { color:var(--slate); font-weight:600; }
+.doll.l1 { background:#FBF1EC; border-color:var(--clay); }
+.doll.l2 { background:var(--paper); }
+.doll.l3 { background:#FAF6EE; border-color:var(--oat); }
+.doll.l4 { background:var(--g100); }
+.doll .pair { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+@media (max-width:620px) { .doll .pair { grid-template-columns:1fr; } }
+
+/* Timeline */
+.tl { position:relative; margin:18px 0 0 6px; padding-left:26px; border-left:2px solid var(--g300); }
+.tl .ev { position:relative; margin-bottom:20px; }
+.tl .ev::before { content:""; position:absolute; left:-33px; top:5px; width:12px; height:12px; border-radius:50%; background:var(--clay); border:2px solid var(--ivory); }
+.tl .ev.ok::before { background:var(--olive); }
+.tl .date { font-family:var(--mono); font-size:11.5px; color:var(--g500); }
+.tl .what { font-weight:600; margin:2px 0; }
+.tl .what code { font-weight:600; }
+.tl .fix { font-size:14px; color:var(--g700); }
+
+/* Builder demo */
+.demo { border:var(--border); border-radius:14px; background:var(--paper); padding:22px 24px; }
+.demo-grid { display:grid; grid-template-columns:280px minmax(0,1fr); gap:28px; align-items:start; }
+@media (max-width:760px) { .demo-grid { grid-template-columns:1fr; } }
+.field { margin-bottom:14px; }
+.field label { display:block; font-family:var(--mono); font-size:11px; color:var(--g500); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+.field input { width:100%; font-family:var(--mono); font-size:14px; padding:8px 10px; border:var(--border); border-radius:8px; background:var(--ivory); color:var(--slate); }
+.field input:focus, button:focus-visible, .opt:focus-visible { outline:2px solid var(--clay); outline-offset:2px; }
+.btn { font-family:var(--mono); font-size:12px; border:1.5px solid var(--slate); background:var(--slate); color:var(--ivory); padding:7px 14px; border-radius:8px; cursor:pointer; }
+.btn.ghost { background:transparent; color:var(--slate); }
+.idout { font-family:var(--mono); font-size:clamp(18px,3.4vw,28px); letter-spacing:.04em; margin:6px 0 12px; word-break:break-all; }
+.idout .s1 { color:var(--clay-d); } .idout .s2 { color:var(--olive); } .idout .s3 { color:#9A7B3C; } .idout .s4 { color:var(--g500); }
+.legend { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; font-size:12.5px; }
+@media (max-width:560px) { .legend { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.legend div { border-top:3px solid; padding-top:5px; color:var(--g700); }
+.legend .k1 { border-color:var(--clay-d); } .legend .k2 { border-color:var(--olive); } .legend .k3 { border-color:#9A7B3C; } .legend .k4 { border-color:var(--g500); }
+.legend b { display:block; font-family:var(--mono); font-size:13px; color:var(--slate); }
+.demo-msg { margin-top:14px; font-size:13.5px; padding:10px 12px; border-radius:8px; }
+.demo-msg.bad { background:rgba(217,119,87,.1); color:var(--clay-d); border:1px solid rgba(217,119,87,.4); }
+.demo-msg.good { background:rgba(120,140,93,.1); color:#5a6b45; border:1px solid rgba(120,140,93,.4); }
+
+/* Quiz */
+.quiz-score { position:sticky; top:12px; z-index:2; display:flex; justify-content:space-between; align-items:center; gap:12px; background:var(--slate); color:var(--ivory); border-radius:10px; padding:10px 16px; font-family:var(--mono); font-size:13px; margin-bottom:14px; }
+.quiz-score b { color:var(--oat); }
+.qcard { border:var(--border); border-radius:12px; background:var(--paper); padding:18px 20px; margin-bottom:14px; }
+.qcard .qn { font-family:var(--mono); font-size:11px; color:var(--g500); text-transform:uppercase; letter-spacing:.07em; }
+.qcard .qt { font-family:var(--serif); font-size:17.5px; margin:4px 0 12px; }
+.opt { display:block; width:100%; text-align:left; font-family:var(--sans); font-size:14px; color:var(--slate); background:var(--g100); border:1.5px solid var(--g200); border-radius:9px; padding:9px 12px; margin-bottom:7px; cursor:pointer; }
+.opt:hover:not([disabled]) { border-color:var(--clay); }
+.opt[disabled] { cursor:default; }
+.opt.right { background:rgba(120,140,93,.14); border-color:var(--olive); }
+.opt.wrong { background:rgba(217,119,87,.12); border-color:var(--clay); }
+.qfb { display:none; font-size:13.5px; color:var(--g700); border-left:3px solid var(--g300); padding:6px 12px; margin-top:8px; }
+.qfb.show { display:block; }
+.qfb.r { border-color:var(--olive); } .qfb.w { border-color:var(--clay); }
+.qfb blockquote { margin:6px 0; font-family:var(--serif); font-style:italic; color:var(--g700); }
+.qresult { display:none; border-radius:12px; padding:18px 20px; }
+.qresult.show { display:block; }
+.qresult.pass { border:1.5px solid var(--olive); background:rgba(120,140,93,.08); }
+.qresult.fail { border:1.5px solid var(--clay); background:rgba(217,119,87,.06); }
+
+.rule-card { border:1.5px solid var(--g300); border-left:4px solid var(--clay); border-radius:12px; background:var(--paper); padding:18px 22px; margin-bottom:14px; }
+.rule-card p { margin:0; font-size:15.5px; color:var(--slate); }
+.rule-card .k { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--g500); margin-bottom:8px; }
+
+footer { font-family:var(--mono); font-size:11.5px; color:var(--g500); border-top:1px solid var(--g200); padding-top:16px; margin-top:40px; }
+
+@media print {
+  .toc, .quiz-score, .demo, #quiz { display:none !important; }
+  .layout { grid-template-columns:1fr; }
+  details { border:none; } details .body { display:block; }
+  .story { break-inside:avoid; }
+  .code { background:#2a2a28; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">MeF A2A · Pyramos Reporting Agent · Form 941 · 2026-10-19</div>
+  <h1>How a <em>941</em> leaves this repo and reaches the IRS</h1>
+  <p class="intro">This page follows one real filing from start to finish: Orchid Incorporated's Q1 2026 Form 941, which IRS ATS <strong>accepted</strong> on 2026-09-25 as submission <code>2378612026268yagqidh</code>. Every value below comes from the code, the journal, the stored ack, or a captured SOAP message in this repo.</p>
+  <div class="stats">
+    <div class="stat"><div class="n ok">4 / 4</div><div class="l">TY2026 ATS scenarios accepted</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">SOAP call per filing</div></div>
+    <div class="stat"><div class="n warn">0</div><div class="l">retries, on purpose</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">possible outcomes after the wire</div></div>
+  </div>
+  <div class="tldr-dark">
+    <div class="label">The two-sentence version</div>
+    <p>We wrap the client's 941 numbers in a header that names Pyramos as the Reporting Agent, put that Return and a manifest in a ZIP, and send the ZIP as an attachment to one certificate-authenticated SOAP call. The IRS answers with a deposit ID right away, which proves only that the ZIP arrived; whether the 941 is <strong>accepted</strong> comes later in an acknowledgment that we fetch by submission ID.</p>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="t-head">On this page</div>
+  <a href="#problem">01 The problem</a>
+  <a href="#cast">02 Every number, and where it goes</a>
+  <a href="#parcel">03 The parcel picture</a>
+  <a href="#map">04 The pipeline map</a>
+  <a href="#stations">05 The 12 stations</a>
+  <a class="sub" href="#s1">1 Client body</a>
+  <a class="sub" href="#s2">2 Originator</a>
+  <a class="sub" href="#s3">3 Return header</a>
+  <a class="sub" href="#s4">4 ATS gate</a>
+  <a class="sub" href="#s5">5 Login</a>
+  <a class="sub" href="#s6">6 Pre-flight checks</a>
+  <a class="sub" href="#s7">7 Submission ID</a>
+  <a class="sub" href="#s8">8 Journal</a>
+  <a class="sub" href="#s9">9 Manifest + ZIP</a>
+  <a class="sub" href="#s10">10 SOAP call</a>
+  <a class="sub" href="#s11">11 Three outcomes</a>
+  <a class="sub" href="#s12">12 The ack</a>
+  <a href="#trail">06 What the rejects taught us</a>
+  <a href="#run">07 How to run a send</a>
+  <a href="#gotchas">08 Non-obvious behaviors</a>
+  <a href="#builder">09 Build a submission ID</a>
+  <a href="#quiz">10 Check yourself</a>
+  <a href="#rule">11 The rule in plain words</a>
+</nav>
+
+<main>
+
+<!-- 01 -->
+<section id="problem">
+  <div class="sec-head"><span class="idx">01</span><h2>The problem</h2></div>
+  <p class="lead">Orchid Incorporated paid 3 employees $1,000 in Q1 2026. It owes the IRS a Form 941 for that quarter. Orchid doesn't file it. <strong>Pyramos Software LLC</strong> does, as Orchid's <em>Reporting Agent</em>: a company the IRS lets sign and file employment tax returns for other companies, once each client signs a Form 8655 authorization.</p>
+  <p class="lead">The IRS takes no PDFs and no web form here. To file, five things must all be true at once, and each one has its own reject code when it's wrong:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th class="nw">#</th><th>The IRS needs…</th><th>We satisfy it with…</th><th>Reject if wrong</th></tr></thead>
+    <tbody>
+      <tr><td class="nw">1</td><td>The 941 as XML that matches the IRS schema for that quarter (<code>2026Q1v4.0</code>)</td><td>The client body + XSD validation before sending</td><td class="nw">X0000 series</td></tr>
+      <tr><td class="nw">2</td><td>A header that says who files and how they sign</td><td><code>OriginatorTypeCd=ReportingAgent</code> + the RA PIN</td><td class="nw">R0000-118-01</td></tr>
+      <tr><td class="nw">3</td><td>A manifest (address label) whose numbers agree with the header</td><td>One EFIN in three places</td><td class="nw">R0000-054-01, R0000-143</td></tr>
+      <tr><td class="nw">4</td><td>A logged-in session from a registered machine</td><td>IdenTrust certificate + ETIN + ASID</td><td class="nw">Login fault</td></tr>
+      <tr><td class="nw">5</td><td>A unique submission ID dated today</td><td><code>EFIN + yyyyDDD + 7 random</code></td><td class="nw">MEF00004</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 02 -->
+<section id="cast">
+  <div class="sec-head"><span class="idx">02</span><h2>Every number, and where it goes</h2><span class="count">10 identifiers</span></div>
+  <p class="lead">Most early rejects came from putting the right number in the wrong place. Learn this table first. The <span class="yes">●</span> marks where each value appears on the wire.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Identifier</th><th>Value (Orchid send)</th><th>What it is</th><th class="nw">Return</th><th class="nw">Manifest</th><th class="nw">Sub. ID</th><th class="nw">SOAP header</th></tr></thead>
+    <tbody>
+      <tr><td><strong>EIN</strong> (client)</td><td class="nw"><code>003000004</code></td><td>Orchid's Employer ID. The return is <em>about</em> this company.</td><td class="yes">● Filer</td><td class="yes">● TIN</td><td class="no">–</td><td class="no">–</td></tr>
+      <tr><td><strong>EFIN</strong></td><td class="nw"><code>237861</code></td><td>Electronic Filing ID of the originator (Pyramos). Says who prepared and sent it.</td><td class="yes">● OriginatorGrp</td><td class="yes">● EFIN</td><td class="yes">● first 6</td><td class="no">–</td></tr>
+      <tr><td><strong>ETIN</strong></td><td class="nw"><code>44754</code></td><td>Transmitter ID. Only logs the machine in. Never in the Return.</td><td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="yes">● ETIN</td></tr>
+      <tr><td><strong>ASID</strong></td><td class="nw"><code>10219201</code></td><td>Application System ID: the registered app + certificate pair.</td><td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="yes">● AppSysID</td></tr>
+      <tr><td><strong>Software ID</strong></td><td class="nw"><code>26996214</code></td><td>8 digits IRS issues per tax year after ATS. TY2026 only.</td><td class="yes">● SoftwareId</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+      <tr><td><strong>RA PIN</strong></td><td class="nw">5 digits, in <code>.env</code></td><td>The Reporting Agent's signature on every client return.</td><td class="yes">● PINGrp</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+      <tr><td><strong>Agent EIN</strong></td><td class="nw"><code>MEF_RA_EIN</code></td><td>Pyramos's own EIN, in <code>ReportingAgent94XFilerGrp</code>.</td><td class="yes">● RA group</td><td class="no">–</td><td class="no">–</td><td class="no">–</td></tr>
+      <tr><td><strong>Submission ID</strong></td><td class="nw"><code>2378612026268yagqidh</code></td><td>Our name for this one filing. We mint it.</td><td class="no">–</td><td class="yes">● SubmissionId</td><td class="yes">● itself</td><td class="yes">● Body</td></tr>
+      <tr><td><strong>Deposit ID</strong></td><td class="nw"><code>QG6CT63E…TD8X0</code></td><td>IRS's receipt for the whole SOAP delivery. Returned immediately.</td><td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="yes">● response</td></tr>
+      <tr><td><strong>Ack ID</strong></td><td class="nw"><code>J0BSR3W1…WXK1C</code></td><td>IRS's verdict record (Accepted / Rejected). Arrives later.</td><td class="no">–</td><td class="no">–</td><td class="no">–</td><td class="no">GetAck</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><span class="ico">!</span><div><strong>One EFIN, three places; the ETIN only logs in.</strong> The originator EFIN prefixes the submission ID, fills the manifest <code>&lt;EFIN&gt;</code>, and goes in <code>OriginatorGrp</code>. If the manifest EFIN differs from <code>OriginatorGrp</code>, IRS rule R0000-054-01 rejects the return. The code makes this impossible: the manifest reads the EFIN back <em>out of</em> the submission ID (station 7).</div></div>
+</section>
+
+<!-- 03 -->
+<section id="parcel">
+  <div class="sec-head"><span class="idx">03</span><h2>The parcel picture</h2></div>
+  <div class="analogy">Think of sending a signed contract by courier. The contract is the 941 Return. The address label is the manifest. Both go into a sealed parcel (the ZIP). The courier's delivery slip (the SOAP message) lists only the parcel's tracking number and postmark, and you must show your badge (the certificate login) before the courier takes anything. The courier hands you a receipt on the spot (the deposit ID).
+    <span class="abreak">Where this breaks: a courier receipt usually means "delivered, done." Here it means only "the parcel is at the IRS." The IRS opens it minutes later and may still reject the contents, and that verdict comes as a separate letter (the ack) you must go and fetch. And unlike a courier, you can't safely "send it again to be sure": a second parcel is a second federal filing.</span></div>
+  <div class="doll l1"><div class="dl"><b>SOAP request</b> · multipart/related (MIME) · signed session · <code>SendSubmissions</code></div>
+    <div class="doll l2"><div class="dl"><b>SOAP envelope</b> · MeFHeader (ETIN, AppSysID, TestCd) + Body (SubmissionId, ElectronicPostmarkTs)</div></div>
+    <div class="doll l3"><div class="dl"><b>Attachment: container ZIP</b> · application/octet-stream · 2,144 bytes in the captured send</div>
+      <div class="doll l4"><div class="dl"><b>Submission ZIP</b> · <code>2378612026268yagqidh</code> + electronic postmark</div>
+        <div class="pair">
+          <div class="doll"><div class="dl"><b>manifest/manifest.xml</b> · IRSSubmissionManifest</div><span style="font-size:13px;color:var(--g700)">SubmissionId, EFIN, TaxYr, GovernmentCd, FederalSubmissionTypeCd, period, TIN</span></div>
+          <div class="doll"><div class="dl"><b>xml/Return.xml</b> · Return 2026Q1v4.0</div><span style="font-size:13px;color:var(--g700)">ReturnHeader (Pyramos) + ReturnData/IRS941 (Orchid)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section id="map">
+  <div class="sec-head"><span class="idx">04</span><h2>The pipeline map</h2><span class="count">12 stations · 5 phases</span></div>
+  <p class="lead">Each box links to its station below. Everything left of the clay column happens on our machine and can fail safely. The clay column is the point of no return.</p>
+  <div class="pipe">
+    <div class="phase"><div class="ph">A · Compose</div>
+      <a class="pnode" href="#s1"><span class="nn">1 · ClientReturnBody</span>Load Orchid's numbers</a>
+      <a class="pnode" href="#s2"><span class="nn">2 · ReportingAgentOriginator</span>Load Pyramos's identity</a>
+      <a class="pnode" href="#s3"><span class="nn">3 · ReportingAgentReturnXml</span>Write the header</a></div>
+    <div class="phase"><div class="ph">B · Session</div>
+      <a class="pnode" href="#s4"><span class="nn">4 · ReportingAgentAtsGate</span>Right account?</a>
+      <a class="pnode" href="#s5"><span class="nn">5 · MefClientService.login</span>Certificate login → SAML</a></div>
+    <div class="phase"><div class="ph">C · Pre-flight</div>
+      <a class="pnode" href="#s6"><span class="nn">6 · NewSendSubmissionService</span>Idempotency, duplicate, XSD</a>
+      <a class="pnode" href="#s7"><span class="nn">7 · NewSendSubmissionId</span>Mint the ID</a>
+      <a class="pnode" href="#s8"><span class="nn">8 · Journal</span>Write CREATED, fsync</a></div>
+    <div class="phase wire"><div class="ph">D · The wire</div>
+      <a class="pnode" href="#s9"><span class="nn">9 · Manifest + SubmissionBuilder</span>Build the ZIPs</a>
+      <a class="pnode" href="#s10"><span class="nn">10 · SendSubmissionsClient</span>One SOAP call</a></div>
+    <div class="phase"><div class="ph">E · Afterwards</div>
+      <a class="pnode" href="#s11"><span class="nn">11 · classify / readReceipt</span>Transmitted · Rejected · Indeterminate</a>
+      <a class="pnode" href="#s12"><span class="nn">12 · GetAck</span>Accepted or Rejected</a></div>
+  </div>
+  <div class="pipe-note">↳ Station 9 runs entirely in memory and still counts as "pre-wire": if it throws, the journal row becomes ABANDONED and the key is released. Only the <code>invoke</code> in station 10 can leave a filing at the IRS.</div>
+</section>
+
+<!-- 05 -->
+<section id="stations">
+  <div class="sec-head"><span class="idx">05</span><h2>The 12 stations</h2></div>
+  <p class="lead">Each card starts with the problem the station solves, then one worked example with real values, then the code that does it. The live entry point is the test <code>ReportingAgentAtsScenarioTest</code>, run by <code>./run-ra-ats-test.sh 1</code>. It calls stations 1 → 12 in order.</p>
+
+  <!-- S1 -->
+  <article class="story" id="s1">
+    <div class="snum">Station 1 · Compose</div>
+    <div class="stitle">Orchid's numbers arrive as a "body", never as a full return</div>
+    <p>Pyramos will file for many companies. If each company's file carried its own header, a client file could claim to be the originator, carry the wrong PIN, or say <code>OnlineFiler</code>. So the client file holds only what belongs to the client: the <code>Filer</code> block (EIN, name, name control, address), the tax period, and <code>ReturnData</code> with the form. Pyramos's code writes the header later.</p>
+    <p>The body lives at <code>test-scenarios/ats-ty2026/scenario-1-orchid-941/client-return-body.xml</code>. Every value is traced to a PDF line in <code>line-mapping.tsv</code> next to it. Loading it checks four things:</p>
+    <ul>
+      <li>The root must be <code>ClientReturnBody</code>. A complete <code>&lt;Return&gt;</code> is refused, which keeps the old OneWell <code>OnlineFiler</code> file out of this path.</li>
+      <li><code>returnVersion</code> is locked to <code>2026Q1v4.0</code>, the schema version the IRS publishes for the quarter.</li>
+      <li><code>quarterEndingDt</code> month must be 03, 06, 09 or 12 and equal the tax-period end month.</li>
+      <li><code>ReturnData</code> must open with <code>IRS941</code> (for <code>941</code>) or <code>IRS941X</code> (for <code>941X</code>).</li>
+    </ul>
+    <div class="exbox">
+      <div class="exhead">Worked example · Orchid Q1 2026, how the 941 lines add up</div>
+      <div class="exrow"><span>Line 1 · employees</span><span>3</span></div>
+      <div class="exrow"><span>Line 2 · wages</span><span>1,000.00</span></div>
+      <div class="exrow"><span>Line 3 · federal income tax withheld</span><span>100.00</span></div>
+      <div class="exrow"><span>Line 5a · social security 1,000.00 × 12.4%</span><span>124.00</span></div>
+      <div class="exrow"><span>Line 5c · Medicare 1,000.00 × 2.9%</span><span>29.00</span></div>
+      <div class="exrow"><span>Line 5e · 124.00 + 29.00</span><span>153.00</span></div>
+      <div class="exrow"><span>Lines 6 → 10 → 12 · 100.00 + 153.00, no adjustments or credits</span><span>253.00</span></div>
+      <div class="exrow"><span>Line 13 · deposits already made</span><span>253.00</span></div>
+      <div class="exrow"><span>Line 16 · liability under $2,500</span><span>X (no Schedule B)</span></div>
+      <div class="exrow punch"><span>Line 14 · balance due</span><span class="now">0.00 → no payment record needed</span></div>
+    </div>
+    <p>Each line maps to one element: line 2 → <code>WagesAmt</code>, line 5e → <code>TotalSSMdcrTaxAmt</code>, line 12 → <code>TotalTaxAmt</code>, line 16 → <code>TotalTaxLessThanLimitAmtInd</code>. Blank lines are left out of the XML entirely, not sent as zero.</p>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">ClientReturnBody.java:100-144</span><span class="pathchip">ClientReturnBody.java:57-65</span><span class="pathchip">ClientReturnBody.java:171-180</span><span class="pathchip">ClientReturnType.java:14-15</span></div>
+    <div class="code"><pre><span class="kw">String</span> localName = root.<span class="fn">getLocalName</span>();
+<span class="kw">if</span> (<span class="str">"Return"</span>.<span class="fn">equals</span>(localName)) {
+    <span class="kw">throw new</span> <span class="fn">ReportingAgentValidationException</span>(<span class="str">"xml"</span>,
+            <span class="str">"ClientReturnBody root is required; a complete Return is not a client body"</span>);
+}
+<span class="cm">// ...</span>
+<span class="kw">String</span> returnVersion = <span class="fn">requiredAttribute</span>(root, <span class="str">"returnVersion"</span>);
+<span class="kw">if</span> (!RETURN_VERSION.<span class="fn">equals</span>(returnVersion)) {
+    <span class="kw">throw new</span> <span class="fn">ReportingAgentValidationException</span>(<span class="str">"returnVersion"</span>,
+            <span class="str">"locked to "</span> + RETURN_VERSION + <span class="str">", found "</span> + returnVersion);
+}
+<span class="fn">ClientReturnType</span> returnType = <span class="fn">ClientReturnType</span>.<span class="fn">parse</span>(<span class="fn">requiredAttribute</span>(root, <span class="str">"returnTypeCd"</span>));</pre></div>
+  </article>
+
+  <!-- S2 -->
+  <article class="story" id="s2">
+    <div class="snum">Station 2 · Compose</div>
+    <div class="stitle">Pyramos must prove it may file as a Reporting Agent before anything is built</div>
+    <p>Two IRS rejects in September came from Pyramos's own settings, not from Orchid's numbers. The code now refuses both before a single byte is built. <code>ReportingAgentOriginatorFactory.fromEnvironment()</code> reads <code>MEF_EFIN</code>, <code>MEF_RA_PIN</code>, <code>MEF_SOFTWARE_ID</code>, <code>MEF_RA_FILING_IP</code> and the <code>MEF_RA_*</code> name and address from <code>.env</code>. It names the missing variable if one is blank. It also refuses three known-wrong values: OneWell's old EFIN, the stand-in EFIN <code>000000</code>, and Orchid's EIN used as the agent EIN.</p>
+    <p>The <code>ReportingAgentOriginator</code> record then checks two IRS rules in its constructor. Value types check the rest: the PIN must be exactly 5 digits, the Software ID exactly 8, the name control 1 to 4 of <code>A-Z 0-9 - &amp;</code>.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · the two EFINs Pyramos holds</div>
+      <div class="exrow"><span>EFIN 102192 · prefix "10"</span><span class="was">R0000-118-01 on 2026-09-18 → now refused locally</span></div>
+      <div class="exrow"><span>Why: prefixes 10, 21, 32, 44, 53</span><span>force OriginatorTypeCd = OnlineFiler</span></div>
+      <div class="exrow"><span>EFIN 237861 · prefix "23"</span><span class="now">allowed as ReportingAgent</span></div>
+      <div class="exrow"><span>Filing IP 127.0.0.1 (loopback)</span><span class="was">R0000-244 on 2026-09-25 → now refused</span></div>
+      <div class="exrow"><span>Filing IP = public IPv4 of the sending host</span><span class="now">allowed</span></div>
+      <div class="exrow punch"><span>Result</span><span>a wrong .env fails in milliseconds, not in a 2-minute IRS round trip</span></div>
+    </div>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">ReportingAgentOriginator.java:24</span><span class="pathchip">ReportingAgentOriginator.java:40-61</span><span class="pathchip">ReportingAgentOriginatorFactory.java:29-59</span><span class="pathchip">ReportingAgentPin.java:7</span><span class="pathchip">SoftwareId.java:7</span></div>
+    <div class="code"><pre><span class="cm">/** R0000-118-01: an EFIN with these first two digits must file as OnlineFiler. */</span>
+<span class="kw">static final</span> <span class="fn">Set</span>&lt;<span class="fn">String</span>&gt; ONLINE_FILER_EFIN_PREFIXES = <span class="fn">Set</span>.<span class="fn">of</span>(<span class="str">"10"</span>, <span class="str">"21"</span>, <span class="str">"32"</span>, <span class="str">"44"</span>, <span class="str">"53"</span>);
+
+<span class="kw">private static void</span> <span class="fn">requireReportingAgentEfin</span>(<span class="fn">Efin</span> efin) {
+    <span class="kw">String</span> prefix = efin.<span class="fn">value</span>().<span class="fn">substring</span>(<span class="str">0</span>, <span class="str">2</span>);
+    <span class="kw">if</span> (ONLINE_FILER_EFIN_PREFIXES.<span class="fn">contains</span>(prefix)) {
+        <span class="kw">throw new</span> <span class="fn">ReportingAgentValidationException</span>(<span class="str">"efin"</span>, ...);
+    }
+}</pre></div>
+  </article>
+
+  <!-- S3 -->
+  <article class="story" id="s3">
+    <div class="snum">Station 3 · Compose</div>
+    <div class="stitle">The header is written by code, and no caller can change who the originator is</div>
+    <p>The <code>ReturnHeader</code> tells the IRS who prepared the return, with which software, from which computer, and who signed it. A caller can't pass <code>OriginatorTypeCd</code> at all. <code>ReportingAgentReturn.compose(originator, client, clock)</code> always writes <code>ReportingAgent</code>. It splices Orchid's <code>Filer</code> and <code>ReturnData</code> in unchanged.</p>
+    <p>The order of elements is fixed by the IRS schema. One wrong order is a schema reject, so the header is built by one function, top to bottom:</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · same Orchid numbers, two ways to sign</div>
+      <div class="exrow"><span>OriginatorTypeCd</span><span><span class="was">OnlineFiler (OneWell era)</span> → <span class="now">ReportingAgent</span></span></div>
+      <div class="exrow"><span>Signature group</span><span><span class="was">OnlineFilerPINGrp</span> → <span class="now">ReportingAgentPINGrp</span></span></div>
+      <div class="exrow"><span>ReportingAgentPINGrp/PIN</span><span>5-digit RA PIN</span></div>
+      <div class="exrow"><span>RAPINEnteredByCd</span><span>REPORTING AGENT</span></div>
+      <div class="exrow"><span>JuratDisclosureCd</span><span>REPORTING AGENT PIN</span></div>
+      <div class="exrow"><span>Who is named</span><span><span class="was">Filer only</span> → <span class="now">Filer (Orchid) + ReportingAgent94XFilerGrp (Pyramos)</span></span></div>
+      <div class="exrow"><span>Refund block (R0000-248/249)</span><span><span class="was">missing on t1238uu</span> → <span class="now">RefundProductElectionInd=false, RefundDisbursementCd=0</span></span></div>
+      <div class="exrow punch"><span>Result</span><span>same $253.00 of tax, now signed by the agent for the client</span></div>
+    </div>
+    <details>
+      <summary>Every header element and where its value comes from <span class="where">scenarios.json · headerFields</span></summary>
+      <div class="body">
+        <p style="font-size:13px;color:var(--g700)"><span class="tag client">client</span> from Orchid's body · <span class="tag pyr">pyramos</span> from <code>.env</code> · <span class="tag gen">generated</span> by the composer</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Element (in order)</th><th class="nw">Source</th><th>Orchid send value / rule</th></tr></thead>
+          <tbody>
+            <tr><td><code>Return/@returnVersion</code></td><td><span class="tag client">client</span></td><td>2026Q1v4.0</td></tr>
+            <tr><td><code>ReturnHeader/@binaryAttachmentCnt</code></td><td><span class="tag gen">generated</span></td><td>0 (no PDFs attached)</td></tr>
+            <tr><td><code>ReturnTypeCd</code></td><td><span class="tag client">client</span></td><td>941</td></tr>
+            <tr><td><code>ReturnTs</code></td><td><span class="tag gen">generated</span></td><td>composer clock, America/New_York, whole seconds</td></tr>
+            <tr><td><code>SoftwareId</code></td><td><span class="tag pyr">pyramos</span></td><td>26996214 (<code>MEF_SOFTWARE_ID</code>)</td></tr>
+            <tr><td><code>MultSoftwarePackagesUsedInd</code></td><td><span class="tag gen">generated</span></td><td>false</td></tr>
+            <tr><td><code>AdditionalFilerInformation/AtSubmissionFilingGrp</code></td><td><span class="tag gen">generated</span></td><td>RefundProductElectionInd false, RefundDisbursementCd 0 (rules R0000-248/249)</td></tr>
+            <tr><td><code>FilingSecurityInformation/IPAddress/IPv4AddressTxt</code></td><td><span class="tag pyr">pyramos</span></td><td><code>MEF_RA_FILING_IP</code>, public IPv4 of the sending host</td></tr>
+            <tr><td><code>TotActiveTimePrepSubmissionTs</code></td><td><span class="tag gen">generated</span></td><td>1</td></tr>
+            <tr><td><code>VendorControlNum</code></td><td><span class="tag gen">generated</span></td><td>first 16 hex of SHA-256(EIN + period begin + period end)</td></tr>
+            <tr><td><code>AtSubmissionCreationDeviceId</code> / <code>AtSubmissionFilingDeviceId</code></td><td><span class="tag gen">generated</span></td><td>uppercase SHA-1 of "pyramos-ats" + filer EIN (40 hex)</td></tr>
+            <tr><td><code>QuarterEndingDt</code></td><td><span class="tag client">client</span></td><td>2026-03</td></tr>
+            <tr><td><code>Filer</code></td><td><span class="tag client">client</span></td><td>EIN 003000004, Orchid Incorporated, ORCH, 1st Test Street, Willow Grove PA 19090</td></tr>
+            <tr><td><code>OriginatorGrp/EFIN</code></td><td><span class="tag pyr">pyramos</span></td><td>237861 (<code>MEF_EFIN</code>)</td></tr>
+            <tr><td><code>OriginatorGrp/OriginatorTypeCd</code></td><td><span class="tag gen">generated</span></td><td>always ReportingAgent</td></tr>
+            <tr><td><code>ReportingAgentPINGrp</code></td><td><span class="tag pyr">pyramos</span> + <span class="tag gen">generated</span></td><td>PIN from <code>MEF_RA_PIN</code>; the two codes are constants</td></tr>
+            <tr><td><code>IRSResponsiblePrtyInfoCurrInd</code></td><td><span class="tag gen">generated</span></td><td>true</td></tr>
+            <tr><td><code>DiscussWithThirdPartyNoInd</code></td><td><span class="tag gen">generated</span></td><td>X</td></tr>
+            <tr><td><code>ReportingAgent94XFilerGrp</code></td><td><span class="tag pyr">pyramos</span></td><td><code>MEF_RA_EIN</code>, name, name control, address</td></tr>
+            <tr><td><code>ReturnData</code></td><td><span class="tag client">client</span></td><td>IRS941 block, copied as is</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </details>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">ReportingAgentReturnXml.java:24-57</span><span class="pathchip">ReportingAgentReturnXml.java:16-18</span><span class="pathchip">ReportingAgentReturnXml.java:80-117</span><span class="pathchip">ReportingAgentReturn.java:57-71</span><span class="pathchip">test-scenarios/ats-ty2026/scenario-1-orchid-941/composed-return.xml</span></div>
+    <div class="code"><pre>xml.<span class="fn">append</span>(<span class="str">"  &lt;ReturnHeader binaryAttachmentCnt=\"0\"&gt;\n"</span>);
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"ReturnTypeCd"</span>, client.<span class="fn">returnType</span>().<span class="fn">returnTypeCd</span>());
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"ReturnTs"</span>, RETURN_TS.<span class="fn">format</span>(truncated));
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"SoftwareId"</span>, originator.<span class="fn">softwareId</span>().<span class="fn">value</span>());
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"MultSoftwarePackagesUsedInd"</span>, <span class="str">"false"</span>);
+<span class="fn">additionalFilerInformation</span>(xml);
+<span class="fn">filingSecurity</span>(xml, originator, client, truncated);
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"QuarterEndingDt"</span>, client.<span class="fn">quarterEnding</span>().<span class="fn">toString</span>());
+xml.<span class="fn">append</span>(<span class="str">"    "</span>).<span class="fn">append</span>(<span class="fn">inDefaultNs</span>(client.<span class="fn">filerXml</span>())).<span class="fn">append</span>(<span class="str">'\n'</span>);
+xml.<span class="fn">append</span>(<span class="str">"    &lt;OriginatorGrp&gt;\n"</span>);
+<span class="fn">element</span>(xml, <span class="str">3</span>, <span class="str">"EFIN"</span>, originator.<span class="fn">efin</span>().<span class="fn">value</span>());
+<span class="fn">element</span>(xml, <span class="str">3</span>, <span class="str">"OriginatorTypeCd"</span>, ReportingAgentReturn.ORIGINATOR_TYPE);
+xml.<span class="fn">append</span>(<span class="str">"    &lt;/OriginatorGrp&gt;\n"</span>);
+xml.<span class="fn">append</span>(<span class="str">"    &lt;ReportingAgentPINGrp&gt;\n"</span>);
+<span class="fn">element</span>(xml, <span class="str">3</span>, <span class="str">"PIN"</span>, originator.<span class="fn">pin</span>().<span class="fn">value</span>());
+<span class="fn">element</span>(xml, <span class="str">3</span>, <span class="str">"RAPINEnteredByCd"</span>, ReportingAgentReturn.RAPIN_ENTERED_BY);
+<span class="fn">element</span>(xml, <span class="str">3</span>, <span class="str">"JuratDisclosureCd"</span>, ReportingAgentReturn.JURAT);
+xml.<span class="fn">append</span>(<span class="str">"    &lt;/ReportingAgentPINGrp&gt;\n"</span>);
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"IRSResponsiblePrtyInfoCurrInd"</span>, <span class="str">"true"</span>);
+<span class="fn">element</span>(xml, <span class="str">2</span>, <span class="str">"DiscussWithThirdPartyNoInd"</span>, <span class="str">"X"</span>);
+<span class="fn">reportingAgentFiler</span>(xml, originator.<span class="fn">identity</span>());</pre></div>
+    <div class="codecap">ReportingAgentReturnXml.java:32-52 · the Return root also declares <code>xmlns:efile</code>, the same namespace twice, which the IRS checker needs (see station 9)</div>
+  </article>
+
+  <!-- S4 -->
+  <article class="story" id="s4">
+    <div class="snum">Station 4 · Session</div>
+    <div class="stitle">A test run can't drift onto the wrong account</div>
+    <p>A stale <code>.env</code> could log in as the wrong application, file to production, or put an EFIN in the return that differs from the one the submission ID uses. <code>ReportingAgentAtsGate.open</code> runs before login and stops on any mismatch.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · the gate on the Orchid run</div>
+      <div class="exrow"><span>mef.sdk.environment</span><span class="now">ATS ✓</span></div>
+      <div class="exrow"><span>MEF_ASID == 10219201</span><span class="now">10219201 ✓</span></div>
+      <div class="exrow"><span>MEF_ETIN present</span><span class="now">44754 ✓</span></div>
+      <div class="exrow"><span>MEF_KEYSTORE_* set</span><span class="now">✓</span></div>
+      <div class="exrow"><span>originator EFIN == MEF_EFIN</span><span class="now">237861 == 237861 ✓</span></div>
+      <div class="exrow punch"><span>Any ✗</span><span>exception before login, nothing sent</span></div>
+    </div>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">ReportingAgentAtsGate.java:15-39</span></div>
+    <div class="code"><pre><span class="kw">String</span> configuredEfin = sdk.<span class="fn">getAuthentication</span>().<span class="fn">getEfin</span>();
+<span class="kw">if</span> (!originator.<span class="fn">efin</span>().<span class="fn">value</span>().<span class="fn">equals</span>(configuredEfin)) {
+    <span class="kw">throw new</span> <span class="fn">ReportingAgentValidationException</span>(<span class="str">"efin"</span>,
+            <span class="str">"Originator EFIN "</span> + originator.<span class="fn">efin</span>().<span class="fn">value</span>()
+                    + <span class="str">" must equal MEF_EFIN "</span> + configuredEfin
+                    + <span class="str">" (id prefix, OriginatorGrp, and manifest share this value)"</span>);
+}
+<span class="cm">// Deliberately NOT: asid.startsWith(efin). AE "EFIN+2" is unconfirmed; do not encode it.</span></pre></div>
+  </article>
+
+  <!-- S5 -->
+  <article class="story" id="s5">
+    <div class="snum">Station 5 · Session</div>
+    <div class="stitle">The IRS only talks to a logged-in machine that holds a registered certificate</div>
+    <p>Anyone can build XML. The IRS has to know the sender is Pyramos's registered system. Login proves it. <code>MefClientService.login()</code> builds a <code>ServiceContext</code> from the ETIN, the ASID, and a test flag (<code>T</code> for ATS, <code>P</code> for production). It then calls the SDK's <code>LoginClient</code> with the PKCS12 keystore that holds the IdenTrust device certificate (<code>O=Pyramos Software LLC</code>).</p>
+    <p>The SDK signs the login message's <code>MeFHeader</code> and SOAP body with the certificate's private key (RSA-SHA256, rules in <code>mef_config/config/login_client_security_config.xml</code>). The IRS checks the signature against the certificate registered for ASID 10219201 and returns a <strong>SAML assertion</strong>: a signed token that says "this session is Pyramos". Every later call (SendSubmissions, GetAck) carries that token plus a timestamp instead of a fresh signature (<code>basic_a2a_client_security_config.xml</code>).</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · the login inputs and output</div>
+      <div class="exrow"><span>ETIN</span><span>44754 (Software Developer, test ETIN)</span></div>
+      <div class="exrow"><span>ASID</span><span>10219201</span></div>
+      <div class="exrow"><span>TestCdType</span><span>T (ATS) · P would mean production</span></div>
+      <div class="exrow"><span>Endpoint</span><span>la.alt.www4.irs.gov/a2a/mef/Login</span></div>
+      <div class="exrow"><span>Output</span><span class="now">SAML assertion, stored in the ServiceContext</span></div>
+      <div class="exrow punch"><span>Rule</span><span>one ServiceContext per app; building a second kills the first session</span></div>
+    </div>
+    <p>Because of that rule, <code>MefClientService</code> keeps the <code>ServiceContext</code> in one instance field. Every later SDK call must reuse <code>getCurrentServiceContext()</code>. All SDK calls go through <code>Class.forName(...)</code> and <code>Method.invoke</code>: reflection, because the SDK's Metro/JAX-WS stack hits Java 17 module-access errors when called directly.</p>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">MefClientService.java:69</span><span class="pathchip">MefClientService.java:106-108</span><span class="pathchip">MefClientService.java:141</span><span class="pathchip">MefClientService.java:172</span><span class="pathchip">mef_config/config/ats_endpoints.properties</span></div>
+    <div class="code"><pre><span class="cm">// Create ServiceContext with ASID via reflection</span>
+<span class="kw">Object</span> serviceContext = serviceContextClass
+    .<span class="fn">getConstructor</span>(etinClass, <span class="kw">String</span>.<span class="kw">class</span>, testCdTypeClass)
+    .<span class="fn">newInstance</span>(etinObj, asid, testMode);
+<span class="cm">// ...</span>
+<span class="kw">Method</span> invokeMethod = loginClientClass.<span class="fn">getMethod</span>(<span class="str">"invoke"</span>,
+    serviceContextClass, <span class="fn">File</span>.<span class="kw">class</span>, <span class="kw">String</span>.<span class="kw">class</span>, <span class="kw">String</span>.<span class="kw">class</span>);
+invokeMethod.<span class="fn">invoke</span>(loginClient, serviceContext, keystoreFile, keystorePassword, keyAlias);
+<span class="cm">// ...</span>
+currentServiceContext = serviceContext;
+isLoggedIn = <span class="kw">true</span>;</pre></div>
+    <div class="code"><pre><span class="cm">&lt;!-- login_client_security_config.xml: what the certificate signs --&gt;</span>
+&lt;<span class="fn">xwss:Sign</span> id=<span class="str">"s"</span> includeTimestamp=<span class="str">"false"</span>&gt;
+  &lt;<span class="fn">xwss:X509Token</span> ... keyReferenceType=<span class="str">"Direct"</span> /&gt;
+  &lt;<span class="fn">xwss:SignatureMethod</span> algorithm=<span class="str">"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"</span> /&gt;
+  &lt;<span class="fn">xwss:SignatureTarget</span> type=<span class="str">"qname"</span> value=<span class="str">"{http://www.irs.gov/a2a/mef/MeFHeader.xsd}MeFHeader"</span>&gt;
+  &lt;<span class="fn">xwss:SignatureTarget</span> type=<span class="str">"qname"</span> value=<span class="str">"SOAP-BODY"</span>&gt;
+&lt;/<span class="fn">xwss:Sign</span>&gt;</pre></div>
+  </article>
+
+  <!-- S6 -->
+  <article class="story" id="s6">
+    <div class="snum">Station 6 · Pre-flight</div>
+    <div class="stitle">Nothing is sent until the cheap checks pass</div>
+    <p>An IRS reject takes minutes to come back, and a duplicate filing is a real federal problem. So <code>NewSendSubmissionService.submit</code> runs local checks first, in this order. Each failure here means <strong>nothing was sent</strong>:</p>
+    <ul>
+      <li><strong>Logged in?</strong> If not → 401, <code>NewSendNotLoggedInException</code>.</li>
+      <li><strong>EFIN configured</strong> and exactly 6 digits, and the XML under the size cap.</li>
+      <li><strong>Idempotency key seen before?</strong> The key is a string the caller picks per filing. The ATS test uses <code>ra-ats-scenario-1-orchid-941-&lt;uuid&gt;</code>; HTTP callers send it as the <code>Idempotency-Key</code> header. Same key + same payload + already TRANSMITTED → return the stored receipt, no network call. Same key, different payload → 409.</li>
+      <li><strong>Same quarter already filed?</strong> Looks up (EIN, form, period) in the journal. If a CREATED, TRANSMITTED or INDETERMINATE row exists → 409 <code>NEWSEND_PERIOD_ALREADY_FILED</code>, unless the request sets <code>allowDuplicatePeriod=true</code> (the ATS test does, because it re-sends the same test company).</li>
+      <li><strong>XSD validation</strong> against the bundled IRS schema <code>schemas/94x/2026Q1v4.0/EmploymentTax/941/Return941.xsd</code>. Mode is <code>enforce</code> in <code>application.yml</code>, so a schema error is a 400.</li>
+    </ul>
+    <div class="exbox">
+      <div class="exhead">Worked example · four ways to ask for the Orchid Q1 filing again</div>
+      <div class="exrow"><span>Same key, same XML, row TRANSMITTED</span><span class="now">replay stored receipt, nothing sent</span></div>
+      <div class="exrow"><span>Same key, different XML</span><span class="was">409 NEWSEND_KEY_REUSED</span></div>
+      <div class="exrow"><span>Same key, row INDETERMINATE</span><span class="was">409 NEWSEND_KEY_UNRESOLVED · reconcile first</span></div>
+      <div class="exrow"><span>New key, EIN 003000004 + 941 + 2026Q1 already TRANSMITTED</span><span class="was">409 NEWSEND_PERIOD_ALREADY_FILED</span></div>
+      <div class="exrow punch"><span>Same, with allowDuplicatePeriod=true</span><span>sent, a deliberate second filing (e.g. a correction)</span></div>
+    </div>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">NewSendSubmissionService.java:90-121</span><span class="pathchip">NewSendSubmissionService.java:177-212</span><span class="pathchip">NewSendSubmissionService.java:215-235</span><span class="pathchip">XsdNewSendReturnXmlValidator.java:44-66</span><span class="pathchip">FormType.java:55-61</span></div>
+    <div class="code"><pre><span class="kw">public</span> <span class="fn">NewSendSubmitResult</span> <span class="fn">submit</span>(<span class="fn">NewSendSubmitCommand</span> command) {
+    <span class="kw">if</span> (!mefClientService.<span class="fn">isLoggedIn</span>()) {
+        <span class="kw">throw new</span> <span class="fn">NewSendNotLoggedInException</span>();
+    }
+    <span class="fn">Efin</span> efin = <span class="fn">configuredEfin</span>();
+    <span class="cm">// ... size cap ...</span>
+    <span class="fn">Optional</span>&lt;<span class="fn">NewSendSubmissionRecord</span>&gt; priorClaim = journal.<span class="fn">findByClientRequestId</span>(command.<span class="fn">clientRequestId</span>());
+    <span class="kw">if</span> (priorClaim.<span class="fn">isPresent</span>() &amp;&amp; !priorClaim.<span class="fn">get</span>().<span class="fn">releasesIdempotencyKey</span>()) {
+        <span class="kw">return</span> <span class="fn">replayOrConflict</span>(priorClaim.<span class="fn">get</span>(), command, environment);
+    }
+    <span class="fn">guardDuplicatePeriod</span>(command, environment);
+    returnXmlValidator.<span class="fn">validate</span>(command.<span class="fn">formType</span>(), command.<span class="fn">returnXml</span>());
+
+    <span class="fn">Instant</span> now = clock.<span class="fn">instant</span>();
+    <span class="fn">NewSendSubmissionId</span> submissionId =
+            <span class="fn">NewSendSubmissionId</span>.<span class="fn">generate</span>(efin, now, properties.<span class="fn">processingZoneId</span>(), random);
+    <span class="fn">NewSendFiling</span> filing = <span class="kw">new</span> <span class="fn">NewSendFiling</span>(submissionId, command, now);
+
+    <span class="fn">NewSendReservation</span> reservation = journal.<span class="fn">reserve</span>(<span class="fn">NewSendSubmissionRecord</span>.<span class="fn">created</span>(filing, environment));
+    <span class="cm">// ...</span>
+    <span class="kw">return</span> <span class="fn">transmitReserved</span>(filing, environment);
+}</pre></div>
+  </article>
+
+  <!-- S7 -->
+  <article class="story" id="s7">
+    <div class="snum">Station 7 · Pre-flight</div>
+    <div class="stitle">The submission ID names the sender and the day it was sent</div>
+    <p>The IRS needs a name for this one filing that no other filing anywhere has ever used. The format is fixed: exactly 20 characters, <code>[0-9]{13}[a-z0-9]{7}</code>. That is the 6-digit EFIN, then the <strong>processing date</strong> as year + day-of-year (<code>yyyyDDD</code>), then 7 random lowercase letters or digits.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · 2378612026268yagqidh, taken apart</div>
+      <div class="exrow"><span>Postmark (the same Instant)</span><span>2026-09-25T09:26:32.428Z</span></div>
+      <div class="exrow"><span>In America/New_York</span><span>2026-09-25 05:26 → still Sep 25</span></div>
+      <div class="exrow"><span>Day of year: Jan–Aug = 243 days, + 25</span><span>268</span></div>
+      <div class="exrow"><span>EFIN · 237861</span><span>chars 1–6</span></div>
+      <div class="exrow"><span>Year · 2026</span><span>chars 7–10</span></div>
+      <div class="exrow"><span>Day · 268</span><span>chars 11–13</span></div>
+      <div class="exrow"><span>Random · yagqidh (SecureRandom, base36)</span><span>chars 14–20</span></div>
+      <div class="exrow"><span>Old code: date from the tax period</span><span class="was">MEF00004 reject</span></div>
+      <div class="exrow punch"><span>Q4 2026 return sent 2027-01-05</span><span class="now">237861 2027 005 …, not 2026</span></div>
+    </div>
+    <p>One <code>Instant</code> produces both the ID's date and the electronic postmark, so they can never disagree. The manifest later reads the EFIN back out of this ID with <code>submissionId.efin()</code>, so there is only one place the EFIN can come from. Use the <a href="#builder">builder below</a> to try other dates.</p>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">NewSendSubmissionId.java:39-52</span><span class="pathchip">NewSendFiling.java:10-18</span><span class="pathchip">SUBMISSION_ID_FORMAT.md</span></div>
+    <div class="code"><pre><span class="kw">public static</span> <span class="fn">NewSendSubmissionId</span> <span class="fn">generate</span>(<span class="fn">Efin</span> efin, <span class="fn">Instant</span> now, <span class="fn">ZoneId</span> processingZone, <span class="fn">SecureRandom</span> rng) {
+    <span class="fn">LocalDate</span> processingDate = now.<span class="fn">atZone</span>(processingZone).<span class="fn">toLocalDate</span>();
+    <span class="kw">String</span> date = <span class="kw">String</span>.<span class="fn">format</span>(<span class="str">"%04d%03d"</span>, processingDate.<span class="fn">getYear</span>(), processingDate.<span class="fn">getDayOfYear</span>());
+    <span class="fn">StringBuilder</span> suffix = <span class="kw">new</span> <span class="fn">StringBuilder</span>(SUFFIX_LENGTH);
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="str">0</span>; i &lt; SUFFIX_LENGTH; i++) {
+        suffix.<span class="fn">append</span>(SUFFIX_ALPHABET.<span class="fn">charAt</span>(rng.<span class="fn">nextInt</span>(SUFFIX_ALPHABET.<span class="fn">length</span>())));
+    }
+    <span class="kw">return new</span> <span class="fn">NewSendSubmissionId</span>(efin.<span class="fn">value</span>() + date + suffix);
+}</pre></div>
+  </article>
+
+  <!-- S8 -->
+  <article class="story" id="s8">
+    <div class="snum">Station 8 · Pre-flight</div>
+    <div class="stitle">Write it down before you send it</div>
+    <p>Picture the app crashing one millisecond after the IRS received the ZIP, before we saved the deposit ID. Nobody would know Orchid's 941 was filed. Someone would file it again: a duplicate federal return. The fix is a <strong>write-ahead journal</strong>. A CREATED row is written to <code>data/newsend-journal.jsonl</code> and forced to disk (<code>channel.force(true)</code>) <em>before</em> the SOAP call. Each state change appends a new line.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · the real journal lines for 2378612026268yagqidh</div>
+      <div class="exrow"><span>clientRequestId</span><span>ra-ats-orchid-q1-37600bd2-…</span></div>
+      <div class="exrow"><span>returnXmlSha256</span><span>cc890f9dae48…a934581</span></div>
+      <div class="exrow"><span>CREATED at</span><span>2026-09-25T09:26:32.524Z</span></div>
+      <div class="exrow"><span>TRANSMITTED at</span><span>2026-09-25T09:26:33.419Z</span></div>
+      <div class="exrow"><span>depositId</span><span>QG6CT63EVWD5UTNMD66XCA3QK17EHXWS878VE8K9TD8X0</span></div>
+      <div class="exrow"><span>receiptCount · receiptTimestampSource</span><span>1 · LOCAL</span></div>
+      <div class="exrow punch"><span>If the JVM had died in between</span><span>on restart the CREATED row becomes INDETERMINATE, never "not filed"</span></div>
+    </div>
+    <p><code>receiptTimestampSource: LOCAL</code> means the code couldn't find a timestamp getter on the SDK's receipt object, so it used our own clock and labeled it. The XML hash lets the idempotency check compare payloads without storing the return.</p>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">NewSendState.java:7-13</span><span class="pathchip">NewSendSubmissionJournal.java:20-35</span><span class="pathchip">FileNewSendSubmissionJournal.java:175</span><span class="pathchip">data/newsend-journal.jsonl</span></div>
+    <div class="code"><pre><span class="cm">CREATED ── pre-flight failure ──&gt; ABANDONED      (key reusable: nothing was filed)
+CREATED ── invoke returned ok ──&gt; TRANSMITTED    (terminal)
+CREATED ── IRS business fault ──&gt; REJECTED       (terminal; re-file needs a new key)
+CREATED ── anything else ──────&gt; INDETERMINATE   (terminal; human/ack reconciliation)
+CREATED ── JVM crash ──────────&gt; INDETERMINATE   (applied by the journal on startup replay)</span></pre></div>
+    <div class="codecap">NewSendState.java:7-13 · ABANDONED is the only state that frees the idempotency key, and only failures that never touched the wire reach it</div>
+  </article>
+
+  <!-- S9 -->
+  <article class="story" id="s9">
+    <div class="snum">Station 9 · The wire (still local)</div>
+    <div class="stitle">The manifest is the address label, and the SDK packs both files into ZIPs</div>
+    <p>The IRS routes a submission by reading its manifest before it opens the return. <code>NewSendManifestXml.render</code> writes it from validated values only: digits and closed enums, no free text. The element order is fixed by <code>efileAttachments.xsd</code>.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · the manifest for the Orchid send</div>
+      <div class="exrow"><span>SubmissionId</span><span>2378612026268yagqidh</span></div>
+      <div class="exrow"><span>EFIN · read back from the ID</span><span>237861</span></div>
+      <div class="exrow"><span>TaxYr · period end year</span><span>2026</span></div>
+      <div class="exrow"><span>GovernmentCd</span><span>IRS</span></div>
+      <div class="exrow"><span>FederalSubmissionTypeCd</span><span>941</span></div>
+      <div class="exrow"><span>TaxPeriodBeginDt · TaxPeriodEndDt</span><span>2026-01-01 · 2026-03-31</span></div>
+      <div class="exrow"><span>TIN · the client EIN</span><span>003000004</span></div>
+      <div class="exrow"><span>Root had only xmlns="…/efile"</span><span class="was">X0000-008 × 6 sends (2026-09-16)</span></div>
+      <div class="exrow"><span>No TaxYr</span><span class="was">R0000-143</span></div>
+      <div class="exrow punch"><span>Root has xmlns + xmlns:efile, TaxYr emitted</span><span class="now">both cleared</span></div>
+    </div>
+    <p>Then four SDK calls in <code>ReflectiveNewSendTransmitGateway.prepare</code> build the parcel. All of them run in memory:</p>
+    <ul>
+      <li><code>new SubmissionXML("Return.xml", xml)</code> and <code>new SubmissionManifest("manifest.xml", xml)</code>. Only the in-memory constructors work. The file-path versions throw <code>InMemoryMethodOnFileBasedInstanceException</code> when the SDK serializes.</li>
+      <li><code>createIRSSubmissionArchive(id, manifest, xml, BinaryAttachment[0])</code> → the submission ZIP with <code>manifest/manifest.xml</code> and <code>xml/…</code>. An empty, correctly typed attachment array, not null.</li>
+      <li><code>createPostmarkedSubmissionArchive(archive, postmark)</code> stamps the electronic postmark: the legal "filed at" time.</li>
+      <li><code>createSubmissionContainer([postmarked])</code> → the outer container ZIP. It could hold many submissions; we send one.</li>
+    </ul>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">NewSendManifestXml.java:23-39</span><span class="pathchip">ReflectiveNewSendTransmitGateway.java:89-133</span><span class="pathchip">x0000-008-fix-2026-09-17.html</span></div>
+    <div class="code"><pre><span class="cm">// In-memory constructors ONLY: the file-based ones break SDK serialization.</span>
+<span class="kw">Object</span> submissionXml = submissionXmlClass.<span class="fn">getConstructor</span>(<span class="kw">String</span>.<span class="kw">class</span>, <span class="kw">String</span>.<span class="kw">class</span>)
+        .<span class="fn">newInstance</span>(RETURN_XML_FILENAME, filing.<span class="fn">command</span>().<span class="fn">returnXml</span>());
+<span class="kw">Object</span> manifest = submissionManifestClass.<span class="fn">getConstructor</span>(<span class="kw">String</span>.<span class="kw">class</span>, <span class="kw">String</span>.<span class="kw">class</span>)
+        .<span class="fn">newInstance</span>(MANIFEST_FILENAME, <span class="fn">NewSendManifestXml</span>.<span class="fn">render</span>(filing));
+
+<span class="kw">Object</span> emptyAttachments = <span class="fn">Array</span>.<span class="fn">newInstance</span>(binaryAttachmentClass, <span class="str">0</span>);
+<span class="cm">// ... createIRSSubmissionArchive(id, manifest, submissionXml, emptyAttachments)</span>
+<span class="kw">Object</span> postmarked = createPostmarked.<span class="fn">invoke</span>(<span class="kw">null</span>, archive,
+        <span class="fn">GregorianCalendar</span>.<span class="fn">from</span>(filing.<span class="fn">postmark</span>().<span class="fn">atZone</span>(<span class="fn">ZoneOffset</span>.UTC)));
+<span class="cm">// ... createSubmissionContainer([postmarked]) -&gt; container</span></pre></div>
+  </article>
+
+  <!-- S10 -->
+  <article class="story" id="s10">
+    <div class="snum">Station 10 · The wire · point of no return</div>
+    <div class="stitle">One SOAP call carries the parcel, and the return is not in the SOAP body</div>
+    <p>Only one thread may use the IRS session at a time: the IRS limits concurrent sessions and the <code>ServiceContext</code> isn't thread-safe. So <code>transmitReserved</code> first takes a fair lock and waits up to 30 seconds (<code>session-wait-seconds</code>); on timeout it answers 503 and marks the row ABANDONED. Then it calls <code>SendSubmissionsClient.invoke(serviceContext, container)</code>, which POSTs to <code>la.alt.www4.irs.gov/a2a/mef/mime/SendSubmissions</code>.</p>
+    <p>The request is a MIME multipart message. Part 1 is the SOAP envelope. Part 2 is the container ZIP as binary. The SOAP body lists only the submission ID and the postmark. The 941 itself is inside the ZIP.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · a real captured request (send 1021922026259a1n6akh, 2026-09-16, SDK v16)</div>
+      <div class="exrow"><span>MessageID · ETIN + yyyyDDD + random</span><span>44754 2026259 mghkmy87</span></div>
+      <div class="exrow"><span>ETIN · TestCd · AppSysID</span><span>44754 · T · 10219201</span></div>
+      <div class="exrow"><span>WSDLVersionNum</span><span><span class="was">10.9 in this capture</span> → <span class="now">10.A on SDK v17 today</span></span></div>
+      <div class="exrow"><span>wsu:Timestamp lifetime</span><span>17:12:12Z → 17:17:12Z (5 minutes)</span></div>
+      <div class="exrow"><span>Body</span><span>SubmissionId + ElectronicPostmarkTs only</span></div>
+      <div class="exrow"><span>Attachment</span><span>application/octet-stream, 2,144 bytes</span></div>
+      <div class="exrow punch"><span>Response body</span><span class="now">DepositId MQW2K249S9RU…PB5SEEXVW</span></div>
+    </div>
+    <div class="callout"><span class="ico">i</span><div>This capture predates the EFIN switch (its submission ID starts with 102192). The send inspector ring (<code>data/inspector-ring/</code>) keeps only the last few sends, and the accepted 237861 sends are not in it. The structure is identical; only the EFIN, the WSDL version and the IDs differ. SAML and signature values are redacted by <code>SoapRedactor</code> before capture.</div></div>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">NewSendSubmissionService.java:67</span><span class="pathchip">NewSendSubmissionService.java:131-170</span><span class="pathchip">ReflectiveNewSendTransmitGateway.java:67-83</span><span class="pathchip">data/inspector-ring/1021922026259a1n6akh/soap-request.xml</span></div>
+    <div class="code"><pre><span class="cm">&lt;!-- soap-request.xml, pretty-printed; credentials were already redacted at capture --&gt;</span>
+&lt;<span class="fn">S:Envelope</span> xmlns:S=<span class="str">"http://schemas.xmlsoap.org/soap/envelope/"</span>&gt;
+ &lt;<span class="fn">S:Header</span>&gt;
+  &lt;<span class="fn">wsse:Security</span> S:mustUnderstand=<span class="str">"1"</span>&gt;
+   &lt;<span class="fn">wsu:Timestamp</span>&gt;&lt;<span class="fn">wsu:Created</span>&gt;2026-09-16T17:12:12Z&lt;/<span class="fn">wsu:Created</span>&gt;&lt;<span class="fn">wsu:Expires</span>&gt;2026-09-16T17:17:12Z&lt;/<span class="fn">wsu:Expires</span>&gt;&lt;/<span class="fn">wsu:Timestamp</span>&gt;
+   <span class="cm">&lt;!-- credential omitted --&gt;&lt;!-- credential omitted --&gt;</span>
+  &lt;/<span class="fn">wsse:Security</span>&gt;
+  &lt;<span class="fn">MeFHeader</span> xmlns=<span class="str">"http://www.irs.gov/a2a/mef/MeFHeader.xsd"</span>&gt;
+   &lt;<span class="fn">MessageID</span>&gt;447542026259mghkmy87&lt;/<span class="fn">MessageID</span>&gt;
+   &lt;<span class="fn">Action</span>&gt;http://localhost:9080/a2a/mef/mime/SendSubmissions&lt;/<span class="fn">Action</span>&gt;
+   &lt;<span class="fn">MessageTs</span>&gt;2026-09-16T20:12:12+03:00&lt;/<span class="fn">MessageTs</span>&gt;
+   &lt;<span class="fn">ETIN</span>&gt;44754&lt;/<span class="fn">ETIN</span>&gt;
+   &lt;<span class="fn">SessionKeyCd</span>&gt;Y&lt;/<span class="fn">SessionKeyCd</span>&gt;
+   &lt;<span class="fn">TestCd</span>&gt;T&lt;/<span class="fn">TestCd</span>&gt;
+   &lt;<span class="fn">AppSysID</span>&gt;10219201&lt;/<span class="fn">AppSysID</span>&gt;
+   &lt;<span class="fn">WSDLVersionNum</span>&gt;10.9&lt;/<span class="fn">WSDLVersionNum</span>&gt;
+   &lt;<span class="fn">ClientSoftwareTxt</span>&gt;MeFA2AJavaToolkit2025v16.0&lt;/<span class="fn">ClientSoftwareTxt</span>&gt;
+  &lt;/<span class="fn">MeFHeader</span>&gt;
+ &lt;/<span class="fn">S:Header</span>&gt;
+ &lt;<span class="fn">S:Body</span>&gt;
+  &lt;<span class="fn">ns2:SendSubmissionsRequest</span>&gt;
+   &lt;<span class="fn">ns2:SubmissionDataList</span>&gt;&lt;<span class="fn">ns2:SubmissionData</span>&gt;
+    &lt;<span class="fn">ns2:SubmissionId</span>&gt;1021922026259a1n6akh&lt;/<span class="fn">ns2:SubmissionId</span>&gt;
+    &lt;<span class="fn">ns2:ElectronicPostmarkTs</span>&gt;2026-09-16T17:12:12.230Z&lt;/<span class="fn">ns2:ElectronicPostmarkTs</span>&gt;
+   &lt;/<span class="fn">ns2:SubmissionData</span>&gt;&lt;/<span class="fn">ns2:SubmissionDataList</span>&gt;
+  &lt;/<span class="fn">ns2:SendSubmissionsRequest</span>&gt;
+ &lt;/<span class="fn">S:Body</span>&gt;
+&lt;/<span class="fn">S:Envelope</span>&gt;
+<span class="cm">--- MIME part 2: Content-ID &lt;SubmissionsAttBin=…@jaxws.sun.com&gt;, 2,144 bytes: the container ZIP ---</span></pre></div>
+  </article>
+
+  <!-- S11 -->
+  <article class="story" id="s11">
+    <div class="snum">Station 11 · Afterwards</div>
+    <div class="stitle">Three outcomes, not two, because "it failed" is often a lie</div>
+    <p>If the call times out, the ZIP may already be at the IRS. Calling that "failed" invites a resend, and the resend is a second filing. So the code has no "failed after send" case at all. It sorts every result into one of three outcomes, leaning toward safety:</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · what each result means for Orchid's Q1</div>
+      <div class="exrow"><span>DepositId + a receipt carrying 2378612026268yagqidh</span><span class="now">TRANSMITTED · IRS holds it</span></div>
+      <div class="exrow"><span>DepositId but no receipt for our ID</span><span class="was">INDETERMINATE</span></div>
+      <div class="exrow"><span>SOAP fault → SDK ServiceException</span><span class="was">REJECTED · nothing filed, refile under a new key</span></div>
+      <div class="exrow"><span>Timeout, IOException, unknown exception</span><span class="was">INDETERMINATE · do not resend</span></div>
+      <div class="exrow"><span>Retries on this path</span><span>none (RetryTemplate deliberately not wired)</span></div>
+      <div class="exrow punch"><span>TRANSMITTED still means</span><span>"arrived", not "accepted" → station 12</span></div>
+    </div>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">NewSendOutcome.java:10-37</span><span class="pathchip">ReflectiveNewSendTransmitGateway.java:141-149</span><span class="pathchip">ReflectiveNewSendTransmitGateway.java:156-189</span><span class="pathchip">NewSendSubmissionService.java:43-44</span></div>
+    <div class="code"><pre><span class="kw">private</span> <span class="fn">NewSendOutcome</span> <span class="fn">classify</span>(<span class="fn">Throwable</span> cause, <span class="fn">NewSendFiling</span> filing) {
+    log.<span class="fn">error</span>(<span class="str">"SendSubmissions threw for {}: {}"</span>, filing.<span class="fn">submissionId</span>().<span class="fn">value</span>(), cause.<span class="fn">toString</span>());
+    <span class="kw">if</span> (<span class="fn">isInstanceOfByName</span>(cause, SERVICE_EXCEPTION)) {
+        <span class="kw">return new</span> <span class="fn">NewSendOutcome.Rejected</span>(
+                <span class="fn">NewSendFault</span>.<span class="fn">wire</span>(<span class="str">"NEWSEND_IRS_REJECTED"</span>, cause, filing.<span class="fn">submissionId</span>()));
+    }
+    <span class="kw">return new</span> <span class="fn">NewSendOutcome.Indeterminate</span>(
+            <span class="fn">NewSendFault</span>.<span class="fn">wire</span>(<span class="str">"NEWSEND_TRANSPORT_UNKNOWN"</span>, cause, filing.<span class="fn">submissionId</span>()));
+}
+<span class="cm">// readReceipt:</span>
+<span class="kw">if</span> (depositId == <span class="kw">null</span> || depositId.<span class="fn">isBlank</span>() || receipt == <span class="kw">null</span>) {
+    <span class="kw">return new</span> <span class="fn">NewSendOutcome.Indeterminate</span>(<span class="fn">NewSendFault</span>.<span class="fn">noReceipt</span>(depositId, filing.<span class="fn">submissionId</span>()));
+}</pre></div>
+  </article>
+
+  <!-- S12 -->
+  <article class="story" id="s12">
+    <div class="snum">Station 12 · Afterwards</div>
+    <div class="stitle">Acceptance arrives later, as an acknowledgment we fetch by submission ID</div>
+    <p>After the deposit, the IRS opens the ZIP and runs its business rules: schema, the R-rules, math checks. The verdict is an <strong>acknowledgment</strong> ("ack"): Accepted or Rejected, with rule codes. The live test calls <code>GetAck</code> with our submission ID every 30 seconds for up to 6 minutes. <code>ACK_NOT_FOUND</code> just means "not yet". Each ack is saved to <code>data/ack-store/&lt;submissionId&gt;.json</code>.</p>
+    <p>It uses <code>GetAck</code> by ID, not <code>GetNewAcks</code>. <code>GetNewAcks</code> marks every ack it returns as retrieved on the IRS side, so it drains the whole queue, including acks that belong to other filings.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · two Orchid acks from the same morning, 2026-09-25</div>
+      <div class="exrow"><span>2378612026268t1238uu · no IP, no refund block</span><span class="was">Rejected · R0000-244, R0000-248, R0000-249</span></div>
+      <div class="exrow"><span>"The IP Address … must have a valid value."</span><span class="was">Reject and Stop</span></div>
+      <div class="exrow"><span>2378612026268yagqidh · fixed header</span><span class="now">Accepted</span></div>
+      <div class="exrow"><span>submissionType · category</span><span>941 · EMPL</span></div>
+      <div class="exrow"><span>electronicPostmarkTs</span><span>2026-09-25T09:26:32.428Z</span></div>
+      <div class="exrow punch"><span>ackId / receiptId</span><span class="now">J0BSR3W1849303R9XTLCF3XEASWN5QVG0FD7M1JXWXK1C</span></div>
+    </div>
+    <p>Ack data quality is uneven: EFIN can come back as <code>999999</code>, and amounts are often null. The EIN is the reliable identifier for employer returns. Real SOAP faults never show in the ack. They are only in the SDK log <code>a2a_sdk.log.*</code>.</p>
+    <div class="paths"><span class="k">Found in code</span><span class="pathchip">ReportingAgentAtsScenarioTest.java:116-137</span><span class="pathchip">AcknowledgementService.java:105-131</span><span class="pathchip">data/ack-store/2378612026268yagqidh.json</span></div>
+    <div class="code"><pre><span class="kw">private</span> <span class="fn">AckResponse</span> <span class="fn">waitForAck</span>(<span class="kw">String</span> submissionId) <span class="kw">throws</span> <span class="fn">InterruptedException</span> {
+    <span class="fn">Duration</span> budget = <span class="fn">Duration</span>.<span class="fn">ofMinutes</span>(<span class="str">6</span>);
+    <span class="fn">Duration</span> pause = <span class="fn">Duration</span>.<span class="fn">ofSeconds</span>(<span class="str">30</span>);
+    <span class="kw">long</span> deadline = <span class="fn">System</span>.<span class="fn">currentTimeMillis</span>() + budget.<span class="fn">toMillis</span>();
+    <span class="kw">while</span> (<span class="fn">System</span>.<span class="fn">currentTimeMillis</span>() &lt; deadline) {
+        <span class="kw">try</span> {
+            <span class="fn">AckResponse</span> ack = acknowledgements.<span class="fn">getAcknowledgment</span>(submissionId);
+            <span class="kw">return</span> ack;
+        } <span class="kw">catch</span> (<span class="fn">MefException</span> e) {
+            <span class="kw">if</span> (!<span class="str">"ACK_NOT_FOUND"</span>.<span class="fn">equals</span>(e.<span class="fn">getErrorCode</span>())) { <span class="kw">throw</span> e; }
+            <span class="fn">Thread</span>.<span class="fn">sleep</span>(pause.<span class="fn">toMillis</span>());
+        }
+    }
+    <span class="cm">// fail("No ACK after 6 minutes. Poll GetAck later. ...")</span>
+}</pre></div>
+  </article>
+</section>
+
+<!-- 06 -->
+<section id="trail">
+  <div class="sec-head"><span class="idx">06</span><h2>What the rejects taught us</h2><span class="count">5 stops → 4 accepts</span></div>
+  <p class="lead">Every guard in stations 2, 3 and 9 exists because ATS rejected a real send. Read this as the reason the code looks the way it does.</p>
+  <div class="tl">
+    <div class="ev"><div class="date">2026-09-16 · EFIN 102192 · 6 sends</div><div class="what"><code>X0000-008</code> namespace check failed</div><div class="fix">The Return root was already right. The manifest root lacked <code>xmlns:efile</code>. Fixed in <code>NewSendManifestXml.render</code>.</div></div>
+    <div class="ev"><div class="date">2026-09-17 · send 1021922026260s6c9g0u</div><div class="what"><code>R0000-143</code> TaxYr missing</div><div class="fix">The XSD calls TaxYr optional; the business rule needs it. The manifest now always emits <code>&lt;TaxYr&gt;</code>.</div></div>
+    <div class="ev"><div class="date">2026-09-17/18 · EFIN 102192</div><div class="what"><code>R0000-118-01</code> EFIN prefix 10 forces OnlineFiler</div><div class="fix">Switched sends to the non-online EFIN 237861. <code>ReportingAgentOriginator</code> refuses prefixes 10/21/32/44/53.</div></div>
+    <div class="ev"><div class="date">2026-09-25 · 2378612026268t1238uu</div><div class="what"><code>R0000-244</code>, <code>R0000-248</code>, <code>R0000-249</code></div><div class="fix">Loopback filing IP, and no refund block. Added the <code>MEF_RA_FILING_IP</code> check and the <code>AdditionalFilerInformation</code> constants.</div></div>
+    <div class="ev ok"><div class="date">2026-09-25 · 2378612026268yagqidh</div><div class="what">Scenario 1, Orchid 941: Accepted</div><div class="fix">The first accepted ack this repo ever got. One passed 941 scenario earns the 94x quarterly pass (Pub 5078 §3.5.1).</div></div>
+    <div class="ev ok"><div class="date">2026-10-14 · first try each</div><div class="what">Scenarios 2, 3, 4: Accepted</div><div class="fix">Marigold 941 + Schedule B (<code>2378612026287enq7gwn</code>), Daffodil CPEO 941 + Schedule R + 8974 (<code>237861202628741tq062</code>), Orchid 941-X (<code>2378612026287svv97c5</code>).</div></div>
+  </div>
+</section>
+
+<!-- 07 -->
+<section id="run">
+  <div class="sec-head"><span class="idx">07</span><h2>How to run a send</h2></div>
+  <p class="lead">Two doors lead to the same service. The ATS script is the one that has been used for every accepted send.</p>
+  <h3>Door 1 · the ATS script (one scenario per run)</h3>
+  <div class="code"><pre><span class="cm"># from mef-spring-boot-integration/, Java 17, .env filled in</span>
+<span class="fn">./run-ra-ats-test.sh</span> <span class="str">1</span>     <span class="cm"># 1 Orchid 941 · 2 Marigold +Sch B · 3 Daffodil CPEO · 4 Orchid 941-X</span></pre></div>
+  <p style="color:var(--g700);font-size:14px">Before it starts Maven, the script stops if: <code>.env</code> is missing, the keystore password is empty, Java isn't 17, <code>MEF_SOFTWARE_ID</code> isn't 8 digits, the test is already running, or anything listens on <code>:8080</code> (a killed run leaves an IRS session open). It passes <code>-Dmef.live.test=ReportingAgentAtsScenarioTest</code>, which arms only that one live test, and <code>-Dmef.ats.scenario=1</code>; there is no default scenario. Afterwards it prints the surefire result, new journal rows, and the day's app-log lines.</p>
+  <h3>Door 2 · HTTP (the multi-tenant shape)</h3>
+  <div class="code"><pre><span class="cm"># 1. log in (one session for the whole app)</span>
+<span class="fn">curl</span> -s http://localhost:8080/api/mef/auth/login
+<span class="cm"># 2. send. Idempotency-Key is required; submissionId and EFIN are never accepted from callers</span>
+<span class="fn">curl</span> -s -X POST http://localhost:8080/api/mef/newsend/submissions \
+  -H <span class="str">'Idempotency-Key: orchid-2026q1-941-v1'</span> -H <span class="str">'Content-Type: application/json'</span> \
+  -d <span class="str">'{"clientId":"orchid","clientEin":"003000004","formType":"941",
+       "taxPeriodBegin":"2026-01-01","taxPeriodEnd":"2026-03-31",
+       "returnXml":"&lt;Return …&gt;","allowDuplicatePeriod":false}'</span>
+<span class="cm"># 3. look it up later</span>
+<span class="fn">curl</span> -s http://localhost:8080/api/mef/newsend/submissions/2378612026268yagqidh</pre></div>
+  <div class="callout"><span class="ico">!</span><div>The HTTP door takes a <em>finished</em> Return XML. Nothing behind it runs <code>ReportingAgentReturn.compose</code> yet, so a caller must send XML that was already composed. Wiring compose behind the endpoint, per client, is part of the multi-tenant work still to do.</div></div>
+</section>
+
+<!-- 08 -->
+<section id="gotchas">
+  <div class="sec-head"><span class="idx">08</span><h2>Non-obvious behaviors</h2><span class="count">10</span></div>
+  <div class="gotchas">
+    <h3>Things most likely to surprise you at 2am</h3>
+    <ul>
+      <li><strong>Deposit ID ≠ accepted.</strong> It only proves the ZIP arrived. Read the ack before telling a client "filed".</li>
+      <li><strong>INDETERMINATE means hands off.</strong> Don't resend. Run GetAck on that submission ID first. A resend can create a duplicate federal return.</li>
+      <li><strong>The legacy path is still in the code.</strong> <code>SubmissionController</code> / <code>SubmissionService</code> hardcode <code>941</code>, build the ID inline, and named an SDK class that doesn't exist (<code>SubmissionBinaryAttachment</code>). Use the <code>newsend</code> path only. The legacy path also skips the session lock.</li>
+      <li><strong>GetAck polling can itself retry.</strong> <code>RetryConfig</code> retries every exception, including <code>ACK_NOT_FOUND</code>, up to 3 attempts with backoff starting at 5 s, inside each 30 s poll.</li>
+      <li><strong>Never use GetNewAcks to look for one ack.</strong> It drains the IRS queue and discards non-matching acks.</li>
+      <li><strong>Schema version is locked per quarter.</strong> <code>2026Q1v4.0</code> is hardcoded in <code>ClientReturnBody</code>, and <code>FormType</code> points at that bundled XSD folder. A new IRS version needs a code change plus a new schema bundle.</li>
+      <li><strong>Software ID is per tax year.</strong> 26996214 is TY2026 only. TY2027 needs a new <code>2799NNNN</code> ID after ATS.</li>
+      <li><strong>Device IDs and VendorControlNum are derived.</strong> They hash <code>"pyramos-ats"</code> + EIN, and EIN + period. That is fine for ATS. Production needs a decision on real device identifiers.</li>
+      <li><strong><code>RefundDisbursementCd=0</code> is a trial value</strong> that IRS accepted, not one confirmed from an IRS code table. The filing IP is per host, so production needs the real sending host's IP.</li>
+      <li><strong>IRS errors look generic in our logs.</strong> The real SOAP fault is only in <code>a2a_sdk.log.*</code> (level FINEST). Search the repo for a reject code before debugging it.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 09 -->
+<section id="builder">
+  <div class="sec-head"><span class="idx">09</span><h2>Build a submission ID</h2></div>
+  <p class="lead">Change the EFIN or the date the filing is sent. The date is the processing date in New York, not the tax period. The suffix is random, as in <code>NewSendSubmissionId.generate</code>.</p>
+  <div class="demo"><div class="demo-grid">
+    <div>
+      <div class="field"><label for="efin">EFIN (originator)</label><input id="efin" value="237861" maxlength="6" inputmode="numeric" autocomplete="off"></div>
+      <div class="field"><label for="pdate">Date sent (New York)</label><input id="pdate" type="date" value="2026-09-25"></div>
+      <div class="field"><label for="tperiod">Tax period being filed</label><input id="tperiod" value="2026 Q1 (Jan–Mar)" readonly></div>
+      <button class="btn" id="reroll" type="button">New random suffix</button>
+      <button class="btn ghost" id="reset" type="button">Reset to Orchid</button>
+    </div>
+    <div>
+      <div class="idout" id="idout" aria-live="polite"></div>
+      <div class="legend">
+        <div class="k1"><b id="lg1"></b>EFIN</div>
+        <div class="k2"><b id="lg2"></b>year sent</div>
+        <div class="k3"><b id="lg3"></b>day of year</div>
+        <div class="k4"><b id="lg4"></b>random</div>
+      </div>
+      <div class="demo-msg" id="dmsg"></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- 10 -->
+<section id="quiz">
+  <div class="sec-head"><span class="idx">10</span><h2>Check yourself</h2><span class="count">7 questions · one try each</span></div>
+  <p class="lead">Each question is a situation you'll meet. Pick once. Wrong answers point back to the station that explains it.</p>
+  <div class="quiz-score"><span>Score <b id="qscore">0</b> / 7</span><span>Answered <b id="qdone">0</b> / 7</span></div>
+  <div id="qlist"></div>
+  <div class="qresult" id="qresult"></div>
+</section>
+
+<!-- 11 -->
+<section id="rule">
+  <div class="sec-head"><span class="idx">11</span><h2>The rule in plain words</h2></div>
+  <div class="rule-card"><div class="k">The plain-language rule</div>
+    <p>The client gives us numbers; we add a header that says Pyramos signs as their agent; we write it down; we send it once; and we treat it as filed only when the IRS ack says Accepted. If we don't know what happened, we ask the IRS before doing anything else.</p></div>
+  <div class="tldr-dark">
+    <div class="label">The two-sentence version</div>
+    <p>A 941 goes out as a ZIP (manifest + Return with a Reporting Agent header) attached to one certificate-authenticated SOAP call, journaled to disk before it leaves and never retried. The deposit ID says it arrived; only the GetAck verdict says it was accepted.</p>
+  </div>
+  <footer>Sources: mef-spring-boot-integration/src/main/java/com/irs/mef/{reportingagent,newsend,service}/ · test-scenarios/ats-ty2026/ · data/newsend-journal.jsonl · data/ack-store/ · data/inspector-ring/ · mef_config/config/ · x0000-008-fix-2026-09-17.html. Line numbers as of 2026-10-19 on branch feature/w2-accuwage-files.</footer>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+(function () {
+  // ---------- Submission ID builder ----------
+  var ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var ONLINE_PREFIXES = ['10', '21', '32', '44', '53'];
+  var efinEl = document.getElementById('efin');
+  var dateEl = document.getElementById('pdate');
+  var suffix = 'yagqidh';
+
+  function randomSuffix() {
+    var bytes = new Uint8Array(7), out = '';
+    (window.crypto || window.msCrypto).getRandomValues(bytes);
+    for (var i = 0; i < 7; i++) out += ALPHABET.charAt(bytes[i] % ALPHABET.length);
+    return out;
+  }
+  function dayOfYear(y, m, d) {
+    var start = Date.UTC(y, 0, 1), now = Date.UTC(y, m - 1, d);
+    return Math.floor((now - start) / 86400000) + 1;
+  }
+  function pad(n, w) { n = String(n); while (n.length < w) n = '0' + n; return n; }
+
+  function renderId() {
+    var efin = efinEl.value.trim();
+    var parts = (dateEl.value || '').split('-');
+    var msg = document.getElementById('dmsg');
+    var out = document.getElementById('idout');
+    if (parts.length !== 3) { out.textContent = ''; msg.className = 'demo-msg bad'; msg.textContent = 'Pick a date.'; return; }
+    var y = +parts[0], m = +parts[1], d = +parts[2];
+    var doy = pad(dayOfYear(y, m, d), 3);
+    out.innerHTML = '<span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span>';
+    out.children[0].textContent = efin; out.children[1].textContent = String(y);
+    out.children[2].textContent = doy; out.children[3].textContent = suffix;
+    document.getElementById('lg1').textContent = efin || '—';
+    document.getElementById('lg2').textContent = y;
+    document.getElementById('lg3').textContent = doy;
+    document.getElementById('lg4').textContent = suffix;
+
+    var notes = [];
+    var bad = false;
+    if (!/^[0-9]{6}$/.test(efin)) { bad = true; notes.push('EFIN must be exactly 6 digits, or the ID fails [0-9]{13}[a-z0-9]{7}.'); }
+    else if (ONLINE_PREFIXES.indexOf(efin.substring(0, 2)) >= 0) { bad = true; notes.push('EFIN starts with ' + efin.substring(0, 2) + ': R0000-118-01 forces OnlineFiler, so ReportingAgentOriginator refuses it.'); }
+    if (y !== 2026) notes.push('Sent in ' + y + ', so the ID says ' + y + ' even though the return is for tax year 2026. Using 2026 here would be MEF00004.');
+    if (!bad && y === 2026) notes.push('Valid shape. Same EFIN in the manifest and OriginatorGrp, read back from chars 1–6.');
+    msg.className = 'demo-msg ' + (bad ? 'bad' : 'good');
+    msg.textContent = notes.join(' ');
+  }
+  efinEl.addEventListener('input', renderId);
+  dateEl.addEventListener('input', renderId);
+  document.getElementById('reroll').addEventListener('click', function () { suffix = randomSuffix(); renderId(); });
+  document.getElementById('reset').addEventListener('click', function () { efinEl.value = '237861'; dateEl.value = '2026-09-25'; suffix = 'yagqidh'; renderId(); });
+  renderId();
+
+  // ---------- Quiz ----------
+  var QUESTIONS = [
+    { q: 'SendSubmissions returned deposit ID QG6CT63E…TD8X0 for Orchid. A client asks: "Is my 941 filed and accepted?"',
+      opts: ['Yes. A deposit ID means the IRS accepted it.', 'It is at the IRS, but accepted is unknown until GetAck says so.', 'No. A deposit ID means it is queued on our side.'],
+      a: 1, anchor: 's12', why: 'TRANSMITTED still means "arrived", not "accepted" → station 12.' },
+    { q: 'The SOAP call threw a SocketTimeoutException. The journal row is INDETERMINATE. What do you do?',
+      opts: ['Resend with the same Idempotency-Key.', 'Resend with a new key.', 'Send nothing. Run GetAck on that submission ID and reconcile first.'],
+      a: 2, anchor: 's11', why: 'Timeout, IOException, unknown exception → INDETERMINATE · do not resend.' },
+    { q: 'A Q4 2026 941 for Orchid is sent on 2027-01-05 under EFIN 237861. How does the submission ID start?',
+      opts: ['2378612026005…', '2378612027005…', '2378612026365…'],
+      a: 1, anchor: 's7', why: 'The date component is the processing date (yyyyDDD), never the tax-period year. Q4 2026 return sent 2027-01-05 → 237861 2027 005 ….' },
+    { q: 'Six sends came back X0000-008 even though the Return root had both xmlns and xmlns:efile. What was wrong?',
+      opts: ['The SOAP envelope namespace.', 'The manifest root lacked xmlns:efile.', 'The ReturnData block used a different namespace.'],
+      a: 1, anchor: 's9', why: 'Root had only xmlns="…/efile" → X0000-008 × 6 sends; adding xmlns:efile on IRSSubmissionManifest cleared it.' },
+    { q: 'Why does the code refuse EFIN 102192 for a Reporting Agent return?',
+      opts: ['It belongs to OneWell.', 'It starts with 10, and R0000-118-01 forces OnlineFiler for that prefix.', 'It is a test-only EFIN.'],
+      a: 1, anchor: 's2', why: 'EFIN 102192 · prefix "10" → R0000-118-01 on 2026-09-18 → now refused locally.' },
+    { q: 'Where does Orchid\'s IRS941 XML travel inside the SendSubmissions request?',
+      opts: ['In the SOAP Body, next to SubmissionId.', 'In the MeFHeader.', 'Inside the ZIP sent as a MIME attachment.'],
+      a: 2, anchor: 's10', why: 'The SOAP body lists only the submission ID and the postmark. The 941 itself is inside the ZIP.' },
+    { q: 'Which number logs the machine in but never appears in the Return or the manifest?',
+      opts: ['ETIN 44754', 'EFIN 237861', 'EIN 003000004'],
+      a: 0, anchor: 'cast', why: 'ETIN: Transmitter ID. Only logs the machine in. Never in the Return.' }
+  ];
+  var list = document.getElementById('qlist');
+  var state = QUESTIONS.map(function () { return null; });
+
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  QUESTIONS.forEach(function (item, qi) {
+    var card = document.createElement('div');
+    card.className = 'qcard';
+    var html = '<div class="qn">Question ' + (qi + 1) + '</div><div class="qt">' + esc(item.q) + '</div>';
+    item.opts.forEach(function (o, oi) { html += '<button type="button" class="opt" data-q="' + qi + '" data-o="' + oi + '">' + esc(o) + '</button>'; });
+    html += '<div class="qfb" id="fb' + qi + '"></div>';
+    card.innerHTML = html;
+    list.appendChild(card);
+  });
+
+  list.addEventListener('click', function (e) {
+    var btn = e.target.closest('.opt');
+    if (!btn) return;
+    var qi = +btn.getAttribute('data-q'), oi = +btn.getAttribute('data-o');
+    if (state[qi] !== null) return;
+    var item = QUESTIONS[qi];
+    var right = oi === item.a;
+    state[qi] = right;
+    var buttons = list.querySelectorAll('.opt[data-q="' + qi + '"]');
+    buttons.forEach(function (b, i) {
+      b.disabled = true;
+      if (i === item.a) b.classList.add('right');
+      else if (i === oi) b.classList.add('wrong');
+    });
+    var fb = document.getElementById('fb' + qi);
+    fb.className = 'qfb show ' + (right ? 'r' : 'w');
+    fb.innerHTML = (right ? '<strong>Right.</strong>' : '<strong>Not quite.</strong>') +
+      '<blockquote>' + esc(item.why) + '</blockquote><a href="#' + item.anchor + '">Re-read: ' + label(item.anchor) + ' ↗</a>';
+    update();
+  });
+
+  function label(anchor) {
+    var el = document.getElementById(anchor);
+    var t = el && (el.querySelector('.stitle') || el.querySelector('h2'));
+    return t ? t.textContent : anchor;
+  }
+
+  function update() {
+    var done = state.filter(function (s) { return s !== null; }).length;
+    var score = state.filter(function (s) { return s === true; }).length;
+    document.getElementById('qscore').textContent = score;
+    document.getElementById('qdone').textContent = done;
+    var res = document.getElementById('qresult');
+    if (done < QUESTIONS.length) { res.className = 'qresult'; return; }
+    if (score === QUESTIONS.length) {
+      res.className = 'qresult show pass';
+      res.innerHTML = '<strong>7 / 7. You can explain a 941 send end to end.</strong><p style="margin:8px 0 0;color:var(--g700);font-size:14px">Next, to see it live: <code>cd mef-spring-boot-integration &amp;&amp; ./run-ra-ats-test.sh 1</code> against ATS, then open <code>data/newsend-journal.jsonl</code> and <code>data/ack-store/</code> and match each line to its station.</p>';
+    } else {
+      var seen = {}, links = [];
+      QUESTIONS.forEach(function (item, i) {
+        if (state[i] === false && !seen[item.anchor]) { seen[item.anchor] = true; links.push('<a href="#' + item.anchor + '">' + esc(label(item.anchor)) + '</a>'); }
+      });
+      res.className = 'qresult show fail';
+      res.innerHTML = '<strong>' + score + ' / 7.</strong> Re-read these, then try again:<ul style="margin:8px 0">' +
+        links.map(function (l) { return '<li>' + l + '</li>'; }).join('') +
+        '</ul><button type="button" class="btn ghost" id="qreset">Reset the quiz</button>';
+      document.getElementById('qreset').addEventListener('click', resetQuiz);
+    }
+  }
+
+  function resetQuiz() {
+    state = QUESTIONS.map(function () { return null; });
+    list.querySelectorAll('.opt').forEach(function (b) { b.disabled = false; b.classList.remove('right', 'wrong'); });
+    list.querySelectorAll('.qfb').forEach(function (f) { f.className = 'qfb'; f.innerHTML = ''; });
+    update();
+    document.getElementById('quiz').scrollIntoView();
+  }
+})();
+</script>
+</body>
+</html>

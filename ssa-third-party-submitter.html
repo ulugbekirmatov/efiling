@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Third-party W-2 submitter</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D; --rust:#B04A3F;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --border: 1.5px solid var(--g300);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; }
+body { overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .callout, .story, .stat-card { overflow-wrap: break-word; word-break: break-word; }
+.card, .story, .stat-card, [class*="col"], [class*="grid"] > * { min-width: 0; }
+table { table-layout: auto; min-width: 560px; }
+td, th { word-break: normal; overflow-wrap: break-word; }
+.table-wrap { overflow-x: auto; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+:not(pre) > code { font-family: var(--mono); font-size: 0.92em; background: var(--g100); color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word; }
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 56px 24px 80px; }
+header { margin-bottom: 36px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--g500); margin-bottom: 12px; }
+.eyebrow.rule { display: flex; align-items: center; gap: 12px; }
+.eyebrow.rule::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(38px, 5.4vw, 62px); line-height: 1.06; letter-spacing: -0.018em; color: var(--slate); margin: 0 0 8px; max-width: 17ch; }
+h1 em { font-style: italic; color: var(--clay); }
+h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; line-height: 1.2; letter-spacing: -0.012em; margin: 0; }
+.intro { font-size: 16.5px; color: var(--g700); margin: 22px 0 0; max-width: 620px; }
+.metaline { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+.chip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1.5px solid var(--g300); color: var(--g700); padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
+.chip strong { color: var(--slate); font-weight: 600; }
+.chip.olive { background: rgba(120,140,93,0.16); color: var(--olive); border-color: transparent; }
+.chip.clay  { background: rgba(217,119,87,0.14); color: var(--clay); border-color: transparent; }
+
+.tldr-dark { background: var(--slate); color: var(--ivory); border-radius: 12px; padding: 22px 26px; margin-bottom: 40px; }
+.tldr-dark .label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--oat); margin-bottom: 10px; }
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark a { color: var(--oat); text-decoration-color: rgba(227,218,204,0.5); }
+.tldr-dark code { font-family: var(--mono); font-size: 13.5px; background: rgba(250,249,245,0.12); color: var(--ivory); padding: 1px 5px; border-radius: 4px; }
+
+.summary-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 48px; }
+@media (max-width: 720px) { .summary-band { grid-template-columns: repeat(2, 1fr); } }
+.stat-card { background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; padding: 20px 22px 18px; }
+.stat-card.warn { border-left: 4px solid var(--clay); padding-left: 19px; }
+.stat-num { font-family: var(--serif); font-size: 44px; font-weight: 500; line-height: 1; color: var(--slate); margin-bottom: 8px; }
+.stat-label { font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--g500); }
+.stat-delta { font-family: var(--mono); font-size: 11px; margin-top: 6px; color: var(--g500); }
+
+section { margin-bottom: 52px; }
+.sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 14px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--clay); font-weight: 600; width: 34px; flex-shrink: 0; }
+.sec-head h2 { font-family: var(--serif); font-weight: 500; font-size: 27px; margin: 0; }
+.sec-head .count { font-family: var(--mono); font-size: 11px; color: var(--g500); background: var(--g100); padding: 2px 8px; border-radius: 999px; }
+section > p { max-width: 680px; color: var(--g700); font-size: 15px; margin: 10px 0; }
+
+.story { border: 1.5px solid var(--g200); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 16px 0; min-width: 0; }
+.story .stitle { font-family: var(--serif); font-weight: 500; font-size: 18.5px; margin: 0 0 6px; }
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.story .pathchip { font-family: var(--mono); font-size: 11.5px; background: var(--g100); border: 1px solid var(--g200); border-radius: 6px; padding: 2px 8px; color: var(--g700); white-space: nowrap; }
+.exbox { background: var(--g100); border: 1px solid var(--g200); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+.exbox .exhead { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--g500); margin-bottom: 8px; }
+.exrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: var(--g700); border-bottom: 1px dashed var(--g200); }
+.exrow:last-child { border-bottom: none; }
+.exrow span:last-child { text-align: right; }
+.exrow .was { color: var(--clay-d); }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; }
+.analogy { border-left: 3px solid var(--oat); padding: 4px 12px; margin: 14px 0; font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--g700); max-width: 680px; }
+.analogy .abreak { display: block; font-family: var(--sans); font-style: normal; font-size: 12.5px; color: var(--clay-d); margin-top: 6px; }
+
+blockquote.ssa { margin: 14px 0; padding: 10px 16px; border-left: 3px solid var(--oat); font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--g700); max-width: 680px; }
+blockquote.ssa cite { display: block; font-family: var(--mono); font-style: normal; font-size: 11px; color: var(--g500); margin-top: 6px; }
+
+table.compare { border-collapse: collapse; width: 100%; font-size: 13.5px; background: var(--paper); border: 1.5px solid var(--g300); border-radius: 12px; }
+table.compare th, table.compare td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--g300); vertical-align: top; }
+table.compare tr:last-child td { border-bottom: none; }
+table.compare th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); font-weight: 500; }
+table.compare td:first-child { color: var(--g500); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+table.compare td.bad  { color: var(--rust); }
+table.compare td.good { color: var(--olive); }
+.table-wrap { border-radius: 12px; }
+
+.rule-card { background: var(--paper); border: 1.5px solid var(--g300); border-left: 4px solid var(--clay); border-radius: 12px; padding: 20px 24px; max-width: 760px; }
+.rule-card .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); margin-bottom: 8px; }
+.rule-card p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--slate); }
+.rule-card p + p { margin-top: 10px; }
+
+.steps { list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0; max-width: 760px; }
+.steps li { counter-increment: step; display: flex; align-items: flex-start; gap: 12px; background: var(--paper); border: 1.5px solid var(--g300); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--slate); }
+.steps li::before { content: counter(step); font-family: var(--mono); font-size: 11px; flex: 0 0 20px; height: 20px; border-radius: 50%; background: var(--oat); color: var(--slate); display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.steps li span { color: var(--g500); display: block; font-size: 12px; margin-top: 2px; }
+
+.gotchas { border: 1.5px solid rgba(217,119,87,0.45); background: rgba(217,119,87,0.07); border-radius: 12px; padding: 16px 20px; max-width: 760px; }
+.gotchas .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--clay-d); margin-bottom: 8px; }
+.gotchas ol { margin: 0; padding-left: 20px; font-size: 14px; color: var(--g700); }
+.gotchas li { margin: 6px 0; }
+.gotchas li strong { color: var(--slate); font-weight: 600; }
+
+dl.faq { margin-top: 8px; max-width: 760px; }
+dl.faq dt { font-family: var(--serif); font-size: 16px; color: var(--slate); margin-top: 18px; }
+dl.faq dd { font-size: 14px; margin: 4px 0 0; max-width: 640px; color: var(--g700); }
+.term { border-bottom: 1.5px dotted var(--clay); cursor: help; color: var(--slate); }
+
+ul.sources { list-style: none; padding: 0; margin: 0; font-size: 13px; columns: 2; column-gap: 32px; max-width: 900px; }
+ul.sources li { margin: 4px 0; break-inside: avoid; }
+ul.sources li a { font-family: var(--mono); font-size: 12px; }
+@media (max-width: 720px) { ul.sources { columns: 1; } }
+
+.pele {
+  --pele-bg: var(--paper); --pele-fg: var(--slate); --pele-muted: var(--g500); --pele-line: var(--g700);
+  --pele-surface: var(--g100); --pele-surface-alt: var(--g200); --pele-border: var(--g300);
+  --pele-accent: var(--clay); --pele-critical: #B04A3F; --pele-error: #B04A3F;
+  --pele-font: var(--sans); --pele-font-mono: var(--mono); --pele-radius: 8px;
+  --pele-series-1: var(--clay); --pele-series-2: #4F7FB0; --pele-series-3: var(--olive); --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A; --pele-series-6: #4A8670; --pele-series-7: #7470A8; --pele-series-8: var(--rust, #B04A3F);
+}
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas { border: 1px solid var(--g300); border-radius: 12px; overflow-x: auto; background: var(--paper); padding: 16px; }
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0; }
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+
+@media print {
+  .wrap { padding: 0; max-width: none; }
+  .tldr-dark { background: var(--g100); color: var(--slate); border: 1px solid var(--g300); }
+  .tldr-dark p, .tldr-dark strong, .tldr-dark code { color: var(--slate); }
+  figure.diagram .canvas { border-color: var(--g200); }
+  ul.sources { columns: 1; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow rule">Research · SSA Business Services Online · 2026-11-07</div>
+  <h1>Do the clients have to <em>let us</em> file their W-2s?</h1>
+  <p class="intro">Ten client companies, one Pyramos upload. The question was whether each client has to open an SSA account or sign something so Pyramos can send its W-2s. Read against SSA pages and PDFs only, on the day SSA switched its authorization process.</p>
+  <div class="metaline">
+    <span class="chip">Pyramos Software LLC</span>
+    <span class="chip">EFW2 · Pub 42-007 TY2026 v2</span>
+    <span class="chip clay">SSA new authorization live today</span>
+    <span class="chip olive">13 SSA sources</span>
+  </div>
+</header>
+
+<div class="tldr-dark">
+  <div class="label">Two sentences</div>
+  <p><strong>No.</strong> Pyramos registers itself as a third-party submitter, SSA mails the code to Pyramos, and the clients sign nothing and log in nowhere.</p>
+  <p>Since today a client <em>can</em> choose to restrict who files for it and to require a Signature PIN, so ask each client two questions before the first upload.</p>
+</div>
+
+<div class="summary-band">
+  <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">Client BSO accounts needed</div><div class="stat-delta">SSA FAQ, What's New 2026</div></div>
+  <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">Registration code per organization</div><div class="stat-delta">mailed to the REO, about 15 days</div></div>
+  <div class="stat-card warn"><div class="stat-num">2</div><div class="stat-label">Questions to ask each client</div><div class="stat-delta">REO registered? PIN opted in?</div></div>
+  <div class="stat-card"><div class="stat-num">31</div><div class="stat-label">Days until BSO opens</div><div class="stat-delta">2026-12-08 · due 2027-02-01</div></div>
+</div>
+
+<section id="problem">
+  <div class="sec-head"><span class="idx">01</span><h2>The problem</h2></div>
+  <p>Pyramos is a Form 8655 reporting agent. It already sends ten clients' Forms 941 to the IRS under its own EFIN. W-2 Copy A does not go to the IRS. It goes to the Social Security Administration as one fixed-width EFW2 file, uploaded by a person through Business Services Online.</p>
+  <p>If SSA treated this like the IRS, every client would need its own enrollment: ten identity checks, ten activation codes in ten mailboxes, ten logins to babysit every January. The repo's wage file writer already assumes the opposite. It stacks ten RE blocks under one RA record. The question is whether SSA agrees.</p>
+</section>
+
+<section id="example">
+  <div class="sec-head"><span class="idx">02</span><h2>One worked example</h2><span class="count">Pyramos files for Orchid</span></div>
+  <p>Take Orchid Incorporated, the scenario 1 fixture, EIN 003000004. Pyramos wants to put Orchid's W-2s in its combined file. Here is who touches SSA.</p>
+
+  <div class="table-wrap">
+  <table class="compare">
+    <thead><tr><th>Step</th><th>Through 2026-11-06</th><th>From 2026-11-07</th></tr></thead>
+    <tbody>
+      <tr><td>Who registers</td><td>One Pyramos employee, personally, with Login.gov or ID.me at IAL2</td><td>Same person. SSA now calls the first registrant the Responsible Entity Officer</td></tr>
+      <tr><td>EIN on the form</td><td>Pyramos's own EIN, Third-Party box ticked</td><td>Pyramos's own EIN, "Payroll Service Provider" answered yes</td></tr>
+      <tr><td>Code mailed to</td><td>Pyramos's IRS address, about two weeks</td><td>Pyramos's IRS address, one code per organization, about 15 days</td></tr>
+      <tr><td>Orchid signs</td><td class="good">Nothing</td><td class="good">Nothing, unless Orchid chooses to delegate</td></tr>
+      <tr><td>Orchid logs in</td><td class="good">Never</td><td class="good">Never, unless it wants to view what Pyramos filed</td></tr>
+      <tr><td>Orchid's wages post to</td><td>EIN 003000004 in RE positions 8 to 16</td><td>Same</td></tr>
+      <tr><td>Orchid can block Pyramos</td><td class="bad">No mechanism</td><td class="good">Yes. Its REO delegates named submitters and may require a PIN</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="story">
+    <div class="stitle">The one case where Orchid's choice changes the file</div>
+    <p>The Employer Signature PIN is opt-in for 2026. If Orchid opts in, SSA will not process Orchid's report unless the PIN is in Orchid's RE record. The writer does not write that field today.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · Orchid opted in, PIN S-123456-6</div>
+      <div class="exrow"><span>RE positions 8 to 16</span><span>003000004</span></div>
+      <div class="exrow"><span>RE positions 319 to 328, writer today</span><span class="was">blanks → SSA does not process Orchid</span></div>
+      <div class="exrow"><span>RE positions 319 to 328, after the fix</span><span class="now">S-123456-6 → processed</span></div>
+      <div class="exrow"><span>Format check</span><span>uppercase S, six digits, Luhn digit, hyphens kept</span></div>
+      <div class="exrow punch"><span>Orchid did not opt in</span><span>blanks are correct, nothing to do</span></div>
+    </div>
+    <p><span class="pathchip">Efw2Writer.java:77</span> <span class="pathchip">EmployerWage.java:6-17</span> <span class="pathchip">Pub 42-007 §4.2.6, RE 319-328</span></p>
+  </div>
+
+  <div class="analogy">Like a courier dropping ten clients' envelopes at the post office under the courier's own account. The counter checks the courier's ID, not the clients'.
+    <span class="abreak">Where this breaks: from today a client can tell the post office to accept its envelopes only from a courier it named, and to require a seal on each one. The courier cannot see which clients did that. It has to ask.</span></div>
+</section>
+
+<section id="rule">
+  <div class="sec-head"><span class="idx">03</span><h2>The rule in plain words</h2></div>
+  <div class="rule-card">
+    <div class="k">What SSA says</div>
+    <p>A third-party submitter is a person who proves their own identity, names their own company, and attests. SSA sends the code to that company. Permission from the client is a private matter between the two of them. SSA never asks for a form, a letter, or a client login.</p>
+    <p>From 2026-11-07 a client may register an officer and restrict filing to named submitters, and may add a yearly Signature PIN. A client that does neither is filed exactly as before.</p>
+  </div>
+  <blockquote class="ssa">Every BSO user must register personally. YOU MAY NOT REGISTER ON BEHALF OF ANOTHER PERSON. Even if you are working on behalf of a client, register as yourself.<cite>Registration and Access to Services Handbook, p. 6</cite></blockquote>
+  <blockquote class="ssa">Check the Third-Party checkbox only if you are working on behalf of another business (EXAMPLE: Payroll company submitting wages for several different corporations. Use your own company's information, not the information for your client.)<cite>Registration and Access to Services Handbook, p. 17</cite></blockquote>
+  <blockquote class="ssa">Do I need to register for a BSO credential if I have a 3rd party submitting my W2's? No, you do not need to register for a BSO credential, although your third-party submitter will need to register for a credential.<cite>What's New For 2026, FAQ</cite></blockquote>
+  <blockquote class="ssa">The new BSO authorization process provides employers with the ability to assign and delegate who can submit wage reports and do business on their behalf. Delegated users may include third-party submitters if designated by the REO.<cite>BSO Authorization Information Session deck, 2026</cite></blockquote>
+  <blockquote class="ssa">If an employer opts in, then both they, and any third-party submitters submitting wage reports on the employer's behalf, will be required to include the Employer Signature PIN in the wage report for the Social Security Administration to process the wage report.<cite>Employer Signature PIN page</cite></blockquote>
+</section>
+
+<section id="flow">
+  <div class="sec-head"><span class="idx">04</span><h2>Who does what</h2></div>
+  <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-swimlane" viewBox="0 0 794 1229" width="794" height="1229" style="width:clamp(596px,100%,794px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="swimlane"><g class="pele-clusters"><g class="pele-cluster pele-lane pele-hue-olive" data-id="d1-Client"><rect x="319.18" y="8" width="466.35" height="1213" fill="none" stroke="var(--_b)"/><rect x="319.18" y="8" width="466.35" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="552.36" y="33.6" text-anchor="middle">Client</text></g><g class="pele-cluster pele-lane pele-hue-sky" data-id="d1-SSA"><rect x="166.7" y="8" width="152.48" height="1213" fill="none" stroke="var(--_b)"/><rect x="166.7" y="8" width="152.48" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="242.94" y="33.6" text-anchor="middle">SSA</text></g><g class="pele-cluster pele-lane pele-hue-clay" data-id="d1-Pyramos"><rect x="8" y="8" width="158.7" height="1213" fill="none" stroke="var(--_b)"/><rect x="8" y="8" width="158.7" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="87.35" y="33.6" text-anchor="middle">Pyramos</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-clay" data-id="d1-L_cred_reg_0"><path d="M87.35,168L87.35,197"/><path class="pele-marker" d="M87.35,204L83.99,196L90.71,196Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_reg_mail_0"><path d="M153.82,300L222.94,300C235.34,300 242.94,307.6 242.94,320L242.94,401"/><path class="pele-marker" d="M242.94,408L239.58,400L246.3,400Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_mail_code_0"><path d="M178.7,483L107.35,483C94.95,483 87.35,490.6 87.35,503L87.35,563"/><path class="pele-marker" d="M87.35,570L83.99,562L90.71,562Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_code_user2_0"><path d="M87.35,678L87.35,738.5"/><path class="pele-marker" d="M87.35,745.5L83.99,737.5L90.71,737.5Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_user2_build_0"><path d="M87.35,832.5L87.35,893"/><path class="pele-marker" d="M87.35,900L83.99,892L90.71,892Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_build_upload_0"><path d="M87.35,987L87.35,1016"/><path class="pele-marker" d="M87.35,1023L83.99,1015L90.71,1015Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_upload_post_0"><path d="M141.36,1056L222.94,1056C235.34,1056 242.94,1063.6 242.94,1076L242.94,1094"/><path class="pele-marker" d="M242.94,1101L239.58,1093L246.3,1093Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-olive" data-id="d1-L_none_build_0"><path d="M339.18,789C330.5,789 325.18,796.6 325.18,809L325.18,923.5C325.18,935.9 317.58,943.5 305.18,943.5L161.7,943.5" stroke-dasharray="3 4"/><path class="pele-marker" d="M154.7,943.5L162.7,940.14L162.7,946.86Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-olive" data-id="d1-L_reo_build_0"><path d="M549.7,864L549.7,923.5C549.7,935.9 542.1,943.5 529.7,943.5L161.7,943.5" stroke-dasharray="3 4"/><path class="pele-marker" d="M154.7,943.5L162.7,940.14L162.7,946.86Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-olive" data-id="d1-L_pin_build_0"><path d="M697.74,853.5L697.74,923.5C697.74,935.9 690.14,943.5 677.74,943.5L161.7,943.5" stroke-dasharray="3 4"/><path class="pele-marker" d="M154.7,943.5L162.7,940.14L162.7,946.86Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="d1-L_pin_build_0"><rect x="656.38" y="888" width="82.7" height="21" rx="3" fill="var(--_bg)"/><text x="697.74" y="903.4" text-anchor="middle">RE 319-328</text></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-cred" transform="translate(87.35,114)"><rect x="-66.9" y="-54" width="133.81" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Officer</tspan><tspan x="0" y="-4.9">creates</tspan><tspan x="0" y="16.1">Login.gov or</tspan><tspan x="0" y="37.1">ID.me identity</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-reg" transform="translate(87.35,300)"><rect x="-66.46" y="-96" width="132.93" height="192" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-67.9">Registers</tspan><tspan x="0" y="-46.9">Pyramos</tspan><tspan x="0" y="-25.9">Software LLC</tspan><tspan x="0" y="-4.9">as REO,</tspan><tspan x="0" y="16.1">payroll</tspan><tspan x="0" y="37.1">service</tspan><tspan x="0" y="58.1">provider =</tspan><tspan x="0" y="79.1">yes</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-code" transform="translate(87.35,624)"><rect x="-57.57" y="-54" width="115.14" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Enters the</tspan><tspan x="0" y="-4.9">mailed</tspan><tspan x="0" y="16.1">registration</tspan><tspan x="0" y="37.1">code</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-user2" transform="translate(87.35,789)"><rect x="-67.34" y="-43.5" width="134.69" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Adds a</tspan><tspan x="0" y="5.6">second</tspan><tspan x="0" y="26.6">Pyramos user</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-build" transform="translate(87.35,943.5)"><rect x="-67.35" y="-43.5" width="134.7" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Builds one</tspan><tspan x="0" y="5.6">EFW2 file,</tspan><tspan x="0" y="26.6">ten RE blocks</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-upload" transform="translate(87.35,1056)"><rect x="-54.01" y="-33" width="108.02" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Wage File</tspan><tspan x="0" y="16.1">Upload</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-sky" data-id="d1-mail" transform="translate(242.94,483)"><rect x="-64.24" y="-75" width="128.48" height="150" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-46.9">Mails one</tspan><tspan x="0" y="-25.9">registration</tspan><tspan x="0" y="-4.9">code to the</tspan><tspan x="0" y="16.1">IRS address,</tspan><tspan x="0" y="37.1">about 15</tspan><tspan x="0" y="58.1">days</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-sky" data-id="d1-post" transform="translate(242.94,1155)"><rect x="-57.58" y="-54" width="115.15" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Posts each</tspan><tspan x="0" y="-4.9">RE block</tspan><tspan x="0" y="16.1">under its</tspan><tspan x="0" y="37.1">client EIN</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-olive" data-id="d1-none" transform="translate(404.32,789)"><rect x="-65.14" y="-33" width="130.27" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Does nothing</tspan><tspan x="0" y="16.1">at SSA</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-olive" data-id="d1-reo" transform="translate(549.7,789)"><rect x="-60.24" y="-75" width="120.48" height="150" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-46.9">Optional: its</tspan><tspan x="0" y="-25.9">REO</tspan><tspan x="0" y="-4.9">delegates</tspan><tspan x="0" y="16.1">Pyramos by</tspan><tspan x="0" y="37.1">name and</tspan><tspan x="0" y="58.1">EIN</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-olive" data-id="d1-pin" transform="translate(697.74,789)"><rect x="-67.8" y="-64.5" width="135.6" height="129" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-36.4">Optional: opts</tspan><tspan x="0" y="-15.4">in to the</tspan><tspan x="0" y="5.6">Signature PIN</tspan><tspan x="0" y="26.6">and hands it</tspan><tspan x="0" y="47.6">over</tspan></text></g></g></svg></div><figcaption><div><div class="cap-title">Who does what under the new process</div><div class="cap-sub">Solid arrows are required. Dotted arrows are the client's choice.</div></div></figcaption></figure>
+
+  <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 625 796" width="625" height="796" style="width:clamp(469px,100%,625px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-clay" data-id="d2-L_q1_a_0"><path d="M195.41,171.01C195.41,198.34 118.46,198.34 118.46,225.66L118.46,271.16"/><path class="pele-marker" d="M118.46,278.16L115.1,270.16L121.82,270.16Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d2-L_q1_b_0"><path d="M304.68,171.01C304.68,198.34 381.62,198.34 381.62,225.66L381.62,271.16"/><path class="pele-marker" d="M381.62,278.16L378.26,270.16L384.98,270.16Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d2-L_b_q2_0"><path d="M381.62,365.16L381.62,406.16"/><path class="pele-marker" d="M381.62,413.16L378.26,405.16L384.98,405.16Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-olive" data-id="d2-L_q2_d_0"><path d="M338.66,559.15C338.66,582.82 259.36,582.82 259.36,606.5L259.36,652"/><path class="pele-marker" d="M259.36,659L256,651L262.72,651Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-olive" data-id="d2-L_q2_c_0"><path d="M424.59,559.15C424.59,582.82 503.89,582.82 503.89,606.5L503.89,652"/><path class="pele-marker" d="M503.89,659L500.53,651L507.25,651Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="d2-L_q1_a_0"><rect x="105.52" y="227.66" width="25.89" height="21" rx="3" fill="var(--_bg)"/><text x="118.46" y="243.06" text-anchor="middle">No</text></g><g class="pele-edge-label" data-id="d2-L_q1_b_0"><rect x="365.56" y="227.66" width="32.12" height="21" rx="3" fill="var(--_bg)"/><text x="381.62" y="243.06" text-anchor="middle">Yes</text></g><g class="pele-edge-label" data-id="d2-L_q2_d_0"><rect x="246.41" y="608.5" width="25.89" height="21" rx="3" fill="var(--_bg)"/><text x="259.36" y="623.9" text-anchor="middle">No</text></g><g class="pele-edge-label" data-id="d2-L_q2_c_0"><rect x="487.83" y="608.5" width="32.12" height="21" rx="3" fill="var(--_bg)"/><text x="503.89" y="623.9" text-anchor="middle">Yes</text></g></g><g class="pele-nodes"><g class="pele-node pele-shape-diam pele-hue-clay" data-id="d2-q1" transform="translate(250.04,106.58)"><polygon points="0,-98.58 157.73,0 0,98.58 -157.73,0" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Has the client registered a</tspan><tspan x="0" y="5.6">Responsible Entity Officer</tspan><tspan x="0" y="26.6">with SSA?</tspan></text></g><g class="pele-node pele-shape-diam pele-hue-olive" data-id="d2-q2" transform="translate(381.62,499.58)"><polygon points="0,-86.42 138.27,0 0,86.42 -138.27,0" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Did the client opt in to the</tspan><tspan x="0" y="16.1">Employer Signature PIN?</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="d2-a" transform="translate(118.46,321.66)"><rect x="-110.46" y="-43.5" width="220.93" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Client does nothing.</tspan><tspan x="0" y="5.6">Pyramos files its RE block</tspan><tspan x="0" y="26.6">as before</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="d2-b" transform="translate(381.62,321.66)"><rect x="-112.7" y="-43.5" width="225.39" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Client delegates Pyramos</tspan><tspan x="0" y="5.6">as third-party submitter, by</tspan><tspan x="0" y="26.6">company name and EIN</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="d2-d" transform="translate(259.36,692)"><rect x="-91.82" y="-33" width="183.63" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Delegation done. RE</tspan><tspan x="0" y="16.1">319-328 stays blank</tspan></text></g><g class="pele-node pele-shape-rect risk pele-hue-rust" data-id="d2-c" transform="translate(503.89,723.5)"><rect x="-112.72" y="-64.5" width="225.44" height="129" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-36.4">Client hands Pyramos this</tspan><tspan x="0" y="-15.4">year's PIN. Writer puts</tspan><tspan x="0" y="5.6">S-XXXXXX-Y at RE</tspan><tspan x="0" y="26.6">319-328 or SSA drops that</tspan><tspan x="0" y="47.6">client</tspan></text></g></g></svg></div><figcaption><div><div class="cap-title">What to ask each of the ten clients</div><div class="cap-sub">Two questions decide whether a client has anything to do at SSA.</div></div></figcaption></figure>
+
+</section>
+
+<section id="changed">
+  <div class="sec-head"><span class="idx">05</span><h2>What changed today</h2></div>
+  <p>SSA's old process closed at 6 pm Eastern yesterday. Organizations on it must re-register for Wage File Upload, AccuWage Online, Submission Status, and Employer Report Status. SSNVS is not affected. SSA's Spring 2026 FAQ says the new process is not mandatory this tax year, and the pilot deck says the point of registering is to restrict who files for you. In the pilot, 70 percent of employers chose to restrict, and 25 percent of participants were payroll providers.</p>
+  <p>SSA's own roles, from the pilot deck. The REO is "an individual who is authorized to execute agreements on behalf of the entity that are legally binding and enforceable." The REO can appoint an Entity Business Administrator, who can appoint an Entity Service Administrator, who can appoint service users. Any of them with the right can name a third-party submitter.</p>
+  <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-timeline" viewBox="0 0 528 484" width="528" height="484" style="width:clamp(396px,100%,528px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_tw:var(--pele-title-weight,bold);--_hw:var(--pele-heading-weight,bold);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="timeline"><text class="pele-title" font-weight="var(--_tw)" text-anchor="middle" xml:space="preserve"><tspan x="264" y="25.6">TY2026 wage reporting dates</tspan></text><path class="pele-axis" d="M204,48V469" fill="none" stroke="var(--_l)"/><path class="pele-marker" d="M204,476L200.64,468L207.36,468Z" fill="var(--_l)" stroke="none"/><g class="pele-cluster pele-section" data-id="d3-Authorization change"><rect x="8" y="48" width="512" height="40" fill="var(--pele-series-1,#4c78a8)" style="rx:var(--_r)"/><text font-weight="var(--_hw)" fill="var(--_bg)" text-anchor="middle" xml:space="preserve"><tspan x="264" y="73.6">Authorization change</tspan></text><g class="pele-node pele-period pele-hue-clay" data-id="d3-2026-11-06"><rect x="8" y="100" width="176" height="40" fill="var(--pele-series-1,#4c78a8)" style="rx:var(--_r)"/><text fill="var(--_bg)" x="96" y="125.6" text-anchor="middle">2026-11-06</text><path class="pele-edge" d="M184,120H204M218,120H232M204,120H218V120" fill="none" stroke="var(--_b)"/><circle class="pele-dot" cx="204" cy="120" r="4" fill="var(--pele-series-1,#4c78a8)" stroke="var(--_bg)" stroke-width="2"/><g class="pele-node pele-event"><rect x="232" y="101.5" width="288" height="37" fill="var(--pele-series-1,#4c78a8)" fill-opacity="0.16" style="rx:var(--_r)"/><text font-size="14" x="376" y="124.9" text-anchor="middle">Old BSO process closes at 6 pm Eastern</text></g></g><g class="pele-node pele-period pele-hue-sky" data-id="d3-2026-11-07"><rect x="8" y="166" width="176" height="40" fill="var(--pele-series-1,#4c78a8)" style="rx:var(--_r)"/><text fill="var(--_bg)" x="96" y="191.6" text-anchor="middle">2026-11-07</text><path class="pele-edge" d="M184,186H204M218,186H232M204,186H218V186" fill="none" stroke="var(--_b)"/><circle class="pele-dot" cx="204" cy="186" r="4" fill="var(--pele-series-1,#4c78a8)" stroke="var(--_bg)" stroke-width="2"/><g class="pele-node pele-event"><rect x="232" y="160" width="288" height="52" fill="var(--pele-series-1,#4c78a8)" fill-opacity="0.16" style="rx:var(--_r)"/><text font-size="14" text-anchor="middle" xml:space="preserve"><tspan x="376" y="181.9">New authorization process live. Existing</tspan><tspan x="376" y="199.9">organizations must re-register</tspan></text></g></g><g class="pele-node pele-period pele-hue-olive" data-id="d3-2026-11-10"><rect x="8" y="238" width="176" height="40" fill="var(--pele-series-1,#4c78a8)" style="rx:var(--_r)"/><text fill="var(--_bg)" x="96" y="263.6" text-anchor="middle">2026-11-10</text><path class="pele-edge" d="M184,258H204M218,258H232M204,258H218V258" fill="none" stroke="var(--_b)"/><circle class="pele-dot" cx="204" cy="258" r="4" fill="var(--pele-series-1,#4c78a8)" stroke="var(--_bg)" stroke-width="2"/><g class="pele-node pele-event"><rect x="232" y="232" width="288" height="52" fill="var(--pele-series-1,#4c78a8)" fill-opacity="0.16" style="rx:var(--_r)"/><text font-size="14" text-anchor="middle" xml:space="preserve"><tspan x="376" y="253.9">SSA and IRS fall wage reporting meeting,</tspan><tspan x="376" y="271.9">1 pm Eastern</tspan></text></g></g></g><g class="pele-cluster pele-section" data-id="d3-Filing season"><rect x="8" y="304" width="512" height="40" fill="var(--pele-series-2,#f58518)" style="rx:var(--_r)"/><text font-weight="var(--_hw)" fill="var(--_bg)" text-anchor="middle" xml:space="preserve"><tspan x="264" y="329.6">Filing season</tspan></text><g class="pele-node pele-period pele-hue-fig" data-id="d3-2026-12-08"><rect x="8" y="356" width="176" height="40" fill="var(--pele-series-2,#f58518)" style="rx:var(--_r)"/><text fill="var(--_bg)" x="96" y="381.6" text-anchor="middle">2026-12-08</text><path class="pele-edge" d="M184,376H204M218,376H232M204,376H218V376" fill="none" stroke="var(--_b)"/><circle class="pele-dot" cx="204" cy="376" r="4" fill="var(--pele-series-2,#f58518)" stroke="var(--_bg)" stroke-width="2"/><g class="pele-node pele-event"><rect x="232" y="357.5" width="288" height="37" fill="var(--pele-series-2,#f58518)" fill-opacity="0.16" style="rx:var(--_r)"/><text font-size="14" x="376" y="380.9" text-anchor="middle">BSO opens for TY2026 files</text></g></g><g class="pele-node pele-period pele-hue-cactus" data-id="d3-2027-02-01"><rect x="8" y="416" width="176" height="40" fill="var(--pele-series-2,#f58518)" style="rx:var(--_r)"/><text fill="var(--_bg)" x="96" y="441.6" text-anchor="middle">2027-02-01</text><path class="pele-edge" d="M184,436H204M218,436H232M204,436H218V436" fill="none" stroke="var(--_b)"/><circle class="pele-dot" cx="204" cy="436" r="4" fill="var(--pele-series-2,#f58518)" stroke="var(--_bg)" stroke-width="2"/><g class="pele-node pele-event"><rect x="232" y="417.5" width="288" height="37" fill="var(--pele-series-2,#f58518)" fill-opacity="0.16" style="rx:var(--_r)"/><text font-size="14" x="376" y="440.9" text-anchor="middle">W-2 Copy A due at SSA</text></g></g></g></svg></div><figcaption><div><div class="cap-title">Dates that matter</div><div class="cap-sub">The code takes about 15 days to arrive. Register before BSO opens.</div></div></figcaption></figure>
+
+</section>
+
+<section id="todo">
+  <div class="sec-head"><span class="idx">06</span><h2>What Pyramos does now</h2><span class="count">6 steps</span></div>
+  <ol class="steps">
+    <li><div>A Pyramos officer who can sign for the LLC creates a Login.gov or ID.me identity and registers Pyramos Software LLC on ssa.gov/bso as a payroll service provider.<span>Start today. The pilot averaged 15 days for the mailed code. BSO opens 2026-12-08.</span></div></li>
+    <li><div>When the code arrives, the officer enters it and adds a second Pyramos user with the wage reporting role.<span>The old BSO User ID left with the employee. The new role model fixes that only if a second person is delegated.</span></div></li>
+    <li><div>Ask each of the ten clients: has your company registered a Responsible Entity Officer with SSA, and did you opt in to the Employer Signature PIN?<span>A client that did either must delegate Pyramos by company name and EIN and hand over this year's PIN.</span></div></li>
+    <li><div>Add a nullable per-client Signature PIN to <code>EmployerWage</code> and write it at RE 319 to 328 with the Luhn check. Blanks when the client did not opt in.<span>Ohio's state file reserves RE 319 to 512 as blank. Keep the federal and state writers separate.</span></div></li>
+    <li><div>Call the Employer Reporting Service Center, 1-800-772-6270, and ask whether an unregistered client can still be filed by a registered third party under the new process.<span>Same call: confirm a Form 8655 agent leaves the RE Agent Indicator blank and puts the client EIN at 8 to 16.</span></div></li>
+    <li><div>Attend the SSA and IRS fall wage reporting meeting on 2026-11-10 at 1 pm Eastern.<span>SSA says more guidance on the new process is coming. This is the first session after it went live.</span></div></li>
+  </ol>
+</section>
+
+<section id="open">
+  <div class="sec-head"><span class="idx">07</span><h2>Still open</h2></div>
+  <div class="gotchas">
+    <div class="k">Not answered by any SSA page read today</div>
+    <ol>
+      <li><strong>"Not mandatory" versus "must re-register."</strong> The Spring 2026 FAQ says the new process is optional this year. Today's BSO page says old-process organizations must re-register for Wage File Upload. Both are SSA statements. Treat re-registration as required for Pyramos and optional for the clients until SSA says otherwise.</li>
+      <li><strong>An unregistered client under the new process.</strong> The pilot material frames registration as a way to restrict access, which implies an unrestricted EIN is still filable by any registered submitter. No page states that outright.</li>
+      <li><strong>The RE Agent Indicator for a Form 8655 agent.</strong> Publication 42-007 never uses the words "reporting agent." Position 7 codes exist for Form 2678 agents, common paymasters, and Section 3504 agents only. The writer leaves it blank. Still an inference.</li>
+      <li><strong>The handbook is stale.</strong> The registration handbook and the how-to-register deck still describe the Third-Party checkbox flow. SSA says it is updating its tutorials. The REO screens in the pilot deck are the newer picture.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="glossary">
+  <div class="sec-head"><span class="idx">08</span><h2>Terms</h2></div>
+  <dl class="faq">
+    <dt>Business Services Online, BSO</dt><dd>SSA's employer portal. Wage File Upload, AccuWage Online, and SSNVS live there. It has no test environment. Every upload is a live filing.</dd>
+    <dt>Third-party submitter</dt><dd>SSA's name for a company that files wage reports for other employers. Registered with its own EIN, not the clients'.</dd>
+    <dt>Responsible Entity Officer, REO</dt><dd>The person who registers an organization under the new process. Must be able to legally bind the entity. Receives the one mailed registration code and can delegate every other role.</dd>
+    <dt>Entity Business Administrator and Entity Service Administrator</dt><dd>Delegates under the REO. The first manages roles and services for people or third-party submitters. The second manages a subset of services for service users.</dd>
+    <dt>Employer Signature PIN</dt><dd>A yearly code in the form S-XXXXXX-Y, six digits plus a Luhn check digit, that an employer can opt in to from 2026. If opted in, every file for that employer must carry it in RE positions 319 to 328.</dd>
+    <dt>RE record</dt><dd>The employer record in an EFW2 file. One per client. The EIN at positions 8 to 16 is where SSA posts the wages that follow.</dd>
+    <dt>IAL2</dt><dd>NIST Identity Assurance Level 2. The identity-proofing bar Login.gov and ID.me meet for BSO. It is the only verification SSA describes for a third-party submitter.</dd>
+    <dt>EWRWS</dt><dd>SSA's server-to-server wage reporting web service. Closed to new consolidators. The reason the upload is a browser step, not an API call.</dd>
+  </dl>
+</section>
+
+<section id="sources">
+  <div class="sec-head"><span class="idx">09</span><h2>Sources</h2><span class="count">SSA only</span></div>
+  <p>SSA blocks scripted fetches, so every page and PDF below was read through a browser on 2026-11-07. The markdown version with the same quotes is at <code>reports/bso-third-party-submitter-2026-11-07.md</code>.</p>
+  <ul class="sources">
+    <li><a href="https://www.ssa.gov/bso">ssa.gov/bso, today's authorization notice</a></li>
+    <li><a href="https://www.ssa.gov/employer/returnfilers.html">What's New For 2026</a></li>
+    <li><a href="https://www.ssa.gov/employer/navigate.htm">How to navigate BSO access and registration</a></li>
+    <li><a href="https://www.ssa.gov/employer/bsoregug.pdf">Registration and Access to Services Handbook</a></li>
+    <li><a href="https://www.ssa.gov/employer/documents/howtoregister.pdf">How to register and get an activation code</a></li>
+    <li><a href="https://www.ssa.gov/employer/bsoAuthInfoSession.pdf">BSO authorization information session deck</a></li>
+    <li><a href="https://www.ssa.gov/employer/reporter/meetingPresentationSpring2026.pdf">Spring 2026 semi-annual meeting deck</a></li>
+    <li><a href="https://www.ssa.gov/employer/reporter/faqSpring2026.pdf">Spring 2026 FAQ</a></li>
+    <li><a href="https://www.ssa.gov/employer/reporter/faqSummer2025.pdf">Summer 2025 FAQ</a></li>
+    <li><a href="https://www.ssa.gov/employer/employer-signature-pin.htm">Employer Signature PIN</a></li>
+    <li><a href="https://www.ssa.gov/employer/efw/26efw2.pdf">Publication 42-007, EFW2 TY2026 v2</a></li>
+    <li><a href="https://www.ssa.gov/employer/w2news/index.htm">W-2 News, 2026-01 issue</a></li>
+    <li><a href="https://www.ssa.gov/employer/suspended.htm">Suspended third-party submitters</a></li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeF, AIR and SSNVS runbook</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55;
+  overflow-wrap: break-word; word-break: break-word; -webkit-font-smoothing: antialiased; }
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote, .card, .step, .callout { overflow-wrap: break-word; word-break: break-word; }
+.card, .step, [class*="col"], [class*="grid"] > * { min-width: 0; }
+table { table-layout: auto; min-width: 640px; border-collapse: collapse; width: 100%; font-size: 13.5px; }
+td, th { word-break: normal; overflow-wrap: break-word; text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--g200); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--g500); font-weight: 500; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--g200); border-radius: 12px; background: var(--paper); }
+.nowrap { white-space: nowrap; }
+a { color: var(--clay-d); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+:not(pre) > code { font-family: var(--mono); font-size: .92em; background: var(--g100); color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word; }
+.code { background: var(--slate); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 12px 0 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw { color: var(--clay); } .code .str { color: var(--olive); } .code .cm { color: var(--g500); } .code .fn { color: #C9B98A; }
+
+.wrap { max-width: 920px; margin: 0 auto; padding: 48px 20px 120px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--g500); margin-bottom: 10px; }
+h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(34px, 5vw, 54px); line-height: 1.06; letter-spacing: -.018em; margin: 0 0 12px; }
+h2 { font-family: var(--serif); font-weight: 500; font-size: 28px; line-height: 1.2; margin: 56px 0 6px; }
+h3 { font-family: var(--serif); font-weight: 500; font-size: 20px; margin: 28px 0 8px; }
+.intro { font-size: 17px; color: var(--g700); max-width: 680px; margin: 0; }
+.section-sub { color: var(--g700); margin: 0 0 18px; max-width: 700px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 28px 0 0; }
+.stat { background: var(--paper); border: 1px solid var(--g200); border-radius: 12px; padding: 14px 16px; }
+.stat b { display: block; font-family: var(--serif); font-size: 30px; font-weight: 500; line-height: 1.1; }
+.stat span { font-size: 13px; color: var(--g700); }
+.stat.hot b { color: var(--clay-d); }
+@media (max-width: 720px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+.tldr { background: var(--slate); color: #E8E6DE; border-radius: 14px; padding: 22px 24px; margin: 28px 0; }
+.tldr .eyebrow { color: #B9B7AE; margin-bottom: 6px; }
+.tldr p { color: #E8E6DE; margin: 0; font-family: var(--serif); font-size: 19px; line-height: 1.45; }
+.tldr strong { color: #fff; }
+
+.prep { background: var(--paper); border: 1px solid var(--g200); border-radius: 14px; padding: 6px 18px; }
+.step { display: grid; grid-template-columns: 30px 1fr; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--g200); }
+.step:last-child { border-bottom: 0; }
+.step > div { min-width: 0; }
+.step input[type=checkbox] { width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--olive); cursor: pointer; }
+.step .num { font-family: var(--mono); font-size: 11px; color: var(--g500); letter-spacing: .06em; }
+.step .do { font-weight: 600; margin: 0 0 4px; }
+.step p { margin: 4px 0 0; color: var(--g700); font-size: 14.5px; }
+.step.done .do { color: var(--g500); text-decoration: line-through; text-decoration-color: var(--g300); }
+.url { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.url a { font-family: var(--mono); font-size: 12.5px; }
+.part { background: var(--paper); border: 1px solid var(--g200); border-radius: 16px; padding: 4px 22px 8px; margin-top: 12px; }
+.part-head { display: flex; gap: 12px; align-items: baseline; padding: 16px 0 6px; border-bottom: 1.5px solid var(--g300); }
+.part-head .tag { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: var(--oat); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.part-head h3 { margin: 0; }
+
+.callout { border-left: 3px solid var(--clay); background: #FBF1EC; border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 10px 0 0; font-size: 14.5px; }
+.callout.ok { border-left-color: var(--olive); background: #F1F4EC; }
+.callout.neutral { border-left-color: var(--g300); background: var(--g100); }
+.callout b.lbl { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 2px; color: var(--clay-d); }
+.callout.ok b.lbl { color: #566A3E; }
+.callout.neutral b.lbl { color: var(--g700); }
+.say { font-family: var(--serif); font-style: italic; border-left: 2px solid var(--oat); padding: 2px 0 2px 14px; margin: 10px 0 0; color: var(--slate); font-size: 15.5px; }
+
+.copy { font-family: var(--mono); font-size: 11px; border: 1px solid var(--g300); background: var(--paper); color: var(--g700); border-radius: 6px; padding: 3px 8px; cursor: pointer; white-space: nowrap; }
+.copy:hover { border-color: var(--g500); }
+.copy.copied { background: var(--olive); border-color: var(--olive); color: #fff; }
+.mono { font-family: var(--mono); font-size: 12.5px; }
+
+.ledger { border: 1px solid var(--g200); border-radius: 12px; overflow: hidden; margin: 12px 0 0; background: var(--paper); }
+.ledger .row { display: grid; grid-template-columns: minmax(150px, 34%) 1fr; border-bottom: 1px solid var(--g200); }
+.ledger .row:last-child { border-bottom: 0; }
+.ledger .row > div { padding: 10px 14px; font-size: 14px; }
+.ledger .row > div:first-child { font-family: var(--mono); font-size: 12.5px; color: var(--g700); background: var(--g100); }
+.ledger .was > div:last-child { background: #FBEDE7; }
+.ledger .now > div:last-child { background: #EEF2E7; }
+.ledger .punch > div { font-weight: 700; }
+@media (max-width: 600px) { .ledger .row { grid-template-columns: 1fr; } }
+
+select, input[type=text] { font: inherit; font-size: 13.5px; border: 1px solid var(--g300); border-radius: 6px; padding: 5px 8px; background: var(--paper); color: var(--slate); max-width: 100%; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin: 12px 0 0; }
+.fields label { display: block; font-size: 13px; color: var(--g700); }
+.fields label input, .fields label select { width: 100%; margin-top: 4px; }
+@media (max-width: 640px) { .fields { grid-template-columns: 1fr; } }
+.reply { background: var(--paper); border: 2px solid var(--slate); border-radius: 16px; padding: 18px 20px; margin-top: 14px; }
+.reply-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.reply pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; background: var(--g100); border-radius: 10px; padding: 14px 16px; margin: 12px 0 0; }
+.reply pre .miss { color: var(--clay-d); font-weight: 600; }
+.reply pre .got { color: var(--slate); font-weight: 700; }
+.btn { font: inherit; font-size: 14px; font-weight: 600; background: var(--slate); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; }
+.btn.copied { background: var(--olive); }
+details { margin-top: 14px; background: var(--paper); border: 1px solid var(--g200); border-radius: 12px; padding: 4px 16px; }
+details summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+.sources li { font-size: 13.5px; margin: 4px 0; }
+.progress { position: sticky; top: 0; z-index: 5; background: rgba(250,249,245,.94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--g200); }
+.progress .in { max-width: 920px; margin: 0 auto; padding: 8px 20px; display: flex; gap: 14px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--g700); }
+.bar { flex: 1; height: 6px; background: var(--g200); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--olive); transition: width .2s; }
+
+/* Pele diagram token mapping (components.md 31) */
+.pele {
+  --pele-bg: var(--paper);
+  --pele-fg: var(--slate);
+  --pele-muted: var(--g500);
+  --pele-line: var(--g700);
+  --pele-surface: var(--g100);
+  --pele-surface-alt: var(--g200);
+  --pele-border: var(--g300);
+  --pele-accent: var(--clay);
+  --pele-critical: #B04A3F;
+  --pele-error: #B04A3F;
+  --pele-font: var(--sans);
+  --pele-font-mono: var(--mono);
+  --pele-radius: 8px;
+  --pele-series-1: var(--clay);
+  --pele-series-2: #4F7FB0;
+  --pele-series-3: var(--olive);
+  --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A;
+  --pele-series-6: #4A8670;
+  --pele-series-7: #7470A8;
+  --pele-series-8: var(--rust, #B04A3F);
+}
+/* Hue classes added by diagram.js colorize(): they redefine Pele's surface/border/line
+   variables on one node, edge or cluster, so the SVG markup itself never changes. */
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+.clickmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.clickmap > div { border: 1px solid var(--g300); border-radius: 12px; background: var(--paper); padding: 12px 8px; overflow-x: auto; }
+.clickmap .col-title { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--g700); text-align: center; margin-bottom: 8px; }
+.clickmap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+@media (max-width: 760px) { .clickmap { grid-template-columns: 1fr; } }
+.path { font-family: var(--mono); font-size: 12.5px; background: var(--g100); border: 1px solid var(--g200); border-radius: 8px; padding: 8px 12px; margin: 8px 0 0; line-height: 1.7; }
+.path b { font-weight: 600; color: var(--slate); }
+.path .sep { color: var(--clay-d); padding: 0 4px; }
+.formtbl td:first-child { white-space: nowrap; }
+figure.diagram .canvas {
+  border: 1px solid var(--g300); border-radius: 12px; overflow-x: auto;
+  background: var(--paper); padding: 16px;
+}
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0;
+}
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+@media print { figure.diagram .canvas { border-color: var(--g200); } }
+
+@media print {
+  .progress, .copy, .btn { display: none !important; }
+  details { display: block; } details > * { display: block; }
+  .tldr { background: #fff; color: var(--slate); border: 2px solid var(--slate); }
+  .tldr p, .tldr strong, .tldr .eyebrow { color: var(--slate); }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+<div class="progress" role="status"><div class="in"><span id="prog-label">0 of 0 steps</span><div class="bar"><i id="prog-bar"></i></div><a href="#reply">results ↓</a></div></div>
+<main class="wrap">
+<header>
+  <div class="eyebrow">Runbook · Pyramos Software LLC · 2026-11-03</div>
+  <h1>MeF software packages, the AIR log check, and SSNVS access</h1>
+  <p class="intro">Three portal jobs for this afternoon. In e-Services, add two 94x software packages, one for the 2026 Form 940 and one for the 2027 Form 941-X. In AIR, look up the seven AATS receipts that the A2A client keeps getting <code>Not Found</code> for. In SSA Business Services Online, request SSNVS access so the W-2 name checks can run in December. Tick each step as you go. Type what the IRS screens show into the boxes at the bottom, then paste the reply back to Claude.</p>
+  <div class="stats">
+    <div class="stat"><b>2</b><span>software packages to add</span></div>
+    <div class="stat hot"><b>7</b><span>AATS receipts, all <code>Not Found</code> by A2A</span></div>
+    <div class="stat"><b>~2 wk</b><span>SSA mails the SSNVS activation code</span></div>
+    <div class="stat hot"><b>1</b><span>schema zip missing from our drop</span></div>
+  </div>
+</header>
+
+<section class="tldr">
+  <div class="eyebrow">In three sentences</div>
+  <p>Saving a package in the e-file application gives us the <strong>8-digit Software IDs</strong> that the 940 and the TY2027 941/941-X sends need. Looking the seven receipts up in the <strong>AATS web UI</strong> tells us whether the IRS lost the files or only the A2A status service is broken. Requesting <strong>SSNVS access</strong> today starts the two-week mail wait, so the code is here before BSO opens for TY2026 W-2s on December 8.</p>
+</section>
+
+<figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-swimlane" viewBox="0 0 638 1241" width="638" height="1241" style="width:clamp(479px,100%,638px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="swimlane"><g class="pele-clusters"><g class="pele-cluster pele-lane pele-hue-fig" data-id="d1-BSO"><rect x="475.22" y="8" width="154.24" height="1225" fill="none" stroke="var(--_b)"/><rect x="475.22" y="8" width="154.24" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="552.34" y="33.6" text-anchor="middle">SSA BSO</text></g><g class="pele-cluster pele-lane pele-hue-olive" data-id="d1-AIR"><rect x="320.1" y="8" width="155.12" height="1225" fill="none" stroke="var(--_b)"/><rect x="320.1" y="8" width="155.12" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="397.66" y="33.6" text-anchor="middle">AIR AATS</text></g><g class="pele-cluster pele-lane pele-hue-sky" data-id="d1-Phone"><rect x="160.48" y="8" width="159.62" height="1225" fill="none" stroke="var(--_b)"/><rect x="160.48" y="8" width="159.62" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="240.29" y="33.6" text-anchor="middle">Phone</text></g><g class="pele-cluster pele-lane pele-hue-clay" data-id="d1-eServices"><rect x="8" y="8" width="152.48" height="1225" fill="none" stroke="var(--_b)"/><rect x="8" y="8" width="152.48" height="40" fill="var(--_a)" stroke="var(--_b)"/><text class="pele-cluster-label" fill="var(--_m)" x="84.24" y="33.6" text-anchor="middle">IRS e-Services</text></g></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-sky" data-id="d1-L_pkg940_pkg941_0"><path d="M84.24,147L84.24,176"/><path class="pele-marker" d="M84.24,183L80.88,175L87.6,175Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_pkg941_sor_0"><path d="M84.24,270L84.24,299"/><path class="pele-marker" d="M84.24,306L80.88,298L87.6,298Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_sor_ehelp_0"><path d="M148.04,349.5L220.29,349.5C232.69,349.5 240.29,357.1 240.29,369.5L240.29,398"/><path class="pele-marker" d="M240.29,405L236.93,397L243.65,397Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-rust" data-id="d1-L_ehelp_ui_0"><path d="M308.1,459L377.66,459C390.06,459 397.66,466.6 397.66,479L397.66,518"/><path class="pele-marker" d="M397.66,525L394.3,517L401.02,517Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_ui_ae_0"><path d="M397.66,612L397.66,641"/><path class="pele-marker" d="M397.66,648L394.3,640L401.02,640Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_ae_airhelp_0"><path d="M340.97,702L260.29,702C247.89,702 240.29,709.6 240.29,722L240.29,761"/><path class="pele-marker" d="M240.29,768L236.93,760L243.65,760Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-rust" data-id="d1-L_airhelp_reg_0"><path d="M308.1,811.5L532.34,811.5C544.74,811.5 552.34,819.1 552.34,831.5L552.34,860"/><path class="pele-marker" d="M552.34,867L548.98,859L555.7,859Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d1-L_reg_req_0"><path d="M552.34,933L552.34,962"/><path class="pele-marker" d="M552.34,969L548.98,961L555.7,961Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d1-L_req_code_0"><path d="M552.34,1077L552.34,1106" stroke-dasharray="3 4"/><path class="pele-marker" d="M552.34,1113L548.98,1105L555.7,1105Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d1-pkg940" transform="translate(84.24,103.5)"><rect x="-57.14" y="-43.5" width="114.27" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">94x annual</tspan><tspan x="0" y="5.6">package</tspan><tspan x="0" y="26.6">TY2026</tspan></text></g><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d1-pkg941" transform="translate(84.24,226.5)"><rect x="-64.24" y="-43.5" width="128.48" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">94x quarterly</tspan><tspan x="0" y="5.6">package</tspan><tspan x="0" y="26.6">TY2027</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d1-sor" transform="translate(84.24,349.5)"><rect x="-63.8" y="-43.5" width="127.6" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">SOR:</tspan><tspan x="0" y="5.6">2027Q2</tspan><tspan x="0" y="26.6">amended zip</tspan></text></g><g class="pele-node pele-shape-rect risk pele-hue-rust" data-id="d1-ehelp" transform="translate(240.29,459)"><rect x="-67.81" y="-54" width="135.62" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">e-Help</tspan><tspan x="0" y="-4.9">866-255-0654</tspan><tspan x="0" y="16.1">annual 940</tspan><tspan x="0" y="37.1">testing</tspan></text></g><g class="pele-node pele-shape-rect risk pele-hue-rust" data-id="d1-airhelp" transform="translate(240.29,811.5)"><rect x="-67.81" y="-43.5" width="135.62" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">AIR Help</tspan><tspan x="0" y="5.6">Desk</tspan><tspan x="0" y="26.6">866-937-4130</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="d1-ui" transform="translate(397.66,568.5)"><rect x="-65.56" y="-43.5" width="131.12" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Check</tspan><tspan x="0" y="5.6">Transmission</tspan><tspan x="0" y="26.6">Status x7</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="d1-ae" transform="translate(397.66,702)"><rect x="-56.69" y="-54" width="113.38" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Automated</tspan><tspan x="0" y="-4.9">Enrollment</tspan><tspan x="0" y="16.1">ASID</tspan><tspan x="0" y="37.1">1TBTBJ01</tspan></text></g><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d1-reg" transform="translate(552.34,900)"><rect x="-65.12" y="-33" width="130.24" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Register</tspan><tspan x="0" y="16.1">Pyramos EIN</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="d1-req" transform="translate(552.34,1023)"><rect x="-54.46" y="-54" width="108.93" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Request</tspan><tspan x="0" y="-4.9">SSNVS</tspan><tspan x="0" y="16.1">and Wage</tspan><tspan x="0" y="37.1">Reporting</tspan></text></g><g class="pele-node pele-shape-rect muted pele-hue-neutral" data-id="d1-code" transform="translate(552.34,1167)"><rect x="-56.9" y="-54" width="113.81" height="108" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-25.9">Activation</tspan><tspan x="0" y="-4.9">code</tspan><tspan x="0" y="16.1">by mail, ~2</tspan><tspan x="0" y="37.1">weeks</tspan></text></g></g></svg></div><figcaption><div><div class="cap-title">This afternoon's session, in order</div><div class="cap-sub">MeF packages, then the AIR log check, then the SSNVS access request. SSA mails the activation code later.</div></div></figcaption></figure>
+
+
+<h2 id="prep">Before you start</h2>
+<p class="section-sub">If any of these fails, the matching part below will stop early. Fix it first.</p>
+<div class="prep" data-group="prep">
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">P1</div><div class="do">You can sign in to IRS e-Services as yourself (Secure Access / ID.me).</div><p>The same login opens the e-file application, the SOR mailbox, the AIR UI and Automated Enrollment.</p></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">P2</div><div class="do">On the Pyramos e-file application you are a Principal, or you hold <em>Add &amp; Change Software Package Information</em>.</div><p>Without that permission the Software Packages tab is read-only.</p></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">P3</div><div class="do">You are a Responsible Official or Contact on the ACA TCC <code>TBTBJ</code> (Software Developer, test).</div><p>The AATS UI and Automated Enrollment only show TCCs you are listed on. Only a Responsible Official or Contact can phone the AIR Help Desk about this TCC.</p></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">P4</div><div class="do">It is not Sunday 00:00–12:00 ET.</div><p>AIR is down for maintenance then. Today is a Tuesday, so this is fine.</p></div></div>
+</div>
+
+<h2 id="mef">Part A · MeF: add the two software packages</h2>
+<p class="section-sub">IRS issues one Software ID per package. A package is one form family and one tax year. The code already expects this: <code>SoftwareIds</code> refuses a 940 with the quarterly ID (<code>mef-spring-boot-integration/src/main/java/com/irs/mef/filing/SoftwareIds.java</code>).</p>
+
+<div class="ledger" aria-label="Why two packages">
+  <div class="row"><div>Today in .env</div><div><code>MEF_SOFTWARE_ID</code> = 26996214 · 94x quarterly · TY2026. It passed ATS for 941 <em>and</em> 941-X (scenario 4, accepted 2026-10-14).</div></div>
+  <div class="row was"><div>940 · TY2026</div><div>Annual 94x is a separate package. <code>MEF_SOFTWARE_ID_ANNUAL</code> is empty, so <code>./mef ats 940-1</code> is refused before it reaches IRS.</div></div>
+  <div class="row was"><div>941-X · TY2027</div><div>26996214 is a TY2026 ID. A TY2027 return needs a TY2027 package. The code has no 2027 release yet either (<code>SchemaRelease</code> lists only <code>2026Q1v4.0</code> and <code>2026v2.0</code>).</div></div>
+  <div class="row now"><div>After today</div><div>Package 1: 94x annual · 2026 → ID for the 940. Package 2: 94x quarterly · 2027 → one ID for both 941 and 941-X, as 26996214 was for TY2026.</div></div>
+  <div class="row punch"><div>Result</div><div>Two new 8-digit IDs. Saving the package issues the ID. Passing ATS is a later step.</div></div>
+</div>
+
+<div class="part" data-group="mef">
+  <div class="part-head"><span class="tag">A1–A4</span><h3>Open the application</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A1</div><div class="do">Open E-file provider services and click <em>Access e-file application</em>. Sign in if asked.</div>
+    <div class="url"><a href="https://www.irs.gov/tax-professionals/e-file-provider-services" target="_blank" rel="noopener">irs.gov/tax-professionals/e-file-provider-services</a> <button class="copy" data-copy="https://www.irs.gov/tax-professionals/e-file-provider-services">copy</button></div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A2</div><div class="do">On <em>Select Your Organization</em>, pick <em>Organization Role</em> → Pyramos Software LLC.</div><p>Not <em>Individual Role</em>. The Pyramos row must say <em>Completed</em>.</p></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A3</div><div class="do">On the ESAM landing page, click <em>View/Edit</em> on the e-file application.</div><p>If you stay on <em>Summary</em>, <em>Save</em> later does nothing.</p></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A4</div><div class="do">Open the <em>Software Packages</em> tab.</div><p>You should see the TY2026 quarterly row with 26996214. That row is the check that you are in the right application.</p></div></div>
+
+  <div class="part-head"><span class="tag">A5–A6</span><h3>Package 1 · Form 940, tax year 2026</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A5</div><div class="do">Click <em>Add Software Package</em>. Fill the pop-up for 94x <strong>annual</strong>, tax year <strong>2026</strong>. Save.</div>
+    <p>IRS does not publish the pop-up's field list. If it asks for a form family, choose the annual 94x (940/943/944/945) entry, not quarterly and not PIN registration. If it asks for a product name, use <code>Pyramos MeF 94x</code> as on the TY2026 quarterly row.</p>
+    <div class="callout neutral"><b class="lbl">Why 2026 and not 2027</b>Filing season 2027 tests annual forms for tax period 2026. The 2026v2.0 annual bundle in <code>94x-2026/</code> is what the 940 scenarios validate against.</div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A6</div><div class="do">Copy the 8-digit Software ID from the new row into box <b>R1</b> at the bottom.</div><p>Copy it from the live row. Do not guess from the pattern.</p></div></div>
+
+  <div class="part-head"><span class="tag">A7–A8</span><h3>Package 2 · Forms 941 and 941-X, tax year 2027</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A7</div><div class="do">Click <em>Add Software Package</em> again. Fill it for 94x <strong>quarterly</strong>, tax year <strong>2027</strong>. Save.</div>
+    <p>If the pop-up lists forms one by one, select both 941 and 941-X (and Schedule B / R and 8974 if offered, since TY2026 scenarios 2 and 3 used them). If it only offers "94x quarterly", that covers 941-X. It did for TY2026.</p>
+    <div class="callout"><b class="lbl">If the pop-up only lists 941-X</b>Stop and note the exact choices it shows in box <b>R3</b>. Claude has no IRS source that says 941-X has its own package. The TY2026 evidence says it does not.</div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A8</div><div class="do">Copy the new 8-digit Software ID into box <b>R2</b>.</div></div></div>
+
+  <div class="part-head"><span class="tag">A9</span><h3>While you are in e-Services: the missing zip</h3></div>
+  <div class="step"><input type="checkbox" id="a9" aria-label="done"><div><div class="num">A9</div><div class="do">Open the Secure Object Repository (SOR) mailbox and download <code>94xX_Amended_Quarterly_BusinessRules_Schemas_2027Q2v2.0.zip</code>.</div>
+    <p>Found in the drop — <code>94x-2026/</code> holds the amended 2027 bundles for Q1, Q3 and Q4 v2.0, but not Q2. A Q2 941-X would have no schema. Save it next to the others in <code>~/Documents/MeF/94x-2026/</code>. SOR files expire after about 60 days.</p>
+    <div class="url"><a href="https://www.irs.gov/e-services" target="_blank" rel="noopener">irs.gov/e-services</a> <button class="copy" data-copy="https://www.irs.gov/e-services">copy</button> <span class="mono" style="color:var(--g500)">→ Secure Object Repository</span></div></div></div>
+
+  <div class="part-head"><span class="tag">A10</span><h3>Call e-Help to open annual testing</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">A10</div><div class="do">Call e-Help at <span class="mono">866-255-0654</span> <button class="copy" data-copy="866-255-0654">copy</button></div>
+    <p>A quarterly pass does not open annual testing by itself. IRS's TY2027 ATS page puts it this way: <em>"If you have passed ATS for the tax year 2027 quarterly forms and you support the annual 94xX Forms, you will need to contact the e-Help Desk to test the annual forms."</em> Our pass is TY2026 quarterly. So the open question is order.</p>
+    <div class="say">"Pyramos Software LLC, Reporting Agent, EFIN 237861, ETIN 44754. We passed 2026 94x quarterly ATS in October under Software ID 26996214. Today we added a 2026 annual 94x package, Software ID [R1], and a 2027 quarterly package, Software ID [R2]. Can you open annual ATS for Form 940 now? Or must we pass the 2027 quarterly scenarios 1 to 4 first?"</div>
+    <p>Write the answer in box <b>R4</b>. If they ask for a case number, the earlier e-Help case on the AIR side was <span class="mono">CS3380289</span>. That is a different program, so mention it only if asked.</p></div></div>
+</div>
+
+<h2 id="air">Part B · AIR: check the AATS transmission logs</h2>
+<p class="section-sub">The A2A client sent seven AATS transmissions between 2026-10-27 and 2026-11-03. Every one got a Receipt ID. All 19 status requests answered <code>Not Found</code>, by Receipt ID and by UTID. The 11-03 review found no defect in our request (<code>~/Documents/aca/air-aats-status-review-2026-11-03.html</code>). The web UI reads the same AIR back end, so it is the one test our code cannot affect.</p>
+
+<div class="part" data-group="air">
+  <div class="part-head"><span class="tag">B1–B3</span><h3>Look the receipts up in the AATS UI</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">B1</div><div class="do">Check that AATS is up.</div><p>On 2026-10-21 IRS listed Production and AATS as operational, with no known issues.</p>
+    <div class="url"><a href="https://www.irs.gov/e-file-providers/air-operational-status" target="_blank" rel="noopener">irs.gov/e-file-providers/air-operational-status</a> <button class="copy" data-copy="https://www.irs.gov/e-file-providers/air-operational-status">copy</button></div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">B2</div><div class="do">Sign in to the <strong>AATS</strong> UI. Note the <code>alt</code> in the host.</div>
+    <p>The production UI (<span class="mono">la.www4</span>, no <code>alt</code>) never finds an <code>AATS…</code> receipt. IRS: check AATS receipts only against AATS.</p>
+    <div class="url"><a href="https://la.alt.www4.irs.gov/airp/aca/ui/" target="_blank" rel="noopener">la.alt.www4.irs.gov/airp/aca/ui/</a> <button class="copy" data-copy="https://la.alt.www4.irs.gov/airp/aca/ui/">copy</button></div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">B3</div><div class="do">Open <em>Check Transmission Status</em>. Look up each Receipt ID below, newest first. Use TCC <code>TBTBJ</code> if the page asks. Set the result in the row's dropdown.</div>
+    <p>Wait time is not an issue. Each receipt is hours or days old, and IRS asks for at least 10 minutes.</p></div></div>
+</div>
+
+<div class="table-wrap" style="margin-top:12px">
+<table id="receipts">
+  <thead><tr><th>#</th><th>Sent (UTC)</th><th>Scenario</th><th>Receipt ID</th><th>UTID (for the help desk)</th><th>UI result</th></tr></thead>
+  <tbody></tbody>
+</table>
+</div>
+<p class="mono" style="color:var(--g500);font-size:12px;margin-top:8px">Source: <code>~/Documents/aca/redesign/air-a2a/aats-run/*/submit.json</code>. The first run (2026-10-27 13:51Z) got a SOAP fault and no receipt, so it is not listed.</p>
+
+<h3>What the UI result means</h3>
+<div class="ledger" aria-label="UI result interpretation">
+  <div class="row now"><div>UI finds them</div><div>The files reached AIR. Only the A2A status path fails. The fix is on the IRS side or in how they map our ASID to <code>IRS-ACAAckngService</code>. Do not resubmit.</div></div>
+  <div class="row was"><div>UI says Not Found too</div><div>The portal issued a receipt but never handed the file to AIR (the review's hypothesis H1). A UI upload of a fresh pair would show whether UI intake works. That needs a new compose with a throwaway store. Ask Claude to build it. Do not reuse old run folders.</div></div>
+  <div class="row"><div>UI shows Accepted / Rejected</div><div>Our A2A status call is wrong after all. Record the status and error codes in R5. That reopens the status envelope.</div></div>
+  <div class="row punch"><div>Either way</div><div>The call in B6 now has a fact the AIR Help Desk can check against.</div></div>
+</div>
+
+<div class="part" data-group="air2">
+  <div class="part-head"><span class="tag">B4–B6</span><h3>Check the ASID, then call</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">B4</div><div class="do">Sign in to AIR Automated Enrollment. Open ASID <code>1TBTBJ01</code>.</div>
+    <div class="url"><a href="https://la.www4.irs.gov/ae_rup_atcc/" target="_blank" rel="noopener">la.www4.irs.gov/ae_rup_atcc/</a> <button class="copy" data-copy="https://la.www4.irs.gov/ae_rup_atcc/">copy</button></div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">B5</div><div class="do">Confirm four things and note them in R6.</div>
+    <p>(1) TCC is <code>TBTBJ</code>, role Software Developer. (2) Both services are authorized: <code>IRS-ACASubmitService</code> and <code>IRS-ACAAckngService</code>. (3) The certificate is the Pyramos IdenTrust one (CN <code>c2s.pahealthmanagement.org</code>, valid 2026-08-21 to 2027-08-21). (4) Status is active.</p>
+    <div class="callout"><b class="lbl">If IRS-ACAAckngService is missing</b>That alone explains "submit works, status finds nothing". Add the service, save, and tell Claude. That is the cheapest fix on the list.</div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">B6</div><div class="do">Call the AIR Help Desk at <span class="mono">866-937-4130</span> <button class="copy" data-copy="866-937-4130">copy</button></div>
+    <p>Not e-Help. AIR AATS questions belong to the AIR desk (Pub 5165 §1.2). Have the receipt table open. The desk can look a transmission up by UTID.</p>
+    <div class="say">"Pyramos Software LLC, ACA TCC TBTBJ, ASID 1TBTBJ01. Since October 27 we sent seven AATS 1094-C transmissions by A2A. Each got a Receipt ID, but every status request, 19 so far from 1 second to 2 hours after sending, returns Not Found. The AATS UI shows [R5]. Does AIR hold any transmission for TCC TBTBJ? Which TCC does our ASID resolve to on the acknowledgement service?"</div>
+    <p>Write their answer and any ticket number in R7.</p></div></div>
+</div>
+
+<h2 id="ssnvs">Part C · SSA: request SSNVS access</h2>
+<p class="section-sub">A W-2 whose name and SSN do not match SSA's records lands in SSA's suspense file, and the employee's earnings never post. SSNVS (Social Security Number Verification Service) checks every name and SSN pair before the wage file goes in. It runs in SSA's Business Services Online (BSO), not in IRS e-Services, so it needs its own sign-in and its own access request. The bulk tool is already built (<code>ssnvs-name-ssn-check.html</code>). Only the access is missing.</p>
+
+<div class="ledger" aria-label="Why request SSNVS today">
+  <div class="row"><div>Mail delay</div><div>SSA mails an activation code to Pyramos at the address the IRS has from its Form 941 or SS-4. It usually arrives within two weeks. A request older than 60 days is void and has to be made again.</div></div>
+  <div class="row was"><div>Request in December</div><div>Code arrives late December. SSNVS for ten clients, fixes, and W-2 rebuilds all squeeze into January, against the February 1, 2027 W-2 deadline.</div></div>
+  <div class="row now"><div>Request today, 2026-11-03</div><div>Code arrives around November 17. It is active before BSO opens for TY2026 on December 8.</div></div>
+  <div class="row punch"><div>Result</div><div>The two-week letter is off the critical path. SSNVS can run on every client's employee list the week BSO opens.</div></div>
+</div>
+
+<div class="part" data-group="ssnvs">
+  <div class="part-head"><span class="tag">C1</span><h3>Check where the letter will go</h3></div>
+  <div class="step"><input type="checkbox" id="c1" aria-label="done"><div><div class="num">C1</div><div class="do">Confirm that the IRS address for Pyramos's EIN is the address where mail reaches you today.</div>
+    <p>SSA does not mail the activation code to the address you type in BSO. It mails it to the address the IRS has on file for Pyramos's EIN, from its Form 941 or Form SS-4. The letter is addressed to the employer and tells them to hand you the code. If Pyramos has moved, file Form 8822-B with the IRS first. A code sent to an old address is lost, and you start over.</p></div></div>
+
+  <div class="part-head"><span class="tag">Map</span><h3>Where you will click</h3></div>
+  <figure class="diagram" style="margin:14px 0 6px">
+    <div class="clickmap">
+      <div><div class="col-title">Register · C2–C5</div><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 245 520" width="245" height="520" style="width:clamp(184px,100%,245px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-sky" data-id="reg-L_welcome_cred_0"><path d="M122.48,74L122.48,115"/><path class="pele-marker" d="M122.48,122L119.12,114L125.84,114Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="reg-L_cred_newid_0"><path d="M122.48,188L122.48,229"/><path class="pele-marker" d="M122.48,236L119.12,228L125.84,228Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="reg-L_newid_form_0"><path d="M122.48,284L122.48,325"/><path class="pele-marker" d="M122.48,332L119.12,324L125.84,324Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="reg-L_form_uid_0"><path d="M122.48,398L122.48,439"/><path class="pele-marker" d="M122.48,446L119.12,438L125.84,438Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="reg-welcome" transform="translate(122.48,41)"><rect x="-114.48" y="-33" width="228.96" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">BSO Welcome page</tspan><tspan x="0" y="16.1">Employers: Create account</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="reg-cred" transform="translate(122.48,155)"><rect x="-85.58" y="-33" width="171.17" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Login.gov or ID.me</tspan><tspan x="0" y="16.1">sign in</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="reg-newid" transform="translate(122.48,260)"><rect x="-102.02" y="-24" width="204.05" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Request a New User ID</text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="reg-form" transform="translate(122.48,365)"><rect x="-107.36" y="-33" width="214.72" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Registration form</tspan><tspan x="0" y="16.1">third-party submitter: Yes</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="reg-uid" transform="translate(122.48,479)"><rect x="-70.46" y="-33" width="140.91" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">User ID shown</tspan><tspan x="0" y="16.1">copy to R8</tspan></text></g></g></svg></div>
+      <div><div class="col-title">Request SSNVS · C6</div><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 214 566" width="214" height="566" style="width:clamp(161px,100%,214px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-sky" data-id="req-L_menu_suite_0"><path d="M106.91,95L106.91,136"/><path class="pele-marker" d="M106.91,143L103.55,135L110.27,135Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="req-L_suite_q_0"><path d="M106.91,209L106.91,250"/><path class="pele-marker" d="M106.91,257L103.55,249L110.27,249Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="req-L_q_sum_0"><path d="M106.91,323L106.91,389"/><path class="pele-marker" d="M106.91,396L103.55,388L110.27,388Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="req-L_sum_conf_0"><path d="M106.91,462L106.91,503"/><path class="pele-marker" d="M106.91,510L103.55,502L110.27,502Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="req-L_q_sum_0"><rect x="88.52" y="345.5" width="36.78" height="21" rx="3" fill="var(--_bg)"/><text x="106.91" y="360.9" text-anchor="middle">Next</text></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="req-menu" transform="translate(106.91,51.5)"><rect x="-98.91" y="-43.5" width="197.82" height="87" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-15.4">Main Menu, Manage</tspan><tspan x="0" y="5.6">Services</tspan><tspan x="0" y="26.6">Request New Services</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="req-suite" transform="translate(106.91,176)"><rect x="-88.24" y="-33" width="176.48" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">SSA Services Suite</tspan><tspan x="0" y="16.1">for Employers, Next</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="req-q" transform="translate(106.91,290)"><rect x="-96.25" y="-33" width="192.5" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Verify Social Security</tspan><tspan x="0" y="16.1">Numbers Online? Yes</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="req-sum" transform="translate(106.91,429)"><rect x="-84.24" y="-33" width="168.48" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Request Summary</tspan><tspan x="0" y="16.1">Confirm</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="req-conf" transform="translate(106.91,534)"><rect x="-83.36" y="-24" width="166.72" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Confirmation page</text></g></g></svg></div>
+      <div><div class="col-title">Activate · C7, later</div><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 220 449" width="220" height="449" style="width:clamp(165px,100%,220px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-sky" data-id="act-L_letter_code_0"><path d="M109.59,213L109.59,254"/><path class="pele-marker" d="M109.59,261L106.23,253L112.95,253Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="act-L_code_act_0"><path d="M109.59,327L109.59,368"/><path class="pele-marker" d="M109.59,375L106.23,367L112.95,367Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-rust" data-id="act-L_none_letter_0"><path d="M109.59,74L109.59,140"/><path class="pele-marker" d="M109.59,147L106.23,139L112.95,139Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="act-L_none_letter_0"><rect x="68.25" y="96.5" width="82.69" height="21" rx="3" fill="var(--_bg)"/><text x="109.59" y="111.9" text-anchor="middle">Re-Request</text></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="act-letter" transform="translate(109.59,180)"><rect x="-64.68" y="-33" width="129.36" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Letter arrives</tspan><tspan x="0" y="16.1">at Pyramos</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="act-code" transform="translate(109.59,294)"><rect x="-101.59" y="-33" width="203.18" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Main Menu</tspan><tspan x="0" y="16.1">Enter Activation Code s</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="act-act" transform="translate(109.59,408)"><rect x="-68.7" y="-33" width="137.39" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Type the code</tspan><tspan x="0" y="16.1">Activate</tspan></text></g><g class="pele-node pele-shape-rect risk pele-hue-rust" data-id="act-none" transform="translate(109.59,41)"><rect x="-99.81" y="-33" width="199.62" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">No letter after 10 days</tspan><tspan x="0" y="16.1">View Pending Services</tspan></text></g></g></svg></div>
+    </div>
+    <figcaption><div><div class="cap-title">BSO screens, in order</div><div class="cap-sub">Link and page names are quoted from SSA's SSNVS Handbook, sections Registration and Access to SSNVS. Do not use the browser's Back, Forward or Refresh buttons during registration. SSA says they can clear the form.</div></div></figcaption>
+  </figure>
+
+  <div class="part-head"><span class="tag">C2–C5</span><h3>Register in BSO (once, as yourself)</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">C2</div><div class="do">Open the BSO Welcome page. In the <em>Employers</em> box, click <em>Create account</em>.</div>
+    <p>If you see a <em>Register</em> button instead, it opens the <em>User Registration Attestation</em> page. Read it and accept, then continue. BSO is open Monday to Friday 5:00 AM to 1:00 AM Eastern.</p>
+    <div class="url"><a href="https://www.ssa.gov/bso/bsowelcome.htm" target="_blank" rel="noopener">ssa.gov/bso/bsowelcome.htm</a> <button class="copy" data-copy="https://www.ssa.gov/bso/bsowelcome.htm">copy</button></div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">C3</div><div class="do">Pick <em>Login.gov</em> or <em>ID.me</em> and sign in. Then click <em>Request a New User ID</em>.</div>
+    <p>Use the ID.me account you already use for IRS. SSA says you do not need a new credential.</p></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">C4</div><div class="do">Fill the registration form for <strong>Pyramos</strong>, not for a client.</div>
+    <p>SSA checks your name, SSN, date of birth and the EIN against its records before it issues the User ID. A typo in any of them stops you here.</p>
+    <div class="table-wrap formtbl" style="margin-top:10px"><table>
+      <thead><tr><th>Form field</th><th>What to enter</th></tr></thead>
+      <tbody>
+        <tr><td>Type of employer / employee</td><td>The employer option that fits Pyramos Software LLC. Not self-employed.</td></tr>
+        <tr><td>Company EIN</td><td>Pyramos's EIN (<code>MEF_RA_EIN</code> in <code>mef-spring-boot-integration/.env</code>).</td></tr>
+        <tr><td>Company name, company phone</td><td>Pyramos Software LLC, as on its IRS records.</td></tr>
+        <tr><td>Third-party submitter?</td><td><strong>Yes.</strong> Pyramos submits on behalf of other companies. SSA: "If you have been hired on behalf of an employer, you should provide information about your own company."</td></tr>
+        <tr><td>Name, SSN, date of birth</td><td>Yours. Name exactly as on your Social Security card.</td></tr>
+        <tr><td>Mailing address, work phone, e-mail</td><td>Yours. The e-mail gets BSO News, SSA's wage-reporting updates. Fax is optional.</td></tr>
+        <tr><td>Five security questions, password</td><td>Your choice. Store them in the password manager.</td></tr>
+      </tbody>
+    </table></div></div></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">C5</div><div class="do">BSO shows your <strong>User ID</strong>. Copy it into box <b>R8</b>.</div>
+    <div class="callout neutral"><b class="lbl">Why the User ID matters</b>SSA treats the User ID as your electronic signature. It is assigned to you, not to Pyramos. It goes into every EFW2 wage file (RA record, positions 12–19). If you leave, it leaves with you. So a second Pyramos person should register the same way later.</div></div></div>
+
+  <div class="part-head"><span class="tag">C6</span><h3>Request SSNVS (right after registering)</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">C6</div><div class="do">Request SSNVS through the request wizard.</div>
+    <div class="path"><b>BSO Main Menu</b><span class="sep">›</span><b>Manage Services</b><span class="sep">›</span><b>Request New Services</b><br>
+      Page <b>Request Access to BSO Services</b>: tick <b>SSA Services Suite for Employers</b><span class="sep">›</span><b>Next</b><br>
+      Click <b>Next</b> until <b>"Do you want to verify Social Security Numbers Online?"</b><span class="sep">›</span><b>Yes</b><br>
+      Click <b>Next</b> until <b>Request Summary</b><span class="sep">›</span><b>Confirm</b><span class="sep">›</span>page <b>Request Access to BSO Services Confirmation</b></div>
+    <p>The wizard asks other questions on the way. SSA's handbook names only the SSNVS one. If one asks about filing W-2s or wage reports online, answer Yes, because Pyramos will upload EFW2 files in BSO. Answer No to anything else. Write what you saw in <b>R10</b>.</p>
+    <div class="callout"><b class="lbl">What SSNVS may be used for</b>Only for checking current or former employees for wage reporting. Not for job applicants, contractors, or identity checks. A mismatch alone is never a reason to act against an employee. You will see these terms in the wizard. Accepting them binds Pyramos.</div>
+    <p>Pick the result in box <b>R9</b>. Stuck? BSO technical help: <span class="mono">1-888-772-2970</span> <button class="copy" data-copy="1-888-772-2970">copy</button>. Registration questions: Employer Reporting, <span class="mono">1-800-772-6270</span> <button class="copy" data-copy="1-800-772-6270">copy</button>. Both are open Monday to Friday 7:00 AM to 5:30 PM Eastern.</p></div></div>
+
+  <div class="part-head"><span class="tag">C7 · later</span><h3>When the letter arrives</h3></div>
+  <div class="step"><input type="checkbox" aria-label="done"><div><div class="num">C7 · around 2026-11-17</div><div class="do">Enter the activation code from the letter.</div>
+    <div class="path"><b>BSO Main Menu</b><span class="sep">›</span><b>Enter Activation Code(s)</b><span class="sep">›</span>type the code<span class="sep">›</span><b>Activate</b><span class="sep">›</span>Confirmation page</div>
+    <p>SSNVS works right away after that. Leave this box unticked today.</p>
+    <div class="callout"><b class="lbl">No letter after 10 days</b><span class="path" style="display:block;margin:4px 0 6px"><b>BSO Main Menu</b><span class="sep">›</span><b>View Pending Services</b><span class="sep">›</span>tick <b>SSNVS</b><span class="sep">›</span><b>Re-Request</b></span>This voids the first code. After 60 days from the request you cannot re-request. Start again at <b>Request New Services</b>.</div></div></div>
+</div>
+
+<details>
+  <summary>After the session — what changes in code (no portal work)</summary>
+  <p>Claude does these once the reply comes back. Listed here so nothing is a surprise.</p>
+  <ul>
+    <li><b>940:</b> add the R1 ID to <code>mef-spring-boot-integration/.env</code> as <code>MEF_SOFTWARE_ID_ANNUAL</code>, run <code>./mef preflight 940-1</code> to <code>940-3</code>, then <code>./mef ats 940-1</code> one at a time once e-Help opens annual testing. Acks take 2–5 minutes.</li>
+    <li><b>TY2027 941 / 941-X:</b> not built. Needs the 2027Q1–Q4v2.0 quarterly bundle copied from <code>94x-2026/</code>, a new <code>SchemaRelease</code> entry with its own Software ID key for R2, and TY2027 scenarios from the IRS 94xX ATS page. That is a planned change, not a config edit.</li>
+    <li><b>AIR:</b> no resubmits until R5–R7 are back. Each new submit adds a receipt the IRS has to explain.</li>
+    <li><b>SSNVS:</b> nothing in code. Once C6 is done, push <code>feature/ssnvs-bulk-file</code> and run <code>./ssnvs.sh build</code> per client when BSO opens on December 8 (<code>mef-spring-boot-integration/SSNVS.md</code> on that branch).</li>
+  </ul>
+  <div class="code"><pre><span class="cm"># .env line after A6 (value from the live IRS row)</span>
+<span class="fn">MEF_SOFTWARE_ID_ANNUAL</span>=<span class="str">________</span>
+<span class="cm"># then, offline and safe to repeat</span>
+<span class="kw">./mef</span> preflight <span class="str">940-1</span></pre></div>
+</details>
+
+<h2 id="reply">Your results</h2>
+<p class="section-sub">Fill what you saw. Empty boxes show in clay inside the reply, so you can see what is missing before you copy.</p>
+<div class="fields">
+  <label>R1 · Software ID, 94x annual TY2026 (940)<input type="text" id="r1" inputmode="numeric" maxlength="8" placeholder="8 digits"></label>
+  <label>R2 · Software ID, 94x quarterly TY2027 (941 / 941-X)<input type="text" id="r2" inputmode="numeric" maxlength="8" placeholder="8 digits"></label>
+  <label>R3 · Pop-up choices that surprised you (optional)<input type="text" id="r3" placeholder="e.g. separate 941-X option"></label>
+  <label>R4 · e-Help answer on annual 940 testing<select id="r4"><option value="">— pick —</option><option>Annual 940 ATS opened now</option><option>Must pass TY2027 quarterly ATS first</option><option>Called back later / ticket opened</option><option>Did not call</option></select></label>
+  <label>R6 · Automated Enrollment for ASID 1TBTBJ01<select id="r6"><option value="">— pick —</option><option>Both services authorized, cert and TCC match</option><option>IRS-ACAAckngService was missing (added it)</option><option>IRS-ACAAckngService missing, could not add</option><option>TCC or certificate mismatch</option><option>Could not open AE</option></select></label>
+  <label>R7 · AIR Help Desk answer and ticket<input type="text" id="r7" placeholder="what they said, ticket #"></label>
+  <label>R8 · Your BSO User ID (8 characters)<input type="text" id="r8" maxlength="8" placeholder="e.g. ABCD1234"></label>
+  <label>R9 · SSNVS access request<select id="r9"><option value="">— pick —</option><option>SSNVS requested, Confirmation page seen</option><option>SSNVS and W-2 wage reporting requested</option><option>Already had access</option><option>Registration blocked (see notes)</option><option>Did not do</option></select></label>
+  <label style="grid-column:1/-1">R10 · Other wizard questions and how you answered (optional)<input type="text" id="r10" placeholder="e.g. W-2 online: Yes"></label>
+  <label style="grid-column:1/-1">Other notes<input type="text" id="notes" placeholder="anything else"></label>
+</div>
+<div class="reply">
+  <div class="reply-head"><strong>Paste this back to Claude</strong><button class="btn" id="copy-reply">copy reply</button></div>
+  <pre id="reply-text"></pre>
+</div>
+
+<h2 id="sources">Sources</h2>
+<ul class="sources">
+  <li><a href="https://www.irs.gov/e-file-providers/tax-year-2027-94xx-mef-ats-information">Tax year 2027 94xX MeF ATS information</a> — scenario 4 is the 941-X; annual testing needs an e-Help call (page updated 2026-10-08).</li>
+  <li><a href="https://www.irs.gov/e-file-providers/tax-year-2027-schemas-and-business-rules-for-employment-tax-modernized-e-file-mef-forms">TY2027 employment tax schemas and business rules</a> — 2027Q1–Q4v2.0 in ATS from 11/01/2026, production TBD.</li>
+  <li><a href="https://www.irs.gov/e-file-providers/affordable-care-act-information-returns-air">Affordable Care Act Information Returns (AIR)</a> — UI AATS, UI production and Automated Enrollment sign-in links; 10-minute wait; AATS receipts only against AATS.</li>
+  <li><a href="https://www.irs.gov/e-file-providers/air-operational-status">AIR operational status</a> — AATS operational, TY2026 AATS open since 2026-10-16, Sunday maintenance.</li>
+  <li>Pub 5165 (Rev. 9-2026) §1.2 and §4.4 — AIR Help Desk 1-866-937-4130, UI Check Transmission Status page. Local copy <code>~/Documents/aca/irs-air/p5165.pdf</code>.</li>
+  <li><a href="https://www.ssa.gov/bso/bsowelcome.htm">SSA Business Services Online</a> — BSO sign-in through Login.gov or ID.me.</li>
+  <li>SSA SSNVS Handbook, <a href="https://www.ssa.gov/employer/ssnvshandbk/registration.htm">Registration</a> and <a href="https://www.ssa.gov/employer/ssnvshandbk/access.htm">Access to SSNVS</a> — every link and page name in C2–C7, the registration fields, the activation-code address, the 10-day re-request and the 60-day limit. Read in the browser on 2026-11-03.</li>
+  <li>SSA SSNVS Handbook, <a href="https://www.ssa.gov/employer/ssnvshandbk/contactInfo.htm">Contact Information</a> and <a href="https://www.ssa.gov/employer/ssnvshandbk/availability.htm">SSNVS/BSO Availability</a> — help phone numbers and BSO hours.</li>
+  <li><code>~/Documents/MeF/ssnvs-name-ssn-check.html</code> and <code>w2-efile-research.html</code> — the SSNVS bulk tool, the two-person BSO plan, and the BSO User ID in RA positions 12–19.</li>
+  <li><code>~/Documents/MeF/how-to-get-software-id.html</code> — the screen-by-screen path used for the TY2026 quarterly package.</li>
+</ul>
+</main>
+
+<script>
+const RECEIPTS = [
+  ["7","2026-11-03 13:18","3","AATS1094C-26-11884702","2a9bea19-b4ed-48a4-b43a-a522d9748309:SYS12:TBTBJ::T"],
+  ["6","2026-11-02 14:05","3","AATS1094C-26-28351368","a58d272e-af1a-4c1d-932f-cac1517e57ef:SYS12:TBTBJ::T"],
+  ["5","2026-10-30 14:44","3","AATS1094C-26-71470601","4a78ffff-1984-40bc-ac75-d135ee387d7c:SYS12:TBTBJ::T"],
+  ["4","2026-10-28 14:58","2","AATS1094C-26-99503341","e4234d60-87fc-4875-ab38-215911c9bda3:SYS12:TBTBJ::T"],
+  ["3","2026-10-27 18:06","2","AATS1094C-26-24403615","e66f69b1-3ba6-4177-bf7b-379d76ae4430:SYS12:TBTBJ::T"],
+  ["2","2026-10-27 15:01","3","AATS1094C-26-13304716","903c086d-0178-4300-8724-1ff73a6c5fcd:SYS12:TBTBJ::T"],
+  ["1","2026-10-27 14:16","3","AATS1094C-26-10560666","252ba976-5558-479c-9204-2cda1f142c37:SYS12:TBTBJ::T"]
+];
+const UI_RESULTS = ["", "Not Found", "Processing", "Accepted", "Accepted with Errors", "Rejected", "Search error"];
+const STORE_KEY = "mef-air-runbook-2026-11-03";
+
+function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; } }
+function saveState(s) { try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) {} }
+const state = loadState();
+
+function esc(t) { return String(t).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function copyText(text, btn, label) {
+  const done = () => { btn.classList.add("copied"); btn.textContent = "copied"; setTimeout(() => { btn.classList.remove("copied"); btn.textContent = label; }, 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text) && done());
+  } else if (fallbackCopy(text)) { done(); }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select(); let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta); return ok;
+}
+
+const tbody = document.querySelector("#receipts tbody");
+RECEIPTS.forEach(([n, sent, sc, rid, utid]) => {
+  const tr = document.createElement("tr");
+  const opts = UI_RESULTS.map(o => `<option${(state.ui||{})[rid] === o ? " selected" : ""}>${o || "— not checked —"}</option>`).join("");
+  tr.innerHTML = `<td class="nowrap">${n}</td><td class="nowrap mono">${sent}</td><td class="nowrap">${sc}</td>
+    <td class="nowrap"><span class="mono">${rid}</span> <button class="copy" data-copy="${rid}">copy</button></td>
+    <td><span class="mono" style="font-size:11.5px">${utid}</span> <button class="copy" data-copy="${utid}">copy</button></td>
+    <td><select data-rid="${rid}" aria-label="UI result for ${rid}">${opts}</select></td>`;
+  tbody.appendChild(tr);
+});
+
+document.addEventListener("click", e => {
+  const b = e.target.closest(".copy[data-copy]");
+  if (b) copyText(b.dataset.copy, b, "copy");
+});
+
+const steps = [...document.querySelectorAll(".step input[type=checkbox]")];
+steps.forEach((cb, i) => {
+  cb.checked = !!(state.steps || {})[i];
+  cb.closest(".step").classList.toggle("done", cb.checked);
+  cb.addEventListener("change", () => {
+    state.steps = state.steps || {}; state.steps[i] = cb.checked; saveState(state);
+    cb.closest(".step").classList.toggle("done", cb.checked); renderProgress(); renderReply();
+  });
+});
+function renderProgress() {
+  const n = steps.filter(c => c.checked).length;
+  document.getElementById("prog-label").textContent = `${n} of ${steps.length} steps`;
+  document.getElementById("prog-bar").style.width = (100 * n / steps.length) + "%";
+}
+
+const FIELD_IDS = ["r1","r2","r3","r4","r6","r7","r8","r9","r10","notes"];
+FIELD_IDS.forEach(id => {
+  const el = document.getElementById(id);
+  if ((state.fields || {})[id]) el.value = state.fields[id];
+  el.addEventListener("input", () => { state.fields = state.fields || {}; state.fields[id] = el.value; saveState(state); renderReply(); });
+});
+document.querySelectorAll("select[data-rid]").forEach(sel => sel.addEventListener("change", () => {
+  state.ui = state.ui || {}; state.ui[sel.dataset.rid] = sel.value.startsWith("—") ? "" : sel.value; saveState(state); renderReply();
+}));
+
+function slot(v, missing) { return v ? `<span class="got">${esc(v)}</span>` : `<span class="miss">___ (${missing})</span>`; }
+function val(id) { return (document.getElementById(id).value || "").trim(); }
+function idSlot(id) { const v = val(id); return /^\d{8}$/.test(v) ? slot(v) : slot("", v ? "not 8 digits: " + v : "type it in " + id.toUpperCase()); }
+
+function renderReply() {
+  const ui = state.ui || {};
+  const uiLines = RECEIPTS.map(([n, , , rid]) => `  ${n}. ${rid}: ${slot(ui[rid], "pick in the table")}`).join("\n");
+  const html =
+`MeF, AIR and SSA portal session done (runbook mef-air-portal-runbook.html).
+
+MeF software packages:
+- 94x annual TY2026 (940) Software ID: ${idSlot("r1")}
+- 94x quarterly TY2027 (941/941-X) Software ID: ${idSlot("r2")}
+- Pop-up surprises: ${slot(val("r3"), "none noted")}
+- e-Help on annual 940 testing: ${slot(val("r4"), "pick in R4")}
+- 2027Q2v2.0 amended zip: ${document.getElementById('a9').checked ? '<span class="got">downloaded into 94x-2026/</span>' : '<span class="miss">___ (tick A9 when saved)</span>'}
+
+AIR AATS UI, Check Transmission Status (TCC TBTBJ):
+${uiLines}
+- Automated Enrollment, ASID 1TBTBJ01: ${slot(val("r6"), "pick in R6")}
+- AIR Help Desk: ${slot(val("r7"), "type in R7")}
+
+SSA BSO, SSNVS access:
+- IRS address of record checked: ${document.getElementById('c1').checked ? '<span class="got">yes</span>' : '<span class="miss">___ (tick C1)</span>'}
+- BSO User ID: ${/^[A-Za-z0-9]{8}$/.test(val("r8")) ? slot(val("r8").toUpperCase()) : slot("", val("r8") ? "not 8 characters: " + val("r8") : "type it in R8")}
+- Request: ${slot(val("r9"), "pick in R9")}
+- Other wizard questions: ${slot(val("r10"), "none noted")}
+
+Other notes: ${slot(val("notes"), "none")}
+
+Next: put the annual ID in mef-spring-boot-integration/.env as MEF_SOFTWARE_ID_ANNUAL and run ./mef preflight 940-1..3; plan the TY2027 quarterly SchemaRelease for the 2027 ID; update the AIR memory and air-aats-status-review with the UI results before any new AATS submit; note the BSO User ID for the EFW2 RA record and set a reminder for the SSNVS activation code around 2026-11-17.`;
+  document.getElementById("reply-text").innerHTML = html;
+}
+document.getElementById("copy-reply").addEventListener("click", e => copyText(document.getElementById("reply-text").textContent, e.currentTarget, "copy reply"));
+
+renderProgress(); renderReply();
+</script>
+</body>
+</html>

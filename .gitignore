@@ -72,5 +72,26 @@ Version_17/**
 !Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/documents/
 !Version_17/A2A_Toolkit_Version17.0/MeF_Client_SDK/documents/2026v17.0_release_notes.txt
 
+# SSNVS request files, manifests and fix lists hold or point at PII
+ssnvs-out/
+
 # Python bytecode (efw2_check.py)
 __pycache__/
+
+# Real client payroll data (OneWell of California Q3 2026 941 rebuild): the repo is public.
+# Copy these between machines with rsync/scp, never git.
+reports/ca-941-2026q3/
+reports/pdf/ca-2026q3.pdf
+reports/941-*.sql
+ca-941-q3-*.html
+correct-guardrails-session-report.html
+reports/w2-employee-*/
+
+# IRS WSDL vendor zips and editor/OS temp files
+MeF_WSDL_*.zip
+.DS_Store
+.!*
+reports/941-2026q3/
+reports/pdf/*-2026q3.pdf
+reports/checkbook-production-check-preview.html
+reports/checkbook-test-check-team.html

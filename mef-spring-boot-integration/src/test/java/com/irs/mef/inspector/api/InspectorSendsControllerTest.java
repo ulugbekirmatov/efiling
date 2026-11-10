@@ -3,18 +3,17 @@ package com.irs.mef.inspector.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.irs.mef.ack.AckSource;
+import com.irs.mef.ack.AckStore;
 import com.irs.mef.ack.FileAckStore;
 import com.irs.mef.ack.StoredAck;
-import com.irs.mef.dto.AckResponse;
-import com.irs.mef.exception.MefException;
+import com.irs.mef.filing.IrsSession;
 import com.irs.mef.inspector.FixtureSnapshots;
 import com.irs.mef.inspector.ring.FileSendSnapshotRing;
-import com.irs.mef.newsend.domain.NewSendFiling;
-import com.irs.mef.newsend.domain.NewSendOutcome;
-import com.irs.mef.newsend.domain.NewSendReceipt;
-import com.irs.mef.newsend.domain.NewSendSubmissionRecord;
-import com.irs.mef.newsend.journal.InMemoryNewSendSubmissionJournal;
-import com.irs.mef.service.AcknowledgementService;
+import com.irs.mef.filing.Filing;
+import com.irs.mef.filing.FilingOutcome;
+import com.irs.mef.filing.TransmissionReceipt;
+import com.irs.mef.filing.SubmissionRecord;
+import com.irs.mef.filing.InMemoryJournal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,11 +26,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -48,22 +48,26 @@ class InspectorSendsControllerTest {
     Path temp;
 
     private FileSendSnapshotRing ring;
-    private InMemoryNewSendSubmissionJournal journal;
+    private InMemoryJournal journal;
     private FileAckStore ackStore;
-    private AcknowledgementService acknowledgementService;
+    private IrsSession session;
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         ring = new FileSendSnapshotRing(temp.resolve("ring"), 20, new ObjectMapper());
-        journal = new InMemoryNewSendSubmissionJournal();
+        journal = new InMemoryJournal();
         ackStore = new FileAckStore(temp.resolve("acks"), new ObjectMapper());
-        acknowledgementService = mock(AcknowledgementService.class);
+        session = mock(IrsSession.class);
+        mvc = mvc(ackStore);
+    }
+
+    private MockMvc mvc(AckStore store) {
         ObjectMapper bootLikeMapper = Jackson2ObjectMapperBuilder.json()
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
-        mvc = MockMvcBuilders.standaloneSetup(
-                        new InspectorSendsController(ring, journal, ackStore, acknowledgementService))
+        return MockMvcBuilders.standaloneSetup(
+                        new InspectorSendsController(ring, journal, store, session))
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(bootLikeMapper))
                 .build();
     }
@@ -87,7 +91,7 @@ class InspectorSendsControllerTest {
                 .andExpect(jsonPath("$[0].state").value("TRANSMITTED"))
                 .andExpect(jsonPath("$[0].depositId").value("QG6CDEPOSIT1"))
                 .andExpect(jsonPath("$[0].ackType").value("Accepted"));
-        verifyNoInteractions(acknowledgementService);
+        verifyNoInteractions(session);
     }
 
     @Test
@@ -164,12 +168,9 @@ class InspectorSendsControllerTest {
     @Test
     @DisplayName("POST ack returns the stored ack from GetAck")
     void postAckReturnsStoredAck() throws Exception {
-        StoredAck fresh = StoredAck.from(AckResponse.builder()
-                .submissionId(ID)
-                .ackType("Rejected")
-                .errorCodes(List.of("X0000-008"))
-                .build(), Instant.parse("2026-09-25T10:00:00Z"), AckSource.GET_ACK);
-        when(acknowledgementService.retrieveAndRecordAcknowledgment(ID)).thenReturn(fresh);
+        StoredAck fresh = stored(ID, "Rejected", Instant.parse("2026-09-25T10:00:00Z"),
+                AckSource.GET_ACK, List.of("X0000-008"));
+        when(session.getAck(any())).thenReturn(Optional.of(fresh));
 
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isOk())
@@ -182,28 +183,46 @@ class InspectorSendsControllerTest {
     }
 
     @Test
-    @DisplayName("POST ack maps not logged in to 409, no ack yet to 404, other IRS errors to 502")
+    @DisplayName("POST ack maps no ack yet to 404 and other IRS errors to 502 without echoing the cause")
     void postAckErrorMapping() throws Exception {
-        when(acknowledgementService.retrieveAndRecordAcknowledgment(anyString()))
-                .thenThrow(new MefException("NOT_LOGGED_IN", "Not logged in to IRS MeF", "login first"))
-                .thenThrow(new MefException("ACK_NOT_FOUND", "Acknowledgment not found", "none yet"))
-                .thenThrow(new MefException("ACK_PARSE_ERROR", "Failed to parse acknowledgment response", "x"))
+        when(session.getAck(any()))
+                .thenReturn(Optional.empty())
+                .thenThrow(new IllegalStateException("Keystore file does not exist at: /secret/pyramos.p12"))
                 .thenThrow(new RuntimeException("IRS session limit - retryable"));
 
-        mvc.perform(post("/inspector/sends/" + ID + "/ack"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("NOT_LOGGED_IN"))
-                .andExpect(jsonPath("$.message").value("Not logged in to IRS MeF"));
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("ACK_NOT_FOUND"));
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"))
-                .andExpect(jsonPath("$.message").value("Failed to parse acknowledgment response"));
+                .andExpect(jsonPath("$.message").value("Acknowledgment retrieval failed; see server logs"));
         mvc.perform(post("/inspector/sends/" + ID + "/ack"))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST ack surfaces a failed store write instead of reporting a stored ack")
+    void postAckStoreFailureSurfaces() throws Exception {
+        AckStore broken = new AckStore() {
+            @Override
+            public void record(StoredAck ack) {
+                throw new IllegalStateException("disk full");
+            }
+
+            @Override
+            public java.util.Optional<StoredAck> find(String submissionId) {
+                return java.util.Optional.empty();
+            }
+        };
+        when(session.getAck(any())).thenReturn(Optional.of(
+                stored(ID, "Accepted", Instant.parse("2026-09-25T10:00:00Z"), AckSource.GET_ACK, List.of())));
+
+        mvc(broken).perform(post("/inspector/sends/" + ID + "/ack"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.code").value("ACK_RETRIEVAL_FAILED"))
+                .andExpect(jsonPath("$.message").value("Acknowledgment retrieval failed; see server logs"));
     }
 
     @Test
@@ -212,22 +231,28 @@ class InspectorSendsControllerTest {
         mvc.perform(post("/inspector/sends/bad/ack"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_SUBMISSION_ID"));
-        verifyNoInteractions(acknowledgementService);
+        verifyNoInteractions(session);
     }
 
     private void transmitted(String depositId) {
-        NewSendFiling filing = FixtureSnapshots.orchidFiling();
-        journal.reserve(NewSendSubmissionRecord.created(filing, "ATS"));
-        NewSendReceipt receipt = new NewSendReceipt(depositId, filing.submissionId(),
-                Instant.parse("2026-03-31T12:00:04Z"), NewSendReceipt.TimestampSource.IRS, 1);
-        journal.complete(filing.submissionId(), new NewSendOutcome.Transmitted(receipt),
+        Filing filing = FixtureSnapshots.orchidFiling();
+        journal.reserve(SubmissionRecord.created(filing, "ATS"));
+        TransmissionReceipt receipt = new TransmissionReceipt(depositId, filing.submissionId(),
+                Instant.parse("2026-03-31T12:00:04Z"), TransmissionReceipt.TimestampSource.IRS, 1);
+        journal.complete(filing.submissionId(), new FilingOutcome.Transmitted(receipt),
                 Instant.parse("2026-03-31T12:00:05Z"));
     }
 
     private static StoredAck storedAck(String ackType) {
-        return StoredAck.from(AckResponse.builder()
-                .submissionId(ID)
-                .ackType(ackType)
-                .build(), Instant.parse("2026-09-25T09:26:34Z"), AckSource.GET_NEW_ACKS);
+        return stored(ID, ackType, Instant.parse("2026-09-25T09:26:34Z"), AckSource.GET_NEW_ACKS, null);
+    }
+
+    private static StoredAck stored(String submissionId, String ackType, Instant retrievedAt, AckSource source,
+                                    List<String> errorCodes) {
+        return new StoredAck(
+                null, submissionId, retrievedAt, source, ackType, null, null,
+                errorCodes, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null);
     }
 }

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How W-2 e-filing fits this repo</title>
+<style>
+:root {
+  --ivory:  #FAF9F5;
+  --paper:  #FFFFFF;
+  --g100:   #F0EEE6;
+  --g200:   #E6E3DA;
+  --g300:   #D1CFC5;
+  --slate:  #141413;
+  --g700:   #3D3D3A;
+  --g500:   #87867F;
+  --clay:   #D97757;
+  --clay-d: #B85C3E;
+  --oat:    #E3DACC;
+  --olive:  #788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+p, li, dd, dt, h1, h2, h3, h4, figcaption, blockquote,
+.card, .story, .callout, .gotchas, .questions, .tldr-dark {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.card, .story, .milestone, [class*="col"], [class*="grid"] > * { min-width: 0; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--g100);
+  color: var(--slate);
+  padding: 1px 6px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+}
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 40px;
+}
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: 1fr; }
+  .toc { position: static; }
+}
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 40px;
+  line-height: 1.15;
+  margin: 8px 0 12px;
+}
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 28px;
+  margin: 36px 0 12px;
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+}
+.tldr-dark {
+  background: var(--slate);
+  color: var(--ivory);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin: 20px 0 8px;
+}
+.tldr-dark .label {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--oat);
+  margin-bottom: 10px;
+}
+.tldr-dark p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--ivory); }
+.tldr-dark p + p { margin-top: 10px; }
+.tldr-dark strong { color: var(--ivory); font-weight: 600; }
+.tldr-dark code {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  background: rgba(250, 249, 245, 0.12);
+  color: var(--ivory);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.toc {
+  position: sticky;
+  top: 32px;
+  border-left: 1.5px solid var(--g300);
+  padding-left: 18px;
+  font-size: 13px;
+  align-self: start;
+}
+.toc .t-head {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--g500);
+  margin-bottom: 10px;
+}
+.toc a { display: block; color: var(--g700); text-decoration: none; padding: 4px 0; }
+.toc a:hover { color: var(--clay); }
+.story {
+  border: 1.5px solid var(--g200);
+  border-radius: 14px;
+  background: var(--paper);
+  padding: 20px 22px;
+  margin: 16px 0;
+  min-width: 0;
+}
+.story .stitle {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 18.5px;
+  margin: 0 0 6px;
+}
+.story p { color: var(--g700); margin: 8px 0; font-size: 14px; }
+.story .pathchip {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--g100);
+  border: 1px solid var(--g200);
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--g700);
+  white-space: nowrap;
+  display: inline-block;
+  margin: 8px 6px 0 0;
+}
+.exbox {
+  background: var(--g100);
+  border: 1px solid var(--g200);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+.exbox .exhead {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--g500);
+  margin-bottom: 8px;
+}
+.exrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: var(--g700);
+  border-bottom: 1px dashed var(--g200);
+}
+.exrow:last-child { border-bottom: none; }
+.exrow .was { color: var(--clay-d); }
+.exrow .now { color: var(--olive); font-weight: 700; }
+.exrow.punch { color: var(--slate); font-weight: 700; }
+.callout {
+  display: flex;
+  gap: 12px;
+  border: 1.5px solid var(--oat);
+  background: rgba(227, 218, 204, 0.35);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  margin: 16px 0;
+}
+.gotchas {
+  border: 1.5px solid var(--clay);
+  border-radius: 12px;
+  background: rgba(217, 119, 87, 0.06);
+  padding: 18px 20px;
+}
+.gotchas h3 {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--clay);
+  margin: 0 0 10px;
+}
+.gotchas ul { margin: 0; padding-left: 0; list-style: none; }
+.gotchas li { position: relative; padding-left: 16px; font-size: 13px; margin-bottom: 8px; }
+.gotchas li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  background: var(--clay);
+  border-radius: 2px;
+}
+.questions {
+  background: var(--oat);
+  border: 1.5px solid var(--g200);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+.questions h2 { margin-top: 0; }
+.questions li { margin: 8px 0; }
+.table-wrap { overflow-x: auto; margin: 12px 0 20px; }
+table.shipped {
+  width: 100%;
+  min-width: 640px;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--paper);
+  border: 1.5px solid var(--g300);
+  border-radius: 12px;
+  overflow: hidden;
+}
+table.shipped th, table.shipped td {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+table.shipped thead th {
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--g500);
+  background: var(--g100);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--g300);
+}
+table.shipped tbody td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--g100);
+  font-size: 14px;
+  vertical-align: top;
+}
+table.shipped tbody tr:last-child td { border-bottom: none; }
+.tabs {
+  border: 1.5px solid var(--g300);
+  border-radius: 10px;
+  background: var(--paper);
+  overflow: hidden;
+  margin: 12px 0 20px;
+}
+.tabbar { display: flex; border-bottom: 1px solid var(--g300); background: var(--g100); }
+.tabbar button {
+  appearance: none;
+  border: none;
+  background: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--g500);
+  padding: 10px 16px;
+  cursor: pointer;
+  border-right: 1px solid var(--g300);
+}
+.tabbar button.on {
+  background: var(--paper);
+  color: var(--slate);
+  border-bottom: 2px solid var(--clay);
+  margin-bottom: -1px;
+}
+.tab-panel { display: none; }
+.tab-panel.on { display: block; }
+.code {
+  background: var(--slate);
+  border-radius: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.code pre {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #E8E6DE;
+  white-space: pre;
+  margin: 0;
+}
+.code .kw { color: var(--clay); }
+.code .str { color: var(--olive); }
+.code .cm { color: var(--g500); }
+.code .fn { color: #C9B98A; }
+details {
+  border: 1.5px solid var(--g300);
+  border-radius: 10px;
+  background: var(--paper);
+  margin: 14px 0;
+  overflow: hidden;
+}
+details summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--slate);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸";
+  color: var(--clay);
+  font-family: var(--sans);
+  font-size: 12px;
+  transition: transform 120ms;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details summary .where {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--g500);
+  margin-left: auto;
+}
+details .body { padding: 0 16px 16px; font-size: 14px; color: var(--g700); }
+dl.faq { margin-top: 8px; }
+dl.faq dt {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--slate);
+  margin-top: 18px;
+}
+dl.faq dd { font-size: 14px; margin: 4px 0 0; color: var(--g700); }
+ol.steps { padding-left: 20px; }
+ol.steps li { margin: 10px 0; }
+@media print {
+  .toc { display: none; }
+  .wrap { display: block; max-width: none; }
+  details { break-inside: avoid; }
+  details .body { display: block; }
+  .tab-panel { display: block; }
+  .code { background: #fff; color: #000; }
+  .code pre { color: #000; }
+  .tldr-dark { background: #fff; border: 1px solid #000; }
+  .tldr-dark p, .tldr-dark strong, .tldr-dark .label { color: #000; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+  <div class="eyebrow">MeF repo · wage files · tax year 2026</div>
+  <h1>How W-2 e-filing fits this repo</h1>
+
+  <div class="tldr-dark">
+    <div class="label">In two sentences</div>
+    <p><strong>A W-2 cannot ride the MeF send.</strong> <code>FormType</code> rejects it, and the IRS manifest list has no W-2 code.</p>
+    <p>Build a separate Social Security Administration wage file, keep the exact bytes, and have a person upload it. The 941 path stays where it is.</p>
+  </div>
+
+  <h2 id="problem">A W-2 posted as a return never leaves the app</h2>
+  <div class="story" id="story-send">
+    <div class="stitle">Posting form type W2 dies at the door</div>
+    <p>Pyramos already files Form 941 for a client. The live send is <code>POST /api/mef/newsend/submissions</code>. The body field <code>formType</code> is parsed by a closed list of employment-tax returns. <code>W2</code> is not on that list, so the request becomes HTTP 400 before any IRS call.</p>
+    <p>The IRS schema in this repo would refuse the same code. <code>efileAttachments.xsd</code> for 2026Q1v4.0 enumerates returns such as 940, 941, 943, 944, 945, 1040, and 1120. It has no W-2 value. Copy A of Form W-2 goes to the Social Security Administration as a fixed-width file, not as a MeF return.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · one request</div>
+      <div class="exrow"><span>Body field</span><span>formType = W2</span></div>
+      <div class="exrow"><span>Legacy send would stamp</span><span class="was">FederalSubmissionTypeCd 941</span></div>
+      <div class="exrow"><span>NewSend does</span><span class="now">400 NEWSEND_VALIDATION</span></div>
+      <div class="exrow punch"><span>IRS session</span><span>never opens</span></div>
+    </div>
+    <p>
+      <span class="pathchip">FormType.java:46</span>
+      <span class="pathchip">NewSendManifestXml.java:33</span>
+      <span class="pathchip">SubmissionService.java:294</span>
+    </p>
+    <div class="code"><pre><span class="kw">public static</span> <span class="fn">FormType</span> <span class="fn">parse</span>(String raw) {
+    <span class="kw">return</span> Arrays.<span class="fn">stream</span>(<span class="fn">values</span>())
+        .<span class="fn">filter</span>(formType -&gt; formType.code.equals(raw))
+        .<span class="fn">findFirst</span>()
+        .<span class="fn">orElseThrow</span>(() -&gt; <span class="kw">new</span> <span class="fn">NewSendValidationException</span>(<span class="str">"formType"</span>,
+            <span class="str">"Unknown form type '"</span> + raw + <span class="str">"'."</span>));
+}</pre></div>
+  </div>
+
+  <h2 id="orchid">Orchid shows which dollars have to match</h2>
+  <div class="story" id="story-orchid">
+    <div class="stitle">The accepted 941 is 1000. The corrected quarter is 2500.</div>
+    <p>ATS scenario 1 is Orchid, EIN 003000004, first quarter 2026. That 941 was accepted. It reports wages of 1000.00, federal income tax withheld of 100.00, Social Security wages of 1000.00, and Medicare wages of 1000.00. Scenario 4 is a 941-X for the same employer and quarter. Column 1 replaces those four amounts with 2500.00, 250.00, 2500.00, and 2500.00.</p>
+    <p>Column 4 of the 941-X reuses wage element names for tax. The Social Security figure there is 186.00, which is 1500 times 0.124. A wage file that copies every element named like wages will file the tax as if it were wages.</p>
+    <div class="exbox">
+      <div class="exhead">Worked example · Orchid Q1 2026</div>
+      <div class="exrow"><span>941 line 2 wages</span><span>1000.00</span></div>
+      <div class="exrow"><span>941 line 3 withholding</span><span>100.00</span></div>
+      <div class="exrow"><span>941 line 5a column 1</span><span>1000.00</span></div>
+      <div class="exrow"><span>941 line 5c column 1</span><span>1000.00</span></div>
+      <div class="exrow"><span>941-X column 4 SS element</span><span class="was">186.00 tax, not wages</span></div>
+      <div class="exrow punch"><span>Wage file must match</span><span class="now">2500 / 250 / 2500 / 2500</span></div>
+    </div>
+    <p>Form 941 itself has no W-2 element. The only certification is on Form 941-X. <code>FiledW2W2cCorrWageTaxCertInd</code> is required, and the only legal value is <code>X</code>. Checking that box does not file a W-2.</p>
+    <p>The NewSend journal cannot supply these amounts. It stores a SHA-256 of the return XML and omits the XML. A pre-generation check has to read the payroll ledger, or a copy of the return that was actually kept.</p>
+    <p>
+      <span class="pathchip">IRS941.xsd:111</span>
+      <span class="pathchip">IRS941.xsd:145</span>
+      <span class="pathchip">IRS941.xsd:201</span>
+      <span class="pathchip">NewSendSubmissionRecord.java:6</span>
+    </p>
+  </div>
+
+  <h2 id="build">What to build</h2>
+  <p>The wage file is its own document. It is not a new value on <code>FormType</code>. Adding <code>W2</code> to that enum would only move the rejection from our 400 to an IRS reject, because the manifest schema still has no such code.</p>
+  <ol class="steps">
+    <li>Read one calendar year of employee totals from the payroll database. That database is not in this repo. The sibling DDL names <code>onepay_employee_tax_payment</code> with <code>tax_amount</code> and <code>taxable_wages</code>, keyed by <code>tax_type_id</code>. The lookup table <code>onepay_tax_type</code> has no seed rows in the DDL, so the codes for federal income tax, Social Security, and Medicare live in the database.</li>
+    <li>Write one fixed-width file for the year. Publication 42-007, tax year 2026, says each record is 512 bytes. One submitter record, then each client, then a final record. A person runs AccuWage and uploads the file in Business Services Online. There is no test flag and no MeF session in this step.</li>
+    <li>Keep the exact bytes and their hash. A person pastes the Wage File Identifier from the upload receipt. The app stores that identifier next to the bytes.</li>
+    <li>If SSA returns the file, resubmit those same bytes. Publication 42-007 puts the resubmit flag in RA position 29 and the prior identifier in positions 30-35.</li>
+    <li>If SSA has already completed the file and the data is wrong, write a different file. Publication 42-014 uses 1,024-byte records. That writer does not share a boolean with the original.</li>
+  </ol>
+
+  <div class="callout">
+    <div>The 941 stack cannot sign this file. Login uses the IdenTrust certificate, the ETIN, and the ASID. The return jurat is a 5-digit Reporting Agent PIN. The wage file is signed by an 8-character BSO User ID in RA positions 12-19, belonging to a person. Form 8655, as described in the existing research page, authorizes 94x returns and does not authorize W-2 filing. That 8655 reading is not encoded in Java.</div>
+  </div>
+
+  <h2 id="where">Where it lives</h2>
+  <div class="table-wrap">
+    <table class="shipped">
+      <thead>
+        <tr><th>Piece</th><th>Home</th><th>Stays out</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>512-byte writer and 1,024-byte writer</td>
+          <td>A new package beside <code>reportingagent</code>. Suggested name <code>com.irs.mef.wagefile</code>. Pure functions. No <code>ServiceContext</code>.</td>
+          <td><code>newsend.gateway</code>, which is the SOAP send. <code>FormType</code>, which is the 94x manifest list.</td>
+        </tr>
+        <tr>
+          <td>Saved file, hash, Wage File Identifier, status</td>
+          <td>A file store with its own path property, same idea as <code>mef.newsend.journal.path</code>, except this store keeps the bytes.</td>
+          <td>The NewSend journal. It is built to drop wage XML. <code>NewSendState</code> is a SOAP outcome, not an upload status.</td>
+        </tr>
+        <tr>
+          <td>Annual totals</td>
+          <td>A loader aimed at the payroll tables. Year totals are not one payroll run.</td>
+          <td>The MeF journal hash. Ack money fields are income-tax amounts, not 941 wages.</td>
+        </tr>
+        <tr>
+          <td>941 comparison</td>
+          <td>A check that reads kept return XML, or payroll totals, for lines 2, 3, 5a column 1, and 5c column 1. After a 941-X, use column 1.</td>
+          <td>A sum of "the four 941s this repo already files." One request files one return, and the journal cannot rebuild the wages.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="files">The two files</h2>
+  <p>Both layouts were read from SSA text extracts of the tax year 2026 publications. The PDFs are not in the repo. Field positions below are the ones checked in those extracts.</p>
+  <div class="tabs">
+    <div class="tabbar">
+      <button type="button" class="on" data-panel="panel-efw2">EFW2 original</button>
+      <button type="button" data-panel="panel-efw2c">EFW2C correction</button>
+    </div>
+    <div class="tab-panel on" id="panel-efw2">
+      <div class="code"><pre><span class="cm">// Publication 42-007. Each record is 512 bytes.</span>
+<span class="cm">// RA once, then each employer, then RF once.</span>
+<span class="fn">RA</span>  <span class="cm">// submitter. EIN at 3-11. BSO User ID at 12-19.</span>
+    <span class="cm">// resubmit flag at 29. prior WFID at 30-35.</span>
+<span class="fn">RE</span>  <span class="cm">// one employer. Record id at 1-2 is "RE".</span>
+<span class="fn">RW</span>  <span class="cm">// one employee. Record id at 1-2 is "RW".</span>
+<span class="fn">RO</span>  <span class="cm">// optional employee extras. Never all zeros.</span>
+<span class="fn">RS</span>  <span class="cm">// state. SSA does not read it.</span>
+<span class="fn">RT</span>  <span class="cm">// totals for that RE.</span>
+<span class="fn">RU</span>  <span class="cm">// only if some RO exists.</span>
+<span class="fn">RV</span>  <span class="cm">// state total. Never without an RS.</span>
+<span class="fn">RF</span>  <span class="cm">// final. Nothing follows.</span></pre></div>
+    </div>
+    <div class="tab-panel" id="panel-efw2c">
+      <div class="code"><pre><span class="cm">// Publication 42-014. Each record is 1,024 bytes.</span>
+<span class="cm">// Identifiers are 3 characters, positions 1-3.</span>
+<span class="fn">RCA</span> <span class="cm">// submitter</span>
+<span class="fn">RCE</span> <span class="cm">// employer</span>
+<span class="fn">RCW</span> <span class="cm">// employee</span>
+<span class="fn">RCO</span> <span class="cm">// employee optional</span>
+<span class="fn">RCS</span> <span class="cm">// state</span>
+<span class="fn">RCT</span> <span class="cm">// totals</span>
+<span class="fn">RCU</span> <span class="cm">// optional totals</span>
+<span class="fn">RCV</span> <span class="cm">// state total</span>
+<span class="fn">RCF</span> <span class="cm">// final</span>
+<span class="cm">// A returned EFW2 is still EFW2. EFW2C starts after COMPLETE.</span></pre></div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Payroll rows this repo does not contain <span class="where">claude-projects DDL</span></summary>
+    <div class="body">
+      <p><code>c2s/</code> documents a separate platform. Earnings sit on <code>onepay_employee_earning</code>. Taxes sit on <code>onepay_employee_tax_payment</code>. <code>hr_employee</code> stores <code>social_security_last_five_number</code> and an address. The only full government-identifier column in that DDL is <code>adp_employee.government_no</code>. Nothing in the DDL names it as the SSN. No function in this repo rolls a calendar year into W-2 boxes.</p>
+    </div>
+  </details>
+  <details>
+    <summary>State copies are a later file, not this one <span class="where">w2-efile-research.html</span></summary>
+    <div class="body">
+      <p>The research page lists eleven jurisdictions. Ten want an annual wage file. New York wants quarterly NYS-45 wage detail, not a W-2. Pennsylvania, Maryland, Ohio, and New Jersey are not an unmodified copy of the SSA file. Georgia's state-record spec was not read. Ten of the eleven due dates on that page are derived. No Java in this repo builds any of those files. Ship the federal file first.</p>
+    </div>
+  </details>
+
+  <h2 id="gotchas">Gotchas</h2>
+  <div class="gotchas">
+    <h3>Easy to get wrong</h3>
+    <ul>
+      <li>The legacy manifest hardcodes <code>941</code>. Sending a wage file through that endpoint would label it as a 941.</li>
+      <li>Electronic Wage Reporting Web Service is closed to new consolidators. The research page quotes SSA as not accepting new users. Upload stays in the browser.</li>
+      <li>There is no test environment. Every upload is a live filing. AccuWage does not check names against SSNs.</li>
+      <li>A returned file is resubmitted whole, as EFW2, within 45 days. A completed file with bad data is EFW2C, or W-2c Online. Those are different artifacts.</li>
+      <li>Whose EIN goes on the employer record for a Reporting Agent is still an inference. Publication 42-007 was not found to use the words "reporting agent." Confirm the client EIN placement with SSA before a live file.</li>
+      <li><code>w2-efile-research.html</code> still says the MeF side has no persistence and that W-2 totals must match four 941s this repo already files. NewSend now journals a hash, a client id, and a deposit id. It still does not store the wages.</li>
+    </ul>
+  </div>
+
+  <h2 id="faq">Questions this design answers</h2>
+  <dl class="faq">
+    <dt>Can IRIS carry Form W-2?</dt>
+    <dd>No. The research page assigns IRIS to information returns such as 1099 and W-2G, and says it does not take Form W-2. W-2G is a different form.</dd>
+    <dt>Should the writer call <code>SendSubmissions</code>?</dt>
+    <dd>No. That client builds an IRS archive from return XML and a manifest. A 512-byte wage file is not that archive.</dd>
+    <dt>When does the 941-X checkbox get filed?</dt>
+    <dd>When someone submits a 941-X. The schema requires the box. It certifies that W-2s were filed or will be filed. It does not create the wage file.</dd>
+  </dl>
+
+  <div class="questions" id="open">
+    <h2>Open decisions</h2>
+    <ul>
+      <li>SSA still has to confirm that a Reporting Agent leaves the RE agent indicator blank and puts the client EIN on that employer record.</li>
+      <li>A person at Pyramos still has to finish BSO registration. The User ID is not in this repo, and it leaves with the employee. Register two people.</li>
+      <li>The payroll database has to name which <code>tax_type_id</code> values are federal income tax, Social Security, and Medicare, and whether <code>government_no</code> is the SSN.</li>
+      <li>State files wait until the unread Georgia layout and the missing tax year 2026 booklets are in hand.</li>
+    </ul>
+  </div>
+</main>
+<nav class="toc" aria-label="On this page">
+  <div class="t-head">On this page</div>
+  <a href="#problem">The send that fails</a>
+  <a href="#orchid">Orchid amounts</a>
+  <a href="#build">What to build</a>
+  <a href="#where">Where it lives</a>
+  <a href="#files">The two files</a>
+  <a href="#gotchas">Gotchas</a>
+  <a href="#faq">Questions</a>
+  <a href="#open">Open decisions</a>
+</nav>
+</div>
+<script>
+(function () {
+  var bar = document.querySelector(".tabbar");
+  if (!bar) return;
+  bar.addEventListener("click", function (event) {
+    var button = event.target.closest("button");
+    if (!button || !bar.contains(button)) return;
+    var id = button.getAttribute("data-panel");
+    var buttons = bar.querySelectorAll("button");
+    var panels = document.querySelectorAll(".tab-panel");
+    var i;
+    for (i = 0; i < buttons.length; i++) {
+      if (buttons[i] === button) buttons[i].classList.add("on");
+      else buttons[i].classList.remove("on");
+    }
+    for (i = 0; i < panels.length; i++) {
+      if (panels[i].id === id) panels[i].classList.add("on");
+      else panels[i].classList.remove("on");
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 package com.irs.mef.inspector.ring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.irs.mef.newsend.domain.FormType;
-import com.irs.mef.newsend.domain.TaxPeriod;
+import com.irs.mef.filing.FormSpec;
+import com.irs.mef.filing.TaxPeriod;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -212,7 +212,7 @@ public final class FileSendSnapshotRing implements SendSnapshotRing {
                 Instant.parse(meta.capturedAt()),
                 meta.environment(),
                 meta.einMasked(),
-                FormType.parse(meta.formType()),
+                FormSpec.parse(meta.formType()),
                 new TaxPeriod(LocalDate.parse(meta.taxPeriodBegin()), LocalDate.parse(meta.taxPeriodEnd())),
                 meta.clientRequestId(),
                 meta.returnXmlSha256(),

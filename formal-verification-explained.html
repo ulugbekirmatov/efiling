@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formal verification, bro</title>
+<style>
+:root {
+  --ivory:#FAF9F5; --paper:#FFFFFF; --g100:#F0EEE6; --g200:#E6E3DA; --g300:#D1CFC5;
+  --slate:#141413; --g700:#3D3D3A; --g500:#87867F;
+  --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC; --olive:#788C5D; --rust:#B04A3F;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--ivory); color:var(--slate); font-family:var(--sans); line-height:1.55; overflow-wrap:break-word; word-break:break-word; }
+p, li, dd, dt, h1, h2, h3, figcaption, blockquote, .card, .callout { overflow-wrap:break-word; word-break:break-word; }
+.card, [class*="col"], [class*="grid"] > * { min-width:0; }
+table { table-layout:auto; min-width:640px; }
+td, th { word-break:normal; overflow-wrap:break-word; }
+.table-wrap { overflow-x:auto; }
+.wrap { max-width:960px; margin:0 auto; padding:56px 24px 96px; }
+a { color:var(--clay); text-decoration-color:var(--oat); text-underline-offset:3px; }
+
+.eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-bottom:12px; display:flex; align-items:center; gap:12px; }
+.eyebrow::before { content:""; width:24px; height:1.5px; background:var(--clay); }
+h1 { font-family:var(--serif); font-weight:500; font-size:clamp(38px,5.4vw,62px); line-height:1.06; letter-spacing:-.018em; margin:0 0 8px; max-width:17ch; }
+h1 em { font-style:italic; color:var(--clay); }
+.intro { font-size:16.5px; color:var(--g700); margin:22px 0 0; max-width:640px; }
+section { margin-top:64px; }
+.sec-head { display:flex; align-items:baseline; gap:16px; margin-bottom:10px; }
+.sec-head .idx { font-family:var(--mono); font-size:13px; color:var(--clay); font-weight:600; width:34px; flex-shrink:0; }
+.sec-head h2 { font-family:var(--serif); font-weight:500; font-size:27px; line-height:1.2; margin:0; }
+.sec-note { color:var(--g700); max-width:680px; margin:8px 0 0 50px; }
+.sec-body { margin-left:50px; }
+@media (max-width:720px){ .sec-note, .sec-body { margin-left:0; } }
+
+:not(pre) > code { font-family:var(--mono); font-size:.92em; background:var(--g100); color:var(--slate); padding:1px 6px; border-radius:4px; overflow-wrap:break-word; }
+.code { background:var(--slate); border-radius:12px; padding:18px 20px; overflow-x:auto; margin:14px 0; }
+.code pre { font-family:var(--mono); font-size:12.5px; line-height:1.65; color:#E8E6DE; white-space:pre; margin:0; }
+.code .kw { color:var(--clay); } .code .str { color:var(--olive); } .code .cm { color:var(--g500); } .code .fn { color:#C9B98A; }
+
+.term { border-bottom:1.5px dotted var(--clay); cursor:help; color:var(--slate); }
+
+.story { border:1.5px solid var(--g200); border-radius:14px; background:var(--paper); padding:20px 22px; margin:16px 0; min-width:0; }
+.story .stitle { font-family:var(--serif); font-weight:500; font-size:18.5px; margin:0 0 6px; }
+.story p { color:var(--g700); margin:8px 0; font-size:14.5px; }
+.pathchip { font-family:var(--mono); font-size:11.5px; background:var(--g100); border:1px solid var(--g200); border-radius:6px; padding:2px 8px; color:var(--g700); white-space:nowrap; }
+.exbox { background:var(--g100); border:1px solid var(--g200); border-radius:10px; padding:12px 16px; margin-top:12px; }
+.exbox .exhead { font-family:var(--mono); font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--g500); margin-bottom:8px; }
+.exrow { display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:12.5px; line-height:1.9; color:var(--g700); border-bottom:1px dashed var(--g200); }
+.exrow > span:last-child { text-align:right; }
+.exrow:last-child { border-bottom:none; }
+.exrow .was { color:var(--clay-d); }
+.exrow .now { color:var(--olive); font-weight:700; }
+.exrow.punch { color:var(--slate); font-weight:700; }
+
+.analogy { border-left:3px solid var(--oat); padding:6px 14px; margin:14px 0; font-family:var(--serif); font-style:italic; font-size:16px; color:var(--g700); }
+.analogy .abreak { display:block; font-family:var(--sans); font-style:normal; font-size:13.5px; color:var(--clay-d); margin-top:10px; padding:8px 12px; border:1.5px solid var(--clay); border-radius:8px; background:#FBF1EC; }
+
+.demo { border:1.5px solid var(--g300); border-radius:14px; background:var(--paper); padding:22px; margin-top:16px; }
+.demo-grid { display:grid; grid-template-columns:300px 1fr; gap:26px; }
+@media (max-width:760px){ .demo-grid { grid-template-columns:1fr; } }
+.demo h3 { font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); font-weight:500; margin:0 0 10px; }
+.btnrow { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+button { font-family:var(--mono); font-size:12px; border:1.5px solid var(--g300); background:var(--paper); color:var(--slate); border-radius:8px; padding:7px 11px; cursor:pointer; }
+button:hover:not(:disabled) { border-color:var(--clay); }
+button:focus-visible { outline:2px solid var(--clay); outline-offset:2px; }
+button:disabled { opacity:.4; cursor:not-allowed; }
+button.primary { background:var(--slate); color:var(--ivory); border-color:var(--slate); }
+.toggle { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--g700); margin:6px 0 14px; }
+.toggle input { accent-color:var(--clay); width:16px; height:16px; }
+.log { font-family:var(--mono); font-size:12.5px; background:var(--g100); border:1px solid var(--g200); border-radius:10px; padding:10px 14px; min-height:120px; }
+.log div { line-height:1.8; }
+.verdict { margin-top:12px; font-weight:600; font-size:14px; padding:10px 14px; border-radius:10px; border:1.5px solid var(--g300); }
+.verdict.bad { border-color:var(--clay); background:#FBF1EC; color:var(--clay-d); }
+.verdict.good { border-color:var(--olive); background:#EEF2E8; color:#4C5C37; }
+.orders { margin-top:14px; font-family:var(--mono); font-size:12.5px; }
+.orders .o { display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-bottom:1px dashed var(--g200); }
+.orders .o .r-bad { color:var(--clay-d); font-weight:700; }
+.orders .o .r-ok { color:var(--olive); font-weight:700; }
+
+table.compare { border-collapse:collapse; width:100%; font-size:13.5px; background:var(--paper); }
+table.compare th, table.compare td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--g300); vertical-align:top; }
+table.compare th { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--g500); font-weight:500; }
+table.compare td.bad { color:var(--rust); } table.compare td.good { color:var(--olive); font-weight:600; }
+table.compare tr.here td { background:#FAF6EE; }
+
+.rule { border:1.5px solid var(--g300); border-left:4px solid var(--clay); border-radius:10px; background:var(--paper); padding:16px 20px; margin-top:14px; }
+.rule ol { margin:6px 0 0; padding-left:20px; } .rule li { margin:6px 0; }
+
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:14px; }
+@media (max-width:760px){ .grid3 { grid-template-columns:1fr; } }
+.mini { border:1.5px solid var(--g200); border-radius:12px; background:var(--paper); padding:14px 16px; }
+.mini .k { font-family:var(--mono); font-size:11px; color:var(--g500); text-transform:uppercase; letter-spacing:.06em; }
+.mini p { margin:6px 0 0; font-size:13.5px; color:var(--g700); }
+
+.tldr-dark { background:var(--slate); color:var(--ivory); border-radius:12px; padding:24px 28px; margin-top:16px; }
+.tldr-dark .label { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--oat); margin-bottom:10px; }
+.tldr-dark p { margin:0; font-family:var(--serif); font-size:20px; line-height:1.55; color:var(--ivory); }
+.tldr-dark p + p { margin-top:10px; }
+.tldr-dark strong { color:var(--ivory); font-weight:600; }
+.tldr-dark code { font-family:var(--mono); font-size:14px; background:rgba(250,249,245,.12); color:var(--ivory); padding:1px 5px; border-radius:4px; }
+
+.glossary dl { display:grid; grid-template-columns:170px 1fr; gap:8px 18px; margin:14px 0 0; }
+@media (max-width:640px){ .glossary dl { grid-template-columns:1fr; } }
+.glossary dt { font-family:var(--mono); font-size:12.5px; color:var(--clay-d); }
+.glossary dd { margin:0; font-size:14px; color:var(--g700); }
+
+
+/* Pele diagram token mapping (components.md 31) */
+.pele {
+  --pele-bg: var(--paper);
+  --pele-fg: var(--slate);
+  --pele-muted: var(--g500);
+  --pele-line: var(--g700);
+  --pele-surface: var(--g100);
+  --pele-surface-alt: var(--g200);
+  --pele-border: var(--g300);
+  --pele-accent: var(--clay);
+  --pele-critical: #B04A3F;
+  --pele-error: #B04A3F;
+  --pele-font: var(--sans);
+  --pele-font-mono: var(--mono);
+  --pele-radius: 8px;
+  --pele-series-1: var(--clay);
+  --pele-series-2: #4F7FB0;
+  --pele-series-3: var(--olive);
+  --pele-series-4: #B07D43;
+  --pele-series-5: #B0567A;
+  --pele-series-6: #4A8670;
+  --pele-series-7: #7470A8;
+  --pele-series-8: var(--rust, #B04A3F);
+}
+/* Hue classes added by diagram.js colorize(): they redefine Pele's surface/border/line
+   variables on one node, edge or cluster, so the SVG markup itself never changes. */
+.pele .pele-hue-clay { --_s: #FBE9E1; --_a: #FBE9E1; --_b: #C4633F; --_l: #C4633F; --_m: #9A4527; }
+.pele .pele-hue-sky { --_s: #E1ECF7; --_a: #E1ECF7; --_b: #4F7FB0; --_l: #4F7FB0; --_m: #34618F; }
+.pele .pele-hue-olive { --_s: #E7EEDD; --_a: #E7EEDD; --_b: #667A4C; --_l: #667A4C; --_m: #4C5C37; }
+.pele .pele-hue-fig { --_s: #F6E1E9; --_a: #F6E1E9; --_b: #B0567A; --_l: #B0567A; --_m: #8A3D5D; }
+.pele .pele-hue-cactus { --_s: #DFEEE8; --_a: #DFEEE8; --_b: #4A8670; --_l: #4A8670; --_m: #326553; }
+.pele .pele-hue-heather { --_s: #E9E8F3; --_a: #E9E8F3; --_b: #7470A8; --_l: #7470A8; --_m: #565287; }
+.pele .pele-hue-kraft { --_s: #F7EBDC; --_a: #F7EBDC; --_b: #B07D43; --_l: #B07D43; --_m: #85592A; }
+.pele .pele-hue-rust { --_s: #F8E0DC; --_a: #F8E0DC; --_b: #B04A3F; --_l: #B04A3F; --_m: #8C3229; }
+.pele .pele-hue-neutral { --_s: #F0EEE6; --_a: #F0EEE6; --_b: #87867F; --_l: #87867F; --_m: #3D3D3A; }
+.pele .pele-node[class*="pele-hue-"] > :not(text) { stroke-width: 1.5px; }
+.pele .pele-edge[class*="pele-hue-"] > path:not(.pele-marker) { stroke: var(--_l); }
+.pele .pele-cluster[class*="pele-hue-"] > rect { fill-opacity: 0.45; }
+figure.diagram { margin: 28px 0; }
+figure.diagram .canvas {
+  border: 1px solid var(--g300); border-radius: 12px; overflow-x: auto;
+  background: var(--paper); padding: 16px;
+}
+figure.diagram .canvas svg { display: block; max-width: none; height: auto; margin: 0 auto; }
+figure.diagram figcaption {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 14px 4px 0;
+}
+figure.diagram .cap-title { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+figure.diagram .cap-sub { font-size: 13px; line-height: 1.5; color: var(--g500); }
+@media print { figure.diagram .canvas { border-color: var(--g200); } }
+
+
+@media print { .demo button, .toggle { display:none; } section { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <div class="eyebrow">Concept explainer · MeF repo · 2026-11-03</div>
+  <h1>Formal verification, <em>bro</em></h1>
+  <p class="intro">Your tests check the cases you thought of. Formal verification checks <strong>every</strong> case inside a box you draw. Here's what that means, using the duplicate-filing bug we just found in <code>FilingDesk.file</code>.</p>
+</header>
+
+<section id="problem">
+  <div class="sec-head"><span class="idx">01</span><h2>The problem: two clicks, one quarter</h2></div>
+  <p class="sec-note">Picture this. An operator files Orchid Incorporated's Q3 Form 941. They spot a typo, fix it, and hit send again 200 ms later. Two <code>POST /api/mef/filings</code> requests are now running at the same time, with slightly different bytes for the same client-quarter.</p>
+  <div class="sec-body">
+    <div class="story">
+      <div class="stitle">The code has a guard for this. The tests say it works.</div>
+      <p><code>guardDuplicatePeriod</code> asks the journal "has this EIN already filed a 941 for this quarter?" If yes, it refuses with <code>NEWSEND_PERIOD_ALREADY_FILED</code>. <span class="pathchip">NewSendDuplicatePeriodTest</span> proves it: file once, file again, and the second one is blocked.</p>
+      <p>But that test runs the two requests <em>one after the other</em>. Real HTTP requests run side by side. Their steps can mix together in any order, and the test only ever tries one of those orders.</p>
+      <div class="exbox">
+        <div class="exhead">Worked example · Orchid 941, Q3, two bodies (b1 and b2)</div>
+        <div class="exrow"><span>Request A</span><span>body b1, allowDuplicatePeriod=false</span></div>
+        <div class="exrow"><span>Request B</span><span>body b2 (typo fixed), same EIN, form, period</span></div>
+        <div class="exrow"><span>Orders the unit test tries</span><span class="was">1 (A finishes, then B) → B blocked ✓</span></div>
+        <div class="exrow"><span>Orders TLC tries (whole model)</span><span class="now">every one: 6.0 million states</span></div>
+        <div class="exrow punch"><span>What TLC found</span><span>A and B both pass the guard → IRS holds 2 returns for one quarter</span></div>
+      </div>
+    </div>
+    <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-sequence" viewBox="0 0 604 623" width="604" height="623" style="width:clamp(453px,100%,604px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="sequence"><g transform="translate(89.37,8)"><g class="pele-lifelines" fill="none" stroke="var(--_b)"><path class="pele-lifeline" data-id="d1-A" d="M0,44V563"/><path class="pele-lifeline" data-id="d1-B" d="M170.74,44V563"/><path class="pele-lifeline" data-id="d1-J" d="M331.24,44V563"/><path class="pele-lifeline" data-id="d1-IRS" d="M423.5,44V563"/></g><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-message" data-id="d1-i0"><path d="M0,87H324.24"/><path class="pele-marker" d="M331.24,87L323.24,90.36L323.24,83.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i1"><path d="M331.24,124H7" stroke-dasharray="4 4"/><path class="pele-marker" d="M0,124L8,120.64L8,127.36Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i2"><path d="M170.74,176H324.24"/><path class="pele-marker" d="M331.24,176L323.24,179.36L323.24,172.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i3"><path d="M331.24,213H177.74" stroke-dasharray="4 4"/><path class="pele-marker" d="M170.74,213L178.74,209.64L178.74,216.36Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i4"><path d="M0,250H324.24"/><path class="pele-marker" d="M331.24,250L323.24,253.36L323.24,246.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i5"><path d="M170.74,287H324.24"/><path class="pele-marker" d="M331.24,287L323.24,290.36L323.24,283.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i7"><path d="M0,378H416.5"/><path class="pele-marker" d="M423.5,378L415.5,381.36L415.5,374.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i8"><path d="M423.5,415H7" stroke-dasharray="4 4"/><path class="pele-marker" d="M0,415L8,411.64L8,418.36Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i9"><path d="M170.74,452H416.5"/><path class="pele-marker" d="M423.5,452L415.5,455.36L415.5,448.64Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-message" data-id="d1-i10"><path d="M423.5,489H177.74" stroke-dasharray="4 4"/><path class="pele-marker" d="M170.74,489L178.74,485.64L178.74,492.36Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="d1-i0"><rect x="28.79" y="64" width="273.65" height="17" rx="3" fill="var(--_bg)" stroke="none"/><text x="165.62" y="77.4" text-anchor="middle">guardDuplicatePeriod: rows for Orchid Q3?</text></g><g class="pele-edge-label" data-id="d1-i1"><rect x="128.38" y="101" width="74.49" height="17" rx="3" fill="var(--_bg)" stroke="none"/><text x="165.62" y="114.4" text-anchor="middle">none, pass</text></g><g class="pele-edge-label" data-id="d1-i2"><text text-anchor="middle" xml:space="preserve"><tspan x="250.99" y="149.9">guardDuplicatePeriod:</tspan><tspan x="250.99" y="167.9">rows for Orchid Q3?</tspan></text></g><g class="pele-edge-label" data-id="d1-i3"><text x="250.99" y="203.4" text-anchor="middle">none, pass</text></g><g class="pele-edge-label" data-id="d1-i4"><rect x="95.32" y="227" width="140.6" height="17" rx="3" fill="var(--_bg)" stroke="none"/><text x="165.62" y="240.4" text-anchor="middle">reserve(sid 1, key b1)</text></g><g class="pele-edge-label" data-id="d1-i5"><text x="250.99" y="277.4" text-anchor="middle">reserve(sid 2, key b2)</text></g><g class="pele-edge-label" data-id="d1-i7"><rect x="136" y="355" width="151.5" height="17" rx="3" fill="var(--_bg)" stroke="none"/><text x="211.75" y="368.4" text-anchor="middle">SendSubmissions sid 1</text></g><g class="pele-edge-label" data-id="d1-i8"><text x="211.75" y="405.4" text-anchor="middle">receipt</text></g><g class="pele-edge-label" data-id="d1-i9"><rect x="221.36" y="429" width="151.5" height="17" rx="3" fill="var(--_bg)" stroke="none"/><text x="297.12" y="442.4" text-anchor="middle">SendSubmissions sid 2</text></g><g class="pele-edge-label" data-id="d1-i10"><text x="297.12" y="479.4" text-anchor="middle">receipt</text></g></g><g class="pele-notes" font-size="14" fill="var(--_a)" stroke="var(--_b)"><g class="pele-note" data-id="d1-i6"><rect x="248.98" y="297" width="164.52" height="44" style="rx:var(--_r)"/><text class="pele-label" stroke="none" fill="var(--_fg)" text-anchor="middle" xml:space="preserve"><tspan x="331.24" y="314.9">different keys, so neither</tspan><tspan x="331.24" y="332.9">claim blocks</tspan></text></g><g class="pele-note" data-id="d1-i11"><rect x="341.24" y="499" width="164.52" height="44" style="rx:var(--_r)"/><text class="pele-label" stroke="none" fill="var(--_fg)" text-anchor="middle" xml:space="preserve"><tspan x="423.5" y="516.9">two original 941s for one</tspan><tspan x="423.5" y="534.9">quarter</tspan></text></g></g><g class="pele-nodes"><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-clay" data-id="d1-A"><rect x="-81.37" y="563" width="162.74" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="590.6" text-anchor="middle">Request A (body b1)</text></g><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-sky" data-id="d1-B"><rect x="89.37" y="563" width="162.74" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="170.74" y="590.6" text-anchor="middle">Request B (body b2)</text></g><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-olive" data-id="d1-J"><rect x="284.12" y="563" width="94.24" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="331.24" y="590.6" text-anchor="middle">FileJournal</text></g><g class="pele-node pele-actor pele-actor-participant pele-actor-footer pele-hue-fig" data-id="d1-IRS"><rect x="399.5" y="563" width="48" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="423.5" y="590.6" text-anchor="middle">IRS</text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-clay" data-id="d1-A"><rect x="-81.37" y="0" width="162.74" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="27.6" text-anchor="middle">Request A (body b1)</text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-sky" data-id="d1-B"><rect x="89.37" y="0" width="162.74" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="170.74" y="27.6" text-anchor="middle">Request B (body b2)</text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-olive" data-id="d1-J"><rect x="284.12" y="0" width="94.24" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="331.24" y="27.6" text-anchor="middle">FileJournal</text></g><g class="pele-node pele-actor pele-actor-participant pele-hue-fig" data-id="d1-IRS"><rect x="399.5" y="0" width="48" height="44" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="423.5" y="27.6" text-anchor="middle">IRS</text></g></g></g></svg></div><figcaption><div><div class="cap-title">The race TLC found</div><div class="cap-sub">Shortest counterexample for OneLiveReturnPerPeriod, in the code's words</div></div></figcaption></figure>
+
+    <p style="color:var(--g700);max-width:680px">The guard and <code>reserve</code> each take a lock, but <strong>separately</strong>. Between A's check and A's reserve there's a gap, and B slips into it. A test would need to hit that gap by luck. A model checker hits it on purpose, because it tries every gap.</p>
+  </div>
+</section>
+
+<section id="toy">
+  <div class="sec-head"><span class="idx">02</span><h2>Try it: you are the scheduler</h2></div>
+  <p class="sec-note">Each request takes two steps: <strong>guard</strong> (look for an existing row for the quarter) and <strong>reserve</strong> (write its own row and send). Click the steps in any order. Then hit "try every order", which is TLC's job in miniature.</p>
+  <div class="sec-body">
+    <div class="demo">
+      <div class="demo-grid">
+        <div>
+          <h3>Steps</h3>
+          <label class="toggle"><input type="checkbox" id="fix"> Fix: run guard + reserve under one lock</label>
+          <div class="btnrow" id="btnsA"></div>
+          <div class="btnrow" id="btnsB"></div>
+          <div class="btnrow"><button id="reset">reset</button><button class="primary" id="all">try every order</button></div>
+        </div>
+        <div>
+          <h3>Journal + IRS</h3>
+          <div class="log" id="log"></div>
+          <div class="verdict" id="verdict">Pick a step.</div>
+          <div class="orders" id="orders"></div>
+        </div>
+      </div>
+    </div>
+    <p style="color:var(--g700);max-width:680px">Without the fix, 4 of the 6 orders send twice. The sequential test happens to pick one of the 2 safe ones. With the fix, the gap is gone: 2 orders, both safe. That matches <code>check.sh mutants</code>, where the fix sketch <code>periodGuardInsideReserve</code> passes all four promises.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="sec-head"><span class="idx">03</span><h2>How it actually works</h2></div>
+  <p class="sec-note">You don't run the Java. You write a small <span class="term" title="A description of the system as states plus the steps that move between them. Ours is FilingDesk.tla.">model</span> of it: the states it can be in, and the steps that move it. Each step must match one indivisible thing in the code, like one call under one lock. Then you write the promises as <span class="term" title="A statement that must be true in every reachable state, e.g. 'the IRS never holds two unrejected returns for one quarter'.">invariants</span> and let the <span class="term" title="A program that explores every reachable state of a model and checks the invariants in each. TLC is the one for TLA+.">model checker</span> grind.</p>
+  <div class="sec-body">
+    <figure class="diagram"><div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart" viewBox="0 0 601 802" width="601" height="802" style="width:clamp(451px,100%,601px);height:auto;--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_r:var(--pele-radius,4px);--_fm:var(--pele-font-mono,ui-monospace, &quot;SF Mono&quot;, Menlo, Monaco, Consolas, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="flowchart"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-hue-sky" data-id="d2-L_code_model_0"><path d="M118.78,74L118.78,115"/><path class="pele-marker" d="M118.78,122L115.42,114L122.14,114Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-sky" data-id="d2-L_promise_tlc_0"><path d="M351.05,188C351.05,205.5 284.94,205.5 284.94,223L284.94,229"/><path class="pele-marker" d="M284.94,236L281.58,228L288.3,228Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d2-L_model_tlc_0"><path d="M118.78,188C118.78,205.5 184.89,205.5 184.89,223L184.89,229"/><path class="pele-marker" d="M184.89,236L181.53,228L188.25,228Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d2-L_tlc_pass_0"><path d="M184.89,302C184.89,312.25 110.87,312.25 110.87,322.5L110.87,368"/><path class="pele-marker" d="M110.87,375L107.51,367L114.23,367Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-clay" data-id="d2-L_tlc_trace_0"><path d="M284.94,302C284.94,312.25 358.95,312.25 358.95,322.5L358.95,377"/><path class="pele-marker" d="M358.95,384L355.59,376L362.31,376Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge pele-hue-rust" data-id="d2-L_trace_judge_0"><path d="M358.95,432L358.95,482"/><path class="pele-marker" d="M358.95,489L355.59,481L362.31,481Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d2-L_judge_bug_0"><path d="M310.66,642.77C310.66,668.11 240.7,668.11 240.7,693.45L240.7,738.95"/><path class="pele-marker" d="M240.7,745.95L237.34,737.95L244.06,737.95Z" fill="var(--_l)" stroke="none"/></g><g class="pele-edge" data-id="d2-L_judge_fix_0"><path d="M407.25,642.77C407.25,668.11 477.21,668.11 477.21,693.45L477.21,738.95"/><path class="pele-marker" d="M477.21,745.95L473.85,737.95L480.57,737.95Z" fill="var(--_l)" stroke="none"/></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="d2-L_tlc_pass_0"><rect x="10" y="324.5" width="201.75" height="21" rx="3" fill="var(--_bg)"/><text x="110.87" y="339.9" text-anchor="middle">every state keeps the promises</text></g><g class="pele-edge-label" data-id="d2-L_tlc_trace_0"><rect x="270.53" y="324.5" width="176.85" height="21" rx="3" fill="var(--_bg)"/><text x="358.95" y="339.9" text-anchor="middle">one state breaks a promise</text></g><g class="pele-edge-label" data-id="d2-L_judge_bug_0"><rect x="225.81" y="695.45" width="29.78" height="21" rx="3" fill="var(--_bg)"/><text x="240.7" y="710.85" text-anchor="middle">yes</text></g><g class="pele-edge-label" data-id="d2-L_judge_fix_0"><rect x="465.43" y="695.45" width="23.57" height="21" rx="3" fill="var(--_bg)"/><text x="477.21" y="710.85" text-anchor="middle">no</text></g></g><g class="pele-nodes"><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d2-code" transform="translate(118.78,41)"><rect x="-79.13" y="-33" width="158.26" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">FilingDesk.java +</tspan><tspan x="0" y="16.1">FileJournal.java</tspan></text></g><g class="pele-node pele-shape-rect pele-hue-clay" data-id="d2-model" transform="translate(118.78,155)"><rect x="-98.7" y="-33" width="197.39" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">FilingDesk.tla: states +</tspan><tspan x="0" y="16.1">steps</tspan></text></g><g class="pele-node pele-shape-rect entry pele-hue-sky" data-id="d2-promise" transform="translate(351.05,155)"><rect x="-93.58" y="-33" width="187.15" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">4 promises written as</tspan><tspan x="0" y="16.1">invariants</tspan></text></g><g class="pele-node pele-shape-rect core pele-hue-clay" data-id="d2-tlc" transform="translate(234.91,269)"><rect x="-102.02" y="-33" width="204.05" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">TLC tries every order of</tspan><tspan x="0" y="16.1">every step</tspan></text></g><g class="pele-node pele-shape-rect ok pele-hue-olive" data-id="d2-pass" transform="translate(110.87,408)"><rect x="-94.04" y="-33" width="188.08" height="66" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">PASS: 6.0M states, 0</tspan><tspan x="0" y="16.1">violations</tspan></text></g><g class="pele-node pele-shape-rect risk pele-hue-rust" data-id="d2-trace" transform="translate(358.95,408)"><rect x="-114.04" y="-24" width="228.08" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Shortest step-by-step trace</text></g><g class="pele-node pele-shape-diam pele-hue-neutral" data-id="d2-judge" transform="translate(358.95,580.98)"><polygon points="0,-91.97 147.16,0 0,91.98 -147.16,0" fill="var(--_s)" stroke="var(--_b)"/><text class="pele-label" text-anchor="middle" xml:space="preserve"><tspan x="0" y="-4.9">Can the Java really do each</tspan><tspan x="0" y="16.1">step?</tspan></text></g><g class="pele-node pele-shape-rect risk pele-hue-rust" data-id="d2-bug" transform="translate(240.7,769.95)"><rect x="-81.58" y="-24" width="163.17" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Real bug: report it</text></g><g class="pele-node pele-shape-rect muted pele-hue-neutral" data-id="d2-fix" transform="translate(477.21,769.95)"><rect x="-114.93" y="-24" width="229.86" height="48" fill="var(--_s)" stroke="var(--_b)" style="rx:var(--_r)"/><text class="pele-label" x="0" y="5.6" text-anchor="middle">Model is wrong: fix the step</text></g></g></svg></div><figcaption><div><div class="cap-title">What a model checker does</div><div class="cap-sub">You write the model and the promises; TLC does the exhaustive part</div></div></figcaption></figure>
+
+    <div class="grid3">
+      <div class="mini"><div class="k">You write</div><p><code>FilingDesk.tla</code>: about 300 lines. Each step names the Java it copies, like <code>Reserve</code> ↔ <code>FileJournal.reserve</code>.</p></div>
+      <div class="mini"><div class="k">You bound it</div><p>2 threads, 4 requests, 1 crash, every SendSubmissions reply. A <span class="term" title="The size limit on the model: how many threads, requests, crashes. A pass means 'no bug within this size', not 'no bug ever'.">bound</span> keeps the state count finite.</p></div>
+      <div class="mini"><div class="k">TLC returns</div><p>PASS, or the shortest <span class="term" title="A concrete sequence of steps from the start state to a state that breaks an invariant. It's a bug report with repro steps included.">counterexample</span>: the exact step-by-step path to the broken state.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="analogy">
+  <div class="sec-head"><span class="idx">04</span><h2>The analogy (and where it breaks)</h2></div>
+  <div class="sec-body">
+    <div class="analogy">Testing is test-driving a car down five roads you picked. Model checking is getting the map of every road in town within 10 km and checking that none of them ends at the cliff.
+      <span class="abreak"><strong>Where this breaks:</strong> you draw the map yourself, from the code. If the map leaves out a road the Java can actually take, TLC happily says "no cliff" and is wrong. That's why the model has to be able to fail (next section), and why the skill records which commit the map was drawn from.</span>
+    </div>
+  </div>
+</section>
+
+<section id="honest">
+  <div class="sec-head"><span class="idx">05</span><h2>How you know the check isn't lying</h2></div>
+  <p class="sec-note">A check you've never seen fail proves nothing. So each promise gets a <span class="term" title="A deliberately broken copy of the code or model. If the check still passes on it, the check isn't guarding that code.">mutant</span>: break the code the promise depends on and make sure TLC screams.</p>
+  <div class="sec-body">
+    <div class="story">
+      <div class="stitle">Break the code, watch it get caught</div>
+      <div class="exbox">
+        <div class="exhead">check.sh mutants · and one scratch edit to the real Java</div>
+        <div class="exrow"><span>Drop the claim check in reserve</span><span class="now">SameBytesFiledAtMostOnce → caught</span></div>
+        <div class="exrow"><span>Treat "transport unknown" as IRS-refused</span><span class="now">HeldNeverReleased → caught</span></div>
+        <div class="exrow"><span>reserve skips the fsync'd append</span><span class="now">HeldIsJournaled → caught</span></div>
+        <div class="exrow"><span>Edited FileJournal.java for real</span><span class="now">check.sh exit 3: STALE, names the file</span></div>
+        <div class="exrow"><span>…then updated the model to match</span><span class="now">exit 1: 15-step trace, b1 sent twice</span></div>
+        <div class="exrow punch"><span>Reverted both</span><span>back to 3 PASS + the 1 known finding</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="sec-head"><span class="idx">06</span><h2>Where it fits next to your other tools</h2></div>
+  <div class="sec-body">
+    <div class="table-wrap"><table class="compare">
+      <thead><tr><th>Tool</th><th>Checks</th><th>Finds this race?</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Unit test (JUnit)</td><td>The cases you wrote</td><td class="bad">No, runs one order</td><td>Cheap, runs the real code</td></tr>
+        <tr><td>Concurrency test with latches</td><td>The order you forced</td><td class="bad">Only if you already guessed it</td><td>Fiddly, can be flaky</td></tr>
+        <tr><td>Property-based test</td><td>Many random inputs to the real code</td><td class="bad">Rarely; it randomizes inputs, not thread timing</td><td>Cheap</td></tr>
+        <tr class="here"><td><strong>Model checker (TLA+/TLC)</strong></td><td>Every order of the steps, up to a bound</td><td class="good">Yes, in about 20 s</td><td>You keep a model in step with the code</td></tr>
+        <tr><td>Proof assistant (Coq, Lean)</td><td>Every case at every size</td><td class="good">Yes</td><td>Weeks of expert work</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="rule">
+  <div class="sec-head"><span class="idx">07</span><h2>The rule, in plain words</h2></div>
+  <div class="sec-body">
+    <div class="rule">
+      <ol>
+        <li>Write the promise in one sentence: "the IRS never holds two unrejected 941s for one quarter."</li>
+        <li>Write the steps the code can take. One lock, or one call with no shared state, is one step.</li>
+        <li>Let the checker try every order within a bound.</li>
+        <li>A fail is a bug only if every step in the trace is something the Java can really do.</li>
+        <li>A pass covers the model and the bound, not the whole universe. Assumptions stay written down (e.g. "a SOAP fault means the IRS filed nothing").</li>
+      </ol>
+    </div>
+    <div class="code"><pre><span class="cm"># every promise on the model of today's code (~20 s)</span>
+<span class="fn">formal/filing-desk/check.sh</span>
+<span class="cm"># prove the check can fail: each mutant must be caught (~5 s)</span>
+<span class="fn">formal/filing-desk/check.sh</span> <span class="kw">mutants</span>
+<span class="cm"># the step-by-step counterexample for one promise</span>
+<span class="fn">formal/filing-desk/check.sh</span> <span class="kw">trace</span> <span class="str">OneLiveReturnPerPeriod</span></pre></div>
+    <p style="color:var(--g700)">The next agent finds this as the <code>verify-filing-desk</code> skill. It says which files count as covered, and it exits 3 when they change after the recorded commit.</p>
+  </div>
+</section>
+
+<section id="glossary" class="glossary">
+  <div class="sec-head"><span class="idx">08</span><h2>Words, unpacked</h2></div>
+  <div class="sec-body">
+    <dl>
+      <dt>TLA+</dt><dd>A language for writing models of systems as states and steps. It's math-flavored, but you only use a small part of it.</dd>
+      <dt>TLC</dt><dd>The model checker for TLA+. It explores every reachable state of the model and checks the invariants in each one.</dd>
+      <dt>interleaving</dt><dd>One specific order in which the steps of concurrent requests mix together. Two requests of two steps each give 6 interleavings.</dd>
+      <dt>invariant</dt><dd>A promise that must hold in every state, such as <code>OneLiveReturnPerPeriod</code>.</dd>
+      <dt>counterexample</dt><dd>The shortest path of steps from the start to a state that breaks an invariant: a bug report with the repro built in.</dd>
+      <dt>bound</dt><dd>The size limit you set: 2 threads, 4 requests, 1 crash. A pass means "no bug at this size or below".</dd>
+      <dt>mutant</dt><dd>A deliberately broken variant. If the check still passes on it, the check isn't guarding that code.</dd>
+      <dt>sync commit</dt><dd>The commit at which someone last confirmed the model matches the Java. Covered files changing after it means "re-read the model".</dd>
+    </dl>
+  </div>
+</section>
+
+<section id="tldr">
+  <div class="sec-head"><span class="idx">09</span><h2>The two-sentence version</h2></div>
+  <div class="sec-body">
+    <div class="tldr-dark">
+      <div class="label">TL;DR, bro</div>
+      <p>Tests check the orders you thought of. A model checker tries every order of every step within a bound, which is how it caught two requests both slipping past <code>guardDuplicatePeriod</code> and sending two 941s for one quarter.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  const fixBox = document.getElementById('fix');
+  const logEl = document.getElementById('log');
+  const verdictEl = document.getElementById('verdict');
+  const ordersEl = document.getElementById('orders');
+  let state;
+
+  function stepsFor(fix) { return fix ? ['guard+reserve'] : ['guard', 'reserve']; }
+
+  function fresh() {
+    return { next: { A: 0, B: 0 }, sawRow: { A: false, B: false }, rows: [], sent: [], log: [] };
+  }
+
+  function apply(s, who, step) {
+    if (step === 'guard' || step === 'guard+reserve') {
+      const blocked = s.rows.length > 0;
+      s.sawRow[who] = blocked;
+      s.log.push(who + ' guard: ' + (blocked ? 'row found → refuses (PERIOD_ALREADY_FILED)' : 'no row for Orchid Q3 → pass'));
+      if (step === 'guard') return;
+    }
+    if (s.sawRow[who]) return;
+    s.rows.push(who);
+    s.sent.push(who);
+    s.log.push(who + ' reserve + SendSubmissions → IRS holds ' + who + "'s 941");
+  }
+
+  function done(s, fix) { const n = stepsFor(fix).length; return s.next.A >= n && s.next.B >= n; }
+
+  function click(who) {
+    const fix = fixBox.checked;
+    const steps = stepsFor(fix);
+    const step = steps[state.next[who]];
+    if (state.next[who] > 0 && state.sawRow[who]) { return; }
+    apply(state, who, step);
+    state.next[who] += 1;
+    if (step === 'guard' && state.sawRow[who]) state.next[who] = steps.length;
+    render();
+  }
+
+  function verdictText(s) {
+    return s.sent.length > 1
+      ? ['bad', 'IRS holds 2 returns for one quarter. Duplicate filed.']
+      : ['good', s.sent.length === 1 ? 'IRS holds 1 return. Promise kept.' : 'Nothing sent.'];
+  }
+
+  function render() {
+    const fix = fixBox.checked;
+    const steps = stepsFor(fix);
+    ['A', 'B'].forEach(function (who) {
+      const row = document.getElementById('btns' + who);
+      row.innerHTML = '';
+      steps.forEach(function (step, i) {
+        const b = document.createElement('button');
+        b.textContent = who + ': ' + step;
+        b.disabled = state.next[who] !== i;
+        b.addEventListener('click', function () { click(who); });
+        row.appendChild(b);
+      });
+    });
+    logEl.innerHTML = state.log.length
+      ? state.log.map(function (l) { return '<div>' + l + '</div>'; }).join('')
+      : '<div style="color:var(--g500)">journal empty · IRS holds nothing</div>';
+    if (done(state, fix)) {
+      const v = verdictText(state);
+      verdictEl.className = 'verdict ' + v[0];
+      verdictEl.textContent = v[1];
+    } else {
+      verdictEl.className = 'verdict';
+      verdictEl.textContent = 'Pick a step.';
+    }
+  }
+
+  function interleavings(a, b) {
+    if (!a.length) return [b];
+    if (!b.length) return [a];
+    return interleavings(a.slice(1), b).map(function (r) { return [a[0]].concat(r); })
+      .concat(interleavings(a, b.slice(1)).map(function (r) { return [b[0]].concat(r); }));
+  }
+
+  function tryAll() {
+    const fix = fixBox.checked;
+    const steps = stepsFor(fix);
+    const a = steps.map(function (s) { return ['A', s]; });
+    const b = steps.map(function (s) { return ['B', s]; });
+    const all = interleavings(a, b);
+    let bad = 0;
+    const rows = all.map(function (order) {
+      const s = fresh();
+      order.forEach(function (st) { apply(s, st[0], st[1]); });
+      const dup = s.sent.length > 1;
+      if (dup) bad += 1;
+      const label = order.map(function (st) { return st[0] + '.' + st[1]; }).join(' → ');
+      return '<div class="o"><span>' + label + '</span><span class="' + (dup ? 'r-bad">2 sent' : 'r-ok">1 sent') + '</span></div>';
+    });
+    ordersEl.innerHTML = '<div style="margin-bottom:6px;color:var(--g700)">' + all.length + ' orders, ' + bad + ' duplicate</div>' + rows.join('');
+  }
+
+  function reset() { state = fresh(); ordersEl.innerHTML = ''; render(); }
+
+  document.getElementById('reset').addEventListener('click', reset);
+  document.getElementById('all').addEventListener('click', tryAll);
+  fixBox.addEventListener('change', reset);
+  reset();
+})();
+</script>
+</body>
+</html>

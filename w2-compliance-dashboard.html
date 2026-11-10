@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W-2 compliance dashboard</title>
+<style>
+:root {
+  --ivory: #FAF9F5; --paper: #FFFFFF; --g100: #F0EEE6; --g200: #E6E3DA; --g300: #D1CFC5;
+  --slate: #141413; --g700: #3D3D3A; --g500: #87867F;
+  --clay: #D97757; --clay-d: #B85C3E; --oat: #E3DACC; --olive: #788C5D;
+  --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ivory: #1C1B19; --paper: #252421; --g100: #2E2D29; --g200: #3A3935; --g300: #4A4944; --slate: #EDEBE4; --g700: #C9C6BC; --g500: #9C998F; --oat: #5A5246; }
+}
+:root[data-theme="dark"] { --ivory: #1C1B19; --paper: #252421; --g100: #2E2D29; --g200: #3A3935; --g300: #4A4944; --slate: #EDEBE4; --g700: #C9C6BC; --g500: #9C998F; --oat: #5A5246; }
+.tldr { background: #141413; }
+.ledger .was { color: #141413; } .ledger .now { color: #141413; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ivory); color: var(--slate); font-family: var(--sans); line-height: 1.55; overflow-wrap: break-word; word-break: break-word; }
+p, li, dd, dt, h1, h2, h3, h4, blockquote, .card, .callout { overflow-wrap: break-word; word-break: break-word; }
+.card, [class*="grid"] > * { min-width: 0; }
+table { table-layout: auto; min-width: 640px; border-collapse: collapse; width: 100%; font-size: 13.5px; }
+td, th { word-break: normal; overflow-wrap: break-word; padding: 8px 12px; border-bottom: 1px solid var(--g200); text-align: left; vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--g700); background: var(--g100); }
+td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--g200); border-radius: 10px; background: var(--paper); }
+:not(pre) > code { font-family: var(--mono); font-size: .92em; background: var(--g100); color: var(--slate); padding: 1px 6px; border-radius: 4px; overflow-wrap: break-word; }
+a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+header, main { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+header { padding-top: 48px; padding-bottom: 8px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--g500); }
+h1 { font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.15; margin: 8px 0 12px; }
+h2 { font-family: var(--serif); font-weight: 500; font-size: 26px; margin: 48px 0 12px; }
+h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 0 0 8px; }
+.lede { color: var(--g700); font-size: 17px; max-width: 760px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.pill { font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 999px; background: var(--g100); color: var(--g700); border: 1px solid var(--g200); }
+.pill.clay { background: #F6E4DC; color: var(--clay-d); border-color: #EDC9BA; }
+.pill.olive { background: #E7ECDF; color: #4F5F3B; border-color: #D3DCC5; }
+.tldr { background: var(--slate); color: #E8E6DE; border-radius: 14px; padding: 22px 26px; margin-top: 28px; }
+.tldr p, .tldr strong { color: #E8E6DE; margin: 0; font-size: 16.5px; }
+.tldr .eyebrow { color: var(--oat); margin-bottom: 8px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+.stat { background: var(--paper); border: 1px solid var(--g200); border-radius: 12px; padding: 14px 16px; }
+.stat b { display: block; font-family: var(--serif); font-weight: 500; font-size: 28px; }
+.stat span { font-family: var(--mono); font-size: 11.5px; color: var(--g500); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.card { background: var(--paper); border: 1px solid var(--g200); border-radius: 12px; padding: 18px 20px; }
+.card p { margin: 6px 0; color: var(--g700); }
+.path { font-family: var(--mono); font-size: 12px; color: var(--g700); background: var(--g100); border-radius: 6px; padding: 2px 8px; display: inline-block; margin: 2px 4px 2px 0; }
+.ledger { border: 1px solid var(--g200); border-radius: 10px; overflow: hidden; margin: 10px 0 4px; font-size: 13.5px; background: var(--paper); }
+.ledger .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 7px 12px; border-bottom: 1px solid var(--g200); }
+.ledger .row:last-child { border-bottom: 0; }
+.ledger .v { font-family: var(--mono); white-space: nowrap; }
+.ledger .was { background: #F8EAE3; }
+.ledger .now { background: #EDF1E6; }
+.ledger .punch { font-weight: 600; background: var(--g100); }
+.callout { border-left: 3px solid var(--clay); background: var(--paper); padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 12px 0; color: var(--g700); }
+.callout.olive { border-left-color: var(--olive); }
+ol.steps { padding-left: 22px; }
+ol.steps li { margin: 6px 0; }
+.code { background: var(--slate); border-radius: 12px; padding: 16px 20px; overflow-x: auto; margin: 10px 0; }
+.code pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #E8E6DE; white-space: pre; margin: 0; }
+.code .kw { color: var(--clay); } .code .str { color: var(--olive); } .code .cm { color: var(--g500); } .code .fn { color: #C9B98A; }
+.decision { border: 1px dashed var(--clay); background: var(--paper); border-radius: 12px; padding: 14px 18px; margin: 10px 0; }
+.decision h3 { font-size: 16.5px; }
+.decision p { margin: 4px 0; color: var(--g700); }
+footer { max-width: 1040px; margin: 56px auto 40px; padding: 0 24px; color: var(--g500); font-family: var(--mono); font-size: 12px; }
+@media (max-width: 640px) { h1 { font-size: 30px; } header, main { padding: 0 16px; } }
+@media print { body { background: #fff; } .tldr { background: #fff; color: var(--slate); border: 1px solid var(--g300); } .tldr p, .tldr strong { color: var(--slate); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">C2S page · claude-projects/w2_compliance_dashboard · 2026-10-05</div>
+  <h1>W-2 compliance dashboard</h1>
+  <p class="lede">Before anyone uploads W-2s to SSA, a payroll operator can now open one C2S page and see, per legal company, whether the raw paychecks, the stored W-2s, the W-3, the four 941s and the 940 agree to the cent. Every disagreement is named, with the IRS rule it breaks.</p>
+  <div class="meta">
+    <span class="pill olive">57 + 17 + 139 tests pass</span>
+    <span class="pill olive">repo validators clean</span>
+    <span class="pill olive">browser harness verified</span>
+    <span class="pill clay">8 queries to register</span>
+    <span class="pill clay">not committed</span>
+  </div>
+  <div class="tldr">
+    <div class="eyebrow">In two sentences</div>
+    <p>Eight read-only queries pull the year's paychecks, W-2s, W-3s, 941s, 940s and tax parameters per legal company. A rule table of 85 checks in the page compares them and shows errors, warnings and info notes, all of it testable offline in Node.</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>85</b><span>checks in one rule table</span></div>
+    <div class="stat"><b>60</b><span>errors (block filing)</span></div>
+    <div class="stat"><b>21</b><span>warnings (explain)</span></div>
+    <div class="stat"><b>8</b><span>registered queries</span></div>
+    <div class="stat"><b>0</b><span>full SSNs sent to the browser</span></div>
+  </div>
+</header>
+
+<main>
+<h2>What the operator sees</h2>
+<div class="grid2">
+  <div class="card"><h3>Company rail</h3><p>Every legal company (FEIN) for the year, with a red, amber or green status and error counts. Sibling <code>hr_company</code> codes under one FEIN roll up together, like the 941 and 940 do. A banner above the rail shows problems that apply to every company, such as a wrong FUTA wage base in <code>onepay_tax_parameter</code>.</p></div>
+  <div class="card"><h3>Findings tab</h3><p>One card per finding: severity, check id, the expected and found amounts, the rule in plain words and a link to the IRS source. A filter limits it to errors, warnings or info. Employee findings link to that employee's paychecks.</p></div>
+  <div class="card"><h3>Employees tab</h3><p>Boxes 1 to 6 as computed from raw paychecks next to the stored W-2. A cell that differs is highlighted with the diff. The SSN shows only its last 4 digits.</p></div>
+  <div class="card"><h3>Totals tab</h3><p>Each measure side by side: raw paychecks, W-2 sum, W-3, 941 Q1 to Q4, 941 year and 940. Each quarter gets a card of 941 lines (form vs raw), and a 940 card compares lines 3 to 17 against raw FUTA data.</p></div>
+  <div class="card"><h3>Paycheck drill-down</h3><p>Click an employee to load their final and pending paychecks. The drill-down proves that the paychecks add up to the yearly totals the checks used.</p></div>
+  <div class="card"><h3>Safety rails</h3><p>While a query has no QID it shows "queries not registered" and calls nothing. It refuses to judge partial data when the platform returns fewer rows than <code>total_count</code>. A form that isn't due yet appears as info, not an error.</p></div>
+</div>
+
+<h2>Where each number comes from</h2>
+<p>You decided three things on 2026-10-05, and the queries follow them. Payroll joins company on <code>hr_company.code</code>. Rows roll up by <code>legal_company_id</code>. Expected box 1 is the federal taxable wages that payroll already stored per check.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Source</th><th>Query</th><th>What it returns</th></tr></thead>
+<tbody>
+<tr><td>Raw paychecks</td><td><code>w2c_employee_raw</code></td><td>One row per legal company, employee and quarter from <code>onepay_employee_tax_payment</code>. Box 1 and 2 come from tax type 1, box 3 and 4 from type 2, box 5 from type 4, box 6 from types 4 + 6, and FUTA from type 7. It also carries 401(k), section 125, final vs pending counts, and whether the period includes the 12th.</td></tr>
+<tr><td>Collected W-2</td><td><code>w2c_w2_rows</code></td><td><code>onepay_w2_form</code> boxes 1-6, 12, 13, 16, 17, plus SSN last 4 and shape flags. The full SSN never leaves SQL.</td></tr>
+<tr><td>W-3</td><td><code>w2c_w3_rows</code></td><td><code>onepay_w3_form</code> boxes and W-2 count.</td></tr>
+<tr><td>Form 941</td><td><code>w2c_941_rows</code></td><td><code>onepay_941_form</code> lines 1 to 16 per quarter, active and inactive.</td></tr>
+<tr><td>Form 940</td><td><code>w2c_940_rows</code></td><td><code>onepay_940_form</code> lines 3 to 17.</td></tr>
+<tr><td>Rates in the DB</td><td><code>w2c_tax_parameters</code></td><td>Federal <code>onepay_tax_parameter</code> rows, compared against the statutory constants.</td></tr>
+<tr><td>Companies</td><td><code>w2c_legal_companies</code></td><td>Legal name, FEIN, sibling codes.</td></tr>
+<tr><td>Drill-down</td><td><code>w2c_employee_checks</code></td><td>One employee's paychecks with the same money columns.</td></tr>
+</tbody></table></div>
+
+<h2>Three findings, worked through</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>A W-2 that is one dollar off</h3>
+    <p>Employee D's paychecks carry $50,000.00 of federal taxable wages. The stored W-2 says $50,001.00.</p>
+    <div class="ledger">
+      <div class="row"><span>Sum of tax type 1 taxable wages, final checks</span><span class="v">50,000.00</span></div>
+      <div class="row was"><span>onepay_w2_form box 1</span><span class="v">50,001.00</span></div>
+      <div class="row punch"><span>w2-box1-equals-raw: error, diff +1.00</span><span class="v">blocks filing</span></div>
+    </div>
+    <span class="path">w2-box1-equals-raw</span>
+  </div>
+  <div class="card">
+    <h3>Social Security wages over the wage base</h3>
+    <p>Employee E has $200,000 of SS-taxable wages on paychecks. The 2026 wage base is $184,500 (941 instructions line 5a).</p>
+    <div class="ledger">
+      <div class="row"><span>Raw SS wages, tax type 2</span><span class="v">200,000.00</span></div>
+      <div class="row now"><span>2026 wage base</span><span class="v">184,500.00</span></div>
+      <div class="row punch"><span>raw-ss-over-base + w2-ss-wage-base + w2-ss-tax-max</span><span class="v">3 errors</span></div>
+    </div>
+    <p>The raw check fires even when no W-2 exists yet, so the payroll engine's cap is checked on its own.</p>
+  </div>
+  <div class="card">
+    <h3>A 941 that isn't late yet</h3>
+    <p>Company 2 has Q3 paychecks and no Q3 941. Today is 2026-10-05.</p>
+    <div class="ledger">
+      <div class="row"><span>Q3 due: Oct 31 2026 is a Saturday</span><span class="v">Mon 2026-11-02</span></div>
+      <div class="row was"><span>Before this fix: error from 2026-11-01</span><span class="v">false alarm</span></div>
+      <div class="row now"><span>Now: form-not-yet-due (info) until 2026-11-02</span><span class="v">info</span></div>
+      <div class="row punch"><span>q941-missing becomes an error</span><span class="v">2026-11-03</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>The IRS matching program</h3>
+    <p>SSA and IRS compare four W-2 totals with the four 941s each year: federal income tax, SS wages, SS tips and Medicare wages. Those four comparisons are errors. Box 1 vs 941 line 2 and Additional Medicare wages are warnings, because legitimate differences exist.</p>
+    <span class="path">emp941-fit</span><span class="path">emp941-ss-wages</span><span class="path">emp941-ss-tips</span><span class="path">emp941-medicare-wages</span>
+  </div>
+</div>
+
+<h2>How to put it live</h2>
+<ol class="steps">
+  <li>Paste each <code>sql/w2c_*.sql</code> file into the C2S query editor. The platform assigns the QID. Each file header lists its parameters and output columns.</li>
+  <li>Put the eight QIDs into the eight <code>var W2C_..._QID = 0;</code> lines of <code>w2_compliance_dashboard.js</code>, and record them in the folder's <code>CLAUDE.md</code> QID table. Never guess a QID.</li>
+  <li>Paste <code>w2_compliance_dashboard.js</code> as a C2S page.</li>
+  <li>Optional audit path: every query runs in DBeaver once you replace <code>${req.xtax_year}</code>, <code>${req.xlegal_company_id}</code> (0 = all) and <code>${req.xmin_payroll_status}</code> (4).</li>
+</ol>
+<div class="code"><pre><span class="cm"># offline checks, from claude-projects/w2_compliance_dashboard</span>
+<span class="kw">node</span> test/run_engine_tests.js        <span class="cm"># 57 passed, 0 failed</span>
+<span class="kw">node</span> test/run_adversarial_tests.js   <span class="cm"># 17 passed, 0 failed (2,000 employees in 8 ms)</span>
+<span class="kw">node</span> test/run_sql_contract.js       <span class="cm"># 139 passed, 0 failed</span></pre></div>
+
+<h2>How it was checked</h2>
+<div class="grid2">
+  <div class="card"><h3>Tests that can fail</h3><p>Every check has a test with literal cents. The test writer worked from the spec without reading the implementation. Mutating the SS wage base, the FUTA base, the FUTA rate or EIN normalization fails 2 to 5 tests each. Running the new tests against the code from before the last round fails 6 of them.</p></div>
+  <div class="card"><h3>Four review rounds</h3><p>Opus, Sonnet and Grok reviewed tax rules, SQL semantics and edge cases on separate briefs. That surfaced 31 fixes in round 1 and 6 more in round 2. Defects found by two models independently were fixed first.</p></div>
+  <div class="card"><h3>Real browser</h3><p>The page ran in headless Chrome with stubbed platform globals and fixture data. All tabs, the drill-down, year switching, the truncation guard and the not-registered panel were exercised. No console errors appeared. This used a harness, not the live C2S platform.</p></div>
+  <div class="card"><h3>Repo rules</h3><p>The page is ES5 only. The validators for transaction SQL, immutable IDs and SQL conventions are clean. There is no <code>public.</code> prefix, and no SSN-shaped value appears in code or fixtures. All QIDs are 0 with a TODO.</p></div>
+</div>
+<div class="callout">Not verified: the queries have never run against the real database, because live DB access is off for Claude sessions. Running them once in DBeaver for one company is the first real test.</div>
+
+<h2>Open decisions</h2>
+<p>These need you. Each is also listed in the folder's <code>CLAUDE.md</code>.</p>
+<div class="decision"><h3>1. Which payroll status counts as final?</h3><p>Today it is status 4 (Sent). Paychecks below that are counted and reported as info, never dropped. Should status 3 (Approved) count too, and what status do ADP-imported history rows carry?</p></div>
+<div class="decision"><h3>2. Which 941 column holds line 5b SS tips?</h3><p><code>onepay_941_form</code> has both <code>line5a_tips</code> and <code>line5b_tips</code>, and no 5b tax column. The checks read <code>line5b_tips</code>.</p></div>
+<div class="decision"><h3>3. Closed or seasonal businesses</h3><p>After the first 941 of the year, IRS expects one every quarter. The 941 table has no final-return flag, so a business that closed in Q3 shows a Q4 <code>q941-missing</code> error. Is there a flag elsewhere?</p></div>
+<div class="decision"><h3>4. SSN source and enrollment plans</h3><p>The HR match uses <code>hr_employee.government_no</code>. Is that what the W-2 generator uses? Do employee-paid enrollment payments only ever hold section 125 plans? If a 403(b) or 457 deferral sits there, 940 line 4 is overstated.</p></div>
+<div class="decision"><h3>5. Comment cleanup in test files</h3><p>The comment pass removed 63 comments from the page. Its edits to the test files were blocked by the permission classifier because the folder is untracked, and one stale comment ("stop before section 3") remains in the page. I did not apply those by hand. Approve them, or leave them.</p></div>
+<div class="decision"><h3>6. Commit</h3><p>Nothing is committed. <code>claude-projects</code> works on <code>main</code> only, and commits wait for your ask.</p></div>
+</main>
+<footer>Files: claude-projects/w2_compliance_dashboard/ (page 2,399 lines, 8 SQL, 4 test files, CLAUDE.md). Report written by the parent session from verified results.</footer>
+</body>
+</html>

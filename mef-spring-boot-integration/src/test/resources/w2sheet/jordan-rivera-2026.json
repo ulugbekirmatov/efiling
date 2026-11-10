@@ -1,0 +1,31 @@
+{
+  "taxYear": 2026,
+  "employer": {
+    "ein": "00-0000000",
+    "name": "Zinnia Company (SAMPLE)",
+    "address": ["1200 Market St Ste 400", "Philadelphia PA 19107"]
+  },
+  "employee": {
+    "firstName": "Jordan A",
+    "lastName": "Rivera",
+    "suffix": "",
+    "ssnLast4": "4321",
+    "address": ["815 Spruce St Apt 3", "Philadelphia PA 19107"]
+  },
+  "core": {
+    "wages": 58000.00,
+    "federalIncomeTaxWithheld": 6120.00,
+    "socialSecurityWages": 64000.00,
+    "socialSecurityTaxWithheld": 3968.00,
+    "medicareWages": 64000.00,
+    "medicareTaxWithheld": 928.00
+  },
+  "box12": [
+    { "code": "D", "amount": 6000.00 },
+    { "code": "DD", "amount": 7200.00 }
+  ],
+  "box13": { "statutoryEmployee": false, "retirementPlan": true, "thirdPartySickPay": false },
+  "box14a": [ { "label": "PA SUI", "amount": 44.80 } ],
+  "stateLines": [ { "state": "PA", "stateId": "12345678", "wages": 64000.00, "tax": 1964.80 } ],
+  "localLines": [ { "locality": "PHILADELPHIA", "wages": 64000.00, "tax": 2393.60 } ]
+}

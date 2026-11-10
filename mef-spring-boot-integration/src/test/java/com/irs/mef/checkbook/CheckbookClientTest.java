@@ -34,7 +34,7 @@ class CheckbookClientTest {
     private final MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 
     private CheckbookClient client(String publishableKey, String secretKey) {
-        return new CheckbookClient(builder, new CheckbookProperties(publishableKey, secretKey));
+        return new CheckbookClient(new CheckbookTransport(builder), CheckbookProperties.sandbox(publishableKey, secretKey));
     }
 
     private static DigitalCheckRequest oneDollar() {
@@ -321,6 +321,48 @@ class CheckbookClientTest {
 
     @Test
     void toStringNeverPrintsTheSecret() {
-        assertTrue(!new CheckbookProperties("pub", "s3cret").toString().contains("s3cret"));
+        assertTrue(!CheckbookProperties.sandbox("pub", "s3cret").toString().contains("s3cret"));
+    }
+
+    @Test
+    void unarmedProductionRefusesEveryPostBeforeAnyRequest() {
+        CheckbookClient unarmed = new CheckbookClient(new CheckbookTransport(builder),
+                CheckbookProperties.production("prod-pub", "prod-sec", false));
+
+        IllegalStateException refused = assertThrows(IllegalStateException.class,
+                () -> unarmed.sendDigitalCheck(oneDollar(), "key-prod"));
+        assertThrows(IllegalStateException.class, () -> unarmed.createWallet("w", WalletType.INTERNAL));
+
+        assertTrue(refused.getMessage().contains("MEF_CHECKBOOK_PRODUCTION_ARMED"));
+        server.verify();
+    }
+
+    @Test
+    void armedProductionPostsToTheProductionHostWithTheProductionKeys() {
+        server.expect(requestTo("https://api.checkbook.io/v3/check/digital"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("Authorization", "prod-pub:prod-sec"))
+                .andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(CHECK_JSON));
+
+        CheckbookClient armed = new CheckbookClient(new CheckbookTransport(builder),
+                CheckbookProperties.production("prod-pub", "prod-sec", true));
+        armed.sendDigitalCheck(oneDollar(), "key-prod");
+
+        server.verify();
+    }
+
+    @Test
+    void productionWithoutKeysNamesTheProductionVariables() {
+        CheckbookClient keyless = new CheckbookClient(new CheckbookTransport(builder),
+                CheckbookProperties.production(null, null, true));
+
+        IllegalStateException refused = assertThrows(IllegalStateException.class, () -> keyless.getCheck("x"));
+
+        assertTrue(refused.getMessage().contains("MEF_CHECKBOOK_PROD_SECRET_KEY"));
+    }
+
+    @Test
+    void productionToStringMasksTheProductionSecret() {
+        assertTrue(!CheckbookProperties.production("pub", "s3cret", false).toString().contains("s3cret"));
     }
 }

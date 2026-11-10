@@ -14,24 +14,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Checkbook.io API client, sandbox only. */
+/** Checkbook.io API client. {@link CheckbookProperties#environment()} picks the host and the key pair. */
 @Component
 @EnableConfigurationProperties(CheckbookProperties.class)
 public class CheckbookClient {
 
     private static final String IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
     private static final String MISSING_KEYS_MESSAGE =
-            "Checkbook keys are not set: export MEF_CHECKBOOK_PUBLISHABLE_KEY and MEF_CHECKBOOK_SECRET_KEY";
+            "Checkbook keys are not set for %s: export %s";
+    private static final String SANDBOX_KEY_VARIABLES = "MEF_CHECKBOOK_PUBLISHABLE_KEY and MEF_CHECKBOOK_SECRET_KEY";
+    private static final String PRODUCTION_KEY_VARIABLES =
+            "MEF_CHECKBOOK_PROD_PUBLISHABLE_KEY and MEF_CHECKBOOK_PROD_SECRET_KEY";
+    private static final String UNARMED_MESSAGE =
+            "Checkbook PRODUCTION is not armed: a POST would move real money. Set MEF_CHECKBOOK_PRODUCTION_ARMED=true"
+                    + " only for an approved send.";
 
     private final RestClient http;
     private final CheckbookProperties properties;
     private final ObjectMapper json = new ObjectMapper();
 
-    public CheckbookClient(RestClient.Builder builder, CheckbookProperties properties) {
+    public CheckbookClient(CheckbookTransport transport, CheckbookProperties properties) {
         this.properties = properties;
-        this.http = builder
-                .baseUrl(CheckbookEnvironment.SANDBOX.baseUrl())
-                .defaultHeader(HttpHeaders.AUTHORIZATION, properties.publishableKey() + ":" + properties.secretKey())
+        this.http = transport.builder()
+                .baseUrl(properties.environment().baseUrl())
+                .defaultHeader(HttpHeaders.AUTHORIZATION,
+                        properties.activePublishableKey() + ":" + properties.activeSecretKey())
                 .defaultStatusHandler(status -> !status.is2xxSuccessful(), (req, res) -> {
                     throw toException(res.getStatusCode().value(), res.getBody().readAllBytes());
                 })
@@ -39,7 +46,7 @@ public class CheckbookClient {
     }
 
     public CheckbookCheck sendDigitalCheck(DigitalCheckRequest request, String idempotencyKey) {
-        requireKeys();
+        requireKeysAndArmed();
         return http.post()
                 .uri("/check/digital")
                 .header(IDEMPOTENCY_KEY_HEADER, idempotencyKey)
@@ -50,7 +57,7 @@ public class CheckbookClient {
     }
 
     public CheckbookCheck sendPhysicalCheck(PhysicalCheckRequest request, String idempotencyKey) {
-        requireKeys();
+        requireKeysAndArmed();
         return http.post()
                 .uri("/check/physical")
                 .header(IDEMPOTENCY_KEY_HEADER, idempotencyKey)
@@ -61,7 +68,7 @@ public class CheckbookClient {
     }
 
     public CheckbookWallet createWallet(String name, WalletType type) {
-        requireKeys();
+        requireKeysAndArmed();
         return http.post()
                 .uri("/account/wallet")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,9 +120,22 @@ public class CheckbookClient {
         }
     }
 
+    public CheckbookEnvironment environment() {
+        return properties.environment();
+    }
+
     private void requireKeys() {
         if (!properties.hasKeys()) {
-            throw new IllegalStateException(MISSING_KEYS_MESSAGE);
+            String variables = properties.environment() == CheckbookEnvironment.PRODUCTION
+                    ? PRODUCTION_KEY_VARIABLES : SANDBOX_KEY_VARIABLES;
+            throw new IllegalStateException(MISSING_KEYS_MESSAGE.formatted(properties.environment(), variables));
+        }
+    }
+
+    private void requireKeysAndArmed() {
+        requireKeys();
+        if (!properties.mayMoveMoney()) {
+            throw new IllegalStateException(UNARMED_MESSAGE);
         }
     }
 

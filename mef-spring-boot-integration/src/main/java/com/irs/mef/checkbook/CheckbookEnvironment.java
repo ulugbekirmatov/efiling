@@ -1,8 +1,9 @@
 package com.irs.mef.checkbook;
 
-/** Production is intentionally not representable until the sandbox flow is proven. */
+/** Which Checkbook.io API host the client talks to. PRODUCTION moves real money; see {@link CheckbookProperties}. */
 public enum CheckbookEnvironment {
-    SANDBOX("https://api.sandbox.checkbook.io/v3");
+    SANDBOX("https://api.sandbox.checkbook.io/v3"),
+    PRODUCTION("https://api.checkbook.io/v3");
 
     private final String baseUrl;
 

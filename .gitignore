@@ -91,3 +91,7 @@ reports/w2-employee-*/
 MeF_WSDL_*.zip
 .DS_Store
 .!*
+reports/941-2026q3/
+reports/pdf/*-2026q3.pdf
+reports/checkbook-production-check-preview.html
+reports/checkbook-test-check-team.html

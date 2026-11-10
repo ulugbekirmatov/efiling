@@ -52,10 +52,17 @@ mef:
       etin: ${MEF_ETIN:}
       asid: ${MEF_ASID:}
 
-# Checkbook.io sandbox (com.irs.mef.checkbook). Blank keys are fine until a call is made.
+# Checkbook.io (com.irs.mef.checkbook). Blank keys are fine until a call is made.
+# environment SANDBOX uses the top-level keys; PRODUCTION uses checkbook.production.* and refuses
+# every POST (money moves) unless armed is true.
 checkbook:
+  environment: ${MEF_CHECKBOOK_ENVIRONMENT:SANDBOX}
   publishable-key: ${MEF_CHECKBOOK_PUBLISHABLE_KEY:}
   secret-key: ${MEF_CHECKBOOK_SECRET_KEY:}
+  production:
+    publishable-key: ${MEF_CHECKBOOK_PROD_PUBLISHABLE_KEY:}
+    secret-key: ${MEF_CHECKBOOK_PROD_SECRET_KEY:}
+    armed: ${MEF_CHECKBOOK_PRODUCTION_ARMED:false}
 
 # Logging configuration
 logging:

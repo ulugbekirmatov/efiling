@@ -14,6 +14,7 @@ Spring Boot 3.2 on Java 17 that e-files Form 94x returns to the IRS Modernized e
 ./mef login              LIVE login probe, no send.
 ./mef checkbook          LIVE Checkbook sandbox: one $1.00 digital check, then read it back.
 ./mef checkbook-mailed    LIVE Checkbook sandbox: $1.00 mailed check from the bank, then from a prefund wallet.
+./mef checkbook-preview <check.json>  offline: the $0.10 PRODUCTION mailed check with an attachment, built and printed, never sent. Real input lives in gitignored mef-spring-boot-integration/data/checkbook/.
 ```
 
 ## Where facts live
@@ -57,6 +58,10 @@ POST /api/mef/wage-files/{id}/receipt
 
 <!-- generated:env -->
 MEF_ASID
+MEF_CHECKBOOK_ENVIRONMENT
+MEF_CHECKBOOK_PRODUCTION_ARMED
+MEF_CHECKBOOK_PROD_PUBLISHABLE_KEY
+MEF_CHECKBOOK_PROD_SECRET_KEY
 MEF_CHECKBOOK_PUBLISHABLE_KEY
 MEF_CHECKBOOK_SECRET_KEY
 MEF_EFIN
